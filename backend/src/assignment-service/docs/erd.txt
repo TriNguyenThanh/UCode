@@ -1,0 +1,165 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    Assignment          ||--o{ AssignmentDetail : "assigned_to"
+    Assignment          ||--o{ AssignmentProblem : "contains"
+    Problem             ||--o{ AssignmentProblem : "included_in"
+    AssignmentDetail    ||--o{ AssignmentProblemSubmission : "per_problem"
+    Problem             ||--o{ AssignmentProblemSubmission : "has_submissions"
+    Submission          |o--|| AssignmentProblemSubmission : "final_attempt"
+    Problem ||--o{ ProblemAsset : "has_asset"
+    Problem ||--o{ Dataset : "has_dataset"
+    Dataset ||--o{ TestCase : "has"
+    Problem ||--o{ CodeTemplate : "has_template"
+    Problem ||--o{ LanguageLimit : "has_limit"
+    Problem ||--o{ ProblemTag : "tagged"
+    Tag     ||--o{ ProblemTag : "used_in"
+    Assignment ||--o{ Submission : "submitted_for"
+    Problem    ||--o{ Submission : "attempted_in"
+    Submission ||--o{ Result : "produces"
+    TestCase   ||--o{ Result : "covered_by"
+    Assignment {
+        UUID id PK
+        nvarchar_50_ assignment_type
+        nvarchar_200_ title
+        nvarchar_2000_ description
+        datetime2 start_time
+        datetime2 end_time
+        int total_points
+        bit allow_late_submission
+        nvarchar_50_ status
+        UUID class_id FK
+        UUID assigned_by FK
+        datetime2 created_at
+        datetime2 assigned_at
+    }
+    AssignmentDetail {
+        UUID id PK
+        UUID assignment_id FK
+        UUID student_id FK
+        nvarchar_50_ status
+        datetime2 assigned_at
+        datetime2 started_at
+        int score
+        int max_score
+    }
+    AssignmentProblem {
+        UUID assignment_id PK, FK
+        UUID problem_id PK, FK
+        int points
+        int order_index
+    }
+    AssignmentProblemSubmission {
+        UUID submission_id PK, FK
+        UUID assignment_detail_id FK
+        UUID problem_id FK
+        nvarchar_50_ status
+        datetime2 started_at
+        datetime2 submitted_at
+        int score
+        int max_score
+        int attempt_count
+        text solution_code
+        nvarchar_2000_ teacher_feedback
+        bigint execution_time
+        bigint memory_used
+    }
+    Problem {
+        UUID id PK
+        nvarchar50 code
+        nvarchar255 slug
+        nvarchar500 title
+        nvarchar16 difficulty
+        nvarchar16 visibility
+        nvarchar16 status
+        nvarchar1000 statement_md_ref
+        nvarchar8 io_mode
+        string input-format
+        string output-format
+        string constraints
+        int max_score
+        int time_limit_ms
+        int memory_limit_kb
+        int source_limit_kb
+        int stack_limit_kb
+        nvarchar1000 validator_ref
+        nvarchar2000 changelog
+        bit is_locked
+        datetime2 created_at
+        datetime2 updated_at
+        UUID owner_id FK
+    }
+    ProblemTag {
+        UUID problem_id PK, FK
+        UUID tag_id PK, FK
+    }
+    Tag {
+        UUID id PK
+        nvarchar_64_ name
+        nvarchar_16_ category
+    }
+    ProblemAsset {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_16_ type
+        nvarchar_1000_ object_ref
+        nvarchar_100_ checksum
+        datetime2 created_at
+    }
+    Dataset {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_100_ name
+        nvarchar_16_ kind
+    }
+    TestCase {
+        UUID id PK
+        UUID dataset_id FK
+        int index_no
+        nvarchar_500_ input_ref
+        nvarchar_500_ output_ref
+        decimal_5_2_ weight
+        bit is_sample
+    }
+    CodeTemplate {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_50_ lang
+        nvarchar_1000_ starter_ref
+    }
+    LanguageLimit {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_50_ lang
+        decimal_5_2_ time_factor
+        int memory_kb_override
+    }
+    Submission {
+        UUID id PK
+        UUID user_id FK
+        UUID assignment_id FK
+        UUID problem_id FK
+        text code
+        nvarchar_50_ language
+        bit is_sample_passed
+        nvarchar_50_ status
+        nvarchar_255_ error_code
+        nvarchar_1000_ error_message
+        int sample_testcase
+        int private_test_case
+        int passed_test_case
+        bigint total_time
+        bigint total_memory
+        datetime2 submitted_at
+    }
+    Result {
+        UUID submission_id PK, FK
+        UUID testcase_id PK, FK
+        text actual_output
+        nvarchar_450_ status
+        text error_message
+        int execution_time_ms
+        int memory_usage_kb
+    }

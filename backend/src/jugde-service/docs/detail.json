@@ -1,0 +1,68 @@
+{
+    "SubmissionRequest": {
+        "queue": "submission_queue",
+        "example": {
+            "submissionId": "subm-001",
+            "code": "n = int(input())\nprint(n * 2)",
+            "language": "Python3",
+            "timelimit": 4000,
+            "memorylimit": 256,
+            "testcases": [
+                {
+                    "testCaseId": "tc-000",
+                    "inputRef": "0\n",
+                    "outputRef": "0",
+                    "weight": 1.0
+                },
+                {
+                    "testCaseId": "tc-001",
+                    "inputRef": "4\n",
+                    "outputRef": "8",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "ResultResponse": {
+        "queue": "result_queue",
+        "example": {
+            "submissionId": "subm-001",
+            "results": [
+                {
+                    "testcaseId": "tc-000",
+                    "actualOutput": "0",
+                    "status": "Passed",
+                    "errorMessage": "",
+                    "executionTimeMs": 45,
+                    "memoryUsageKb": 2048
+                },
+                {
+                    "testcaseId": "tc-001",
+                    "actualOutput": "8",
+                    "status": "Passed",
+                    "errorMessage": "",
+                    "executionTimeMs": 50,
+                    "memoryUsageKb": 2048
+                },
+                {
+                    "testcaseId": "tc-002",
+                    "actualOutput": "15",
+                    "status": "WrongAnswer",
+                    "errorMessage": "Expected output: 20",
+                    "executionTimeMs": 48,
+                    "memoryUsageKb": 2048
+                }
+            ]
+        },
+        "statusEnum": [
+            "Pending",
+            "Running",
+            "Passed",
+            "TimeLimitExceeded",
+            "MemoryLimitExceeded",
+            "RuntimeError",
+            "InternalError",
+            "WrongAnswer"
+        ]
+    }
+}
