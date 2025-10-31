@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 
 namespace AssignmentService.Infrastructure.EF.Configurations;
 
@@ -8,30 +8,53 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 {
     public void Configure(EntityTypeBuilder<Submission> builder)
     {
+        // builder.ToTable("Submissions");
+        
         builder.HasKey(s => s.SubmissionId);
 
-        builder.Property(a => a.Status)
-            .HasConversion<string>()
-            .HasMaxLength(50)
+        builder.Property(s => s.UserId)
+            .IsRequired();
+
+        builder.Property(s => s.AssignmentId)
+            .IsRequired();
+
+        builder.Property(s => s.ProblemId)
+            .IsRequired();
+
+        builder.Property(s => s.DatasetId)
+            .IsRequired();
+
+        builder.Property(s => s.SourceCodeRef)
             .IsRequired()
-            .HasDefaultValue(Domain.Enums.SubmissionStatus.Pending);
+            .HasMaxLength(50);
 
-        builder.Property(a => a.AssignmentStudentId)
-            .IsRequired();
+        builder.Property(s => s.Language)
+            .IsRequired()
+            .HasMaxLength(50);
 
-        builder.Property(a => a.SubmittedAt)
-            .IsRequired();
+        builder.Property(s => s.CompareResult)
+            .HasMaxLength(255);
 
-        // Relationships
-        builder.HasOne<AssignmentProblemSubmission>()
-            .WithMany(s => s.Submissions)
-            .HasForeignKey(s => s.AssignmentId);
+        builder.Property(s => s.Status)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(s => s.ErrorCode)
+            .HasMaxLength(50);
+
+        builder.Property(s => s.ErrorMessage)
+            .HasMaxLength(1000);
+
+        builder.Property(s => s.SubmittedAt)
+            .IsRequired()
+            .HasDefaultValueSql("SYSDATETIME()");
 
         // Indexes
-        builder.HasIndex(a => a.UserId);
-        builder.HasIndex(a => a.AssignmentId);
-        builder.HasIndex(a => a.ProblemId);
-        builder.HasIndex(a => a.Status);
-        builder.HasIndex(a => a.SubmittedAt);
+        builder.HasIndex(s => s.UserId);
+        builder.HasIndex(s => s.AssignmentId);
+        builder.HasIndex(s => s.ProblemId);
+        builder.HasIndex(s => s.DatasetId);
+        builder.HasIndex(s => s.Status);
+        builder.HasIndex(s => s.SubmittedAt);
     }
 }

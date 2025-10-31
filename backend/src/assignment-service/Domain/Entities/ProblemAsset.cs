@@ -1,6 +1,6 @@
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.EF.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng ProblemAssets

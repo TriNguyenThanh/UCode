@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace AssignmentService.EF.Entities;
+namespace AssignmentService.Domain.Entities;
 
 public class Result
 {
