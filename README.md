@@ -32,7 +32,7 @@ A comprehensive Code Submission System featuring:
 ## Microservice
 
 - **UserService:** `http://localhost:5000`
-- **ProblemService:** `http://localhost:5001`
+- **AssignmentService:** `http://localhost:5001`
 - **ExecuteService:** `http://localhost:5002`
 
 # Backend (ASP.NET Web API)

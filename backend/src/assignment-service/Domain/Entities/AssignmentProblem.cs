@@ -1,4 +1,4 @@
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.EF.Entities;
 
 /// <summary>
 /// Bảng trung gian Many-to-Many giữa Assignment và Problem

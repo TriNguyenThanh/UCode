@@ -1,6 +1,6 @@
-using ProblemService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.EF.Entities;
 
 /// <summary>
 /// Chi tiết việc giao bài cho từng student

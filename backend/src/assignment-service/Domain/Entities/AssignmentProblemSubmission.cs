@@ -1,6 +1,6 @@
-using ProblemService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.EF.Entities;
 
 /// <summary>
 /// Chi tiết student làm problem nào trong assignment
@@ -74,4 +74,5 @@ public class AssignmentProblemSubmission
     public AssignmentDetail AssignmentDetail { get; set; } = null!;
     // public AssignmentProblem AssignmentProblem { get; set; } = null!; // Removed to avoid cascade cycles
     public Problem Problem { get; set; } = null!;
+    public Submission Submission { get; set; } = null!;
 }

@@ -1,4 +1,4 @@
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.EF.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng CodeTemplates

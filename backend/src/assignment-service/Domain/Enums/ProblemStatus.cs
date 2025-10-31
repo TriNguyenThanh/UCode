@@ -1,4 +1,4 @@
-namespace ProblemService.Domain.Enums;
+namespace AssignmentService.Domain.Enums;
 
 /// <summary>
 /// Trạng thái của đề bài

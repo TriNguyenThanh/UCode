@@ -1,6 +1,6 @@
-using ProblemService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.EF.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng Problems
