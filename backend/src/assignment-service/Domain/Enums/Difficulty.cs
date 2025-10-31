@@ -1,4 +1,4 @@
-namespace ProblemService.Domain.Enums;
+namespace AssignmentService.Domain.Enums;
 
 /// <summary>
 /// Enum representing the difficulty level of a problem
