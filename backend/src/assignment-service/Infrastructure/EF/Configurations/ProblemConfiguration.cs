@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 
 namespace AssignmentService.Infrastructure.EF.Configurations;
 
@@ -32,9 +32,7 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasMaxLength(500);
 
         builder.Property(p => p.OwnerId)
-        .IsRequired()
-        .HasColumnName("owner_id");
-    
+            .IsRequired();
     
         /* ===== Enum Properties =====
          * HasConversion<string>() convert enum → string trong DB
@@ -65,6 +63,17 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasConversion<string>()
             .HasMaxLength(8)
             .HasDefaultValue(Domain.Enums.IoMode.STDIO);
+
+        builder.Property(p => p.InputFormat)
+            .HasMaxLength(50);
+
+        builder.Property(p => p.OutputFormat)
+            .HasMaxLength(50);
+
+        builder.Property(p => p.Constraints)
+            .HasMaxLength(50);
+
+        builder.Property(p => p.MaxScore);
 
         // Limits
         builder.Property(p => p.TimeLimitMs)
@@ -102,9 +111,6 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasColumnType("NVARCHAR(MAX)");
         
         builder.Property(p => p.SampleOutput)
-            .HasColumnType("NVARCHAR(MAX)");
-        
-        builder.Property(p => p.Constraints)
             .HasColumnType("NVARCHAR(MAX)");
 
         /* ===== Timestamp Properties =====
@@ -157,12 +163,6 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         /* ===== Relationships =====
          * HasOne/WithMany định nghĩa relationships
          */
-        
-        // Problem belongs to User (Many-to-One)
-        // builder.HasOne(p => p.Owner)
-        //     .WithMany(u => u.OwnedProblems)
-        //     .HasForeignKey(p => p.OwnerId)
-        //     .OnDelete(DeleteBehavior.Restrict);
         
         // Problem has many Datasets (One-to-Many)
         builder.HasMany(p => p.Datasets)

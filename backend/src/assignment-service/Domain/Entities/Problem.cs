@@ -1,6 +1,6 @@
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.EF.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng Problems
@@ -58,6 +58,26 @@ public class Problem
     public IoMode IoMode { get; set; } = IoMode.STDIO;
     
     /// <summary>
+    /// Định dạng input (mô tả cách đọc input)
+    /// </summary>
+    public string? InputFormat { get; set; }
+    
+    /// <summary>
+    /// Định dạng output (mô tả cách xuất output)
+    /// </summary>
+    public string? OutputFormat { get; set; }
+    
+    /// <summary>
+    /// Ràng buộc của bài toán
+    /// </summary>
+    public string? Constraints { get; set; }
+    
+    /// <summary>
+    /// Điểm tối đa cho bài toán này
+    /// </summary>
+    public int? MaxScore { get; set; }
+    
+    /// <summary>
     /// Giới hạn thời gian (milliseconds)
     /// </summary>
     public int TimeLimitMs { get; set; } = 1000;
@@ -109,17 +129,11 @@ public class Problem
     /// </summary>
     public string? SampleOutput { get; set; }
     
-    /// <summary>
-    /// Problem constraints
-    /// </summary>
-    public string? Constraints { get; set; }
-    
     // === Timestamps ===
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // === Navigation Properties ===
-    // public User Owner { get; set; } = null!;
     
     /// <summary>
     /// Collection các tags gắn với đề bài

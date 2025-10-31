@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 
 namespace AssignmentService.Infrastructure.EF.Configurations;
 
@@ -21,27 +21,14 @@ public class TestCaseConfiguration : IEntityTypeConfiguration<TestCase>
             .IsRequired()
             .HasMaxLength(500);
         
-        /* ===== Decimal Property =====
-         * HasColumnType() chỉ định chính xác type trong DB
-         * DECIMAL(5,2) = 5 digits total, 2 sau dấu phẩy
-         * VD: 999.99
-         */
-        builder.Property(t => t.Weight)
+        builder.Property(t => t.Score)
             .IsRequired()
-            .HasColumnType("DECIMAL(5,2)")
-            .HasDefaultValue(1.00m);  // m suffix = decimal literal
-
-        builder.Property(t => t.IsSample)
-            .IsRequired()
-            .HasDefaultValue(false);
+            .HasMaxLength(100)
+            .HasDefaultValue("100");
         
         /* ===== Unique Constraint ===== */
         builder.HasIndex(t => new { t.DatasetId, t.IndexNo })
             .IsUnique();
-        
-        /* ===== Other Indexes ===== */
-        builder.HasIndex(t => t.IsSample);
-        builder.HasIndex(t => t.Weight);
         
         /* ===== Relationships ===== */
         builder.HasOne(t => t.Dataset)

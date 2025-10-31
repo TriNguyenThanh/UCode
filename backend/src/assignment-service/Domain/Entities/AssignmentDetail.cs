@@ -1,13 +1,14 @@
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.EF.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
-/// Chi tiết việc giao bài cho từng student
+/// Chi tiết việc giao bài cho từng user (student)
+/// Tên table: AssignmentUser
 /// </summary>
-public class AssignmentDetail
+public class AssignmentUser
 {
-    public Guid AssignmentDetailId { get; set; }
+    public Guid AssignmentUserId { get; set; }
     
     /// <summary>
     /// ID của assignment
@@ -15,9 +16,9 @@ public class AssignmentDetail
     public Guid AssignmentId { get; set; }
     
     /// <summary>
-    /// ID của student được giao bài
+    /// ID của user (student) được giao bài
     /// </summary>
-    public Guid StudentId { get; set; }
+    public Guid UserId { get; set; }
     
     /// <summary>
     /// Trạng thái: NOT_STARTED, IN_PROGRESS, SUBMITTED, GRADED
@@ -47,4 +48,9 @@ public class AssignmentDetail
 
     // Navigation properties
     public Assignment Assignment { get; set; } = null!;
+    
+    /// <summary>
+    /// Collection các best submissions cho từng problem
+    /// </summary>
+    public ICollection<BestSubmission> BestSubmissions { get; set; } = new List<BestSubmission>();
 }

@@ -2,28 +2,83 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.EF.Entities
+namespace AssignmentService.Domain.Entities;
+
+public class Submission
 {
-    public class Submission
-    {
-        public Guid SubmissionId { get; set; }
-        // public Guid UserId { get; set; }
-        public Guid AssignmentStudentId { get; set; }
-        public Guid ProblemId { get; set; }
-        public string Code { get; set; } = string.Empty;
-        public Language Language { get; set; } = Language.cpp;
-        public bool IsSamplePassed { get; set; } = false;
-        public SubmissionStatus Status { get; set; } = SubmissionStatus.Pending;
-        public string ErrorCode { get; set; } = string.Empty;
-        public string ErrorMessage { get; set; } = string.Empty;
-        public int SampleTestcase { get; set; } = 0;
-        public int TotalTestCase { get; set; } = 0;
-        public int PassedTestCase { get; set; } = 0;
-        public long TotalTime { get; set; } = 0;
-        public long TotalMem { get; set; } = 0;
-        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
-        // Navigation property for related Results
-        public List<Result> Results { get; set; } = null!;
-        public AssignmentProblemSubmission assignmentProblemSubmission { get; set;  } = null!;
-    }
+    public Guid SubmissionId { get; set; }
+    
+    public Guid UserId { get; set; }
+    
+    public Guid AssignmentId { get; set; }
+    
+    public Guid ProblemId { get; set; }
+    
+    /// <summary>
+    /// Foreign Key đến Dataset được sử dụng để chấm
+    /// </summary>
+    public Guid DatasetId { get; set; }
+    
+    /// <summary>
+    /// Đường dẫn hoặc reference đến source code (lưu trên storage)
+    /// </summary>
+    public string SourceCodeRef { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Ngôn ngữ lập trình
+    /// </summary>
+    public string Language { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Kết quả so sánh (compare result)
+    /// </summary>
+    public string? CompareResult { get; set; }
+    
+    /// <summary>
+    /// Trạng thái submission
+    /// </summary>
+    public string Status { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Mã lỗi (nếu có)
+    /// </summary>
+    public string? ErrorCode { get; set; }
+    
+    /// <summary>
+    /// Thông báo lỗi chi tiết
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+    
+    /// <summary>
+    /// Tổng số test case
+    /// </summary>
+    public int TotalTestcase { get; set; } = 0;
+    
+    /// <summary>
+    /// Số test case passed
+    /// </summary>
+    public int PassedTestcase { get; set; } = 0;
+    
+    /// <summary>
+    /// Tổng thời gian thực thi (ms)
+    /// </summary>
+    public long TotalTime { get; set; } = 0;
+    
+    /// <summary>
+    /// Tổng bộ nhớ sử dụng (KB)
+    /// </summary>
+    public long TotalMemory { get; set; } = 0;
+    
+    /// <summary>
+    /// Thời gian nộp bài
+    /// </summary>
+    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+    
+    /// <summary>
+    /// Foreign Key đến Result File (nếu có)
+    /// </summary>
+    public Guid? ResultFileId { get; set; }
+    
+    // Navigation properties
+    // public List<Result> Results { get; set; } = null!;
 }

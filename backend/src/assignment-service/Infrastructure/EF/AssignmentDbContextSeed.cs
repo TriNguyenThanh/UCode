@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Infrastructure.EF;

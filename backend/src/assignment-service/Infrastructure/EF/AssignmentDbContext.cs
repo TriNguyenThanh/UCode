@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Infrastructure.EF;
@@ -24,16 +24,6 @@ public class AssignmentDbContext : DbContext
      * Mỗi DbSet cho phép bạn query và save entities của type T
      */
     
-    /// <summary>
-    /// DbSet cho bảng Users
-    /// Dùng để query: _context.Users.Where(...).ToList()
-    /// Dùng để thêm: _context.Users.Add(newUser)
-    /// </summary>
-    public DbSet<User> Users { get; set; } = null!;
-    
-    /// <summary>
-    /// DbSet cho bảng Problems
-    /// </summary>
     public DbSet<Problem> Problems { get; set; } = null!;
     public DbSet<Dataset> Datasets { get; set; } = null!;
     public DbSet<TestCase> TestCases { get; set; } = null!;
@@ -44,8 +34,8 @@ public class AssignmentDbContext : DbContext
     public DbSet<ProblemTag> ProblemTags { get; set; } = null!;
     public DbSet<Assignment> Assignments { get; set; } = null!;
     public DbSet<AssignmentProblem> AssignmentProblems { get; set; } = null!;
-    public DbSet<AssignmentDetail> AssignmentDetails { get; set; } = null!;
-    public DbSet<AssignmentProblemSubmission> AssignmentProblemSubmissions { get; set; } = null!;
+    public DbSet<AssignmentUser> AssignmentUsers { get; set; } = null!;
+    public DbSet<BestSubmission> BestSubmissions { get; set; } = null!;
     public DbSet<Submission> Submissions { get; set; } = null!;
     public DbSet<Result> Results { get; set; } = null!;
 

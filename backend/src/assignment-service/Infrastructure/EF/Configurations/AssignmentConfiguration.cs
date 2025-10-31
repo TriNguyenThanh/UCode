@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using AssignmentService.EF.Entities;
+using AssignmentService.Domain.Entities;
 
 namespace AssignmentService.Infrastructure.EF.Configurations;
 
@@ -42,6 +42,9 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
 
         builder.Property(a => a.EndTime)
             .IsRequired(false);
+
+        builder.Property(a => a.AssignedBy)
+            .IsRequired();
 
         // Relationships
         // builder.HasOne(a => a.AssignedByUser)
