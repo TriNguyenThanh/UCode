@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 5002
 
 # Chạy dev mode
-CMD ["dotnet", "run", "--project", "Api/Api.csproj", "--urls", "http://0.0.0.0:5003"]
+CMD ["dotnet", "run", "--project", "Api/Api.csproj", "--urls", "http://0.0.0.0:5002"]

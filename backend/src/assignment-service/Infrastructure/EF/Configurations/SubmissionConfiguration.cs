@@ -15,7 +15,7 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
         builder.Property(s => s.UserId)
             .IsRequired();
 
-        builder.Property(s => s.AssignmentId)
+        builder.Property(s => s.AssignmentUserId)
             .IsRequired();
 
         builder.Property(s => s.ProblemId)
@@ -49,9 +49,26 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
             .IsRequired()
             .HasDefaultValueSql("SYSDATETIME()");
 
+        // Relationships
+        builder.HasOne(s => s.AssignmentUser)
+            .WithMany(au => au.Submissions)
+            .HasForeignKey(bs => bs.AssignmentUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(bs => bs.Problem)
+            .WithMany()
+            .HasForeignKey(bs => bs.ProblemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(bs => bs.Submission)
+            .WithMany()
+            .HasForeignKey(bs => bs.SubmissionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
         // Indexes
         builder.HasIndex(s => s.UserId);
-        builder.HasIndex(s => s.AssignmentId);
+        builder.HasIndex(s => s.AssignmentUserId);
         builder.HasIndex(s => s.ProblemId);
         builder.HasIndex(s => s.DatasetId);
         builder.HasIndex(s => s.Status);

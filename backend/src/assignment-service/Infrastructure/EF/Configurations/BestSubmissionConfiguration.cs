@@ -28,21 +28,7 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
             .IsRequired()
             .HasDefaultValueSql("SYSDATETIME()");
 
-        // Relationships
-        builder.HasOne(bs => bs.AssignmentUser)
-            .WithMany(au => au.BestSubmissions)
-            .HasForeignKey(bs => bs.AssignmentUserId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(bs => bs.Problem)
-            .WithMany()
-            .HasForeignKey(bs => bs.ProblemId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(bs => bs.Submission)
-            .WithMany()
-            .HasForeignKey(bs => bs.SubmissionId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         // Indexes
         builder.HasIndex(bs => bs.AssignmentUserId);

@@ -48,8 +48,5 @@ public class BestSubmission
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    // Navigation Properties
-    public AssignmentUser AssignmentUser { get; set; } = null!;
-    public Problem Problem { get; set; } = null!;
-    public Submission Submission { get; set; } = null!;
+
 }
