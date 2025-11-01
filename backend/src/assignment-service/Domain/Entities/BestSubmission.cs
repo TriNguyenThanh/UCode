@@ -9,12 +9,14 @@ public class BestSubmission
     public Guid BestSubmissionId { get; set; }
     
     /// <summary>
-    /// Foreign Key đến AssignmentUser
+    /// ID của AssignmentUser (stored only, không có FK relationship)
+    /// Denormalized để query nhanh hơn
     /// </summary>
     public Guid AssignmentUserId { get; set; }
     
     /// <summary>
-    /// Foreign Key đến Problem
+    /// ID của Problem (stored only, không có FK relationship)
+    /// Denormalized để query nhanh hơn
     /// </summary>
     public Guid ProblemId { get; set; }
     
@@ -49,7 +51,8 @@ public class BestSubmission
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation Properties
-    public AssignmentUser AssignmentUser { get; set; } = null!;
-    public Problem Problem { get; set; } = null!;
+    /// <summary>
+    /// Navigation property đến Submission
+    /// </summary>
     public Submission Submission { get; set; } = null!;
 }

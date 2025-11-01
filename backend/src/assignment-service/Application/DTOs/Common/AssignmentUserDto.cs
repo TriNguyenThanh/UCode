@@ -1,0 +1,24 @@
+using AssignmentService.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace AssignmentService.Application.DTOs.Common;
+
+public class AssignmentUserDto
+{
+    public Guid? AssignmentUserId { get; set; }
+    
+    [Required]
+    public Guid AssignmentId { get; set; }
+    
+    [Required]
+    public Guid StudentId { get; set; }
+    
+    public AssignmentUserStatus Status { get; set; }
+    
+    public DateTime AssignedAt { get; set; }
+    public DateTime? StartedAt { get; set; }
+    
+    public int? Score { get; set; }
+    public int? MaxScore { get; set; }
+    
+}

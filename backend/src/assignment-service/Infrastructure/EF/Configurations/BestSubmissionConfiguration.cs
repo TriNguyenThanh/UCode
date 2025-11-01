@@ -12,6 +12,13 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         
         builder.HasKey(bs => bs.BestSubmissionId);
 
+        // AssignmentUserId và ProblemId chỉ là stored fields (không có FK relationship)
+        builder.Property(bs => bs.AssignmentUserId)
+            .IsRequired();
+
+        builder.Property(bs => bs.ProblemId)
+            .IsRequired();
+
         builder.Property(bs => bs.Score)
             .IsRequired();
 
@@ -28,17 +35,7 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
             .IsRequired()
             .HasDefaultValueSql("SYSDATETIME()");
 
-        // Relationships
-        builder.HasOne(bs => bs.AssignmentUser)
-            .WithMany(au => au.BestSubmissions)
-            .HasForeignKey(bs => bs.AssignmentUserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(bs => bs.Problem)
-            .WithMany()
-            .HasForeignKey(bs => bs.ProblemId)
-            .OnDelete(DeleteBehavior.Restrict);
-
+        // Relationships - CHỈ có relationship với Submission
         builder.HasOne(bs => bs.Submission)
             .WithMany()
             .HasForeignKey(bs => bs.SubmissionId)
@@ -48,6 +45,8 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         builder.HasIndex(bs => bs.AssignmentUserId);
         builder.HasIndex(bs => bs.ProblemId);
         builder.HasIndex(bs => bs.SubmissionId);
+        
+        // Unique constraint: một AssignmentUser chỉ có 1 best submission cho mỗi Problem
         builder.HasIndex(bs => new { bs.AssignmentUserId, bs.ProblemId })
             .IsUnique();
     }
