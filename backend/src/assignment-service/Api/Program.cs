@@ -14,6 +14,8 @@ using Scrutor;
 using AssignmentService.Api.Filters;
 using AssignmentService.Api.Middlewares;
 
+using AssignmentService.Infrastructure.EF;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,6 +145,11 @@ builder.Services.Scan(scan => scan
 //Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<AssignmentDbContext>(opt =>
+{
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDbConnection"));
+});
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
@@ -184,5 +191,6 @@ app.UseHttpsRedirection();
 app.UseMiddleware<GatewayRoleMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
 
 app.Run();

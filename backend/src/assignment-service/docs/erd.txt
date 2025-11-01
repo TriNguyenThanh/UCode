@@ -159,7 +159,7 @@ erDiagram
         bigint total_time
         bigint total_memory
         datetime2 submitted_at
-        UUID result_file_id FK
+        nvarchar_50_ result_file_ref
     }
 
     BestSubmission {

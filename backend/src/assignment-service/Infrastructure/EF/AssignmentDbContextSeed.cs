@@ -18,6 +18,22 @@ public static class AssignmentDbContextSeed
             return; // Already seeded
 
         Console.WriteLine("Starting database seeding...");
+        // Seed Users
+        // var users = new List<User>
+        // {
+        //     new User
+        //     {
+        //         UserId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+        //         Email = "admin@ucode.io",
+        //     },
+        //     new User
+        //     {
+        //         UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+        //         Email = "teacher1@ucode.io",
+        //     }
+        // };
+        // await context.Users.AddRangeAsync(users);
+        // await context.SaveChangesAsync();
 
         // ===== 1. Seed Tags =====
         Console.WriteLine("Seeding Tags...");
@@ -47,6 +63,7 @@ public static class AssignmentDbContextSeed
             Description = "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
             Difficulty = Difficulty.EASY,
             OwnerId = teacherId,
+            OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             StatementMdRef = "problems/two-sum/statement.md",
@@ -76,6 +93,7 @@ public static class AssignmentDbContextSeed
             Description = "Write a function that reverses a string. The input string is given as an array of characters.",
             Difficulty = Difficulty.EASY,
             OwnerId = teacherId,
+            OwnerId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             StatementMdRef = "problems/reverse-string/statement.md",
@@ -219,6 +237,7 @@ public static class AssignmentDbContextSeed
                 InputRef = "testcases/two-sum/sample/input2.txt",
                 OutputRef = "testcases/two-sum/sample/output2.txt",
                 Score = "50"
+                Score = "100",
             },
             // Problem 1 - Two Sum - Private
             new TestCase
@@ -277,6 +296,8 @@ public static class AssignmentDbContextSeed
                 OutputRef = "testcases/fibonacci/sample/output2.txt",
                 Score = "50"
             },
+                Score = "100",
+            }
         };
         await context.TestCases.AddRangeAsync(testCases);
         await context.SaveChangesAsync();
