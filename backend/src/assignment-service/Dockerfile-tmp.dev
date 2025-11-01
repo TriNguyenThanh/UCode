@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+WORKDIR /app
+
+# Copy các project để restore dependency
+COPY ["Api/SubmissionService.Api.csproj", "Api/"]
+COPY ["Application/SubmissionService.Application.csproj", "Application/"]
+COPY ["Domain/SubmissionService.Domain.csproj", "Domain/"]
+COPY ["Infrastructure/SubmissionService.Infrastructure.csproj", "Infrastructure/"]
+
+RUN dotnet restore "Api/SubmissionService.Api.csproj"
+
+# Copy toàn bộ source code
+COPY . .
+EXPOSE 5002
+
+# Chạy dev mode
+CMD ["dotnet", "run", "--project", "Api/SubmissionService.Api.csproj", "--urls", "http://0.0.0.0:5002"]

@@ -18,21 +18,21 @@ public static class AssignmentDbContextSeed
             return; // Already seeded
 
         // Seed Users
-        var users = new List<User>
-        {
-            new User
-            {
-                UserId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                Email = "admin@ucode.io",
-            },
-            new User
-            {
-                UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                Email = "teacher1@ucode.io",
-            }
-        };
-        await context.Users.AddRangeAsync(users);
-        await context.SaveChangesAsync();
+        // var users = new List<User>
+        // {
+        //     new User
+        //     {
+        //         UserId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+        //         Email = "admin@ucode.io",
+        //     },
+        //     new User
+        //     {
+        //         UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+        //         Email = "teacher1@ucode.io",
+        //     }
+        // };
+        // await context.Users.AddRangeAsync(users);
+        // await context.SaveChangesAsync();
 
         // Seed Tags
         var tags = new List<Tag>
@@ -53,7 +53,7 @@ public static class AssignmentDbContextSeed
             Slug = "two-sum",
             Title = "Two Sum",
             Difficulty = Difficulty.EASY,
-            OwnerId = users[1].UserId,
+            OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             // Properties từ ProblemVersion
@@ -74,7 +74,7 @@ public static class AssignmentDbContextSeed
             Slug = "reverse-string",
             Title = "Reverse String",
             Difficulty = Difficulty.EASY,
-            OwnerId = users[1].UserId,
+            OwnerId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             StatementMdRef = "problems/reverse-string/statement.md",
@@ -137,7 +137,7 @@ public static class AssignmentDbContextSeed
                 DatasetId = datasets[0].DatasetId,
                 InputRef = "testcases/two-sum/sample/input1.txt",
                 OutputRef = "testcases/two-sum/sample/output1.txt",
-                Weight = 1.0m,
+                Score = "100",
             },
             new TestCase
             {
@@ -145,7 +145,7 @@ public static class AssignmentDbContextSeed
                 DatasetId = datasets[1].DatasetId,
                 InputRef = "testcases/two-sum/test/input1.txt",
                 OutputRef = "testcases/two-sum/test/output1.txt",
-                Weight = 1.0m,
+                Score = "100",
             }
         };
         await context.TestCases.AddRangeAsync(testCases);

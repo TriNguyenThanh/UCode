@@ -77,7 +77,7 @@ public class Submission
     /// <summary>
     /// Foreign Key đến Result File (nếu có)
     /// </summary>
-    public Guid? ResultFileId { get; set; }
+    public Guid? ResultFileRef { get; set; }
     
     // Navigation properties
     // public List<Result> Results { get; set; } = null!;
