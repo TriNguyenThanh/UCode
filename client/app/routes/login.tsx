@@ -32,7 +32,11 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   }
 
   try {
-    await auth.login(email, password)
+    const user = await auth.login(email, password)
+    // Redirect based on role
+    if (user.role === 'teacher') {
+      return redirect('/teacher/home')
+    }
     return redirect('/home')
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Login failed'

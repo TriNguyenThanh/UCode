@@ -6,10 +6,16 @@ export const theme = createTheme({
   },
   palette: {
     primary: {
-      main: '#FACB01',
+      main: '#FACB01', // Vàng - màu chính
+      contrastText: '#00275e', // Text màu xanh đậm trên nền vàng
     },
     secondary: {
-      main: '#00275e',
+      main: '#00275e', // Xanh đậm - màu phụ
+      contrastText: '#FACB01', // Text màu vàng trên nền xanh
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
     },
   },
 })
