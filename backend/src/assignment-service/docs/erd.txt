@@ -17,11 +17,12 @@ erDiagram
     Problem ||--o{ Dataset : "has_dataset"
     Dataset ||--o{ TestCaseFile : "stored_in_file"
     %% ================================
-    %% 3️⃣ BEST SUBMISSION
+    %% 3️⃣ BEST SUBMISSION & SUBMISSIONS
     %% ================================
-    AssignmentUser ||--o{ BestSubmission : "best_per_problem"
-    Problem ||--o{ BestSubmission : "tracked_by_problem"
-    BestSubmission }o--|| Submission : "refers_best_submission"
+    AssignmentUser ||--o{ Submission : "has_submissions"
+    Problem ||--o{ Submission : "submitted_for"
+    Dataset ||--o{ Submission : "tested_against"
+    Submission ||--o{ BestSubmission : "can_be_best"
 
     %% ================================
     %% 4️⃣ PROBLEM META
@@ -144,8 +145,7 @@ erDiagram
 
     Submission {
         UUID id PK
-        UUID user_id FK
-        UUID assignment_id FK
+        UUID assignment_user_id FK
         UUID problem_id FK
         UUID dataset_id FK
         nvarchar_50_ source_code_ref
@@ -163,9 +163,9 @@ erDiagram
     }
 
     BestSubmission {
-        UUID best_submission_id PK
-        UUID assignment_user_id FK
-        UUID problem_id FK
+        UUID id PK
+        UUID assignment_user_id "stored only"
+        UUID problem_id "stored only"
         UUID submission_id FK
         int score
         int max_score

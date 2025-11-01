@@ -1,0 +1,63 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using AssignmentService.Application.DTOs.Common;
+
+namespace AssignmentService.Api.Middlewares;
+
+public class GatewayRoleMiddleware
+{
+    private readonly RequestDelegate _next;
+    private const string HeaderRole = "X-Role";
+    private const string HeaderUserId = "X-User-Id";
+
+    public GatewayRoleMiddleware(RequestDelegate next) => _next = next;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var roleHeader = context.Request.Headers[HeaderRole].ToString();
+        var userIdHeader = context.Request.Headers[HeaderUserId].ToString();
+
+        var claims = new List<Claim>();
+        if (!string.IsNullOrWhiteSpace(userIdHeader))
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, userIdHeader));
+
+        if (!string.IsNullOrWhiteSpace(roleHeader))
+        {
+            var roles = roleHeader.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var r in roles) claims.Add(new Claim(ClaimTypes.Role, r.Trim()));
+        }
+
+        if (claims.Any())
+        {
+            var identity = new ClaimsIdentity(claims, "Gateway");
+            context.User = new ClaimsPrincipal(identity);
+        }
+
+        // Optional: check endpoint metadata RequireRoleAttribute and short-circuit
+        var endpoint = context.GetEndpoint();
+        if (endpoint != null)
+        {
+            var require = endpoint.Metadata.GetMetadata<RequireRoleAttribute>();
+            if (require != null)
+            {
+                var needed = require.Role;
+                if (context.User?.IsInRole(needed) != true)
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    await context.Response.WriteAsJsonAsync(ApiResponse<object>.ErrorResponse("Forbidden - missing role"));
+                    return;
+                }
+            }
+        }
+
+        await _next(context);
+    }
+}
+
+// Simple metadata attribute to mark endpoints that require a role (middleware reads it)
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
+public sealed class RequireRoleAttribute : Attribute
+{
+    public string Role { get; }
+    public RequireRoleAttribute(string role) => Role = role;
+}

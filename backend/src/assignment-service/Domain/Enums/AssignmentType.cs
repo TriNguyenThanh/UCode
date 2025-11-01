@@ -8,7 +8,7 @@ public enum AssignmentType
     /// <summary>
     /// Giao problem đơn lẻ
     /// </summary>
-    PROBLEM,
+    PRACTICE,
 
     /// <summary>
     /// Giao examination (set problems)
