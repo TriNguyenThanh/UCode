@@ -122,29 +122,6 @@ public class SubmissionController : ControllerBase
         return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Code run successfully"));
     }
 
-    // /// <summary>
-    // /// Delete a submission by ID
-    // /// </summary>
-    // /// <param name="id">The unique identifier of the submission to delete</param>
-    // /// <returns>Returns success confirmation</returns>
-    // /// <response code="200">Submission deleted successfully</response>
-    // /// <response code="401">Unauthorized</response>
-    // /// <response code="404">Submission not found</response>
-    // /// <response code="500">Internal server error</response>
-    // [HttpDelete("{id:guid}")]
-    // [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    // [ProducesResponseType(typeof(ErrorResponse), 404)]
-    // [ProducesResponseType(typeof(ErrorResponse), 500)]
-    // public async Task<IActionResult> DeleteSubmission(Guid id)
-    // {
-    //     var result = await _submissionService.DeleteSubmission(id.ToString());
-    //     if (!result)
-    //         return NotFound(ApiResponse<object>.ErrorResponse($"Submission with id {id} not found"));
-
-    //     return Ok(ApiResponse<object>.SuccessResponse(new {}, "Submission deleted successfully"));
-    // }
-    
     /// <summary>
     /// Get all submissions for the authenticated user with pagination
     /// </summary>
@@ -202,14 +179,15 @@ public class SubmissionController : ControllerBase
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best")]
-    [ProducesResponseType(typeof(ApiResponse<List<BestSubmission>>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionResponse>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetBestSubmissions(Guid assignmentId, Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         var bestSubmissions = await _submissionService.GetBestSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
-        
-        return Ok(ApiResponse<List<BestSubmission>>.SuccessResponse(bestSubmissions, $"Retrieved {bestSubmissions.Count} best submissions"));
+        var response = _mapper.Map<List<BestSubmissionResponse>>(bestSubmissions);
+
+        return Ok(ApiResponse<List<BestSubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} best submissions"));
     }
 
     /// <summary>
@@ -250,39 +228,5 @@ public class SubmissionController : ControllerBase
         var count = await _submissionService.GetNumberOfSubmissionPerProblemId(assignmentId, problemId, userId);
         
         return Ok(ApiResponse<int>.SuccessResponse(count, "Problem submission count retrieved successfully"));
-    }
-
-    /// <summary>
-    /// Update a submission
-    /// </summary>
-    /// <param name="id">The unique identifier of the submission to update</param>
-    /// <param name="request">The updated submission data</param>
-    /// <returns>Returns success confirmation</returns>
-    /// <response code="200">Submission updated successfully</response>
-    /// <response code="400">Invalid submission data</response>
-    /// <response code="401">Unauthorized</response>
-    /// <response code="404">Submission not found</response>
-    /// <response code="422">Validation errors</response>
-    /// <response code="500">Internal server error</response>
-    [HttpPut("{id:guid}")]
-    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-    [ProducesResponseType(typeof(ErrorResponse), 400)]
-    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    [ProducesResponseType(typeof(ValidationErrorResponse), 422)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> UpdateSubmission(Guid id, [FromBody] SubmissionRequest request)
-    {
-        var userId = GetAuthenticatedUserId();
-
-        var submission = _mapper.Map<Submission>(request);
-        submission.SubmissionId = id;
-        submission.UserId = userId;
-
-        var result = await _submissionService.UpdateSubmission(submission);
-        if (!result)
-            return NotFound(ApiResponse<object>.ErrorResponse($"Submission with id {id} not found"));
-
-        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Submission updated successfully"));
     }
 }

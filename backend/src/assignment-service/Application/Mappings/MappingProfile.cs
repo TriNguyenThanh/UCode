@@ -73,5 +73,8 @@ public class MappingProfile : Profile
         CreateMap<Submission, SubmissionResponse>();
         CreateMap<SubmissionRequest, Submission>();
         CreateMap<Submission, CreateSubmissionResponse>();
+
+        // BestSubmission mappings
+        CreateMap<BestSubmission, BestSubmissionResponse>();
     }
 }

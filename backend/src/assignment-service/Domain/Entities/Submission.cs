@@ -82,5 +82,4 @@ public class Submission
     // Navigation Properties
     public AssignmentUser AssignmentUser { get; set; } = null!;
     public Problem Problem { get; set; } = null!;
-    public BestSubmission BestSubmission { get; set; } = null!;
 }
