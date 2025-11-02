@@ -10,6 +10,7 @@ public interface IAssignmentService
     Task<Assignment> UpdateAssignmentAsync(Assignment assignment);
     Task<bool> DeleteAssignmentAsync(Guid assignmentId);
     Task<Assignment?> GetAssignmentByIdAsync(Guid assignmentId);
+    Task<Assignment?> GetAssignmentWithProblemBasicsAsync(Guid assignmentId); // Lấy với problem basics only
     Task<List<Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId);
     Task<List<Assignment>> GetAssignmentsByStudentAsync(Guid studentId);
     Task<List<Assignment>> GetAssignmentsByClassIdAsync(Guid classId);

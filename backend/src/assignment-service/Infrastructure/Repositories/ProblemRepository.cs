@@ -88,7 +88,6 @@ public class ProblemRepository : IProblemRepository
             .Include(p => p.Datasets)
                 .ThenInclude(d => d.TestCases)
             .Include(p => p.LanguageLimits)
-            .Include(p => p.CodeTemplates)
             .Include(p => p.ProblemAssets)
             .Include(p => p.ProblemTags)
             .FirstOrDefaultAsync(p => p.ProblemId == problemId);
@@ -170,7 +169,7 @@ public class ProblemRepository : IProblemRepository
         return true;
     }
 
-    public async Task<List<Problem>> SearchProblemsAsync(string? keyword, string? difficulty, int page, int pageSize)
+    public async Task<(List<Problem> problems, int total)> SearchProblemsAsync(string? keyword, string? difficulty, int page, int pageSize)
     {
         var query = _context.Problems.AsNoTracking().AsQueryable();
 
@@ -185,17 +184,49 @@ public class ProblemRepository : IProblemRepository
             query = query.Where(p => p.Difficulty.ToString().ToLower() == difficulty.ToLower());
         }
 
-        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var total = await query.CountAsync();
+        var problems = await query
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (problems, total);
     }
 
     public async Task<Problem> UpdateAsync(Problem entity)
     {
-        var existingProblem = await _context.Problems.FindAsync(entity.ProblemId);
+        var existingProblem = await _context.Problems
+            .Include(p => p.ProblemAssets)
+            .Include(p => p.Datasets)
+                .ThenInclude(d => d.TestCases)
+            .Include(p => p.LanguageLimits)
+            .Include(p => p.ProblemTags)
+            .FirstOrDefaultAsync(p => p.ProblemId == entity.ProblemId);
+            
         if (existingProblem == null)
             throw new KeyNotFoundException("Problem not found");
+        
+        // Update scalar properties
         _context.Entry(existingProblem).CurrentValues.SetValues(entity);
+        
+        // Handle ProblemAssets updates
+        if (entity.ProblemAssets != null)
+        {
+            // Remove existing assets
+            existingProblem.ProblemAssets.Clear();
+            
+            // Add new assets
+            foreach (var asset in entity.ProblemAssets)
+            {
+                existingProblem.ProblemAssets.Add(asset);
+            }
+        }
+        
         await _context.SaveChangesAsync();
-        return existingProblem;
+        
+        // Reload with full details
+        return await GetProblemWithDetailsAsync(existingProblem.ProblemId) ?? existingProblem;
     }
 
     public async Task<string> GetNextCodeSequenceAsync()
@@ -257,5 +288,140 @@ public class ProblemRepository : IProblemRepository
             return (false, null, Visibility.PRIVATE);
 
         return (true, result.OwnerId, result.Visibility);
+    }
+
+    // Pagination
+    public async Task<(List<Problem> problems, int total)> GetByOwnerIdWithPaginationAsync(Guid ownerId, int page, int pageSize)
+    {
+        var query = _context.Problems
+            .Where(p => p.OwnerId == ownerId)
+            .OrderByDescending(p => p.UpdatedAt);
+
+        var total = await query.CountAsync();
+        var problems = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (problems, total);
+    }
+
+    // ProblemAsset methods
+    public async Task<List<ProblemAsset>> GetProblemAssetsAsync(Guid problemId)
+    {
+        return await _context.ProblemAssets
+            .Where(pa => pa.ProblemId == problemId)
+            .OrderBy(pa => pa.OrderIndex)
+            .ToListAsync();
+    }
+
+    public async Task<ProblemAsset> AddProblemAssetAsync(ProblemAsset asset)
+    {
+        await _context.ProblemAssets.AddAsync(asset);
+        await _context.SaveChangesAsync();
+        return asset;
+    }
+
+    public async Task<ProblemAsset?> GetProblemAssetByIdAsync(Guid assetId)
+    {
+        return await _context.ProblemAssets.FindAsync(assetId);
+    }
+
+    public async Task<bool> UpdateProblemAssetAsync(ProblemAsset asset)
+    {
+        _context.ProblemAssets.Update(asset);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteProblemAssetAsync(Guid assetId)
+    {
+        var asset = await _context.ProblemAssets.FindAsync(assetId);
+        if (asset == null) return false;
+
+        _context.ProblemAssets.Remove(asset);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    // Tag methods
+    public async Task<List<Tag>> GetAllTagsAsync()
+    {
+        return await _context.Tags.OrderBy(t => t.Name).ToListAsync();
+    }
+
+    public async Task AddProblemTagsAsync(Guid problemId, List<Guid> tagIds)
+    {
+        var existingTags = await _context.ProblemTags
+            .Where(pt => pt.ProblemId == problemId)
+            .Select(pt => pt.TagId)
+            .ToListAsync();
+
+        var newTagIds = tagIds.Except(existingTags).ToList();
+
+        var problemTags = newTagIds.Select(tagId => new ProblemTag
+        {
+            ProblemId = problemId,
+            TagId = tagId
+        }).ToList();
+
+        await _context.ProblemTags.AddRangeAsync(problemTags);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveProblemTagAsync(Guid problemId, Guid tagId)
+    {
+        var problemTag = await _context.ProblemTags
+            .FirstOrDefaultAsync(pt => pt.ProblemId == problemId && pt.TagId == tagId);
+
+        if (problemTag != null)
+        {
+            _context.ProblemTags.Remove(problemTag);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    // LanguageLimit methods
+    public async Task<List<LanguageLimit>> GetLanguageLimitsAsync(Guid problemId)
+    {
+        return await _context.LanguageLimits
+            .Where(ll => ll.ProblemId == problemId)
+            .OrderBy(ll => ll.Lang)
+            .ToListAsync();
+    }
+
+    public async Task<LanguageLimit?> GetLanguageLimitByIdAsync(Guid limitId)
+    {
+        return await _context.LanguageLimits.FindAsync(limitId);
+    }
+
+    public async Task<LanguageLimit?> GetLanguageLimitByLangAsync(Guid problemId, string lang)
+    {
+        return await _context.LanguageLimits
+            .FirstOrDefaultAsync(ll => ll.ProblemId == problemId && ll.Lang == lang);
+    }
+
+    public async Task<LanguageLimit> AddLanguageLimitAsync(LanguageLimit limit)
+    {
+        await _context.LanguageLimits.AddAsync(limit);
+        await _context.SaveChangesAsync();
+        return limit;
+    }
+
+    public async Task<bool> UpdateLanguageLimitAsync(LanguageLimit limit)
+    {
+        _context.LanguageLimits.Update(limit);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteLanguageLimitAsync(Guid limitId)
+    {
+        var limit = await _context.LanguageLimits.FindAsync(limitId);
+        if (limit == null) return false;
+
+        _context.LanguageLimits.Remove(limit);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

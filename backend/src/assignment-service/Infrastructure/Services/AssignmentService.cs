@@ -104,6 +104,11 @@ public class AssignmentService : IAssignmentService
         return await _assignmentRepository.GetByIdWithDetailsAsync(assignmentId);
     }
 
+    public async Task<Assignment?> GetAssignmentWithProblemBasicsAsync(Guid assignmentId)
+    {
+        return await _assignmentRepository.GetByIdWithProblemBasicsAsync(assignmentId);
+    }
+
     
     public async Task<List<Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId)
     {

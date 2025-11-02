@@ -5,6 +5,7 @@ namespace AssignmentService.Application.Interfaces.Repositories;
 public interface IAssignmentRepository : IRepository<Assignment>
 {
     Task<Assignment?> GetByIdWithDetailsAsync(Guid id);
+    Task<Assignment?> GetByIdWithProblemBasicsAsync(Guid id); // Chỉ lấy ID, Title, Code, Difficulty của problems
     Task<List<Assignment>> GetByTeacherIdAsync(Guid teacherId);
     Task<List<Assignment>> GetByClassIdAsync(Guid classId);
     Task<List<Assignment>> GetByUserIdAsync(Guid studentId);

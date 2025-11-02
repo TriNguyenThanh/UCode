@@ -28,7 +28,6 @@ erDiagram
     %% 4️⃣ PROBLEM META
     %% ================================
     Problem ||--o{ ProblemAsset : "has_asset"
-    Problem ||--o{ CodeTemplate : "has_template"
     Problem ||--o{ LanguageLimit : "has_limit"
     Problem ||--o{ ProblemTag : "tagged"
     Tag ||--o{ ProblemTag : "used_in"
@@ -82,6 +81,8 @@ erDiagram
         nvarchar50 input_format
         nvarchar50 output_format
         nvarchar50 constraints
+        nvarchar1000 description
+        nvarchar1000 solution
         int max_score
         int time_limit_ms
         int memory_limit_kb
@@ -107,9 +108,12 @@ erDiagram
     ProblemAsset {
         UUID id PK
         UUID problem_id FK
-        nvarchar_16_ type
-        nvarchar_1000_ object_ref
+        nvarchar_16_ type "IMAGE, VIDEO, PDF, STATEMENT, SOLUTION, TUTORIAL, HINT"
+        nvarchar_1000_ object_ref "S3/Blob URL or markdown content"
         nvarchar_100_ checksum
+        nvarchar_255_ title "Optional: tên hiển thị"
+        nvarchar_16_ format "MARKDOWN, HTML, URL, TEXT"
+        int order_index "Thứ tự hiển thị"
         datetime2 created_at
     }
 
@@ -128,19 +132,15 @@ erDiagram
         nvarchar_100_ score
     }
 
-    CodeTemplate {
-        UUID id PK
-        UUID problem_id FK
-        nvarchar_50_ lang
-        nvarchar_1000_ starter_ref
-    }
-
     LanguageLimit {
-        UUID id PK
+        UUID LanguageLimitId PK
         UUID problem_id FK
         nvarchar_50_ lang
         decimal_5_2_ time_factor
         int memory_kb_override
+        nvarchar_max_ head "Code template - phần đầu (imports, setup)"
+        nvarchar_max_ body "Code template - phần chính (user code placeholder)"
+        nvarchar_max_ tail "Code template - phần cuối (test runner)"
     }
 
     Submission {

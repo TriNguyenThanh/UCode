@@ -28,7 +28,6 @@ public class AssignmentDbContext : DbContext
     public DbSet<Dataset> Datasets { get; set; } = null!;
     public DbSet<TestCase> TestCases { get; set; } = null!;
     public DbSet<LanguageLimit> LanguageLimits { get; set; } = null!;
-    public DbSet<CodeTemplate> CodeTemplates { get; set; } = null!;
     public DbSet<ProblemAsset> ProblemAssets { get; set; } = null!;
     public DbSet<Tag> Tags { get; set; } = null!;
     public DbSet<ProblemTag> ProblemTags { get; set; } = null!;

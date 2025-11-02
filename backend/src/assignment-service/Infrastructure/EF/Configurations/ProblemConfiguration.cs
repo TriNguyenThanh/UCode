@@ -58,6 +58,9 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         builder.Property(p => p.StatementMdRef)
             .HasMaxLength(1000);
 
+        builder.Property(p => p.Solution)
+            .HasMaxLength(2000);
+
         builder.Property(p => p.IoMode)
             .IsRequired()
             .HasConversion<string>()
@@ -65,13 +68,13 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasDefaultValue(Domain.Enums.IoMode.STDIO);
 
         builder.Property(p => p.InputFormat)
-            .HasMaxLength(50);
+            .HasMaxLength(1000);
 
         builder.Property(p => p.OutputFormat)
-            .HasMaxLength(50);
+            .HasMaxLength(1000);
 
         builder.Property(p => p.Constraints)
-            .HasMaxLength(50);
+            .HasMaxLength(2000);
 
         builder.Property(p => p.MaxScore);
 
@@ -170,19 +173,13 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasForeignKey(d => d.ProblemId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        // Problem has many CodeTemplates (One-to-Many)
-        builder.HasMany(p => p.CodeTemplates)
-            .WithOne(ct => ct.Problem)
-            .HasForeignKey(ct => ct.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
         // Problem has many ProblemAssets (One-to-Many)
         builder.HasMany(p => p.ProblemAssets)
             .WithOne(pa => pa.Problem)
             .HasForeignKey(pa => pa.ProblemId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        // Problem has many LanguageLimits (One-to-Many)
+        // Problem has many LanguageLimits (One-to-Many) - includes code templates
         builder.HasMany(p => p.LanguageLimits)
             .WithOne(ll => ll.Problem)
             .HasForeignKey(ll => ll.ProblemId)

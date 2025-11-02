@@ -40,10 +40,59 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<Assignment?> GetByIdWithDetailsAsync(Guid id)
     {
         return await _context.Assignments
-        .AsNoTracking()
-        .Include(a => a.AssignmentProblems)
-            .ThenInclude(ap => ap.Problem)
-        .FirstOrDefaultAsync(a => a.AssignmentId == id);
+            .AsNoTracking()
+            .Include(a => a.AssignmentProblems)
+                .ThenInclude(ap => ap.Problem)
+            .FirstOrDefaultAsync(a => a.AssignmentId == id);
+    }
+
+    /// <summary>
+    /// Lấy assignment với chỉ ProblemId và Title của problems (tối ưu cho hiển thị danh sách)
+    /// </summary>
+    public async Task<Assignment?> GetByIdWithProblemBasicsAsync(Guid id)
+    {
+        var assignment = await _context.Assignments
+            .AsNoTracking()
+            .Where(a => a.AssignmentId == id) 
+            .Select(a => new
+            {
+                Assignment = a,
+                Problems = a.AssignmentProblems
+                    .OrderBy(ap => ap.OrderIndex) 
+                    .Select(ap => new
+                    {
+                        ap.AssignmentId,
+                        ap.ProblemId,
+                        ap.Points,
+                        ap.OrderIndex,
+                        ProblemTitle = ap.Problem.Title,
+                        ProblemCode = ap.Problem.Code,
+                        ProblemDifficulty = ap.Problem.Difficulty
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (assignment == null) return null;
+
+        // Map lại vào Assignment entity
+        var result = assignment.Assignment;
+        result.AssignmentProblems = assignment.Problems.Select(p => new AssignmentProblem
+        {
+            AssignmentId = p.AssignmentId,
+            ProblemId = p.ProblemId,
+            Points = p.Points,
+            OrderIndex = p.OrderIndex,
+            Problem = new Problem
+            {
+                ProblemId = p.ProblemId,
+                Title = p.ProblemTitle,
+                Code = p.ProblemCode,
+                Difficulty = p.ProblemDifficulty
+            }
+        }).ToList();
+
+        return result;
     }
 
     public async Task<List<Assignment>> GetByTeacherIdAsync(Guid teacherId)
@@ -306,25 +355,27 @@ public class AssignmentRepository : IAssignmentRepository
     //         .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
     // }
 
-    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
-    // {
-    //     return await _context.Submissions
-    //         .AsNoTracking()
-    //         .Where(s => s.AssignmentUserId == AssignmentUserId)
-    //         .OrderBy(s => s.AssignmentUser.Assignment.AssignmentProblems
-    //             .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
-    //         .ToListAsync();
-    // }
+    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
+    {
+        // return await _context.Submissions
+        //     .AsNoTracking()
+        //     .Where(s => s.AssignmentUserId == AssignmentUserId)
+        //     .OrderBy(s => s.AssignmentUser.Assignment.AssignmentProblems
+        //         .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
+        //     .ToListAsync();
+        throw new NotImplementedException("Cái này thuộc bên Trí");
+    }
 
-    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
-    // {
-    //     return await _context.Submissions
-    //         .Where(s => s.AssignmentUser.AssignmentId == assignmentId)
-    //         .OrderBy(s => s.AssignmentUser.UserId)
-    //         .ThenBy(s => s.AssignmentUser.Assignment.AssignmentProblems
-    //             .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
-    //         .ToListAsync();
-    // }
+    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
+    {
+        // return await _context.Submissions
+        //     .Where(s => s.AssignmentUser.AssignmentId == assignmentId)
+        //     .OrderBy(s => s.AssignmentUser.UserId)
+        //     .ThenBy(s => s.AssignmentUser.Assignment.AssignmentProblems
+        //         .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
+        //     .ToListAsync();
+        throw new NotImplementedException("Cái này thuộc bên Trí");
+    }
 
     // public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
     // {
