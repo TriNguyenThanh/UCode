@@ -1,7 +1,6 @@
 using AssignmentService.Domain.Entities;
-using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.Application.Interfaces;
+namespace AssignmentService.Application.Interfaces.Repositories;
 
 public interface ISubmissionRepository
 {
@@ -12,11 +11,11 @@ public interface ISubmissionRepository
     public Task<Submission> GetSubmission(Guid submissionId);
     public Task<Submission> SubmitCode(Submission submission);
     public Task<bool> DeleteSubmission(Guid submissionId);
-    public Task<bool> DeleteSubmissionByProblemId(Guid submissionId);
-    public Task<bool> DeleteSubmissionByUserId(Guid submissionId);
+    // public Task<bool> DeleteSubmissionByProblemId(Guid submissionId);
+    // public Task<bool> DeleteSubmissionByUserId(Guid submissionId);
     public Task<bool> UpdateSubmission(Submission submission);
-    public Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status);
+    // public Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status);
     public Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId);
     public Task<int> GetNumberOfSubmission(Guid userId);
-    public Task Detach(Submission submission);
+    // public Task Detach(Submission submission);
 }

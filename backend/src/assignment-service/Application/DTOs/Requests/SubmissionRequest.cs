@@ -1,6 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using AssignmentService.Domain.Enums;
-
 namespace AssignmentService.Application.DTOs.Requests;
 
 public class SubmissionRequest

@@ -67,5 +67,11 @@ public class MappingProfile : Profile
         CreateMap<AssignmentProblemDto, AssignmentProblem>()
             .ForMember(dest => dest.Assignment, opt => opt.Ignore())
             .ForMember(dest => dest.Problem, opt => opt.Ignore());
+
+
+        // Submission mappings
+        CreateMap<Submission, SubmissionResponse>();
+        CreateMap<SubmissionRequest, Submission>();
+        CreateMap<Submission, CreateSubmissionResponse>();
     }
 }

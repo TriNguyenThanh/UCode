@@ -1,266 +1,288 @@
-using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
-using AssignmentService.Application.DTOs;
-using AssignmentService.Application.Interfaces;
-using AssignmentService.Application.DTOs.Responses;
+using Microsoft.AspNetCore.Mvc;
+using AssignmentService.Api.Middlewares;
+using AssignmentService.Application.DTOs.Common;
 using AssignmentService.Application.DTOs.Requests;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using AssignmentService.Application.DTOs.Responses;
+using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Domain.Entities;
-using AssignmentService.Common.Exceptions;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace AssignmentService.Api.Controllers;
 
+/// <summary>
+/// Controller for managing code submissions in the ucode.io.vn platform
+/// </summary>
 [ApiController]
-[Route("api/v1/submission")]
+[Route("api/v1/submissions")]
+[ValidateUserId]
 public class SubmissionController : ControllerBase
 {
-    private readonly ISubmissionAppService _submissionService;
+    private readonly ISubmissionService _submissionService;
     private readonly IMapper _mapper;
 
-    public SubmissionController(ISubmissionAppService submissionService, IMapper mapper)
+    public SubmissionController(ISubmissionService submissionService, IMapper mapper)
     {
         _submissionService = submissionService;
         _mapper = mapper;
     }
 
+    #region Helper Methods
+    
+    /// <summary>
+    /// Gets authenticated user ID from X-User-Id header
+    /// </summary>
+    private Guid GetAuthenticatedUserId()
+    {
+        var userId = HttpContext.Items["X-User-Id"]?.ToString();
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userIdGuid))
+            throw new ApiException("X-User-Id header is missing or invalid");
+        
+        return userIdGuid;
+    }
+
+    #endregion
+
     /// <summary>
     /// Get a specific submission by ID
     /// </summary>
     /// <param name="id">The unique identifier of the submission</param>
-    /// <returns>Returns the submission details if found, otherwise returns 404</returns>
-    [HttpGet("{id}")]
-    [SwaggerOperation(
-        Summary = "Get submission by ID",
-        Description = "Retrieves a specific submission using its unique identifier",
-        OperationId = "GetSubmission",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(200, "Submission found successfully", typeof(ApiResponse<SubmissionResponse>))]
-    [SwaggerResponse(404, "Submission not found", typeof(ApiResponse<SubmissionResponse>))]
-    [SwaggerResponse(500, "Internal server error", typeof(ApiResponse<string>))]
-    public async Task<IActionResult> GetSubmission(string id)
+    /// <returns>Returns the submission details if found</returns>
+    /// <response code="200">Submission retrieved successfully</response>
+    /// <response code="404">Submission not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<SubmissionResponse>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetSubmission(Guid id)
     {
-        try
-        {
-            var submission = await _submissionService.GetSubmission(id);
-            if (submission == null)
-            {
-                return NotFound(ApiResponse<SubmissionResponse>.Failed(404, ExceptionConstraint.NotFound, "submission not found"));
-            }
-            return Ok(ApiResponse<SubmissionResponse>.Success(_mapper.Map<SubmissionResponse>(submission)));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var submission = await _submissionService.GetSubmission(id);
+        if (submission == null)
+            return NotFound(ApiResponse<SubmissionResponse>.ErrorResponse("Submission not found"));
+
+        var response = _mapper.Map<SubmissionResponse>(submission);
+        return Ok(ApiResponse<SubmissionResponse>.SuccessResponse(response));
     }
 
     /// <summary>
-    /// Get all submissions for the current user
+    /// Submit code for a problem
     /// </summary>
-    /// <param name="pageNumber">Page number for pagination (minimum: 1)</param>
-    /// <param name="pageSize">Number of items per page (minimum: 10)</param>
+    /// <param name="request">The submission data including code, language, and problem ID</param>
+    /// <returns>Returns the created submission with its unique identifier</returns>
+    /// <response code="200">Submission created successfully</response>
+    /// <response code="400">Invalid submission data</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="422">Validation errors</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("submit-code")]
+    [ProducesResponseType(typeof(ApiResponse<CreateSubmissionResponse>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), 422)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> CreateSubmission([FromBody] SubmissionRequest request)
+    {
+        var userId = GetAuthenticatedUserId();
+
+        var submission = _mapper.Map<Submission>(request);
+        submission.UserId = userId;
+
+        var created = await _submissionService.SubmitCode(submission);
+        var response = _mapper.Map<CreateSubmissionResponse>(created);
+
+        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Code submitted successfully"));
+    }
+
+    /// <summary>
+    /// Run code for a problem
+    /// </summary>
+    /// <param name="request">The submission data including code, language, and problem ID</param>
+    /// <returns>Returns the created submission with its unique identifier</returns>
+    /// <response code="200">Submission created successfully</response>
+    /// <response code="400">Invalid submission data</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="422">Validation errors</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("run-code")]
+    [ProducesResponseType(typeof(ApiResponse<CreateSubmissionResponse>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), 422)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> RunSubmission([FromBody] SubmissionRequest request)
+    {
+        var userId = GetAuthenticatedUserId();
+
+        var submission = _mapper.Map<Submission>(request);
+        submission.UserId = userId;
+
+        var created = await _submissionService.RunCode(submission);
+        var response = _mapper.Map<CreateSubmissionResponse>(created);
+
+        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Code run successfully"));
+    }
+
+    // /// <summary>
+    // /// Delete a submission by ID
+    // /// </summary>
+    // /// <param name="id">The unique identifier of the submission to delete</param>
+    // /// <returns>Returns success confirmation</returns>
+    // /// <response code="200">Submission deleted successfully</response>
+    // /// <response code="401">Unauthorized</response>
+    // /// <response code="404">Submission not found</response>
+    // /// <response code="500">Internal server error</response>
+    // [HttpDelete("{id:guid}")]
+    // [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    // [ProducesResponseType(typeof(ErrorResponse), 404)]
+    // [ProducesResponseType(typeof(ErrorResponse), 500)]
+    // public async Task<IActionResult> DeleteSubmission(Guid id)
+    // {
+    //     var result = await _submissionService.DeleteSubmission(id.ToString());
+    //     if (!result)
+    //         return NotFound(ApiResponse<object>.ErrorResponse($"Submission with id {id} not found"));
+
+    //     return Ok(ApiResponse<object>.SuccessResponse(new {}, "Submission deleted successfully"));
+    // }
+    
+    /// <summary>
+    /// Get all submissions for the authenticated user with pagination
+    /// </summary>
+    /// <param name="pageNumber">The page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
     /// <returns>Returns a paginated list of user submissions</returns>
+    /// <response code="200">Submissions retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
     [HttpGet("user")]
-    [SwaggerOperation(
-        Summary = "Get all user submissions",
-        Description = "Retrieves all submissions for the authenticated user with pagination support. Requires X-User-Id header.",
-        OperationId = "GetAllUserSubmissions",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(200, "User submissions retrieved successfully", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(400, "Invalid pagination parameters", typeof(ApiResponse<object>))]
-    [SwaggerResponse(404, "No submissions found for user", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(500, "Internal server error", typeof(ApiResponse<string>))]
+    [ProducesResponseType(typeof(ApiResponse<List<SubmissionResponse>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetAllUserSubmissions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        string user_id = "";
-        try
-        {
-            user_id = Request.Headers["X-User-Id"].ToString();
-
-            if (pageNumber < 1 || pageSize < 10)
-            {
-                return BadRequest(ApiResponse<Object>.Failed(404, ExceptionConstraint.BadRequest, "invalid pagenumber or pageSize"));
-            }
-            var submissions = await _submissionService.GetAllUserSubmission(user_id, pageNumber, pageSize);
-            if (submissions == null || submissions.Count == 0)
-            {
-                return NotFound(ApiResponse<List<SubmissionResponse>>.Failed(404, ExceptionConstraint.NotFound, "no submissions found for this user"));
-            }
-            var submissionResponses = _mapper.Map<List<SubmissionResponse>>(submissions);
-            return Ok(ApiResponse<List<SubmissionResponse>>.Success(submissionResponses));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var userId = GetAuthenticatedUserId();
+        var submissions = await _submissionService.GetAllUserSubmission(userId, pageNumber, pageSize);
+        var response = _mapper.Map<List<SubmissionResponse>>(submissions);
+        
+        return Ok(ApiResponse<List<SubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} submissions"));
     }
 
     /// <summary>
-    /// Get all submissions for a specific problem by the current user
+    /// Get all submissions for a specific problem by the authenticated user
     /// </summary>
     /// <param name="problemId">The unique identifier of the problem</param>
-    /// <param name="pageNumber">Page number for pagination (minimum: 1)</param>
-    /// <param name="pageSize">Number of items per page (minimum: 10)</param>
-    /// <returns>Returns a paginated list of user submissions for the specified problem</returns>
-    [HttpGet("submissions/problem/user")]
-    [SwaggerOperation(
-        Summary = "Get user submissions by problem ID",
-        Description = "Retrieves all submissions for a specific problem by the authenticated user with pagination support. Requires X-User-Id header.",
-        OperationId = "GetAllSubmissionsByProblemIdAndUserId",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(200, "User submissions for problem retrieved successfully", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(400, "Invalid pagination parameters", typeof(ApiResponse<object>))]
-    [SwaggerResponse(404, "No submissions found for user in this problem", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(500, "Internal server error", typeof(ApiResponse<string>))]
-    public async Task<IActionResult> GetAllSubmissionsByProblemIdAndUserId([FromQuery] string problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    /// <param name="pageNumber">The page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
+    /// <returns>Returns a paginated list of submissions for the problem</returns>
+    /// <response code="200">Submissions retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("problem/{problemId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<List<SubmissionResponse>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetAllSubmissionsByProblem(Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        string user_id = "";
-        try
-        {
-            user_id = Request.Headers["X-User-Id"].ToString();
-
-            if (pageNumber < 1 || pageSize < 10)
-            {
-                return BadRequest(ApiResponse<Object>.Failed(404, ExceptionConstraint.BadRequest, "invalid pagenumber or pageSize"));
-            }
-            var submissions = await _submissionService.GetAllSubmissionByProblemIdAndUserId(problemId, user_id, pageNumber, pageSize);
-            if (submissions == null || submissions.Count == 0)
-            {
-                return NotFound(ApiResponse<List<SubmissionResponse>>.Failed(404, ExceptionConstraint.NotFound, "no submissions found for this user in this problem"));
-            }
-            var submissionResponses = _mapper.Map<List<SubmissionResponse>>(submissions);
-            return Ok(ApiResponse<List<SubmissionResponse>>.Success(submissionResponses));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var userId = GetAuthenticatedUserId();
+        var submissions = await _submissionService.GetAllSubmissionProblem(problemId, userId, pageNumber, pageSize);
+        var response = _mapper.Map<List<SubmissionResponse>>(submissions);
+        
+        return Ok(ApiResponse<List<SubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} submissions for problem"));
     }
 
     /// <summary>
-    /// Get the best submissions for a specific problem
+    /// Get best submissions (leaderboard) for a specific problem in an assignment
     /// </summary>
     /// <param name="assignmentId">The unique identifier of the assignment</param>
     /// <param name="problemId">The unique identifier of the problem</param>
-    /// <param name="pageNumber">Page number for pagination (minimum: 1)</param>
-    /// <param name="pageSize">Number of items per page (minimum: 10)</param>
-    /// <returns>Returns a paginated list of the best submissions for the specified problem</returns>
-    [HttpGet("best-submissions")]
-    [SwaggerOperation(
-        Summary = "Get best submissions by problem ID",
-        Description = "Retrieves the best submissions for a specific problem with pagination support. Shows top-performing solutions.",
-        OperationId = "GetBestUserSubmissionsByProblemId",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(200, "Best submissions for problem retrieved successfully", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(400, "Invalid pagination parameters", typeof(ApiResponse<object>))]
-    [SwaggerResponse(404, "No submissions found for this problem", typeof(ApiResponse<List<SubmissionResponse>>))]
-    [SwaggerResponse(500, "Internal server error", typeof(ApiResponse<string>))]
-    public async Task<IActionResult> GetBestUserSubmissionsByProblemId([FromQuery] string assignmentId, [FromQuery] string problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    /// <param name="pageNumber">The page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
+    /// <returns>Returns a paginated list of best submissions</returns>
+    /// <response code="200">Best submissions retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best")]
+    [ProducesResponseType(typeof(ApiResponse<List<BestSubmission>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetBestSubmissions(Guid assignmentId, Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        try
-        {
-            if (pageNumber < 1 || pageSize < 10)
-            {
-                return BadRequest(ApiResponse<Object>.Failed(404, ExceptionConstraint.BadRequest, "invalid pagenumber or pageSize"));
-            }
-            var submissions = await _submissionService.GetBestUserSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
-            if (submissions == null || submissions.Count == 0)
-            {
-                return NotFound(ApiResponse<List<SubmissionResponse>>.Failed(404, ExceptionConstraint.NotFound, "no submissions found for this problem"));
-            }
-            var submissionResponses = _mapper.Map<List<SubmissionResponse>>(submissions);
-            return Ok(ApiResponse<List<SubmissionResponse>>.Success(submissionResponses));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var bestSubmissions = await _submissionService.GetBestSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
+        
+        return Ok(ApiResponse<List<BestSubmission>>.SuccessResponse(bestSubmissions, $"Retrieved {bestSubmissions.Count} best submissions"));
     }
 
     /// <summary>
-    /// Create a new code submission
+    /// Get the total number of submissions for the authenticated user
     /// </summary>
-    /// <param name="submissionRequest">The submission data including code, language, and problem ID</param>
-    /// <returns>Returns the created submission with its unique identifier</returns>
-    [HttpPost]
-    [SwaggerOperation(
-        Summary = "Create new submission",
-        Description = "Creates a new code submission for evaluation. Requires X-User-Id header for user identification.",
-        OperationId = "CreateSubmission",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(201, "Submission created successfully", typeof(ApiResponse<CreateSubmissionResponse>))]
-    [SwaggerResponse(400, "Invalid submission data or model validation failed", typeof(ApiResponse<string>))]
-    [SwaggerResponse(500, "Internal server error or mapping failed", typeof(ApiResponse<string>))]
-    public async Task<IActionResult> CreateSubmission([FromBody] SubmissionRequest submissionRequest)
+    /// <returns>Returns the total count of user submissions</returns>
+    /// <response code="200">Count retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("user/count")]
+    [ProducesResponseType(typeof(ApiResponse<int>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetUserSubmissionCount()
     {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ApiResponse<string>.BadRequest("Invalid submission data or model validation failed"));
-            }
-
-            var submission = _mapper.Map<Submission>(submissionRequest);
-            if (submission != null)
-            {
-                string user_id = Request.Headers["X-User-Id"].ToString();
-
-                submission.UserId = user_id;
-                submission = await _submissionService.AddSubmission(submission);
-                var response = _mapper.Map<CreateSubmissionResponse>(submission);
-
-                return Ok(ApiResponse<CreateSubmissionResponse>.CreateAt(response));
-            }
-            return StatusCode(500, ApiResponse<Object>.Failed(500, ExceptionConstraint.InternalServerError, "Couldn't mapping this object"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var userId = GetAuthenticatedUserId();
+        var count = await _submissionService.GetNumberOfSubmission(userId);
+        
+        return Ok(ApiResponse<int>.SuccessResponse(count, "Submission count retrieved successfully"));
     }
 
     /// <summary>
-    /// Delete a submission by ID
+    /// Get the number of submissions for a specific problem by the authenticated user
     /// </summary>
-    /// <param name="id">The unique identifier of the submission to delete</param>
-    /// <returns>Returns success message if deletion was successful</returns>
-    [HttpDelete("delete")]
-    [SwaggerOperation(
-        Summary = "Delete submission",
-        Description = "Permanently deletes a submission using its unique identifier",
-        OperationId = "DeleteSubmission",
-        Tags = new[] { "Submissions" }
-    )]
-    [SwaggerResponse(200, "Submission deleted successfully", typeof(ApiResponse<object>))]
-    [SwaggerResponse(400, "Invalid submission ID", typeof(ApiResponse<object>))]
-    [SwaggerResponse(404, "Submission not found", typeof(ApiResponse<object>))]
-    [SwaggerResponse(500, "Internal server error", typeof(ApiResponse<string>))]
-    public async Task<IActionResult> DeleteSubmission([FromQuery] string id)
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <returns>Returns the count of submissions for the problem</returns>
+    /// <response code="200">Count retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/count")]
+    [ProducesResponseType(typeof(ApiResponse<int>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetSubmissionCountPerProblem(Guid assignmentId, Guid problemId)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                return BadRequest(ApiResponse<object>.BadRequest("Id must not be null or empty"));
-            }
+        var userId = GetAuthenticatedUserId();
+        var count = await _submissionService.GetNumberOfSubmissionPerProblemId(assignmentId, problemId, userId);
+        
+        return Ok(ApiResponse<int>.SuccessResponse(count, "Problem submission count retrieved successfully"));
+    }
 
-            var result = await _submissionService.DeleteSubmission(id);
-            if (!result)
-            {
-                return NotFound(ApiResponse<object>.Failed(404, ExceptionConstraint.NotFound, $"Submission with id {id} not found"));
-            }
+    /// <summary>
+    /// Update a submission
+    /// </summary>
+    /// <param name="id">The unique identifier of the submission to update</param>
+    /// <param name="request">The updated submission data</param>
+    /// <returns>Returns success confirmation</returns>
+    /// <response code="200">Submission updated successfully</response>
+    /// <response code="400">Invalid submission data</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Submission not found</response>
+    /// <response code="422">Validation errors</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), 422)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> UpdateSubmission(Guid id, [FromBody] SubmissionRequest request)
+    {
+        var userId = GetAuthenticatedUserId();
 
-            return Ok(ApiResponse<object>.Delete($"Delete id {id} successfully"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ApiResponse<string>.Failed(500, ExceptionConstraint.InternalServerError, ex.Message));
-        }
+        var submission = _mapper.Map<Submission>(request);
+        submission.SubmissionId = id;
+        submission.UserId = userId;
+
+        var result = await _submissionService.UpdateSubmission(submission);
+        if (!result)
+            return NotFound(ApiResponse<object>.ErrorResponse($"Submission with id {id} not found"));
+
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Submission updated successfully"));
     }
 }

@@ -63,7 +63,7 @@ public static class AssignmentDbContextSeed
             Description = "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
             Difficulty = Difficulty.EASY,
             OwnerId = teacherId,
-            OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            // OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             StatementMdRef = "problems/two-sum/statement.md",
@@ -93,7 +93,7 @@ public static class AssignmentDbContextSeed
             Description = "Write a function that reverses a string. The input string is given as an array of characters.",
             Difficulty = Difficulty.EASY,
             OwnerId = teacherId,
-            OwnerId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            // OwnerId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
             StatementMdRef = "problems/reverse-string/statement.md",
@@ -220,7 +220,7 @@ public static class AssignmentDbContextSeed
         var testCases = new List<TestCase>
         {
             // Problem 1 - Two Sum - Sample
-            new TestCase
+            new TestCase()
             {
                 TestCaseId = Guid.NewGuid(),
                 DatasetId = datasets[0].DatasetId,
@@ -229,7 +229,7 @@ public static class AssignmentDbContextSeed
                 OutputRef = "testcases/two-sum/sample/output1.txt",
                 Score = "50"
             },
-            new TestCase
+            new TestCase()
             {
                 TestCaseId = Guid.NewGuid(),
                 DatasetId = datasets[0].DatasetId,
@@ -237,7 +237,6 @@ public static class AssignmentDbContextSeed
                 InputRef = "testcases/two-sum/sample/input2.txt",
                 OutputRef = "testcases/two-sum/sample/output2.txt",
                 Score = "50"
-                Score = "100",
             },
             // Problem 1 - Two Sum - Private
             new TestCase
@@ -295,8 +294,6 @@ public static class AssignmentDbContextSeed
                 InputRef = "testcases/fibonacci/sample/input2.txt",
                 OutputRef = "testcases/fibonacci/sample/output2.txt",
                 Score = "50"
-            },
-                Score = "100",
             }
         };
         await context.TestCases.AddRangeAsync(testCases);
@@ -548,112 +545,112 @@ public static class AssignmentDbContextSeed
         await context.SaveChangesAsync();
         Console.WriteLine($"✓ Seeded {assignmentUsers.Count} assignment users");
 
-        // ===== 12. Seed Submissions =====
-        Console.WriteLine("Seeding Submissions...");
-        var submissions = new List<Submission>
-        {
-            // Student 1 - Problem 1 - Attempt 1
-            new Submission
-            {
-                SubmissionId = Guid.NewGuid(),
-                UserId = student1Id,
-                AssignmentId = assignment1.AssignmentId,
-                ProblemId = problem1.ProblemId,
-                DatasetId = datasets[1].DatasetId, // Private test cases
-                SourceCodeRef = "submissions/student1/two-sum/attempt1.cpp",
-                Language = "cpp",
-                CompareResult = "AC",
-                Status = "ACCEPTED",
-                ErrorCode = null,
-                ErrorMessage = null,
-                TotalTestcase = 5,
-                PassedTestcase = 5,
-                TotalTime = 125,
-                TotalMemory = 2048,
-                SubmittedAt = DateTime.UtcNow.AddHours(-2),
-                ResultFileId = null
-            },
-            // Student 1 - Problem 1 - Attempt 2 (Better)
-            new Submission
-            {
-                SubmissionId = Guid.NewGuid(),
-                UserId = student1Id,
-                AssignmentId = assignment1.AssignmentId,
-                ProblemId = problem1.ProblemId,
-                DatasetId = datasets[1].DatasetId,
-                SourceCodeRef = "submissions/student1/two-sum/attempt2.cpp",
-                Language = "cpp",
-                CompareResult = "AC",
-                Status = "ACCEPTED",
-                ErrorCode = null,
-                ErrorMessage = null,
-                TotalTestcase = 5,
-                PassedTestcase = 5,
-                TotalTime = 98, // Faster
-                TotalMemory = 1920, // Less memory
-                SubmittedAt = DateTime.UtcNow.AddHours(-1),
-                ResultFileId = null
-            },
-            // Student 1 - Problem 2
-            new Submission
-            {
-                SubmissionId = Guid.NewGuid(),
-                UserId = student1Id,
-                AssignmentId = assignment1.AssignmentId,
-                ProblemId = problem2.ProblemId,
-                DatasetId = datasets[3].DatasetId,
-                SourceCodeRef = "submissions/student1/reverse-string/attempt1.py",
-                Language = "python",
-                CompareResult = "WA",
-                Status = "WRONG_ANSWER",
-                ErrorCode = null,
-                ErrorMessage = null,
-                TotalTestcase = 3,
-                PassedTestcase = 2,
-                TotalTime = 250,
-                TotalMemory = 3072,
-                SubmittedAt = DateTime.UtcNow.AddMinutes(-30),
-                ResultFileId = null
-            },
-        };
-        await context.Submissions.AddRangeAsync(submissions);
-        await context.SaveChangesAsync();
-        Console.WriteLine($"✓ Seeded {submissions.Count} submissions");
+        // // ===== 12. Seed Submissions =====
+        // Console.WriteLine("Seeding Submissions...");
+        // var submissions = new List<Submission>
+        // {
+        //     // Student 1 - Problem 1 - Attempt 1
+        //     new Submission
+        //     {
+        //         SubmissionId = Guid.NewGuid(),
+        //         UserId = student1Id,
+        //         AssignmentId = assignment1.AssignmentId,
+        //         ProblemId = problem1.ProblemId,
+        //         DatasetId = datasets[1].DatasetId, // Private test cases
+        //         SourceCodeRef = "submissions/student1/two-sum/attempt1.cpp",
+        //         Language = "cpp",
+        //         CompareResult = "AC",
+        //         Status = "ACCEPTED",
+        //         ErrorCode = null,
+        //         ErrorMessage = null,
+        //         TotalTestcase = 5,
+        //         PassedTestcase = 5,
+        //         TotalTime = 125,
+        //         TotalMemory = 2048,
+        //         SubmittedAt = DateTime.UtcNow.AddHours(-2),
+        //          = null
+        //     },
+        //     // Student 1 - Problem 1 - Attempt 2 (Better)
+        //     new Submission
+        //     {
+        //         SubmissionId = Guid.NewGuid(),
+        //         UserId = student1Id,
+        //         AssignmentId = assignment1.AssignmentId,
+        //         ProblemId = problem1.ProblemId,
+        //         DatasetId = datasets[1].DatasetId,
+        //         SourceCodeRef = "submissions/student1/two-sum/attempt2.cpp",
+        //         Language = "cpp",
+        //         CompareResult = "AC",
+        //         Status = "ACCEPTED",
+        //         ErrorCode = null,
+        //         ErrorMessage = null,
+        //         TotalTestcase = 5,
+        //         PassedTestcase = 5,
+        //         TotalTime = 98, // Faster
+        //         TotalMemory = 1920, // Less memory
+        //         SubmittedAt = DateTime.UtcNow.AddHours(-1),
+        //         ResultFileId = null
+        //     },
+        //     // Student 1 - Problem 2
+        //     new Submission
+        //     {
+        //         SubmissionId = Guid.NewGuid(),
+        //         UserId = student1Id,
+        //         AssignmentId = assignment1.AssignmentId,
+        //         ProblemId = problem2.ProblemId,
+        //         DatasetId = datasets[3].DatasetId,
+        //         SourceCodeRef = "submissions/student1/reverse-string/attempt1.py",
+        //         Language = "python",
+        //         CompareResult = "WA",
+        //         Status = "WRONG_ANSWER",
+        //         ErrorCode = null,
+        //         ErrorMessage = null,
+        //         TotalTestcase = 3,
+        //         PassedTestcase = 2,
+        //         TotalTime = 250,
+        //         TotalMemory = 3072,
+        //         SubmittedAt = DateTime.UtcNow.AddMinutes(-30),
+        //         ResultFileId = null
+        //     },
+        // };
+        // await context.Submissions.AddRangeAsync(submissions);
+        // await context.SaveChangesAsync();
+        // Console.WriteLine($"✓ Seeded {submissions.Count} submissions");
 
-        // ===== 13. Seed BestSubmissions =====
-        Console.WriteLine("Seeding BestSubmissions...");
-        var bestSubmissions = new List<BestSubmission>
-        {
-            // Student 1 - Assignment 1 - Problem 1 (Best = Attempt 2)
-            new BestSubmission
-            {
-                BestSubmissionId = Guid.NewGuid(),
-                AssignmentUserId = assignmentUsers[0].AssignmentUserId,
-                ProblemId = problem1.ProblemId,
-                SubmissionId = submissions[1].SubmissionId, // Attempt 2 is better
-                Score = 100,
-                MaxScore = 100,
-                TotalTime = 98,
-                TotalMemory = 1920,
-                UpdatedAt = DateTime.UtcNow.AddHours(-1)
-            },
-            // Student 1 - Assignment 1 - Problem 2 (Only one attempt, not perfect)
-            new BestSubmission
-            {
-                BestSubmissionId = Guid.NewGuid(),
-                AssignmentUserId = assignmentUsers[0].AssignmentUserId,
-                ProblemId = problem2.ProblemId,
-                SubmissionId = submissions[2].SubmissionId,
-                Score = 67, // 2/3 test cases passed
-                MaxScore = 100,
-                TotalTime = 250,
-                TotalMemory = 3072,
-                UpdatedAt = DateTime.UtcNow.AddMinutes(-30)
-            },
-        };
-        await context.BestSubmissions.AddRangeAsync(bestSubmissions);
-        await context.SaveChangesAsync();
-        Console.WriteLine($"✓ Seeded {bestSubmissions.Count} best submissions");
+        // // ===== 13. Seed BestSubmissions =====
+        // Console.WriteLine("Seeding BestSubmissions...");
+        // var bestSubmissions = new List<BestSubmission>
+        // {
+        //     // Student 1 - Assignment 1 - Problem 1 (Best = Attempt 2)
+        //     new BestSubmission
+        //     {
+        //         BestSubmissionId = Guid.NewGuid(),
+        //         AssignmentUserId = assignmentUsers[0].AssignmentUserId,
+        //         ProblemId = problem1.ProblemId,
+        //         SubmissionId = submissions[1].SubmissionId, // Attempt 2 is better
+        //         Score = 100,
+        //         MaxScore = 100,
+        //         TotalTime = 98,
+        //         TotalMemory = 1920,
+        //         UpdatedAt = DateTime.UtcNow.AddHours(-1)
+        //     },
+        //     // Student 1 - Assignment 1 - Problem 2 (Only one attempt, not perfect)
+        //     new BestSubmission
+        //     {
+        //         BestSubmissionId = Guid.NewGuid(),
+        //         AssignmentUserId = assignmentUsers[0].AssignmentUserId,
+        //         ProblemId = problem2.ProblemId,
+        //         SubmissionId = submissions[2].SubmissionId,
+        //         Score = 67, // 2/3 test cases passed
+        //         MaxScore = 100,
+        //         TotalTime = 250,
+        //         TotalMemory = 3072,
+        //         UpdatedAt = DateTime.UtcNow.AddMinutes(-30)
+        //     },
+        // };
+        // await context.BestSubmissions.AddRangeAsync(bestSubmissions);
+        // await context.SaveChangesAsync();
+        // Console.WriteLine($"✓ Seeded {bestSubmissions.Count} best submissions");
 
         Console.WriteLine("\n✅ Database seeding completed successfully!");
         Console.WriteLine($"Summary:");
@@ -668,7 +665,7 @@ public static class AssignmentDbContextSeed
         Console.WriteLine($"  - 2 Assignments");
         Console.WriteLine($"  - {assignmentProblems.Count} AssignmentProblems");
         Console.WriteLine($"  - {assignmentUsers.Count} AssignmentUsers");
-        Console.WriteLine($"  - {submissions.Count} Submissions");
-        Console.WriteLine($"  - {bestSubmissions.Count} BestSubmissions");
+        // Console.WriteLine($"  - {submissions.Count} Submissions");
+        // Console.WriteLine($"  - {bestSubmissions.Count} BestSubmissions");
     }
 }

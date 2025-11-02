@@ -32,12 +32,12 @@ public interface IAssignmentRepository : IRepository<Assignment>
     Task<AssignmentProblem?> GetAssignmentProblemAsync(Guid assignmentId, Guid problemId);
     
     // BestSubmission operations
-    Task<BestSubmission> AddSubmissionAsync(BestSubmission submission);
-    Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions);
-    Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId);
-    Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
-    Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
-    Task<bool> DeleteSubmissionAsync(Guid submissionId);
+    // Task<BestSubmission> AddSubmissionAsync(BestSubmission submission);
+    // Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions);
+    // Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId);
+    // Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
+    // Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
+    // Task<bool> DeleteSubmissionAsync(Guid submissionId);
 }

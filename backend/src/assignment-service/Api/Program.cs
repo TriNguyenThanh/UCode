@@ -13,9 +13,11 @@ using AssignmentService.Application.DTOs.Common;
 using Scrutor;
 using AssignmentService.Api.Filters;
 using AssignmentService.Api.Middlewares;
-
-using AssignmentService.Infrastructure.EF;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 

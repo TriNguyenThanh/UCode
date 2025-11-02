@@ -15,9 +15,6 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
         builder.Property(s => s.UserId)
             .IsRequired();
 
-        builder.Property(s => s.AssignmentUserId)
-            .IsRequired();
-
         builder.Property(s => s.ProblemId)
             .IsRequired();
 
@@ -52,19 +49,13 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
         // Relationships
         builder.HasOne(s => s.AssignmentUser)
             .WithMany(au => au.Submissions)
-            .HasForeignKey(bs => bs.AssignmentUserId)
+            .HasForeignKey(s => s.AssignmentUserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(bs => bs.Problem)
+        builder.HasOne(s => s.Problem)
             .WithMany()
-            .HasForeignKey(bs => bs.ProblemId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(bs => bs.Submission)
-            .WithMany()
-            .HasForeignKey(bs => bs.SubmissionId)
-            .OnDelete(DeleteBehavior.Restrict);
-
+            .HasForeignKey(s => s.ProblemId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Indexes
         builder.HasIndex(s => s.UserId);

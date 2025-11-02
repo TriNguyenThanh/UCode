@@ -10,7 +10,7 @@ public class Submission
     
     public Guid UserId { get; set; }
     
-    public Guid AssignmentUserId { get; set; }
+    public Guid? AssignmentUserId { get; set; }
     
     public Guid ProblemId { get; set; }
     

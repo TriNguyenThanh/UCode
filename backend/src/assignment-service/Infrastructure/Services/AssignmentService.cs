@@ -174,70 +174,70 @@ public class AssignmentService : IAssignmentService
     }
 
     // BestSubmission methods
-    public async Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission)
-    {
-        // submission.SubmissionId = Guid.NewGuid();
-        // submission.Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED;
-        // submission.AttemptCount = 0;
-        var existSubmission = await _assignmentRepository.GetSubmissionByIdAsync(submission.SubmissionId);
-        if (existSubmission != null)
-            return await _assignmentRepository.UpdateSubmissionAsync(submission);
-        else
-            return await _assignmentRepository.AddSubmissionAsync(submission);
-    }
+    // public async Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission)
+    // {
+    //     // submission.SubmissionId = Guid.NewGuid();
+    //     // submission.Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED;
+    //     // submission.AttemptCount = 0;
+    //     var existSubmission = await _assignmentRepository.GetSubmissionByIdAsync(submission.SubmissionId);
+    //     if (existSubmission != null)
+    //         return await _assignmentRepository.UpdateSubmissionAsync(submission);
+    //     else
+    //         return await _assignmentRepository.AddSubmissionAsync(submission);
+    // }
 
-    public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
-    {
-        return await _assignmentRepository.UpdateSubmissionAsync(submission);
-    }
+    // public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
+    // {
+    //     return await _assignmentRepository.UpdateSubmissionAsync(submission);
+    // }
 
-    public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
-    {
-        return await _assignmentRepository.DeleteSubmissionAsync(submissionId);
-    }
+    // public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
+    // {
+    //     return await _assignmentRepository.DeleteSubmissionAsync(submissionId);
+    // }
 
-    public async Task<BestSubmission?> GetSubmissionAsync(Guid assignmentUserId, Guid problemId)
-    {
-        return await _assignmentRepository.GetSubmissionAsync(assignmentUserId, problemId);
-    }
+    // public async Task<BestSubmission?> GetSubmissionAsync(Guid assignmentUserId, Guid problemId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionAsync(assignmentUserId, problemId);
+    // }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentUserId)
-    {
-        return await _assignmentRepository.GetSubmissionsByAssignmentUserAsync(assignmentUserId);
-    }
+    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentUserId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionsByAssignmentUserAsync(assignmentUserId);
+    // }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
-    {
-        return await _assignmentRepository.GetSubmissionsByAssignmentAsync(assignmentId);
-    }
+    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionsByAssignmentAsync(assignmentId);
+    // }
 
-    public async Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentUserId, List<Guid> problemIds)
-    {
+    // public async Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentUserId, List<Guid> problemIds)
+    // {
 
-        throw new NotSupportedException("Cái method này để dành cho Trí làm nhé");
-        // var submissions = new List<BestSubmission>();
+    //     throw new NotSupportedException("Cái method này để dành cho Trí làm nhé");
+    //     // var submissions = new List<BestSubmission>();
         
-        // // Lấy AssignmentUser để có AssignmentId
-        // var assignmentUser = await _assignmentRepository.GetAssignmentUserByIdAsync(assignmentUserId);
-        // if (assignmentUser == null)
-        //     throw new KeyNotFoundException("AssignmentUser not found");
+    //     // // Lấy AssignmentUser để có AssignmentId
+    //     // var assignmentUser = await _assignmentRepository.GetAssignmentUserByIdAsync(assignmentUserId);
+    //     // if (assignmentUser == null)
+    //     //     throw new KeyNotFoundException("AssignmentUser not found");
         
-        // foreach (var problemId in problemIds)
-        // {
-        //     var submission = new BestSubmission
-        //     {
-        //         SubmissionId = Guid.NewGuid(),
-        //         AssignmentUserId = assignmentUserId,
-        //         ProblemId = problemId,
-        //         Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED,
-        //         AttemptCount = 0
-        //     };
+    //     // foreach (var problemId in problemIds)
+    //     // {
+    //     //     var submission = new BestSubmission
+    //     //     {
+    //     //         SubmissionId = Guid.NewGuid(),
+    //     //         AssignmentUserId = assignmentUserId,
+    //     //         ProblemId = problemId,
+    //     //         Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED,
+    //     //         AttemptCount = 0
+    //     //     };
             
-        //     submissions.Add(submission);
-        // }
+    //     //     submissions.Add(submission);
+    //     // }
         
-        // return await _assignmentRepository.AddSubmissionsAsync(submissions);
-    }
+    //     // return await _assignmentRepository.AddSubmissionsAsync(submissions);
+    // }
 
     public async Task<AssignmentProblem?> GetAssignmentProblemAsync(Guid assignmentId, Guid problemId)
     {

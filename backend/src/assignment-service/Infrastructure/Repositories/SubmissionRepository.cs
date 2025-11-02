@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using AssignmentService.Domain.Entities;
-using AssignmentService.Application.Interfaces;
+using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Infrastructure.EF;
-using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Infrastructure.Repositories;
 
@@ -133,7 +131,7 @@ public class SubmissionRepository : ISubmissionRepository
     {
         return _context.Submissions
             .AsNoTracking()
-            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
+            .Where(s => s.AssignmentUserId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
             .CountAsync();
     }
 
@@ -162,17 +160,17 @@ public class SubmissionRepository : ISubmissionRepository
         return false;
     }
 
-    public async Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
-    {
-        var submission = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
-        if (submission != null)
-        {
-            submission.Status = status;
-            _context.Submissions.Update(submission);
-            Console.WriteLine($"[x] Updated submission {submissionId} status to {status}");
-            return await _context.SaveChangesAsync() > 0;
-        }
-        Console.WriteLine($"[x] Submission {submissionId} not found in database");
-        return false;
-    }
+    // public async Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
+    // {
+    //     var submission = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
+    //     if (submission != null)
+    //     {
+    //         submission.Status = status;
+    //         _context.Submissions.Update(submission);
+    //         Console.WriteLine($"[x] Updated submission {submissionId} status to {status}");
+    //         return await _context.SaveChangesAsync() > 0;
+    //     }
+    //     Console.WriteLine($"[x] Submission {submissionId} not found in database");
+    //     return false;
+    // }
 }

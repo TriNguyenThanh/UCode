@@ -37,9 +37,9 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
 
         // Relationships - CHỈ có relationship với Submission
         builder.HasOne(bs => bs.Submission)
-            .WithMany()
-            .HasForeignKey(bs => bs.SubmissionId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .WithOne(s => s.BestSubmission)
+            .HasForeignKey<BestSubmission>(bs => bs.SubmissionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Indexes
         builder.HasIndex(bs => bs.AssignmentUserId);
