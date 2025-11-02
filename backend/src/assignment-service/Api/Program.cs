@@ -109,15 +109,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
 {
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("AssignmentDb"),
+        builder.Configuration.GetConnectionString("MyDb"),
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
 
-    // ===== QUAN TRỌNG: Enable Snake Case Naming =====
-    // Package EFCore.NamingConventions sẽ tự động convert:
-    // - ProblemId → problem_id
-    // - CreatedAt → created_at
-    // - ProblemVersions → problem_versions
+    // =====Enable Snake Case Naming =====
     options.UseSnakeCaseNamingConvention();
 });
 
@@ -146,10 +142,7 @@ builder.Services.Scan(scan => scan
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<AssignmentDbContext>(opt =>
-{
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDbConnection"));
-});
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();

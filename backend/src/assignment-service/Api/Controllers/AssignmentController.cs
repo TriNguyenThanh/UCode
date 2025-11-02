@@ -159,21 +159,47 @@ public class AssignmentController : ControllerBase
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
+    // [HttpGet("{id:guid}")]
+    // [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
+    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    // [ProducesResponseType(typeof(ErrorResponse), 404)]
+    // [ProducesResponseType(typeof(ErrorResponse), 500)]
+    // public async Task<IActionResult> GetAssignment(Guid id)
+    // {
+    //     var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
+    //     if (assignment == null)
+    //         return NotFound(ApiResponse<AssignmentResponse>.ErrorResponse("Assignment not found"));
+
+    //     var response =  _mapper.Map<AssignmentResponse>(assignment);
+    //     response.Statistics = await _assignmentService.GetAssignmentStatisticsAsync(id);
+
+    //     return Ok(ApiResponse<AssignmentResponse>.SuccessResponse(response));
+    // }
+
+    /// <summary>
+    /// Retrieves assignment with only basic problem info (ID, Title, Code, Difficulty)
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <param name="includeBasics">Set to true to get lightweight response</param>
+    /// <returns>Assignment with problem basics only</returns>
+    /// <response code="200">Assignment retrieved successfully</response>
+    /// <response code="404">Assignment not found</response>
+    /// <response code="500">Internal server error</response>
     [HttpGet("{id:guid}")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
-    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetAssignment(Guid id)
+    public async Task<IActionResult> GetAssignmentWithBasics(Guid id)
     {
-        var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
+        var assignment = await _assignmentService.GetAssignmentWithProblemBasicsAsync(id);
         if (assignment == null)
             return NotFound(ApiResponse<AssignmentResponse>.ErrorResponse("Assignment not found"));
         
-        var response =  _mapper.Map<AssignmentResponse>(assignment);
-        response.Statistics = await _assignmentService.GetAssignmentStatisticsAsync(id);
+        var response = _mapper.Map<AssignmentResponse>(assignment);
+        response.TotalProblems = response.Problems?.Count;
 
-        return Ok(ApiResponse<AssignmentResponse>.SuccessResponse(response));
+        return Ok(ApiResponse<AssignmentResponse>.SuccessResponse(response, "Assignment with problem basics retrieved successfully"));
     }
 
     /// <summary>

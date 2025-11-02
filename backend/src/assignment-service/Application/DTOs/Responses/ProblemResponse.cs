@@ -1,4 +1,5 @@
 using AssignmentService.Domain.Enums;
+using AssignmentService.Application.DTOs.Common;
 
 namespace AssignmentService.Application.DTOs.Responses;
 
@@ -92,6 +93,30 @@ public class ProblemResponse
     public string? StatementMdRef { get; set; }
     
     /// <summary>
+    /// Reference solution for the problem
+    /// </summary>
+    /// <example>Solution using hash map approach...</example>
+    public string? Solution { get; set; }
+    
+    /// <summary>
+    /// Input format description
+    /// </summary>
+    /// <example>First line contains N, the number of elements...</example>
+    public string? InputFormat { get; set; }
+    
+    /// <summary>
+    /// Output format description
+    /// </summary>
+    /// <example>Print a single integer representing...</example>
+    public string? OutputFormat { get; set; }
+    
+    /// <summary>
+    /// Problem constraints
+    /// </summary>
+    /// <example>1 <= N <= 10^5, 1 <= A[i] <= 10^9</example>
+    public string? Constraints { get; set; }
+    
+    /// <summary>
     /// Reference to custom validator script
     /// </summary>
     /// <example>validators/two-sum/validator.py</example>
@@ -126,4 +151,9 @@ public class ProblemResponse
     /// </summary>
     /// <example>["11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"]</example>
     public List<Guid> TagIds { get; set; } = new List<Guid>();
+    
+    /// <summary>
+    /// List of problem assets (statements, solutions, tutorials, etc.)
+    /// </summary>
+    public List<ProblemAssetDto> ProblemAssets { get; set; } = new List<ProblemAssetDto>();
 }

@@ -61,9 +61,33 @@ public class ProblemRequest
     public string? StatementMdRef { get; set; }
     
     /// <summary>
+    /// Giải pháp tham khảo (reference solution)
+    /// </summary>
+    [StringLength(2000)]
+    public string? Solution { get; set; }
+    
+    /// <summary>
     /// Chế độ I/O: STDIO hoặc FILE
     /// </summary>
     public IoMode IoMode { get; set; } = IoMode.STDIO;
+    
+    /// <summary>
+    /// Định dạng input (mô tả cách đọc input)
+    /// </summary>
+    [StringLength(1000)]
+    public string? InputFormat { get; set; }
+    
+    /// <summary>
+    /// Định dạng output (mô tả cách xuất output)
+    /// </summary>
+    [StringLength(1000)]
+    public string? OutputFormat { get; set; }
+    
+    /// <summary>
+    /// Ràng buộc của bài toán
+    /// </summary>
+    [StringLength(2000)]
+    public string? Constraints { get; set; }
     
     /// <summary>
     /// Giới hạn thời gian (milliseconds)
@@ -119,19 +143,14 @@ public class ProblemRequest
     public List<DatasetDto>? Datasets { get; set; }
     
     /// <summary>
-    /// Danh sách Language Limits
+    /// Danh sách Language Limits (bao gồm code templates)
     /// </summary>
     public List<LanguageLimitDto>? LanguageLimits { get; set; }
     
     /// <summary>
-    /// Danh sách Code Templates
+    /// Danh sách Assets (PDF, images,...) - For CREATE only
     /// </summary>
-    public List<CodeTemplateDto>? CodeTemplates { get; set; }
-    
-    /// <summary>
-    /// Danh sách Assets (PDF, images,...)
-    /// </summary>
-    public List<ProblemAssetDto>? ProblemAssets { get; set; }
+    public List<CreateProblemAssetDto>? ProblemAssets { get; set; }
 }
 
 /*

@@ -21,6 +21,7 @@ public class AssignmentResponse
     public DateTime? AssignedAt { get; set; }
     
     public int? TotalPoints { get; set; }
+    public int? TotalProblems { get; set; }
     public bool AllowLateSubmission { get; set; }
     
     /// <summary>

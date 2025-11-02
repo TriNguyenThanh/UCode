@@ -17,6 +17,16 @@ public class LanguageLimitConfiguration : IEntityTypeConfiguration<LanguageLimit
         builder.Property(ll => ll.TimeFactor)
             .HasPrecision(5, 2);
 
+        // Code template fields
+        builder.Property(ll => ll.Head)
+            .HasColumnType("NVARCHAR(MAX)");
+
+        builder.Property(ll => ll.Body)
+            .HasColumnType("NVARCHAR(MAX)");
+
+        builder.Property(ll => ll.Tail)
+            .HasColumnType("NVARCHAR(MAX)");
+
         // Indexes
         builder.HasIndex(ll => ll.ProblemId)
             .HasDatabaseName("ix_languagelimits_problemid");

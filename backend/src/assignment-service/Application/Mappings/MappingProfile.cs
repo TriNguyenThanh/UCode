@@ -12,10 +12,12 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Problem, ProblemResponse>();
+        CreateMap<Problem, ProblemResponse>()
+            .ForMember(dest => dest.ProblemAssets, opt => opt.MapFrom(src => src.ProblemAssets));
         CreateMap<ProblemRequest, Problem>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ProblemAssets, opt => opt.Ignore()); // Handle separately in service
         // CreateMap<UpdateProblemRequest, Problem>();
 
         // // Examination mappings
@@ -32,8 +34,7 @@ public class MappingProfile : Profile
 
         CreateMap<TestCase, TestCaseDto>().ReverseMap();
 
-        CreateMap<LanguageLimit, LanguageLimitDto>();
-        CreateMap<CodeTemplate, CodeTemplateDto>();
+        CreateMap<LanguageLimit, LanguageLimitDto>().ReverseMap();
         CreateMap<ProblemAsset, ProblemAssetDto>()
             .ForMember(d => d.Type, o => o.MapFrom(s => s.Type.ToString()));
 
@@ -67,5 +68,20 @@ public class MappingProfile : Profile
         CreateMap<AssignmentProblemDto, AssignmentProblem>()
             .ForMember(dest => dest.Assignment, opt => opt.Ignore())
             .ForMember(dest => dest.Problem, opt => opt.Ignore());
+
+        // ProblemAsset Mappings
+        CreateMap<ProblemAsset, ProblemAssetDto>();
+
+        CreateMap<CreateProblemAssetDto, ProblemAsset>()
+            .ForMember(dest => dest.ProblemAssetId, opt => opt.Ignore())
+            .ForMember(dest => dest.ProblemId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+            .ForMember(dest => dest.Problem, opt => opt.Ignore());
+
+        CreateMap<UpdateProblemAssetDto, ProblemAsset>()
+            .ForMember(dest => dest.ProblemId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Problem, opt => opt.Ignore())
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
     }
 }

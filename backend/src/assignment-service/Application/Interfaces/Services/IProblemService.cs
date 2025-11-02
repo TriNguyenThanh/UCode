@@ -1,4 +1,5 @@
 using AssignmentService.Application.Interfaces.Repositories;
+using AssignmentService.Application.DTOs.Common;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
@@ -15,6 +16,7 @@ public interface IProblemService
 
     Task<Problem> GetProblemByIdAsync(Guid problemId);
     Task<List<Problem>> GetProblemsByOwnerIdAsync(Guid ownerId);
+    Task<(List<Problem> problems, int total)> GetProblemsByOwnerIdWithPaginationAsync(Guid ownerId, int page, int pageSize);
     Task<List<Problem>> GetPublicProblemsAsync();
     Task<bool> DeleteProblemAsync(Guid problemId);
 
@@ -36,4 +38,24 @@ public interface IProblemService
     /// Returns: (exists, ownerId, visibility)
     /// </summary>
     Task<(bool exists, Guid? ownerId, Visibility visibility)> GetProblemBasicInfoAsync(Guid problemId);
+    
+    // ProblemAsset methods
+    Task<List<ProblemAsset>> GetProblemAssetsAsync(Guid problemId);
+    Task<ProblemAsset> AddProblemAssetAsync(Guid problemId, CreateProblemAssetDto request);
+    Task<ProblemAsset> UpdateProblemAssetAsync(Guid problemId, Guid assetId, UpdateProblemAssetDto request);
+    Task<bool> DeleteProblemAssetAsync(Guid problemId, Guid assetId);
+    
+    // Tag methods
+    Task AddTagsToProblemAsync(Guid problemId, List<Guid> tagIds);
+    Task RemoveTagFromProblemAsync(Guid problemId, Guid tagId);
+    Task<List<Tag>> GetAllTagsAsync();
+    Task<List<Problem>> GetProblemsByTagAsync(string tagName);
+    
+    // LanguageLimit methods
+    Task<List<LanguageLimit>> GetLanguageLimitsAsync(Guid problemId);
+    Task<LanguageLimit> AddOrUpdateLanguageLimitAsync(Guid problemId, LanguageLimitDto request);
+    Task<bool> DeleteLanguageLimitAsync(Guid problemId, Guid limitId);
+    
+    // Search methods
+    Task<(List<Problem> problems, int total)> SearchProblemsAsync(string? keyword, string? difficulty, int page, int pageSize);
 }

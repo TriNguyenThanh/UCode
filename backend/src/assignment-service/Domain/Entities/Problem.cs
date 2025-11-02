@@ -51,7 +51,12 @@ public class Problem
     /// Đường dẫn file Markdown chứa đề bài
     /// </summary>
     public string? StatementMdRef { get; set; }
-    
+
+    /// <summary>
+    /// Giải pháp tham khảo (reference solution)
+    /// </summary>
+    public string? Solution { get; set; }
+
     /// <summary>
     /// Chế độ I/O: STDIO hoặc FILE
     /// </summary>
@@ -146,17 +151,12 @@ public class Problem
     public ICollection<Dataset> Datasets { get; set; } = new List<Dataset>();
     
     /// <summary>
-    /// Collection các code templates
-    /// </summary>
-    public ICollection<CodeTemplate> CodeTemplates { get; set; } = new List<CodeTemplate>();
-    
-    /// <summary>
     /// Collection các assets (PDF, images,...)
     /// </summary>
     public ICollection<ProblemAsset> ProblemAssets { get; set; } = new List<ProblemAsset>();
     
     /// <summary>
-    /// Collection các language limits
+    /// Collection các language limits (bao gồm code templates)
     /// </summary>
     public ICollection<LanguageLimit> LanguageLimits { get; set; } = new List<LanguageLimit>();
 

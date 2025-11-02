@@ -15,4 +15,19 @@ public class LanguageLimitDto
     
     [Range(1024, 1048576)]
     public int? MemoryKbOverride { get; set; }
+    
+    /// <summary>
+    /// Code template - phần đầu (imports, setup)
+    /// </summary>
+    public string? Head { get; set; }
+    
+    /// <summary>
+    /// Code template - phần chính (user code placeholder)
+    /// </summary>
+    public string? Body { get; set; }
+    
+    /// <summary>
+    /// Code template - phần cuối (test runner, main function)
+    /// </summary>
+    public string? Tail { get; set; }
 }
