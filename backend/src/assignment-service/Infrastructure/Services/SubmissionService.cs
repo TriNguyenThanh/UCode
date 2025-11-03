@@ -8,10 +8,12 @@ namespace AssignmentService.Infrastructure.Services;
 public class SubmissionService : ISubmissionService
 {
     private readonly ISubmissionRepository _repository;
+    private readonly IDatasetRepository _datasetRepository;
     // private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository)
+    public SubmissionService(ISubmissionRepository repository, IDatasetRepository datasetRepository)
     {
         _repository = repository;
+        _datasetRepository = datasetRepository;
         // _exec = exec;
     }
 
@@ -34,6 +36,22 @@ public class SubmissionService : ISubmissionService
         Submission new_submission = null!;
         try
         {
+            submission.SubmissionId = Guid.NewGuid();
+            submission.SubmittedAt = DateTime.Now;
+            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            if (datasets == null || datasets.Count == 0)
+            {
+                Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
+                return new Submission();
+            }
+            else
+            {
+                var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE);
+                if (dataset != null)
+                {
+                    submission.DatasetId = dataset.DatasetId;
+                }
+            }
             new_submission = await _repository.SubmitCode(submission);
             // await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge submission");
@@ -46,10 +64,26 @@ public class SubmissionService : ISubmissionService
             throw new Exception(ex.Message);
         }
     }
-    public Task<Submission> RunCode(Submission submission)
+    public async Task<Submission> RunCode(Submission submission)
     {
+        submission.SubmissionId = Guid.NewGuid();
+        submission.SubmittedAt = DateTime.Now;
+        var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+        if (datasets == null || datasets.Count == 0)
+        {
+            Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
+            return new Submission();
+        }
+        else
+        {
+            var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE);
+            if (dataset != null)
+            {
+                submission.DatasetId = dataset.DatasetId;
+            }
+        }
         Console.WriteLine($"Waiting for Judge submission");
-        return Task.FromResult(submission);
+        return submission;
     }
     // public Task<bool> DeleteSubmission(Guid submissionId)
     //     => _repository.DeleteSubmission(submissionId);

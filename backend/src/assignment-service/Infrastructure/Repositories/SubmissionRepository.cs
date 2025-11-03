@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using AssignmentService.Domain.Entities;
+using AssignmentService.Domain.Enums;
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Infrastructure.EF;
 
@@ -16,8 +17,6 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<Submission> SubmitCode(Submission submission)
     {
-        submission.SubmissionId = Guid.NewGuid();
-        submission.SubmittedAt = DateTime.Now;
         _context.Submissions.Add(submission);
         if (await _context.SaveChangesAsync() > 0)
         {
