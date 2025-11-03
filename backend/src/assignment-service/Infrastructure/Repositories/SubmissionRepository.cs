@@ -16,15 +16,8 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<Submission> SubmitCode(Submission submission)
     {
-        if (string.IsNullOrEmpty(submission.SubmissionId.ToString()))
-        {
-            submission.SubmissionId = Guid.NewGuid();
-            submission.SubmittedAt = DateTime.Now;
-        }
-        else
-        {
-            return new Submission();
-        }
+        submission.SubmissionId = Guid.NewGuid();
+        submission.SubmittedAt = DateTime.Now;
         _context.Submissions.Add(submission);
         if (await _context.SaveChangesAsync() > 0)
         {

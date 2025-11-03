@@ -111,7 +111,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
 {
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("MyDb"),
+        builder.Configuration.GetConnectionString("DbCuaTri"),
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
 

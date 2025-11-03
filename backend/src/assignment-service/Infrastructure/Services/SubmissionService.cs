@@ -3,13 +3,13 @@ using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.Application.Services;
+namespace AssignmentService.Infrastructure.Services;
 
-public class SubmissionAppService : ISubmissionService
+public class SubmissionService : ISubmissionService
 {
     private readonly ISubmissionRepository _repository;
     // private readonly IExecuteService _exec;
-    public SubmissionAppService(ISubmissionRepository repository)
+    public SubmissionService(ISubmissionRepository repository)
     {
         _repository = repository;
         // _exec = exec;

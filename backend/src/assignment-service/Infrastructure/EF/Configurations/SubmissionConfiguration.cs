@@ -34,6 +34,7 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 
         builder.Property(s => s.Status)
             .IsRequired()
+            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(s => s.ErrorCode)

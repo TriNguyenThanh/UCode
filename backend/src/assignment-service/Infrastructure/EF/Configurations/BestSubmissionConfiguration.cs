@@ -8,46 +8,23 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
 {
     public void Configure(EntityTypeBuilder<BestSubmission> builder)
     {
-        // builder.ToTable("BestSubmissions");
+        // Map tới VIEW thay vì TABLE
+        builder.ToView("BestSubmissions");
         
-        builder.HasKey(bs => bs.BestSubmissionId);
-
-        // AssignmentUserId và ProblemId chỉ là stored fields (không có FK relationship)
-        builder.Property(bs => bs.AssignmentUserId)
-            .IsRequired();
-
-        builder.Property(bs => bs.ProblemId)
-            .IsRequired();
-
-        builder.Property(bs => bs.Score)
-            .IsRequired();
-
-        builder.Property(bs => bs.MaxScore)
-            .IsRequired();
-
-        builder.Property(bs => bs.TotalTime)
-            .IsRequired();
-
-        builder.Property(bs => bs.TotalMemory)
-            .IsRequired();
-
-        builder.Property(bs => bs.UpdatedAt)
-            .IsRequired()
-            .HasDefaultValueSql("SYSDATETIME()");
-
-        // Relationships - CHỈ có relationship với Submission
-        builder.HasOne(bs => bs.Submission)
-            .WithOne(s => s.BestSubmission)
-            .HasForeignKey<BestSubmission>(bs => bs.SubmissionId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Indexes
-        builder.HasIndex(bs => bs.AssignmentUserId);
-        builder.HasIndex(bs => bs.ProblemId);
-        builder.HasIndex(bs => bs.SubmissionId);
+        // Đánh dấu là keyless vì NEWID() trong view tạo ID mới mỗi lần query
+        builder.HasNoKey();
         
-        // Unique constraint: một AssignmentUser chỉ có 1 best submission cho mỗi Problem
-        builder.HasIndex(bs => new { bs.AssignmentUserId, bs.ProblemId })
-            .IsUnique();
+        // Properties (không cần IsRequired cho view)
+        builder.Property(bs => bs.AssignmentUserId);
+        builder.Property(bs => bs.ProblemId);
+        builder.Property(bs => bs.SubmissionId);
+        builder.Property(bs => bs.Score);
+        builder.Property(bs => bs.MaxScore);
+        builder.Property(bs => bs.TotalTime);
+        builder.Property(bs => bs.TotalMemory);
+        builder.Property(bs => bs.UpdatedAt);
+        
+        // VIEW không có relationships, indexes, hoặc constraints
+        // Đây là read-only computed view
     }
 }
