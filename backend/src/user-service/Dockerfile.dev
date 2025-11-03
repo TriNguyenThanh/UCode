@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+WORKDIR /app
+
+# Copy các project để restore dependency
+COPY ["Api/UserService.Api.csproj", "Api/"]
+COPY ["Application/UserService.Application.csproj", "Application/"]
+COPY ["Domain/UserService.Domain.csproj", "Domain/"]
+COPY ["Infrastructure/UserService.Infrastructure.csproj", "Infrastructure/"]
+
+RUN dotnet restore "Api/UserService.Api.csproj"
+
+# Copy toàn bộ source code
+COPY . .
+EXPOSE 5001
+
+# Chạy dev mode
+CMD ["dotnet", "run", "--project", "Api/UserService.Api.csproj", "--urls", "http://0.0.0.0:5001"]
