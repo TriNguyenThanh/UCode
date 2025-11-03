@@ -18,6 +18,11 @@ public class Submission
     /// Foreign Key đến Dataset được sử dụng để chấm
     /// </summary>
     public Guid DatasetId { get; set; }
+
+    /// <summary>
+    /// Source code của bài nộp
+    /// </summary>
+    public string SourceCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)

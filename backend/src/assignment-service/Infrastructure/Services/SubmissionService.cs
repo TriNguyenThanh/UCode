@@ -52,7 +52,7 @@ public class SubmissionService : ISubmissionService
                     submission.DatasetId = dataset.DatasetId;
                 }
             }
-            new_submission = await _repository.SubmitCode(submission);
+            new_submission = await _repository.AddSubmission(submission);
             // await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge submission");
 
@@ -66,24 +66,34 @@ public class SubmissionService : ISubmissionService
     }
     public async Task<Submission> RunCode(Submission submission)
     {
-        submission.SubmissionId = Guid.NewGuid();
-        submission.SubmittedAt = DateTime.Now;
-        var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
-        if (datasets == null || datasets.Count == 0)
+        try
         {
-            Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
-            return new Submission();
-        }
-        else
-        {
-            var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE);
-            if (dataset != null)
+            submission.SubmissionId = Guid.NewGuid();
+            submission.SubmittedAt = DateTime.Now;
+            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            if (datasets == null || datasets.Count == 0)
             {
-                submission.DatasetId = dataset.DatasetId;
+                Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
+                return new Submission();
             }
+            else
+            {
+                var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.SAMPLE);
+                if (dataset != null)
+                {
+                    submission.DatasetId = dataset.DatasetId;
+                }
+            }
+            var new_submission = await _repository.AddSubmission(submission);
+            // await _exec.ExecuteCode(new_submission);
+            Console.WriteLine($"Waiting for Judge run code");
+
+            return new_submission;
         }
-        Console.WriteLine($"Waiting for Judge submission");
-        return submission;
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
     // public Task<bool> DeleteSubmission(Guid submissionId)
     //     => _repository.DeleteSubmission(submissionId);

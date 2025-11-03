@@ -9,7 +9,7 @@ public interface ISubmissionRepository
     public Task<List<BestSubmission>> GetBestSubmissionByProblemId(Guid assignmentUserId, Guid problemId, int pageNumber, int pageSize);
     // public Task<BestSubmission> GetBestSubmissionByProblemIdAndUserId(Guid assignmentUserId, Guid problemId);
     public Task<Submission> GetSubmission(Guid submissionId);
-    public Task<Submission> SubmitCode(Submission submission);
+    public Task<Submission> AddSubmission(Submission submission);
     public Task<bool> DeleteSubmission(Guid submissionId);
     // public Task<bool> DeleteSubmissionByProblemId(Guid submissionId);
     // public Task<bool> DeleteSubmissionByUserId(Guid submissionId);
