@@ -1,9 +1,9 @@
 using RabbitMQ.Client;
-using SubmissionService.Application.Interfaces;
+using AssignmentService.Application.Interfaces.MessageBrokers;
 using System.Text;
 using System.Text.Json;
 
-namespace SubmissionService.Infrastructure.Microservices;
+namespace AssignmentService.Infrastructure.MessageBrokers;
 
 public class RabbitMqService : IDisposable, IRabbitMqService
 {

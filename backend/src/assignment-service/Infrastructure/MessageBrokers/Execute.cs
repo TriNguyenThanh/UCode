@@ -4,7 +4,7 @@ using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
-namespace AssignmentService.Infrastructure.JudgeServices;
+namespace AssignmentService.Infrastructure.MessageBrokers;
 
 public class ExecuteService : IExecuteService
 {

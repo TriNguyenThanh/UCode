@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using AssignmentService.Application.Interfaces.MessageBrokers;
 
-namespace AssignmentService.Infrastructure.Microservices;
+namespace AssignmentService.Infrastructure.MessageBrokers;
 
 public class RabbitMqConnectionProvider : IRabbitMqConnectionProvider, IDisposable
 {

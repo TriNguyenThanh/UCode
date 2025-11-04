@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using AssignmentService.Application.DTOs.Common;
 using Scrutor;
 using AssignmentService.Api.Filters;
-using AssignmentService.Api.Middlewares;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -110,8 +109,13 @@ builder.Services.AddSwaggerGen(c =>
 // Add DbContext với Snake Case Naming Convention
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
 {
+    var connectionString = builder.Configuration.GetConnectionString("AssignmentDb")
+        ?? builder.Configuration["ConnectionStrings:AssignmentDb"]
+        ?? builder.Configuration["AssignmentDb"]
+        ?? throw new InvalidOperationException("Connection string 'AssignmentDb' not found.");
+    
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DbCuaTri"),
+        connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
 
@@ -122,13 +126,19 @@ builder.Services.AddDbContext<AssignmentDbContext>(options =>
 // Register HttpClient for UserService
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 
+// Register RabbitMQ Connection Provider as Singleton (connection pooling)
+builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
+
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(assemblies)
-    .AddClasses(classes => classes.InNamespaces("AssignmentService.Application.Interfaces.Services", "AssignmentService.Application.Interfaces.Repositories", "AssignmentService.Infrastructure.Services", "AssignmentService.Infrastructure.Repositories"))
+    .AddClasses(classes => classes.InNamespaces(
+        "AssignmentService.Infrastructure.Services",
+        "AssignmentService.Infrastructure.Repositories",
+        "AssignmentService.Infrastructure.MessageBrokers"))
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 

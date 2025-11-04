@@ -1,5 +1,6 @@
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Application.Interfaces.Services;
+using AssignmentService.Application.Interfaces.MessageBrokers;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
@@ -9,19 +10,19 @@ public class SubmissionService : ISubmissionService
 {
     private readonly ISubmissionRepository _repository;
     private readonly IDatasetRepository _datasetRepository;
-    // private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository, IDatasetRepository datasetRepository)
+    private readonly IExecuteService _exec;
+    public SubmissionService(ISubmissionRepository repository, IDatasetRepository datasetRepository, IExecuteService exec)
     {
         _repository = repository;
         _datasetRepository = datasetRepository;
-        // _exec = exec;
+        _exec = exec;
     }
 
     public async Task<Submission> GetSubmission(Guid submissionId){
         try{
             var submission = await _repository.GetSubmission(submissionId);
             var dataset = await _datasetRepository.GetByIdAsync(submission.DatasetId);
-            if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Done || submission.Status == SubmissionStatus.Failed))
+            if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Passed || submission.Status == SubmissionStatus.Failed))
             {
                 await _repository.DeleteSubmission(submissionId);
             }
@@ -65,7 +66,7 @@ public class SubmissionService : ISubmissionService
                 }
             }
             new_submission = await _repository.AddSubmission(submission);
-            // await _exec.ExecuteCode(new_submission);
+            await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge submission");
 
             return new_submission;
@@ -97,7 +98,7 @@ public class SubmissionService : ISubmissionService
                 }
             }
             var new_submission = await _repository.AddSubmission(submission);
-            // await _exec.ExecuteCode(new_submission);
+            await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge run code");
 
             return new_submission;
