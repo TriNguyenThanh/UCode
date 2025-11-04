@@ -1,4 +1,4 @@
-namespace ProblemService.Domain.Enums;
+namespace AssignmentService.Domain.Enums;
 
 /// <summary>
 /// Loại assignment
@@ -8,7 +8,7 @@ public enum AssignmentType
     /// <summary>
     /// Giao problem đơn lẻ
     /// </summary>
-    PROBLEM,
+    PRACTICE,
 
     /// <summary>
     /// Giao examination (set problems)

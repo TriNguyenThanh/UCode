@@ -1,6 +1,6 @@
-using ProblemService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
 /// Assignment để giao bài tập cho students
@@ -82,7 +82,7 @@ public class Assignment
     public ICollection<AssignmentProblem> AssignmentProblems { get; set; } = new List<AssignmentProblem>();
     
     /// <summary>
-    /// Chi tiết assignments cho từng student
+    /// Chi tiết assignments cho từng user (student)
     /// </summary>
-    public ICollection<AssignmentDetail> AssignmentDetails { get; set; } = new List<AssignmentDetail>();
+    public ICollection<AssignmentUser> AssignmentUsers { get; set; } = new List<AssignmentUser>();
 }

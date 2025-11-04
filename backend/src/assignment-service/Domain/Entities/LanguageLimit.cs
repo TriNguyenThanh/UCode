@@ -1,8 +1,8 @@
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng LanguageLimits
-/// Giới hạn riêng theo từng ngôn ngữ lập trình
+/// Giới hạn riêng theo từng ngôn ngữ lập trình + Code Template
 /// </summary>
 public class LanguageLimit
 {
@@ -30,6 +30,21 @@ public class LanguageLimit
     /// Nullable = nếu NULL thì dùng memory limit chung
     /// </summary>
     public int? MemoryKbOverride { get; set; }
+    
+    /// <summary>
+    /// Code template - phần đầu (imports, setup)
+    /// </summary>
+    public string? Head { get; set; }
+    
+    /// <summary>
+    /// Code template - phần chính (user code placeholder)
+    /// </summary>
+    public string? Body { get; set; }
+    
+    /// <summary>
+    /// Code template - phần cuối (test runner, main function)
+    /// </summary>
+    public string? Tail { get; set; }
 
     // Navigation Properties
     public Problem Problem { get; set; } = null!;

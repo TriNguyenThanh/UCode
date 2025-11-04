@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+WORKDIR /app
+EXPOSE 5000
+
+# ApiGateway doesn't need dotnet-ef tools (no database)
+
+# Copy project file and restore dependencies
+COPY ["api-gateway.csproj", "."]
+RUN dotnet restore "api-gateway.csproj"
+
+# Copy everything else and build
+COPY . .
+RUN dotnet build "api-gateway.csproj" -c Debug -o /app/build
+
+# Expose port
+EXPOSE 5000
+
+# Run the application
+ENTRYPOINT ["dotnet", "run", "--project", "api-gateway.csproj", "--urls", "http://0.0.0.0:5000"]

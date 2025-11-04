@@ -1,0 +1,23 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using AssignmentService.Infrastructure.EF.MigrationBuilders;
+#nullable disable
+
+namespace Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class CreateView : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateBestSubmissionsView();
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropBestSubmissionsView();
+
+        }
+    }
+}

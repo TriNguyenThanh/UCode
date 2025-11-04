@@ -1,0 +1,399 @@
+@baseUrl = http://localhost:5000/api/v1
+@contentType = application/json
+
+### Variables (Update these after creating resources)
+@adminId = your-admin-id-here
+@teacherId = your-teacher-id-here
+@studentId = your-student-id-here
+@classId = your-class-id-here
+
+###############################################
+# AUTH CONTROLLER
+###############################################
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "emailOrUsername": "student01@ucode.io.vn",
+  "password": "Student@123",
+  "rememberMe": false
+}
+
+### Login with Username
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "emailOrUsername": "student01",
+  "password": "Student@123",
+  "rememberMe": true
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "your-refresh-token-here"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh-token
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "your-refresh-token-here"
+}
+
+### Request Password Reset (Send OTP)
+POST {{baseUrl}}/auth/request-reset-password
+Content-Type: {{contentType}}
+
+{
+  "email": "student01@ucode.io.vn"
+}
+
+### Verify OTP
+POST {{baseUrl}}/auth/verify-otp
+Content-Type: {{contentType}}
+
+{
+  "email": "student01@ucode.io.vn",
+  "otp": "123456"
+}
+
+### Reset Password
+POST {{baseUrl}}/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "email": "student01@ucode.io.vn",
+  "otp": "123456",
+  "newPassword": "NewPassword@123",
+  "confirmPassword": "NewPassword@123"
+}
+
+###############################################
+# USER CONTROLLER
+###############################################
+
+### Get User by ID
+GET {{baseUrl}}/users/{{studentId}}
+
+### Get User by Email
+GET {{baseUrl}}/users/by-email/student01@ucode.io.vn
+
+### Get User by Username
+GET {{baseUrl}}/users/by-username/student01
+
+### Get All Users (with pagination)
+GET {{baseUrl}}/users?pageNumber=1&pageSize=10
+
+### Get Users by Role (Students only)
+GET {{baseUrl}}/users?pageNumber=1&pageSize=10&role=1
+
+### Get Users by Status (Active only)
+GET {{baseUrl}}/users?pageNumber=1&pageSize=10&status=1
+
+### Update User
+PUT {{baseUrl}}/users/update
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{studentId}}",
+  "email": "student01_updated@ucode.io.vn",
+  "fullName": "Nguyễn Văn An Updated",
+  "major": "Khoa học máy tính",
+  "classYear": 3
+}
+
+### Change Password
+POST {{baseUrl}}/users/change-password
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{studentId}}",
+  "oldPassword": "Student@123",
+  "newPassword": "NewPassword@123",
+  "confirmPassword": "NewPassword@123"
+}
+
+### Update User Status (Suspend)
+PATCH {{baseUrl}}/users/update-status
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{studentId}}",
+  "status": 3
+}
+
+### Delete User
+DELETE {{baseUrl}}/users/delete?id={{studentId}}
+
+###############################################
+# STUDENT CONTROLLER
+###############################################
+
+### Create Student
+POST {{baseUrl}}/students/create
+Content-Type: {{contentType}}
+
+{
+  "studentId": "SV004",
+  "username": "student04",
+  "email": "student04@ucode.io.vn",
+  "password": "Student@123",
+  "fullName": "Trần Thị Dung",
+  "major": "Công nghệ phần mềm",
+  "enrollmentYear": 2023,
+  "classYear": 2
+}
+
+### Get Student by ID (User ID)
+GET {{baseUrl}}/students/{{studentId}}
+
+### Get Student by StudentId (SV001, SV002, etc.)
+GET {{baseUrl}}/students/by-student-id/SV001
+
+### Get All Students (with pagination)
+GET {{baseUrl}}/students?pageNumber=1&pageSize=10
+
+### Get Students by Class
+GET {{baseUrl}}/students?pageNumber=1&pageSize=10&classId={{classId}}
+
+### Get Students by Class (alternative endpoint)
+GET {{baseUrl}}/students/by-class/{{classId}}
+
+### Update Student
+PUT {{baseUrl}}/students/update
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{studentId}}",
+  "fullName": "Lê Văn An Updated",
+  "major": "Trí tuệ nhân tạo",
+  "classYear": 3
+}
+
+### Delete Student
+DELETE {{baseUrl}}/students/delete?id={{studentId}}
+
+### Import Students from Excel
+POST {{baseUrl}}/students/import-excel
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="students.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< ./students.xlsx
+------WebKitFormBoundary--
+
+### Export Students to Excel
+GET {{baseUrl}}/students/export-excel?studentIds={{studentId}}
+
+###############################################
+# TEACHER CONTROLLER
+###############################################
+
+### Create Teacher
+POST {{baseUrl}}/teachers/create
+Content-Type: {{contentType}}
+
+{
+  "employeeId": "GV003",
+  "username": "teacher03",
+  "email": "teacher03@ucode.io.vn",
+  "password": "Teacher@123",
+  "fullName": "Phạm Văn Giảng",
+  "department": "Khoa Công Nghệ Thông Tin",
+  "title": "Giảng viên",
+  "phone": "0912345678"
+}
+
+### Create Admin
+POST {{baseUrl}}/teachers/create-admin
+Content-Type: {{contentType}}
+
+{
+  "username": "admin02",
+  "email": "admin02@ucode.io.vn",
+  "password": "Admin@123",
+  "fullName": "Administrator 2"
+}
+
+### Get Teacher by ID
+GET {{baseUrl}}/teachers/{{teacherId}}
+
+### Get Teacher by EmployeeId
+GET {{baseUrl}}/teachers/by-employee-id/GV001
+
+### Get All Teachers (with pagination)
+GET {{baseUrl}}/teachers?pageNumber=1&pageSize=10
+
+### Get Teachers by Department
+GET {{baseUrl}}/teachers?pageNumber=1&pageSize=10&department=Khoa Công Nghệ Thông Tin
+
+### Get Teacher's Classes
+GET {{baseUrl}}/teachers/{{teacherId}}/classes
+
+### Update Teacher
+PUT {{baseUrl}}/teachers/update
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{teacherId}}",
+  "fullName": "Nguyễn Văn Giáo Updated",
+  "department": "Khoa Khoa Học Máy Tính",
+  "title": "Phó Giáo Sư",
+  "phone": "0909999999"
+}
+
+### Delete Teacher
+DELETE {{baseUrl}}/teachers/delete?id={{teacherId}}
+
+###############################################
+# CLASS CONTROLLER
+###############################################
+
+### Create Class
+POST {{baseUrl}}/classes/create
+Content-Type: {{contentType}}
+
+{
+  "name": "Lập trình Python cơ bản",
+  "description": "Khóa học về Python cho người mới bắt đầu",
+  "teacherId": "{{teacherId}}",
+  "classCode": "CLS2403"
+}
+
+### Create Class (auto-generate class code)
+POST {{baseUrl}}/classes/create
+Content-Type: {{contentType}}
+
+{
+  "name": "Web Development với React",
+  "description": "Khóa học phát triển web với React và Node.js",
+  "teacherId": "{{teacherId}}"
+}
+
+### Get Class by ID
+GET {{baseUrl}}/classes/{{classId}}
+
+### Get Class Detail (with students and statistics)
+GET {{baseUrl}}/classes/{{classId}}/detail
+
+### Get All Classes (with pagination)
+GET {{baseUrl}}/classes?pageNumber=1&pageSize=10
+
+### Get Classes by Teacher
+GET {{baseUrl}}/classes?pageNumber=1&pageSize=10&teacherId={{teacherId}}
+
+### Get Active Classes only
+GET {{baseUrl}}/classes?pageNumber=1&pageSize=10&isActive=true
+
+### Get Classes by Teacher (alternative endpoint)
+GET {{baseUrl}}/classes/by-teacher/{{teacherId}}
+
+### Update Class
+PUT {{baseUrl}}/classes/update
+Content-Type: {{contentType}}
+
+{
+  "classId": "{{classId}}",
+  "name": "Lập trình C# nâng cao - Updated",
+  "description": "Khóa học về lập trình C# nâng cao với ASP.NET Core - Updated",
+  "isActive": true
+}
+
+### Delete Class
+DELETE {{baseUrl}}/classes/delete?id={{classId}}
+
+### Add Single Student to Class
+POST {{baseUrl}}/classes/add-student
+Content-Type: {{contentType}}
+
+{
+  "classId": "{{classId}}",
+  "studentId": "{{studentId}}"
+}
+
+### Add Multiple Students to Class
+POST {{baseUrl}}/classes/add-students
+Content-Type: {{contentType}}
+
+{
+  "classId": "{{classId}}",
+  "studentIds": [
+    "{{studentId}}",
+    "another-student-id"
+  ]
+}
+
+### Remove Student from Class
+DELETE {{baseUrl}}/classes/remove-student?classId={{classId}}&studentId={{studentId}}
+
+### Get Class Roster (List of students)
+GET {{baseUrl}}/classes/{{classId}}/roster
+
+###############################################
+# TESTING SCENARIOS
+###############################################
+
+### Scenario 1: Create Teacher -> Create Class -> Create Students -> Enroll Students
+# Step 1: Create Teacher (use response ID as teacherId)
+# Step 2: Create Class with teacherId (use response ID as classId)
+# Step 3: Create Students (use response IDs)
+# Step 4: Enroll students to class
+
+### Scenario 2: Password Reset Flow
+# Step 1: Request password reset (OTP sent to email)
+# Step 2: Check email for OTP
+# Step 3: Verify OTP
+# Step 4: Reset password with OTP
+
+### Scenario 3: Import Students from Excel
+# Step 1: Prepare Excel file with columns: StudentId, Username, Email, Password, FullName, Major, EnrollmentYear, ClassYear
+# Step 2: Upload file via import-excel endpoint
+# Step 3: Review created students and errors
+
+### Scenario 4: Get Students by Class
+# Step 1: Create a class
+# Step 2: Add students to class
+# Step 3: Get students by class using /students/by-class/{classId}
+
+###############################################
+# NOTES
+###############################################
+
+# Default Seeded Accounts (available after first run):
+# - Admin: admin / Admin@123
+# - Teacher: teacher01 / Teacher@123  (EmployeeId: GV001)
+# - Teacher: teacher02 / Teacher@123  (EmployeeId: GV002)
+# - Student: student01 / Student@123  (StudentId: SV001)
+# - Student: student02 / Student@123  (StudentId: SV002)
+# - Student: student03 / Student@123  (StudentId: SV003)
+
+# UserRole enum values:
+# 1 = Student
+# 2 = Teacher
+# 3 = Admin
+
+# UserStatus enum values:
+# 1 = Active
+# 2 = Inactive
+# 3 = Suspended
+# 4 = PendingActivation
+
+# API Pattern Changes:
+# - Routes: api/v1/users, api/v1/students, api/v1/teachers, api/v1/classes, api/v1/auth
+# - Endpoints: create, update, delete, by-email, by-username, by-student-id, by-employee-id
+# - Parameters: {id} instead of {userId}, [FromQuery] for delete operations
+# - Request bodies: Include ID in request body for update operations
+
+# Remember to:
+# 1. Update @teacherId, @studentId, @classId variables after creating resources
+# 2. Configure Email settings in appsettings.Development.json (use Mailtrap for testing)
+# 3. Ensure database is running before testing endpoints

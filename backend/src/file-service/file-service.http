@@ -1,0 +1,355 @@
+@file_service_HostAddress = http://localhost:5073
+
+### Get Service Info
+GET {{file_service_HostAddress}}/
+Accept: application/json
+
+###
+
+### Health Check
+GET {{file_service_HostAddress}}/health
+Accept: application/json
+
+###
+
+### Get All File Categories
+GET {{file_service_HostAddress}}/api/files/categories
+Accept: application/json
+
+###
+
+### Get Specific Category Config (Assignment Document)
+GET {{file_service_HostAddress}}/api/files/categories/1
+Accept: application/json
+
+###
+
+### Get Specific Category Config (Code Submission)
+GET {{file_service_HostAddress}}/api/files/categories/2
+Accept: application/json
+
+###
+
+### Upload Assignment Document (PDF)
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="assignment.pdf"
+Content-Type: application/pdf
+
+<@D:/path/to/your/assignment.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Code Submission (ZIP)
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="solution.zip"
+Content-Type: application/zip
+
+<@D:/path/to/your/solution.zip
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+2
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Code File (Python)
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="main.py"
+Content-Type: text/plain
+
+def hello_world():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    hello_world()
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+2
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Image
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="diagram.png"
+Content-Type: image/png
+
+<@D:/path/to/your/image.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+3
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Avatar
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+<@D:/path/to/your/avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+4
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="customFileName"
+
+user-avatar
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Test Case
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test1.in"
+Content-Type: text/plain
+
+5 3
+1 2 3 4 5
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+5
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload Reference Document
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="lecture.pptx"
+Content-Type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+
+<@D:/path/to/your/lecture.pptx
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+6
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload General Document - PDF
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+<@D:/path/to/your/report.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload General Document - Word
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="document.docx"
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+<@D:/path/to/your/document.docx
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload General Document - Excel
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="spreadsheet.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+<@D:/path/to/your/spreadsheet.xlsx
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload General Document - PowerPoint
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="presentation.pptx"
+Content-Type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+
+<@D:/path/to/your/presentation.pptx
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload General Document - OpenDocument Text
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="document.odt"
+Content-Type: application/vnd.oasis.opendocument.text
+
+<@D:/path/to/your/document.odt
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+7
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### INVALID: Try to upload wrong file type (EXE file as Assignment)
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="malware.exe"
+Content-Type: application/x-msdownload
+
+<binary data>
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload File
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+This is a test file content.
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="folder"
+
+uploads
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Upload File with Custom Name
+POST {{file_service_HostAddress}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+<@D:/path/to/your/file.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="folder"
+
+documents
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="customFileName"
+
+my-custom-document.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### List All Files
+GET {{file_service_HostAddress}}/api/files/list
+Accept: application/json
+
+###
+
+### List Files with Prefix
+GET {{file_service_HostAddress}}/api/files/list?prefix=uploads
+Accept: application/json
+
+###
+
+### Download File
+GET {{file_service_HostAddress}}/api/files/download/uploads/test.txt
+
+###
+
+### Check File Exists
+GET {{file_service_HostAddress}}/api/files/exists/uploads/test.txt
+Accept: application/json
+
+###
+
+### Get Presigned URL
+POST {{file_service_HostAddress}}/api/files/presigned-url
+Content-Type: application/json
+
+{
+  "key": "uploads/test.txt",
+  "expirationMinutes": 60
+}
+
+###
+
+### Get Presigned URL (Custom Expiration)
+POST {{file_service_HostAddress}}/api/files/presigned-url
+Content-Type: application/json
+
+{
+  "key": "documents/my-document.pdf",
+  "expirationMinutes": 120
+}
+
+###
+
+### Delete File
+DELETE {{file_service_HostAddress}}/api/files/uploads/test.txt
+
+###
+
+### Delete File in Subfolder
+DELETE {{file_service_HostAddress}}/api/files/documents/my-custom-document.pdf
+
+###
+

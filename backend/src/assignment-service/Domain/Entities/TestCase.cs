@@ -1,8 +1,8 @@
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
-/// Entity đại diện cho bảng TestCases
-/// Mỗi TestCase là 1 bộ input/output để test code
+/// Entity đại diện cho bảng TestCaseFiles
+/// Mỗi TestCaseFile là 1 bộ input/output để test code
 /// </summary>
 public class TestCase
 {
@@ -30,15 +30,10 @@ public class TestCase
     public string OutputRef { get; set; } = string.Empty;
     
     /// <summary>
-    /// Trọng số điểm của test này
-    /// VD: 1.0 = điểm chuẩn, 2.0 = gấp đôi điểm
+    /// Điểm cho test case này (score)
+    /// VD: "100" = 100 điểm
     /// </summary>
-    public decimal Weight { get; set; } = 1.00m;
-    
-    /// <summary>
-    /// Đánh dấu test mẫu (hiển thị trong đề bài)
-    /// </summary>
-    public bool IsSample { get; set; }
+    public string Score { get; set; } = "100";
     
     /* ===== NAVIGATION PROPERTIES ===== */
     
