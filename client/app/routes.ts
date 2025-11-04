@@ -23,4 +23,10 @@ export default [
   route('teacher/grading/:assignmentId', 'routes/teacher.grading.$assignmentId.tsx'),
   route('teacher/problem/create', 'routes/teacher.problem.create.tsx'),
   route('teacher/problem/:id/edit', 'routes/teacher.problem.$id.edit.tsx'),
+  // Admin routes
+  route('admin/home', 'routes/admin.home.tsx'),
+  route('admin/users', 'routes/admin.users.tsx'),
+  route('admin/classes', 'routes/admin.classes.tsx'),
+  route('admin/settings', 'routes/admin.settings.tsx'),
+  route('admin/logs', 'routes/admin.logs.tsx'),
 ] satisfies RouteConfig
