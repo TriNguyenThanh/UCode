@@ -11,16 +11,16 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
     {
     }
 
-    public async Task<Teacher?> GetByEmployeeIdAsync(string employeeId)
+    public async Task<Teacher?> GetByTeacherCodeAsync(string teacherCode)
     {
         return await _dbSet
             .Include(t => t.Classes)
-            .FirstOrDefaultAsync(t => t.TeacherCode == employeeId);
+            .FirstOrDefaultAsync(t => t.TeacherCode == teacherCode);
     }
 
-    public async Task<bool> EmployeeIdExistsAsync(string employeeId)
+    public async Task<bool> TeacherCodeExistsAsync(string teacherCode)
     {
-        return await _dbSet.AnyAsync(t => t.TeacherCode == employeeId);
+        return await _dbSet.AnyAsync(t => t.TeacherCode == teacherCode);
     }
 
     public async Task<List<Teacher>> GetTeachersByDepartmentAsync(string department)

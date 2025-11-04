@@ -4,9 +4,9 @@ namespace UserService.Application.Interfaces.Repositories;
 
 public interface IStudentRepository : IRepository<Student>
 {
-    Task<Student?> GetByStudentIdAsync(string studentId);
+    Task<Student?> GetByStudentCodeAsync(string studentCode);
     Task<List<Student>> GetStudentsByClassIdAsync(Guid classId);
-    Task<bool> StudentIdExistsAsync(string studentId);
+    Task<bool> StudentCodeExistsAsync(string studentCode);
     Task<List<Student>> GetStudentsByClassYearAsync(int classYear);
     Task<List<Student>> GetStudentsByMajorAsync(string major);
 }
