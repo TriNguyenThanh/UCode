@@ -18,7 +18,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CodeIcon from '@mui/icons-material/Code'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import { mockAssignments } from '~/data/mock'
+import { mockAssignments, mockProblems } from '~/data/mock'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Bài tập | UCode' },
@@ -37,6 +37,11 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export default function AssignmentDetail() {
   const { assignment } = useLoaderData<typeof clientLoader>()
+
+  // Get actual problem objects from problem IDs
+  const problems = assignment.problems
+    .map((problemId) => mockProblems.find((p) => p.id === problemId))
+    .filter((p): p is NonNullable<typeof p> => p !== undefined)
 
   const getDaysUntilDue = (dueDate: Date) => {
     const now = new Date()
@@ -61,7 +66,7 @@ export default function AssignmentDetail() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
       <Navigation />
 
       <Container maxWidth='xl' sx={{ py: 4 }}>
@@ -75,7 +80,8 @@ export default function AssignmentDetail() {
           sx={{
             mb: 4,
             overflow: 'hidden',
-            background: 'linear-gradient(135deg, #FACB01 0%, #ffd54f 100%)',
+            bgcolor: '#ffffff',
+            border: '1px solid #d2d2d7',
           }}
         >
           <Box sx={{ p: 4 }}>
@@ -83,15 +89,15 @@ export default function AssignmentDetail() {
               label={assignment.className}
               sx={{
                 mb: 2,
-                bgcolor: 'secondary.main',
-                color: 'primary.main',
+                bgcolor: '#007AFF',
+                color: '#ffffff',
                 fontWeight: 600,
               }}
             />
-            <Typography variant='h3' sx={{ fontWeight: 700, color: 'secondary.main', mb: 2 }}>
+            <Typography variant='h3' sx={{ fontWeight: 700, color: '#1d1d1f', mb: 2 }}>
               {assignment.title}
             </Typography>
-            <Typography variant='body1' sx={{ color: 'secondary.main', mb: 3, opacity: 0.9 }}>
+            <Typography variant='body1' sx={{ color: '#86868b', mb: 3 }}>
               {assignment.description}
             </Typography>
 
@@ -100,34 +106,36 @@ export default function AssignmentDetail() {
               <Chip
                 icon={<AccessTimeIcon />}
                 label={daysLeft > 0 ? `Còn ${daysLeft} ngày` : 'Quá hạn'}
-                color={daysLeft > 2 ? 'info' : 'error'}
-                sx={{ bgcolor: 'secondary.main', color: 'primary.main' }}
+                sx={{ 
+                  bgcolor: daysLeft > 2 ? '#007AFF' : '#FF3B30',
+                  color: '#ffffff'
+                }}
               />
               <Chip
-                label={`${assignment.problems.length} câu hỏi`}
+                label={`${problems.length} câu hỏi`}
                 variant='outlined'
-                sx={{ borderColor: 'secondary.main', color: 'secondary.main', bgcolor: 'rgba(255,255,255,0.7)' }}
+                sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
               />
               <Chip
                 label={`${assignment.totalPoints} điểm`}
                 variant='outlined'
-                sx={{ borderColor: 'secondary.main', color: 'secondary.main', bgcolor: 'rgba(255,255,255,0.7)' }}
+                sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
               />
               <Chip
                 label={`Hạn: ${new Date(assignment.dueDate).toLocaleString('vi-VN')}`}
                 variant='outlined'
-                sx={{ borderColor: 'secondary.main', color: 'secondary.main', bgcolor: 'rgba(255,255,255,0.7)' }}
+                sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
               />
             </Box>
 
             {/* Progress */}
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant='body2' sx={{ fontWeight: 600, color: 'secondary.main' }}>
+                <Typography variant='body2' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
                   Tiến độ
                 </Typography>
-                <Typography variant='body2' sx={{ fontWeight: 600, color: 'secondary.main' }}>
-                  {progress}% ({Math.floor((progress / 100) * assignment.problems.length)}/{assignment.problems.length})
+                <Typography variant='body2' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                  {progress}% ({Math.floor((progress / 100) * problems.length)}/{problems.length})
                 </Typography>
               </Box>
               <LinearProgress
@@ -136,9 +144,9 @@ export default function AssignmentDetail() {
                 sx={{
                   height: 8,
                   borderRadius: 4,
-                  bgcolor: 'rgba(0, 39, 94, 0.2)',
+                  bgcolor: '#e5e5ea',
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: 'secondary.main',
+                    bgcolor: '#34C759',
                   },
                 }}
               />
@@ -148,24 +156,25 @@ export default function AssignmentDetail() {
 
         {/* Problems List */}
         <Box>
-          <Typography variant='h5' sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CodeIcon sx={{ color: 'primary.main' }} />
+          <Typography variant='h5' sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1, color: '#1d1d1f' }}>
+            <CodeIcon sx={{ color: '#007AFF' }} />
             Danh sách câu hỏi
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {assignment.problems.map((problem, index) => (
+            {problems.map((problem, index) => (
               <Card
                 key={problem.id}
                 elevation={0}
                 sx={{
-                  border: '2px solid',
-                  borderColor: 'divider',
+                  bgcolor: '#ffffff',
+                  border: '1px solid #d2d2d7',
+                  borderRadius: 2,
                   transition: 'all 0.2s',
                   '&:hover': {
-                    borderColor: 'primary.main',
+                    borderColor: '#007AFF',
                     transform: 'translateY(-2px)',
-                    boxShadow: 3,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
                   },
                 }}
               >
@@ -178,14 +187,14 @@ export default function AssignmentDetail() {
                           width: 50,
                           height: 50,
                           borderRadius: '50%',
-                          bgcolor: 'primary.main',
+                          bgcolor: '#007AFF',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
                         }}
                       >
-                        <Typography variant='h6' sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                        <Typography variant='h6' sx={{ fontWeight: 700, color: '#ffffff' }}>
                           {index + 1}
                         </Typography>
                       </Box>
@@ -193,7 +202,7 @@ export default function AssignmentDetail() {
                       {/* Content */}
                       <Box sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                          <Typography variant='h6' sx={{ fontWeight: 600 }}>
+                          <Typography variant='h6' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
                             {problem.title}
                           </Typography>
                           <Chip
@@ -210,7 +219,7 @@ export default function AssignmentDetail() {
                         {/* Tags */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                           <Chip label={problem.category} size='small' variant='outlined' />
-                          {problem.tags.map((tag) => (
+                          {problem.tags.map((tag: string) => (
                             <Chip
                               key={tag}
                               label={tag}
