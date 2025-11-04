@@ -12,6 +12,12 @@ using Microsoft.AspNetCore.Mvc;
 using AssignmentService.Application.DTOs.Common;
 using Scrutor;
 using AssignmentService.Api.Filters;
+using AssignmentService.Api.Middlewares;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,7 +111,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
 {
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("MyDb"),
+        builder.Configuration.GetConnectionString("DbCuaTri"),
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
 

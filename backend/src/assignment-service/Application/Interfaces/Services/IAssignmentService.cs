@@ -25,14 +25,14 @@ public interface IAssignmentService
     Task<List<AssignmentUser>> GetAssignmentUsersAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     
-    // BestSubmission operations
-    Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);
-    Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
-    Task<bool> DeleteSubmissionAsync(Guid submissionId);
-    Task<BestSubmission?> GetSubmissionAsync(Guid assignmentDetailId, Guid problemId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentDetailId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
-    Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentDetailId, List<Guid> problemIds);
+    // // BestSubmission operations
+    // Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);
+    // Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
+    // Task<bool> DeleteSubmissionAsync(Guid submissionId);
+    // Task<BestSubmission?> GetSubmissionAsync(Guid assignmentDetailId, Guid problemId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentDetailId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
+    // Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentDetailId, List<Guid> problemIds);
     
     // AssignmentProblem operations
     Task<AssignmentProblem?> GetAssignmentProblemAsync(Guid assignmentId, Guid problemId);

@@ -304,120 +304,70 @@ public class AssignmentService : IAssignmentService
     }
 
     // BestSubmission methods
-    public async Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission)
-    {
-        try
-        {
-            var existSubmission = await _assignmentRepository.GetSubmissionByIdAsync(submission.SubmissionId);
-            if (existSubmission != null)
-                return await _assignmentRepository.UpdateSubmissionAsync(submission);
-            else
-                return await _assignmentRepository.AddSubmissionAsync(submission);
-        }
-        catch (DbException ex)
-        {
-            throw new ApiException($"Database error while saving submission: {ex.Message}", 500);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error saving submission: {ex.Message}", 500);
-        }
-    }
+    // public async Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission)
+    // {
+    //     // submission.SubmissionId = Guid.NewGuid();
+    //     // submission.Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED;
+    //     // submission.AttemptCount = 0;
+    //     var existSubmission = await _assignmentRepository.GetSubmissionByIdAsync(submission.SubmissionId);
+    //     if (existSubmission != null)
+    //         return await _assignmentRepository.UpdateSubmissionAsync(submission);
+    //     else
+    //         return await _assignmentRepository.AddSubmissionAsync(submission);
+    // }
 
-    public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
-    {
-        try
-        {
-            return await _assignmentRepository.UpdateSubmissionAsync(submission);
-        }
-        catch (DbException ex)
-        {
-            throw new ApiException($"Database error while updating submission: {ex.Message}", 500);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error updating submission: {ex.Message}", 500);
-        }
-    }
+    // public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
+    // {
+    //     return await _assignmentRepository.UpdateSubmissionAsync(submission);
+    // }
 
-    public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
-    {
-        try
-        {
-            return await _assignmentRepository.DeleteSubmissionAsync(submissionId);
-        }
-        catch (DbException ex)
-        {
-            throw new ApiException($"Database error while deleting submission: {ex.Message}", 500);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error deleting submission: {ex.Message}", 500);
-        }
-    }
+    // public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
+    // {
+    //     return await _assignmentRepository.DeleteSubmissionAsync(submissionId);
+    // }
 
-    public async Task<BestSubmission?> GetSubmissionAsync(Guid assignmentUserId, Guid problemId)
-    {
-        try
-        {
-            return await _assignmentRepository.GetSubmissionAsync(assignmentUserId, problemId);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error retrieving submission: {ex.Message}", 500);
-        }
-    }
+    // public async Task<BestSubmission?> GetSubmissionAsync(Guid assignmentUserId, Guid problemId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionAsync(assignmentUserId, problemId);
+    // }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentUserId)
-    {
-        try
-        {
-            return await _assignmentRepository.GetSubmissionsByAssignmentUserAsync(assignmentUserId);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error retrieving submissions for assignment user: {ex.Message}", 500);
-        }
-    }
+    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid assignmentUserId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionsByAssignmentUserAsync(assignmentUserId);
+    // }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
-    {
-        try
-        {
-            return await _assignmentRepository.GetSubmissionsByAssignmentAsync(assignmentId);
-        }
-        catch (Exception ex)
-        {
-            throw new ApiException($"Error retrieving submissions for assignment: {ex.Message}", 500);
-        }
-    }
+    // public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
+    // {
+    //     return await _assignmentRepository.GetSubmissionsByAssignmentAsync(assignmentId);
+    // }
 
-    public Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentUserId, List<Guid> problemIds)
-    {
-        throw new NotSupportedException("Cái method này để dành cho Trí làm nhé");
-        // var submissions = new List<BestSubmission>();
+    // public async Task<List<BestSubmission>> CreateSubmissionsForAssignmentUserAsync(Guid assignmentUserId, List<Guid> problemIds)
+    // {
+
+    //     throw new NotSupportedException("Cái method này để dành cho Trí làm nhé");
+    //     // var submissions = new List<BestSubmission>();
         
-        // // Lấy AssignmentUser để có AssignmentId
-        // var assignmentUser = await _assignmentRepository.GetAssignmentUserByIdAsync(assignmentUserId);
-        // if (assignmentUser == null)
-        //     throw new KeyNotFoundException("AssignmentUser not found");
+    //     // // Lấy AssignmentUser để có AssignmentId
+    //     // var assignmentUser = await _assignmentRepository.GetAssignmentUserByIdAsync(assignmentUserId);
+    //     // if (assignmentUser == null)
+    //     //     throw new KeyNotFoundException("AssignmentUser not found");
         
-        // foreach (var problemId in problemIds)
-        // {
-        //     var submission = new BestSubmission
-        //     {
-        //         SubmissionId = Guid.NewGuid(),
-        //         AssignmentUserId = assignmentUserId,
-        //         ProblemId = problemId,
-        //         Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED,
-        //         AttemptCount = 0
-        //     };
+    //     // foreach (var problemId in problemIds)
+    //     // {
+    //     //     var submission = new BestSubmission
+    //     //     {
+    //     //         SubmissionId = Guid.NewGuid(),
+    //     //         AssignmentUserId = assignmentUserId,
+    //     //         ProblemId = problemId,
+    //     //         Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED,
+    //     //         AttemptCount = 0
+    //     //     };
             
-        //     submissions.Add(submission);
-        // }
+    //     //     submissions.Add(submission);
+    //     // }
         
-        // return await _assignmentRepository.AddSubmissionsAsync(submissions);
-    }
+    //     // return await _assignmentRepository.AddSubmissionsAsync(submissions);
+    // }
 
     public async Task<AssignmentProblem?> GetAssignmentProblemAsync(Guid assignmentId, Guid problemId)
     {

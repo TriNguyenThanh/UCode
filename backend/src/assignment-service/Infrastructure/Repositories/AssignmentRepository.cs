@@ -327,33 +327,33 @@ public class AssignmentRepository : IAssignmentRepository
             .FirstOrDefaultAsync(ap => ap.AssignmentId == assignmentId && ap.ProblemId == problemId);
     }
 
-    // ================[ BestSubmission methods ]==================
-    public async Task<BestSubmission> AddSubmissionAsync(BestSubmission submission)
-    {
-        await _context.BestSubmissions.AddAsync(submission);
-        await _context.SaveChangesAsync();
-        return submission;
-    }
+    // // ================[ BestSubmission methods ]==================
+    // public async Task<BestSubmission> AddSubmissionAsync(BestSubmission submission)
+    // {
+    //     await _context.BestSubmissions.AddAsync(submission);
+    //     await _context.SaveChangesAsync();
+    //     return submission;
+    // }
 
-    public async Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions)
-    {
-        await _context.BestSubmissions.AddRangeAsync(submissions);
-        await _context.SaveChangesAsync();
-        return submissions;
-    }
+    // public async Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions)
+    // {
+    //     await _context.BestSubmissions.AddRangeAsync(submissions);
+    //     await _context.SaveChangesAsync();
+    //     return submissions;
+    // }
 
-    public async Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId)
-    {
-        return await _context.BestSubmissions
-            .FirstOrDefaultAsync(s => s.AssignmentUserId == AssignmentUserId && s.ProblemId == problemId);
-    }
+    // public async Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId)
+    // {
+    //     return await _context.BestSubmissions
+    //         .FirstOrDefaultAsync(s => s.AssignmentUserId == AssignmentUserId && s.ProblemId == problemId);
+    // }
 
-    public async Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId)
-    {
-        return await _context.BestSubmissions
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
-    }
+    // public async Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId)
+    // {
+    //     return await _context.BestSubmissions
+    //         .AsNoTracking()
+    //         .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
+    // }
 
     public Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
     {
@@ -377,23 +377,23 @@ public class AssignmentRepository : IAssignmentRepository
         throw new NotImplementedException("Cái này thuộc bên Trí");
     }
 
-    public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
-    {
-        _context.BestSubmissions.Update(submission);
-        await _context.SaveChangesAsync();
-        return submission;
-    }
+    // public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
+    // {
+    //     _context.BestSubmissions.Update(submission);
+    //     await _context.SaveChangesAsync();
+    //     return submission;
+    // }
 
-    public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
-    {
-        var submission = await _context.BestSubmissions.FindAsync(submissionId);
-        if (submission == null)
-            return false;
+    // public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
+    // {
+    //     var submission = await _context.BestSubmissions.FindAsync(submissionId);
+    //     if (submission == null)
+    //         return false;
 
-        _context.BestSubmissions.Remove(submission);
-        await _context.SaveChangesAsync();
-        return true;
-    }
+    //     _context.BestSubmissions.Remove(submission);
+    //     await _context.SaveChangesAsync();
+    //     return true;
+    // }
 
 
     public async Task<int> CountAsync(Expression<Func<Assignment, bool>>? predicate = null)

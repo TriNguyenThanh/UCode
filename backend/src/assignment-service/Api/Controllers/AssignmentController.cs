@@ -404,36 +404,36 @@ public class AssignmentController : ControllerBase
     }
     /// 
 
-    /// <summary>
-    /// Retrieves all submissions for the current student in a specific assignment
-    /// </summary>
-    /// <param name="id">The unique identifier of the assignment</param>
-    /// <returns>List of submissions for the current student</returns>
-    /// <response code="200">Submissions retrieved successfully</response>
-    /// <response code="401">Unauthorized - Student role required</response>
-    /// <response code="404">Assignment detail not found</response>
-    /// <response code="500">Internal server error</response>
-    [HttpGet("{id:guid}/student/my-submissions")]
-    [RequireRole("student")]
-    [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionDto>>), 200)]
-    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetMySubmissions(Guid id)
-    {
-        var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
-        var detail = await _assignmentService.GetAssignmentUserAsync(id, userId);
+    // /// <summary>
+    // /// Retrieves all submissions for the current student in a specific assignment
+    // /// </summary>
+    // /// <param name="id">The unique identifier of the assignment</param>
+    // /// <returns>List of submissions for the current student</returns>
+    // /// <response code="200">Submissions retrieved successfully</response>
+    // /// <response code="401">Unauthorized - Student role required</response>
+    // /// <response code="404">Assignment detail not found</response>
+    // /// <response code="500">Internal server error</response>
+    // [HttpGet("{id:guid}/student/my-submissions")]
+    // [RequireRole("student")]
+    // [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionDto>>), 200)]
+    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    // [ProducesResponseType(typeof(ErrorResponse), 404)]
+    // [ProducesResponseType(typeof(ErrorResponse), 500)]
+    // public async Task<IActionResult> GetMySubmissions(Guid id)
+    // {
+    //     var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
+    //     var detail = await _assignmentService.GetAssignmentUserAsync(id, userId);
         
-        if (detail == null)
-            return NotFound(ApiResponse<List<BestSubmissionDto>>.ErrorResponse("Assignment detail not found"));
+    //     if (detail == null)
+    //         return NotFound(ApiResponse<List<BestSubmissionDto>>.ErrorResponse("Assignment detail not found"));
         
-        var submissions = await _assignmentService.GetSubmissionsByAssignmentUserAsync(detail.AssignmentUserId);
-        var response = _mapper.Map<List<BestSubmissionDto>>(submissions);
+    //     var submissions = await _assignmentService.GetSubmissionsByAssignmentUserAsync(detail.AssignmentUserId);
+    //     var response = _mapper.Map<List<BestSubmissionDto>>(submissions);
         
-        return Ok(ApiResponse<List<BestSubmissionDto>>.SuccessResponse(response));
-    }
+    //     return Ok(ApiResponse<List<BestSubmissionDto>>.SuccessResponse(response));
+    // }
 
-    ///================[ PHẦN NÀY THUỘC PHẦN CỦA SUBMISSION SERVICE RỒI, CHỈ ĐỂ TEST THÔI ]
+    // ///================[ PHẦN NÀY THUỘC PHẦN CỦA SUBMISSION SERVICE RỒI, CHỈ ĐỂ TEST THÔI ]
 
     /// <summary>
     /// Webhook endpoint for Submission Service to save assignment problem submission results
@@ -457,102 +457,102 @@ public class AssignmentController : ControllerBase
     {
         // try {
 
-        //     var userId = request.UserId ?? Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
+    //     //     var userId = request.UserId ?? Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
 
-        //     var apiKey = Request.Headers["X-Api-Key"].ToString();
-        //     if (/* apiKey != Environment.GetEnvironmentVariable("API_KEY_WEBHOOK") || */ apiKey != "123456789")
-        //         throw new ApiException("Unauthorized - api-key webhook required");
+    //     //     var apiKey = Request.Headers["X-Api-Key"].ToString();
+    //     //     if (/* apiKey != Environment.GetEnvironmentVariable("API_KEY_WEBHOOK") || */ apiKey != "123456789")
+    //     //         throw new ApiException("Unauthorized - api-key webhook required");
             
-        //     var problemId = request.ProblemId;
-        //     if (request.SubmissionId == null){
-        //         throw new ApiException("Submission ID is required");
-        //     }
+    //     //     var problemId = request.ProblemId;
+    //     //     if (request.SubmissionId == null){
+    //     //         throw new ApiException("Submission ID is required");
+    //     //     }
 
-        //     var detail = await _assignmentService.GetAssignmentUserAsync(assignmentId, userId);
-        //     if (detail == null)
-        //         throw new ApiException("Assignment detail not found");
+    //     //     var detail = await _assignmentService.GetAssignmentUserAsync(assignmentId, userId);
+    //     //     if (detail == null)
+    //     //         throw new ApiException("Assignment detail not found");
             
-        //     // Đếm số submissions hiện tại cho problem này để tính attempt count
-        //     var existingSubmissions = await _assignmentService.GetSubmissionsByAssignmentUserAsync(detail.AssignmentUserId);
+    //     //     // Đếm số submissions hiện tại cho problem này để tính attempt count
+    //     //     var existingSubmissions = await _assignmentService.GetSubmissionsByAssignmentUserAsync(detail.AssignmentUserId);
 
-        //     var problemSubmissions = existingSubmissions?.Where(s => s.ProblemId == problemId).ToList() ?? new List<AssignmentProblemSubmission>();
+    //     //     var problemSubmissions = existingSubmissions?.Where(s => s.ProblemId == problemId).ToList() ?? new List<AssignmentProblemSubmission>();
             
-        //     // Lấy thông tin assignment problem để có MaxScore
-        //     var assignmentProblem = await _assignmentService.GetAssignmentProblemAsync(assignmentId, problemId);
-        //     if (assignmentProblem == null)
-        //         throw new ApiException("Assignment problem not found");
+    //     //     // Lấy thông tin assignment problem để có MaxScore
+    //     //     var assignmentProblem = await _assignmentService.GetAssignmentProblemAsync(assignmentId, problemId);
+    //     //     if (assignmentProblem == null)
+    //     //         throw new ApiException("Assignment problem not found");
             
-        //     // Tính toán score dựa trên số test cases đã pass và MaxScore từ assignment_problem
-        //     var totalTestCases = request.TotalTestCases ?? 0;
-        //     var passedTestCases = request.PassedTestCases ?? 0;
-        //     var maxScore = assignmentProblem.Points; 
-        //     var score = totalTestCases > 0 ? (int)Math.Round((double)passedTestCases / totalTestCases * maxScore) : 0;
+    //     //     // Tính toán score dựa trên số test cases đã pass và MaxScore từ assignment_problem
+    //     //     var totalTestCases = request.TotalTestCases ?? 0;
+    //     //     var passedTestCases = request.PassedTestCases ?? 0;
+    //     //     var maxScore = assignmentProblem.Points; 
+    //     //     var score = totalTestCases > 0 ? (int)Math.Round((double)passedTestCases / totalTestCases * maxScore) : 0;
             
-        //     // Xác định status dựa trên score
-        //     var status = score == maxScore ? Domain.Enums.AssignmentProblemSubmissionStatus.ACCEPTED : 
-        //                 score > 0 ? Domain.Enums.AssignmentProblemSubmissionStatus.PARTIAL_ACCEPTED : 
-        //                 Domain.Enums.AssignmentProblemSubmissionStatus.WRONG_ANSWER;
+    //     //     // Xác định status dựa trên score
+    //     //     var status = score == maxScore ? Domain.Enums.AssignmentProblemSubmissionStatus.ACCEPTED : 
+    //     //                 score > 0 ? Domain.Enums.AssignmentProblemSubmissionStatus.PARTIAL_ACCEPTED : 
+    //     //                 Domain.Enums.AssignmentProblemSubmissionStatus.WRONG_ANSWER;
 
-        //     // Tạo submission mới mỗi lần submit
-        //     var submission = new AssignmentProblemSubmission
-        //     {
-        //         SubmissionId = request.SubmissionId.Value,
-        //         AssignmentUserId = detail.AssignmentUserId,
-        //         ProblemId = problemId,
-        //         SolutionCode = request.SolutionCode,
-        //         Status = status,
-        //         SubmittedAt = (DateTime)request.SubmittedAt,
-        //         AttemptCount = problemSubmissions.Count + 1,
-        //         Score = score,
-        //         MaxScore = maxScore,
-        //         ExecutionTime = request.ExecutionTime,
-        //         MemoryUsed = request.MemoryUsed
-        //     };
+    //     //     // Tạo submission mới mỗi lần submit
+    //     //     var submission = new AssignmentProblemSubmission
+    //     //     {
+    //     //         SubmissionId = request.SubmissionId.Value,
+    //     //         AssignmentUserId = detail.AssignmentUserId,
+    //     //         ProblemId = problemId,
+    //     //         SolutionCode = request.SolutionCode,
+    //     //         Status = status,
+    //     //         SubmittedAt = (DateTime)request.SubmittedAt,
+    //     //         AttemptCount = problemSubmissions.Count + 1,
+    //     //         Score = score,
+    //     //         MaxScore = maxScore,
+    //     //         ExecutionTime = request.ExecutionTime,
+    //     //         MemoryUsed = request.MemoryUsed
+    //     //     };
             
             
 
-        //     var created = await _assignmentService.SaveSubmissionAsync(submission);
-        //     var response = _mapper.Map<BestSubmissionDto>(created);
+    //     //     var created = await _assignmentService.SaveSubmissionAsync(submission);
+    //     //     var response = _mapper.Map<BestSubmissionDto>(created);
             
         // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission saved successfully"));
         // } catch (Exception e) {
         //     Console.Write(e);
         //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse(e.Message));
 
-        // }
+    //     // }
 
         return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
     }
 
-    /// <summary>
-    /// Retrieves all submissions for a specific assignment (Teacher only)
-    /// </summary>
-    /// <param name="id">The unique identifier of the assignment</param>
-    /// <returns>List of all submissions for the assignment</returns>
-    /// <response code="200">All submissions retrieved successfully</response>
-    /// <response code="401">Unauthorized - Teacher role required</response>
-    /// <response code="403">Forbidden - You don't have permission to view this assignment's submissions</response>
-    /// <response code="404">Assignment not found</response>
-    /// <response code="500">Internal server error</response>
-    [HttpGet("{id:guid}/all-submissions")]
-    [RequireRole("teacher")]
-    [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionDto>>), 200)]
-    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetAllSubmissions(Guid id)
-    {
-        var userId = GetAuthenticatedUserId();
+    // /// <summary>
+    // /// Retrieves all submissions for a specific assignment (Teacher only)
+    // /// </summary>
+    // /// <param name="id">The unique identifier of the assignment</param>
+    // /// <returns>List of all submissions for the assignment</returns>
+    // /// <response code="200">All submissions retrieved successfully</response>
+    // /// <response code="401">Unauthorized - Teacher role required</response>
+    // /// <response code="403">Forbidden - You don't have permission to view this assignment's submissions</response>
+    // /// <response code="404">Assignment not found</response>
+    // /// <response code="500">Internal server error</response>
+    // [HttpGet("{id:guid}/all-submissions")]
+    // [RequireRole("teacher")]
+    // [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionDto>>), 200)]
+    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    // [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
+    // [ProducesResponseType(typeof(ErrorResponse), 404)]
+    // [ProducesResponseType(typeof(ErrorResponse), 500)]
+    // public async Task<IActionResult> GetAllSubmissions(Guid id)
+    // {
+    //     var userId = GetAuthenticatedUserId();
         
-        // Use lightweight query - only check ownership, don't need full Assignment entity
-        await VerifyAssignmentOwnershipLightweightAsync(id, userId);
+    //     // Use lightweight query - only check ownership, don't need full Assignment entity
+    //     await VerifyAssignmentOwnershipLightweightAsync(id, userId);
         
-        var submissions = await _assignmentService.GetSubmissionsByAssignmentAsync(id);
-        var response = _mapper.Map<List<BestSubmissionDto>>(submissions);
+    //     var submissions = await _assignmentService.GetSubmissionsByAssignmentAsync(id);
+    //     var response = _mapper.Map<List<BestSubmissionDto>>(submissions);
         
-        return Ok(ApiResponse<List<BestSubmissionDto>>.SuccessResponse(response));
-    }
+    //     return Ok(ApiResponse<List<BestSubmissionDto>>.SuccessResponse(response));
+    // }
 
     /// <summary>
     /// Grades a specific submission (Teacher only)
@@ -581,26 +581,26 @@ public class AssignmentController : ControllerBase
         // if (assignment == null)
         //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Assignment not found"));
         
-        // var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
-        // if (assignment.AssignedBy != userId)
-        //     throw new ApiException("You do not have permission to grade this assignment");
+    //     // var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
+    //     // if (assignment.AssignedBy != userId)
+    //     //     throw new ApiException("You do not have permission to grade this assignment");
         
-        // // Find submission by ID (we need to add this method to service)
-        // var submissions = await _assignmentService.GetSubmissionsByAssignmentAsync(id);
-        // var submission = submissions.FirstOrDefault(s => s.SubmissionId == submissionId);
+    //     // // Find submission by ID (we need to add this method to service)
+    //     // var submissions = await _assignmentService.GetSubmissionsByAssignmentAsync(id);
+    //     // var submission = submissions.FirstOrDefault(s => s.SubmissionId == submissionId);
         
-        // if (submission == null)
-        //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Submission not found"));
+    //     // if (submission == null)
+    //     //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Submission not found"));
         
-        // // Update grade
-        // submission.Score = request.Score;
-        // submission.TeacherFeedback = request.TeacherFeedback;
-        // submission.Status = Domain.Enums.AssignmentProblemSubmissionStatus.GRADED;
+    //     // // Update grade
+    //     // submission.Score = request.Score;
+    //     // submission.TeacherFeedback = request.TeacherFeedback;
+    //     // submission.Status = Domain.Enums.AssignmentProblemSubmissionStatus.GRADED;
         
-        // var updated = await _assignmentService.UpdateSubmissionAsync(submission);
-        // var response = _mapper.Map<BestSubmissionDto>(updated);
+    //     // var updated = await _assignmentService.UpdateSubmissionAsync(submission);
+    //     // var response = _mapper.Map<BestSubmissionDto>(updated);
         
-        // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
+    //     // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
 
         return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
     }

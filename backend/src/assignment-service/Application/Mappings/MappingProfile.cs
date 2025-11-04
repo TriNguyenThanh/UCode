@@ -100,6 +100,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Assignment, opt => opt.Ignore())
             .ForMember(dest => dest.Problem, opt => opt.Ignore());
 
+
+        // Submission mappings
+        CreateMap<Submission, SubmissionResponse>();
+        CreateMap<SubmissionRequest, Submission>();
+        CreateMap<Submission, CreateSubmissionResponse>();
+
+        // BestSubmission mappings
+        CreateMap<BestSubmission, BestSubmissionResponse>();
         // ProblemAsset Mappings
         CreateMap<ProblemAsset, ProblemAssetDto>();
 

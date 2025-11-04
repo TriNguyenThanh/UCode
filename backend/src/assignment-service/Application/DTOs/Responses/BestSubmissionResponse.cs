@@ -4,7 +4,7 @@ namespace AssignmentService.Domain.Entities;
 /// Entity đại diện cho bảng BestSubmissions
 /// Lưu submission tốt nhất của user cho từng problem trong assignment
 /// </summary>
-public class BestSubmission
+public class BestSubmissionResponse
 {
     public Guid BestSubmissionId { get; set; }
     
@@ -44,9 +44,4 @@ public class BestSubmission
     /// Tổng bộ nhớ sử dụng (KB)
     /// </summary>
     public long TotalMemory { get; set; }
-    
-    /// <summary>
-    /// Thời gian cập nhật lần cuối
-    /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

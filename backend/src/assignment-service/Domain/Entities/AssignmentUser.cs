@@ -44,8 +44,10 @@ public class AssignmentUser
     /// Điểm tối đa
     /// </summary>
     public int? MaxScore { get; set; }
-    
+
 
     // Navigation properties
     public Assignment Assignment { get; set; } = null!;
+    
+    public ICollection<Submission> Submissions { get; set; } = new List<Submission>();
 }
