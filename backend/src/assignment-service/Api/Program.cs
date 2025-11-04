@@ -197,5 +197,4 @@ app.UseMiddleware<GatewayRoleMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 
-
 app.Run();
