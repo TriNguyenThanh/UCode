@@ -15,11 +15,11 @@ public class TestCaseConfiguration : IEntityTypeConfiguration<TestCase>
         
         builder.Property(t => t.InputRef)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasColumnType("NVARCHAR(MAX)");
         
         builder.Property(t => t.OutputRef)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasColumnType("NVARCHAR(MAX)");
         
         builder.Property(t => t.Score)
             .IsRequired()

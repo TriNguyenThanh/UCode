@@ -13,7 +13,7 @@ public class Problem
     /// <summary>
     /// Mã đề bài (unique): P001, P002,...
     /// </summary>
-    public string Code { get; set; } = string.Empty;
+    public string? Code { get; set; } = string.Empty;
     
     /// <summary>
     /// URL-friendly slug (unique): two-sum, reverse-string,...
@@ -50,8 +50,13 @@ public class Problem
     /// <summary>
     /// Đường dẫn file Markdown chứa đề bài
     /// </summary>
-    public string? StatementMdRef { get; set; }
-    
+    public string? Statement { get; set; }
+
+    /// <summary>
+    /// Giải pháp tham khảo (reference solution)
+    /// </summary>
+    public string? Solution { get; set; }
+
     /// <summary>
     /// Chế độ I/O: STDIO hoặc FILE
     /// </summary>
@@ -146,18 +151,13 @@ public class Problem
     public ICollection<Dataset> Datasets { get; set; } = new List<Dataset>();
     
     /// <summary>
-    /// Collection các code templates
-    /// </summary>
-    public ICollection<CodeTemplate> CodeTemplates { get; set; } = new List<CodeTemplate>();
-    
-    /// <summary>
     /// Collection các assets (PDF, images,...)
     /// </summary>
     public ICollection<ProblemAsset> ProblemAssets { get; set; } = new List<ProblemAsset>();
     
     /// <summary>
-    /// Collection các language limits
+    /// Collection các language overrides (problem-specific language configurations)
     /// </summary>
-    public ICollection<LanguageLimit> LanguageLimits { get; set; } = new List<LanguageLimit>();
+    public ICollection<ProblemLanguage> ProblemLanguages { get; set; } = new List<ProblemLanguage>();
 
 }

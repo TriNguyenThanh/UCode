@@ -1,1 +1,4 @@
- 
+ - Mô tả bài toán
+ - Thiết kế hệ thống
+ - Trình bày project
+ - Code

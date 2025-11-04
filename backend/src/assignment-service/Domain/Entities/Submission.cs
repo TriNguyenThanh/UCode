@@ -10,7 +10,7 @@ public class Submission
     
     public Guid UserId { get; set; }
     
-    public Guid AssignmentId { get; set; }
+    public Guid? AssignmentUserId { get; set; }
     
     public Guid ProblemId { get; set; }
     
@@ -18,6 +18,11 @@ public class Submission
     /// Foreign Key đến Dataset được sử dụng để chấm
     /// </summary>
     public Guid DatasetId { get; set; }
+
+    /// <summary>
+    /// Source code của bài nộp
+    /// </summary>
+    public string SourceCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
@@ -37,7 +42,7 @@ public class Submission
     /// <summary>
     /// Trạng thái submission
     /// </summary>
-    public string Status { get; set; } = string.Empty;
+    public SubmissionStatus Status { get; set; } = SubmissionStatus.Pending;
     
     /// <summary>
     /// Mã lỗi (nếu có)
@@ -75,10 +80,11 @@ public class Submission
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
     
     /// <summary>
-    /// Foreign Key đến Result File (nếu có)
+    /// Tham chiếu đến file kết quả (lưu trên storage)
     /// </summary>
-    public Guid? ResultFileRef { get; set; }
-    
-    // Navigation properties
-    // public List<Result> Results { get; set; } = null!;
+    public string? ResultFileRef { get; set; }
+
+    // Navigation Properties
+    public AssignmentUser AssignmentUser { get; set; } = null!;
+    public Problem Problem { get; set; } = null!;
 }

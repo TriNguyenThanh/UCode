@@ -40,16 +40,66 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<Assignment?> GetByIdWithDetailsAsync(Guid id)
     {
         return await _context.Assignments
-        .AsNoTracking()
-        .Include(a => a.AssignmentProblems)
-            .ThenInclude(ap => ap.Problem)
-        .FirstOrDefaultAsync(a => a.AssignmentId == id);
+            .AsNoTracking()
+            .Include(a => a.AssignmentProblems)
+                .ThenInclude(ap => ap.Problem)
+            .FirstOrDefaultAsync(a => a.AssignmentId == id);
+    }
+
+    /// <summary>
+    /// Lấy assignment với chỉ ProblemId và Title của problems (tối ưu cho hiển thị danh sách)
+    /// </summary>
+    public async Task<Assignment?> GetByIdWithProblemBasicsAsync(Guid id)
+    {
+        var assignment = await _context.Assignments
+            .AsNoTracking()
+            .Where(a => a.AssignmentId == id)
+            .Select(a => new
+            {
+                Assignment = a,
+                Problems = a.AssignmentProblems
+                    .OrderBy(ap => ap.OrderIndex)
+                    .Select(ap => new
+                    {
+                        ap.AssignmentId,
+                        ap.ProblemId,
+                        ap.Points,
+                        ap.OrderIndex,
+                        ProblemTitle = ap.Problem.Title,
+                        ProblemCode = ap.Problem.Code,
+                        ProblemDifficulty = ap.Problem.Difficulty
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (assignment == null) return null;
+
+        // Map lại vào Assignment entity
+        var result = assignment.Assignment;
+        result.AssignmentProblems = assignment.Problems.Select(p => new AssignmentProblem
+        {
+            AssignmentId = p.AssignmentId,
+            ProblemId = p.ProblemId,
+            Points = p.Points,
+            OrderIndex = p.OrderIndex,
+            Problem = new Problem
+            {
+                ProblemId = p.ProblemId,
+                Title = p.ProblemTitle,
+                Code = p.ProblemCode,
+                Difficulty = p.ProblemDifficulty
+            }
+        }).ToList();
+
+        return result;
     }
 
     public async Task<List<Assignment>> GetByTeacherIdAsync(Guid teacherId)
     {
         return await _context.Assignments
             .AsNoTracking()
+            .Include(a => a.AssignmentProblems)
             .Where(a => a.AssignedBy == teacherId)
             .OrderByDescending(a => a.AssignedAt)
             .ToListAsync();
@@ -58,10 +108,11 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<List<Assignment>> GetByClassIdAsync(Guid classId)
     {
         return await _context.Assignments
-            .AsNoTracking()
-            .Where(a => a.ClassId == classId)
-            .OrderByDescending(a => a.AssignedAt)
-            .ToListAsync();
+               .AsNoTracking()
+               .Include(a => a.AssignmentProblems)
+               .Where(a => a.ClassId == classId)
+               .OrderByDescending(a => a.AssignedAt)
+               .ToListAsync();
     }
 
     public async Task<List<Assignment>> GetByUserIdAsync(Guid UserId)
@@ -106,26 +157,24 @@ public class AssignmentRepository : IAssignmentRepository
         existingAssignment.Description = entity.Description;
         existingAssignment.StartTime = entity.StartTime;
         existingAssignment.EndTime = entity.EndTime;
-        existingAssignment.AssignedAt = entity.AssignedAt;
-        existingAssignment.TotalPoints = entity.TotalPoints;
+        // existingAssignment.AssignedAt = entity.AssignedAt;
+        // existingAssignment.TotalPoints = entity.TotalPoints;
         existingAssignment.AllowLateSubmission = entity.AllowLateSubmission;
         existingAssignment.Status = entity.Status;
 
         var newProblems = (entity.AssignmentProblems ?? new List<AssignmentProblem>()).ToList();
 
+        existingAssignment.TotalPoints = newProblems.Sum(p => p.Points);
         existingAssignment.AssignmentProblems = newProblems;
 
-        _context.Assignments.Update(existingAssignment);
+        // _context.Assignments.Update(existingAssignment);
 
         await _context.SaveChangesAsync();
 
         var newMaxScore = await GetAssignmentMaxScoreAsync(entity.AssignmentId);
         await UpdateAssignmentUsersMaxScoreAsync(entity.AssignmentId, newMaxScore);
 
-        return await _context.Assignments
-            .Include(a => a.AssignmentProblems)
-                .ThenInclude(ap => ap.Problem)
-            .FirstOrDefaultAsync(a => a.AssignmentId == entity.AssignmentId) ?? existingAssignment;
+        return await GetByIdWithProblemBasicsAsync(entity.AssignmentId) ?? existingAssignment;
     }
 
     public async Task<bool> RemoveAsync(Guid id)
@@ -278,71 +327,73 @@ public class AssignmentRepository : IAssignmentRepository
             .FirstOrDefaultAsync(ap => ap.AssignmentId == assignmentId && ap.ProblemId == problemId);
     }
 
-    // ================[ BestSubmission methods ]==================
-    public async Task<BestSubmission> AddSubmissionAsync(BestSubmission submission)
+    // // ================[ BestSubmission methods ]==================
+    // public async Task<BestSubmission> AddSubmissionAsync(BestSubmission submission)
+    // {
+    //     await _context.BestSubmissions.AddAsync(submission);
+    //     await _context.SaveChangesAsync();
+    //     return submission;
+    // }
+
+    // public async Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions)
+    // {
+    //     await _context.BestSubmissions.AddRangeAsync(submissions);
+    //     await _context.SaveChangesAsync();
+    //     return submissions;
+    // }
+
+    // public async Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId)
+    // {
+    //     return await _context.BestSubmissions
+    //         .FirstOrDefaultAsync(s => s.AssignmentUserId == AssignmentUserId && s.ProblemId == problemId);
+    // }
+
+    // public async Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId)
+    // {
+    //     return await _context.BestSubmissions
+    //         .AsNoTracking()
+    //         .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
+    // }
+
+    public Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
     {
-        await _context.BestSubmissions.AddAsync(submission);
-        await _context.SaveChangesAsync();
-        return submission;
+        // return await _context.Submissions
+        //     .AsNoTracking()
+        //     .Where(s => s.AssignmentUserId == AssignmentUserId)
+        //     .OrderBy(s => s.AssignmentUser.Assignment.AssignmentProblems
+        //         .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
+        //     .ToListAsync();
+        throw new NotImplementedException("Cái này thuộc bên Trí");
     }
 
-    public async Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions)
+    public Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
     {
-        await _context.BestSubmissions.AddRangeAsync(submissions);
-        await _context.SaveChangesAsync();
-        return submissions;
+        // return await _context.Submissions
+        //     .Where(s => s.AssignmentUser.AssignmentId == assignmentId)
+        //     .OrderBy(s => s.AssignmentUser.UserId)
+        //     .ThenBy(s => s.AssignmentUser.Assignment.AssignmentProblems
+        //         .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
+        //     .ToListAsync();
+        throw new NotImplementedException("Cái này thuộc bên Trí");
     }
 
-    public async Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId)
-    {
-        return await _context.BestSubmissions
-            .FirstOrDefaultAsync(s => s.AssignmentUserId == AssignmentUserId && s.ProblemId == problemId);
-    }
+    // public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
+    // {
+    //     _context.BestSubmissions.Update(submission);
+    //     await _context.SaveChangesAsync();
+    //     return submission;
+    // }
 
-    public async Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId)
-    {
-        return await _context.BestSubmissions
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
-    }
+    // public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
+    // {
+    //     var submission = await _context.BestSubmissions.FindAsync(submissionId);
+    //     if (submission == null)
+    //         return false;
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
-    {
-        return await _context.Submissions
-            .AsNoTracking()
-            .Where(s => s.AssignmentUserId == AssignmentUserId)
-            .OrderBy(s => s.AssignmentUser.Assignment.AssignmentProblems
-                .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
-            .ToListAsync();
-    }
-
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
-    {
-        return await _context.Submissions
-            .Where(s => s.AssignmentUser.AssignmentId == assignmentId)
-            .OrderBy(s => s.AssignmentUser.UserId)
-            .ThenBy(s => s.AssignmentUser.Assignment.AssignmentProblems
-                .FirstOrDefault(ap => ap.ProblemId == s.ProblemId)!.OrderIndex)
-            .ToListAsync();
-    }
-
-    public async Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission)
-    {
-        _context.BestSubmissions.Update(submission);
-        await _context.SaveChangesAsync();
-        return submission;
-    }
-
-    public async Task<bool> DeleteSubmissionAsync(Guid submissionId)
-    {
-        var submission = await _context.BestSubmissions.FindAsync(submissionId);
-        if (submission == null)
-            return false;
-
-        _context.BestSubmissions.Remove(submission);
-        await _context.SaveChangesAsync();
-        return true;
-    }
+    //     _context.BestSubmissions.Remove(submission);
+    //     await _context.SaveChangesAsync();
+    //     return true;
+    // }
 
 
     public async Task<int> CountAsync(Expression<Func<Assignment, bool>>? predicate = null)
@@ -355,7 +406,7 @@ public class AssignmentRepository : IAssignmentRepository
         }
 
         return await query.CountAsync();
-        
+
     }
 
     public async Task<bool> AnyAsync(Expression<Func<Assignment, bool>> predicate)

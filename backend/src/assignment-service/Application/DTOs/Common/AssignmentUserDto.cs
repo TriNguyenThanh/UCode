@@ -11,7 +11,7 @@ public class AssignmentUserDto
     public Guid AssignmentId { get; set; }
     
     [Required]
-    public Guid StudentId { get; set; }
+    public Guid UserId { get; set; }
     
     public AssignmentUserStatus Status { get; set; }
     

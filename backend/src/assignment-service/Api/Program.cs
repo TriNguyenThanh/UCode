@@ -12,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 using AssignmentService.Application.DTOs.Common;
 using Scrutor;
 using AssignmentService.Api.Filters;
-using AssignmentService.Api.Middlewares;
-
-using AssignmentService.Infrastructure.EF;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never; //dòng này Híu sửa, merge thì hãy giữ nhé
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     })
     .ConfigureApiBehaviorOptions(options =>
@@ -108,48 +109,51 @@ builder.Services.AddSwaggerGen(c =>
 // Add DbContext với Snake Case Naming Convention
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
 {
+    var connectionString = builder.Configuration.GetConnectionString("AssignmentDb")
+        ?? builder.Configuration["ConnectionStrings:AssignmentDb"]
+        ?? builder.Configuration["AssignmentDb"]
+        ?? throw new InvalidOperationException("Connection string 'AssignmentDb' not found.");
+    
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("AssignmentDb"),
+        connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
 
-    // ===== QUAN TRỌNG: Enable Snake Case Naming =====
-    // Package EFCore.NamingConventions sẽ tự động convert:
-    // - ProblemId → problem_id
-    // - CreatedAt → created_at
-    // - ProblemVersions → problem_versions
+    // =====Enable Snake Case Naming =====
     options.UseSnakeCaseNamingConvention();
 });
 
 // Register HttpClient for UserService
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 
+// Register RabbitMQ Connection Provider as Singleton (connection pooling)
+builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(assemblies)
-    .AddClasses(classes => classes.InNamespaces("AssignmentService.Application.Interfaces.Services", "AssignmentService.Application.Interfaces.Repositories", "AssignmentService.Infrastructure.Services", "AssignmentService.Infrastructure.Repositories"))
+    .AddClasses(classes => classes.InNamespaces(
+        "AssignmentService.Infrastructure.Services",
+        "AssignmentService.Infrastructure.Repositories",
+        "AssignmentService.Infrastructure.MessageBrokers")
+        .Where(type => type != typeof(AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider))) // Exclude RabbitMqConnectionProvider (already registered as Singleton)
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 
 // Register Repositories
 // builder.Services.AddScoped<IProblemRepository, ProblemRepository>();
-// // builder.Services.AddScoped<IDatasetRepository, DatasetRepository>();
+// builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
 
-// // Register Services
-// builder.Services.AddScoped<IAsService, AssignmentService>();
-// // builder.Services.AddScoped<IDatasetService, DatasetService>();
+// Register Services
+// builder.Services.AddScoped<IProblemService, ProblemService>();
+// builder.Services.AddScoped<ILanguageService, LanguageService>();
 
 //Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<AssignmentDbContext>(opt =>
-{
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDbConnection"));
-});
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
@@ -191,6 +195,5 @@ app.UseHttpsRedirection();
 app.UseMiddleware<GatewayRoleMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-
 
 app.Run();

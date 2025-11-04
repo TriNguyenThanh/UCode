@@ -5,6 +5,7 @@ namespace AssignmentService.Application.Interfaces.Repositories;
 public interface IAssignmentRepository : IRepository<Assignment>
 {
     Task<Assignment?> GetByIdWithDetailsAsync(Guid id);
+    Task<Assignment?> GetByIdWithProblemBasicsAsync(Guid id); // Chỉ lấy ID, Title, Code, Difficulty của problems
     Task<List<Assignment>> GetByTeacherIdAsync(Guid teacherId);
     Task<List<Assignment>> GetByClassIdAsync(Guid classId);
     Task<List<Assignment>> GetByUserIdAsync(Guid studentId);
@@ -32,12 +33,12 @@ public interface IAssignmentRepository : IRepository<Assignment>
     Task<AssignmentProblem?> GetAssignmentProblemAsync(Guid assignmentId, Guid problemId);
     
     // BestSubmission operations
-    Task<BestSubmission> AddSubmissionAsync(BestSubmission submission);
-    Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions);
-    Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId);
-    Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId);
-    Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
-    Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
-    Task<bool> DeleteSubmissionAsync(Guid submissionId);
+    // Task<BestSubmission> AddSubmissionAsync(BestSubmission submission);
+    // Task<List<BestSubmission>> AddSubmissionsAsync(List<BestSubmission> submissions);
+    // Task<BestSubmission?> GetSubmissionAsync(Guid AssignmentUserId, Guid problemId);
+    // Task<BestSubmission?> GetSubmissionByIdAsync(Guid submissionId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId);
+    // Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
+    // Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
+    // Task<bool> DeleteSubmissionAsync(Guid submissionId);
 }

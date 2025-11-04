@@ -12,6 +12,8 @@ import time
 import uuid
 import json
 import base64
+import py_compile
+import tempfile
 
 # Đọc default limits từ environment variables
 DEFAULT_MEMORY_LIMIT = int(os.getenv("DEFAULT_MEMORY_LIMIT", "256"))
@@ -30,10 +32,37 @@ class TESTCASE_STATUS:
 def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=None, mem_keys=None):
     """
     Execute code against multiple testcases using Isolate sandbox.
-    mem_keys: optional list of meta keys to try in order for memory measurement (e.g. ["cg-mem","max-rss"])
-    Returns list of results in the exact format you want.
+    
+    Args:
+        language: Ngôn ngữ lập trình (python, cpp)
+        code: Source code
+        testcases: List of testcase dicts theo format C#:
+            [
+                {
+                    "TestCaseId": "guid-string",
+                    "IndexNo": 0,
+                    "InputRef": "1 2\n",
+                    "OutputRef": "3\n"
+                },
+                ...
+            ]
+        timelimit: Time limit in seconds
+        memorylimit: Memory limit in MB
+        mem_keys: Optional list of meta keys for memory measurement
+        
+    Returns:
+        List of results sorted by IndexNo: [
+            {
+                "testcaseId": str,
+                "indexNo": int,
+                "status": str,  # TESTCASE_STATUS constant
+                "time": int,    # execution time in milliseconds
+                "memory": int,  # memory usage in KB
+                "output": str,  # actual output
+                "error": str    # error message if any
+            }
+        ]
     """
-    # print(json.dumps(testcases, indent=4))
     if timelimit is None:
         timelimit = DEFAULT_TIME_LIMIT
     if memorylimit is None:
@@ -67,8 +96,33 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             code_file = f"{box_path}/main.py"
             with open(code_file, "w", encoding="utf-8") as f:
                 f.write(code)
+            
+            # ✅ CHECK SYNTAX trước khi chạy testcases
+            try:
+                py_compile.compile(code_file, doraise=True)
+                print(f"[DEBUG] Python syntax check passed")
+            except py_compile.PyCompileError as e:
+                # Parse error message để lấy thông tin chi tiết
+                error_msg = str(e)
+                print(f"[ERROR] Python syntax error: {error_msg}")
+                return _error_result(
+                    testcases, 
+                    error_code=TESTCASE_STATUS.CompilationError, 
+                    error_msg=f"Python Syntax Error:\n{error_msg}"
+                )
+            except SyntaxError as e:
+                # Direct syntax error
+                error_msg = f"Line {e.lineno}: {e.msg}\n{e.text}" if e.text else f"Line {e.lineno}: {e.msg}"
+                print(f"[ERROR] Python syntax error: {error_msg}")
+                return _error_result(
+                    testcases,
+                    error_code=TESTCASE_STATUS.CompilationError,
+                    error_msg=f"Python Syntax Error:\n{error_msg}"
+                )
+            
             run_cmd = ["/usr/bin/python3", "main.py"]
-            compile_success = True  # Python không cần compile
+            compile_success = True
+            print(f"[DEBUG] Python code ready for execution")
 
         elif language == "cpp":
             code_file = f"{box_path}/main.cpp"
@@ -97,8 +151,13 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             compile_result = subprocess.run(compile_cmd, capture_output=True, text=True, timeout=20)
 
             if compile_result.returncode != 0:
-                stderr = _read_file(compile_error_file)
-                return _error_result(testcases, error_code=TESTCASE_STATUS.CompilationError, error_msg=stderr)
+                stderr = _read_file(compile_error_file) or compile_result.stderr
+                print(f"[ERROR] C++ compilation failed:\n{stderr}")
+                return _error_result(
+                    testcases, 
+                    error_code=TESTCASE_STATUS.CompilationError, 
+                    error_msg=f"C++ Compilation Error:\n{stderr}"
+                )
 
             run_cmd = ["./main"]
             compile_success = True
@@ -111,13 +170,16 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
         if not compile_success:
             return results  # đã xử lý ở trên
 
-        # === BƯỚC 2: Chạy từng testcase ===
-        for tc in testcases:
-            # print(json.dumps(tc, indent=4))
-
-            tc_id = tc.get("testcaseId", "unknown")
-            input_ref = str(tc.get("inputRef", "")).strip()
-            output_ref = str(tc.get("outputRef", "")).strip()
+        # === BƯỚC 2: Chạy từng testcase (sắp xếp theo IndexNo) ===
+        # Sort testcases by IndexNo để đảm bảo thứ tự đúng
+        sorted_testcases = sorted(testcases, key=lambda tc: tc.get("IndexNo", 0))
+        
+        for tc in sorted_testcases:
+            # Hỗ trợ cả lowercase (từ Python) và PascalCase (từ C#)
+            tc_id = tc.get("TestCaseId") or tc.get("testcaseId", "unknown")
+            index_no = tc.get("IndexNo", tc.get("indexNo", 0))
+            input_ref = str(tc.get("InputRef") or tc.get("inputRef", "")).strip()
+            output_ref = str(tc.get("OutputRef") or tc.get("outputRef", "")).strip()
 
             input_file = f"{box_path}/input.txt"
             output_file = f"{box_path}/output.txt"
@@ -127,18 +189,18 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             with open(input_file, "w", encoding="utf-8") as f:
                 f.write(input_ref)
 
+            # Result format với IndexNo
             result = {
                 "testcaseId": tc_id,
-                "actualOutput": "",
+                "indexNo": index_no,
                 "status": TESTCASE_STATUS.Pending,
-                "errorMessage": "",
-                "executionTimeMs": 0,
-                "memoryUsageKb": 0
+                "time": 0,      # milliseconds
+                "memory": 0,    # KB
+                "output": "",   # actual output
+                "error": ""     # error message
             }
 
             try:
-                # print(f"[DEBUG] Running testcase {tc_id}...")
-
                 # Chạy isolate với file I/O
                 isolate_cmd = [
                     "isolate", "--box-id", str(box_id),
@@ -153,70 +215,69 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
                 exec_result = subprocess.run(isolate_cmd, capture_output=True, text=True, timeout=timelimit + 5)
                 exec_time_ms = int((time.time() - start_time) * 1000)
 
-                # Đọc meta
+                # Đọc meta và error
                 meta = _read_meta(meta_file)
-                # đọc error.txt nếu có
                 err = _read_file(error_file)
-                print(f"[DEBUG] Error output: {err}")
-                # Lấy thông tin thời gian và bộ nhớ sử dụng
-                result["executionTimeMs"] = int(float(meta.get("time", exec_time_ms / 1000)) * 1000)
-                # new: try multiple keys and parse units to KB
-                result["memoryUsageKb"] = _get_memory_kb_from_meta(meta, mem_keys) or int(meta.get("cg-mem") or meta.get("max-rss") or 0) or int(memorylimit * 1024)
+                
+                # Lấy thông tin thời gian và bộ nhớ
+                result["time"] = int(float(meta.get("time", exec_time_ms / 1000)) * 1000)
+                result["memory"] = _get_memory_kb_from_meta(meta, mem_keys) or int(meta.get("cg-mem") or meta.get("max-rss") or 0)
     
                 # Kiểm tra trạng thái isolate
                 status = meta.get("status", "")
                 if status == "TO":
                     result["status"] = TESTCASE_STATUS.TimeLimitExceeded
-                    result["errorMessage"] = "Time limit exceeded"
+                    result["error"] = f"Time limit exceeded ({timelimit}s)"
                     results.append(result)
-                    print(f"[DEBUG] Testcase {tc_id} TLE\n")
+                    print(f"[DEBUG] Testcase #{index_no} ({tc_id}) TLE")
                     continue
                 elif status in ("RE", "SG"):
                     result["status"] = TESTCASE_STATUS.RuntimeError
-                    result["errorMessage"] = err or meta.get("message", "Runtime error")
+                    # Format error message với stack trace nếu có
+                    error_detail = err or meta.get("message", "Runtime error")
+                    result["error"] = f"Runtime Error:\n{error_detail}"
                     results.append(result)
-                    print(f"[DEBUG] Testcase {tc_id} RE\n")
+                    print(f"[DEBUG] Testcase #{index_no} ({tc_id}) RE: {error_detail[:100]}...")
                     continue
                 elif status == "XX":
                     result["status"] = TESTCASE_STATUS.InternalError
-                    result["errorMessage"] = err or "Sandbox internal error"
+                    result["error"] = f"Internal Error: {err or 'Sandbox internal error'}"
                     results.append(result)
-                    print(f"[DEBUG] Testcase {tc_id} Internal Error\n")
+                    print(f"[DEBUG] Testcase #{index_no} ({tc_id}) Internal Error")
                     continue
 
-                # Nếu process trả về non-zero nhưng meta không chỉ rõ -> coi là runtime error và trả nội dung error.txt nếu có
+                # Nếu process trả về non-zero → runtime error
                 if exec_result.returncode != 0 and not status:
                     result["status"] = TESTCASE_STATUS.RuntimeError
-                    result["errorMessage"] = err or exec_result.stderr or "Process exited with non-zero code"
+                    error_detail = err or exec_result.stderr or "Process exited with non-zero code"
+                    result["error"] = f"Runtime Error (Exit Code {exec_result.returncode}):\n{error_detail}"
                     results.append(result)
-                    print(f"[DEBUG] Testcase {tc_id} process exit !=0\n")
+                    print(f"[DEBUG] Testcase #{index_no} ({tc_id}) process exit != 0")
                     continue
 
-                # Đọc output
+                # Đọc output và so sánh
                 actual_output = _read_file(output_file).strip()
-                result["actualOutput"] = actual_output
-                print(f"Your output: {actual_output}")
-                # So sánh với outputRef
+                result["output"] = actual_output
+                
                 expected = output_ref.strip()
-                print(f"Expected output: {expected}")
                 if actual_output == expected:
                     result["status"] = TESTCASE_STATUS.Passed
+                    print(f"[✓] Testcase #{index_no} ({tc_id}) passed")
                 else:
                     result["status"] = TESTCASE_STATUS.WrongAnswer
-                    result["errorMessage"] = f"Expected:\n{expected}\n\nGot:\n{actual_output}"
+                    result["error"] = f"Expected: {expected[:100]}... | Got: {actual_output[:100]}..."
+                    print(f"[✗] Testcase #{index_no} ({tc_id}) wrong answer")
 
                 results.append(result)
 
             except subprocess.TimeoutExpired:
-                err = _read_file(error_file)
                 result["status"] = TESTCASE_STATUS.TimeLimitExceeded
-                result["errorMessage"] = "Execution timeout (failsafe)" + (f"\n{err}" if err else "")
-                result["executionTimeMs"] = timelimit * 1000
+                result["error"] = "Execution timeout (failsafe)"
+                result["time"] = timelimit * 1000
                 results.append(result)
             except Exception as e:
-                err = _read_file(error_file)
                 result["status"] = TESTCASE_STATUS.InternalError
-                result["errorMessage"] = f"Unexpected error: {e}" + (f"\n{err}" if err else "")
+                result["error"] = f"Unexpected error: {e}"
                 results.append(result)
 
         return results
@@ -311,19 +372,18 @@ def _get_memory_kb_from_meta(meta, keys_order=None):
     return 0
 
 def _error_result(testcases, error_code, error_msg):
-    if error_code == TESTCASE_STATUS.CompilationError:
-        msg = f"Compilation failed:\n{error_msg}"
-    elif error_code == TESTCASE_STATUS.InternalError:
-        msg = error_msg
-
+    """
+    Tạo error result cho tất cả testcases khi có lỗi nghiêm trọng (compile error, internal error)
+    """
     return [
         {
-            "testcaseId": tc["testcaseId"],
-            "actualOutput": "",
+            "testcaseId": tc.get("TestCaseId") or tc.get("testcaseId", "unknown"),
+            "indexNo": tc.get("IndexNo", tc.get("indexNo", 0)),
             "status": error_code,
-            "errorMessage": msg,
-            "executionTimeMs": 0,
-            "memoryUsageKb": 0
+            "time": 0,
+            "memory": 0,
+            "output": "",
+            "error": error_msg
         }
         for tc in testcases
     ]

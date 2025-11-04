@@ -1,0 +1,9 @@
+namespace AssignmentService.Application.DTOs.Requests;
+
+public class SubmissionRequest
+{
+    public string ProblemId { get; set; } = string.Empty;
+    public string AssignmentUserId { get; set; } = string.Empty;
+    public string SourceCode { get; set; } = string.Empty;
+    public string Language { get; set; } = string.Empty;
+}

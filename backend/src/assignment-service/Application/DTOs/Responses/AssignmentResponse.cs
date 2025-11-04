@@ -5,29 +5,35 @@ namespace AssignmentService.Application.DTOs.Responses;
 public class AssignmentResponse
 {
     public Guid AssignmentId { get; set; }
-    
+
     public string AssignmentType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    
+
     public Guid ClassId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    
+
     public DateTime? StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
-    
+    public DateTime? EndTime { get; set; } = null;
+
     public Guid AssignedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? AssignedAt { get; set; }
-    
+
     public int? TotalPoints { get; set; }
+    private int? _totalProblems;
+    public int? TotalProblems
+    {
+        get => _totalProblems ?? Problems?.Count;
+        set => _totalProblems = value;
+    }
     public bool AllowLateSubmission { get; set; }
-    
+
     /// <summary>
     /// Danh sách problems trong assignment với thông tin chi tiết
     /// </summary>
     public List<AssignmentProblemDetailDto>? Problems { get; set; }
-    
+
     /// <summary>
     /// Thống kê cho teacher
     /// </summary>

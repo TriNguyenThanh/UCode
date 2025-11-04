@@ -21,14 +21,14 @@ public class ExampleSchemaFilter : ISchemaFilter
             context.Type.Name == "ForbiddenErrorResponse" ||
             context.Type.Name == "ValidationErrorResponse")
         {
-            schema.Example = new Microsoft.OpenApi.Any.OpenApiObject
+            schema.Example = new OpenApiObject
             {
-                ["success"] = new Microsoft.OpenApi.Any.OpenApiBoolean(false),
-                ["message"] = new Microsoft.OpenApi.Any.OpenApiString("An error occurred while processing your request"),
-                ["errors"] = new Microsoft.OpenApi.Any.OpenApiArray
+                ["success"] = new OpenApiBoolean(false),
+                ["message"] = new OpenApiString("An error occurred while processing your request"),
+                ["errors"] = new OpenApiArray
                 {
-                    new Microsoft.OpenApi.Any.OpenApiString("Validation failed"),
-                    new Microsoft.OpenApi.Any.OpenApiString("Required field is missing")
+                    new OpenApiString("Validation failed"),
+                    new OpenApiString("Required field is missing")
                 }
             };
             return;

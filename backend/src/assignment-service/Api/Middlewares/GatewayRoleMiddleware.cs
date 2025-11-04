@@ -40,11 +40,19 @@ public class GatewayRoleMiddleware
             var require = endpoint.Metadata.GetMetadata<RequireRoleAttribute>();
             if (require != null)
             {
-                var needed = require.Role;
-                if (context.User?.IsInRole(needed) != true)
+                // ✅ Support multiple roles separated by comma
+                var requiredRoles = require.Role.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(r => r.Trim())
+                    .ToList();
+                
+                // Check if user has ANY of the required roles
+                var hasRequiredRole = requiredRoles.Any(role => context.User?.IsInRole(role) == true);
+                
+                if (!hasRequiredRole)
                 {
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    await context.Response.WriteAsJsonAsync(ApiResponse<object>.ErrorResponse("Forbidden - missing role"));
+                    await context.Response.WriteAsJsonAsync(ApiResponse<object>.ErrorResponse(
+                        $"Forbidden - requires one of roles: {string.Join(", ", requiredRoles)}"));
                     return;
                 }
             }

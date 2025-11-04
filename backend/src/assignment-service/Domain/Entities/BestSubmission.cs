@@ -49,10 +49,4 @@ public class BestSubmission
     /// Thời gian cập nhật lần cuối
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    
-    // Navigation Properties
-    /// <summary>
-    /// Navigation property đến Submission
-    /// </summary>
-    public Submission Submission { get; set; } = null!;
 }

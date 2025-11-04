@@ -21,7 +21,7 @@ public class AssignmentDto
     public string? Description { get; set; }
     
     public DateTime? StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
+    public DateTime? EndTime { get; set; } = null;
     
     public int? TotalPoints { get; set; }
     public bool AllowLateSubmission { get; set; } = false;

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using AssignmentService.Api.Middlewares;
 using AssignmentService.Domain.Entities;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 
 namespace AssignmentService.Api.Controllers;
 
@@ -23,11 +24,13 @@ namespace AssignmentService.Api.Controllers;
 public class ProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly ILanguageService _languageService;
     private readonly IMapper _mapper;
     
-    public ProblemController(IProblemService problemService, IMapper mapper)
+    public ProblemController(IProblemService problemService, ILanguageService languageService, IMapper mapper)
     {
         _problemService = problemService;
+        _languageService = languageService;
         _mapper = mapper;
     }
 
@@ -114,7 +117,7 @@ public class ProblemController : ControllerBase
         var ownerId = GetAuthenticatedUserId();
 
         var problem = await _problemService.CreateProblemAsync(
-            request.Code,
+            request.Code ?? string.Empty,
             request.Title,
             request.Difficulty,
             ownerId,
@@ -133,6 +136,7 @@ public class ProblemController : ControllerBase
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="403">Forbidden - You don't have permission to access this problem</response>
     [HttpGet("{problemId:guid}")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<ProblemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -157,30 +161,75 @@ public class ProblemController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all problems created by the current teacher
+    /// Retrieves a specific problem by ID (Student) - Only public/published problems
     /// </summary>
-    /// <returns>List of problems owned by the current teacher</returns>
-    /// <response code="200">Problems retrieved successfully</response>
-    /// <response code="404">No problems found for this owner</response>
-    /// <response code="401">Unauthorized - Teacher role required</response>
-    /// <response code="400">Bad request - Missing user ID header</response>
-    [RequireRole("teacher")]
-    [HttpGet("all-problems")]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<ProblemResponse>>), 200)]
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <returns>Problem details without owner information</returns>
+    /// <response code="200">Problem retrieved successfully</response>
+    /// <response code="404">Problem not found or not accessible</response>
+    /// <response code="401">Unauthorized - Student role required</response>
+    [HttpGet("student/get/{problemId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<ProblemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    [ProducesResponseType(typeof(ErrorResponse), 400)]
-    public async Task<IActionResult> GetProblemsByOwner()
+    public async Task<IActionResult> GetProblemForStudent(Guid problemId)
     {
+        
+        var problem = await GetProblemOrThrowAsync(problemId);
+        
+        var visibility = problem.Visibility;
+        
+        // Students can only access PUBLIC problems
+        if (visibility != Visibility.PUBLIC)
+            throw new ApiException("Problem not accessible");
+        
+        var response = _mapper.Map<ProblemResponse>(problem);
+        
+        response.OwnerId = Guid.Empty;
+
+        return Ok(ApiResponse<ProblemResponse>.SuccessResponse(response, "Problem retrieved successfully"));
+    }
+
+    /// <summary>
+    /// Retrieves all problems created by the current teacher with pagination
+    /// </summary>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 20, max: 100)</param>
+    /// <returns>Paginated list of problems owned by the current teacher</returns>
+    /// <response code="200">Problems retrieved successfully</response>
+    /// <response code="401">Unauthorized - Teacher role required</response>
+    /// <response code="400">Bad request - Invalid pagination parameters</response>
+    [RequireRole("teacher")]
+    [HttpGet("all-problems")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProblemResponse>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    public async Task<IActionResult> GetProblemsByOwner(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (page < 1)
+            throw new ApiException("Page must be greater than 0");
+        
+        if (pageSize < 1 || pageSize > 100)
+            throw new ApiException("Page size must be between 1 and 100");
+            
         var ownerId = GetAuthenticatedUserId();
 
-        var problems = await _problemService.GetProblemsByOwnerIdAsync(ownerId);
-        if (problems == null || !problems.Any())
-        {
-            problems = new List<Problem>();
-        }
+        var (problems, total) = await _problemService.GetProblemsByOwnerIdWithPaginationAsync(ownerId, page, pageSize);
 
-        return Ok(ApiResponse<IEnumerable<ProblemResponse>>.SuccessResponse(_mapper.Map<IEnumerable<ProblemResponse>>(problems)));
+        var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
+        
+        var pagedResponse = new PagedResponse<ProblemResponse>
+        {
+            Data = problemDtos,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total,
+            TotalPages = (int)Math.Ceiling(total / (double)pageSize)
+        };
+
+        return Ok(ApiResponse<PagedResponse<ProblemResponse>>.SuccessResponse(pagedResponse));
     }
 
     /// <summary>
@@ -249,6 +298,20 @@ public class ProblemController : ControllerBase
 
         var problem = _mapper.Map<Problem>(request);
         problem.OwnerId = userId; // Keep original owner (already verified)
+        
+        // Handle ProblemAssets if provided
+        if (request.ProblemAssets != null && request.ProblemAssets.Any())
+        {
+            problem.ProblemAssets = request.ProblemAssets
+                .Select(dto => _mapper.Map<ProblemAsset>(dto))
+                .ToList();
+            
+            // Set ProblemId for all assets
+            foreach (var asset in problem.ProblemAssets)
+            {
+                asset.ProblemId = problem.ProblemId;
+            }
+        }
 
         var updatedProblem = await _problemService.UpdateProblemAsync(problem);
 
@@ -300,4 +363,225 @@ public class ProblemController : ControllerBase
         var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
         return Ok(ApiResponse<List<ProblemResponse>>.SuccessResponse(problemDtos, "Public problems retrieved successfully"));
     }
+
+    #region ProblemAsset APIs
+
+    /// <summary>
+    /// Get all assets for a problem
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpGet("{problemId:guid}/assets")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemAssetDto>>), 200)]
+    public async Task<IActionResult> GetProblemAssets(Guid problemId)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        var assets = await _problemService.GetProblemAssetsAsync(problemId);
+        var assetDtos = _mapper.Map<List<ProblemAssetDto>>(assets);
+        
+        return Ok(ApiResponse<List<ProblemAssetDto>>.SuccessResponse(assetDtos));
+    }
+
+    /// <summary>
+    /// Add a new asset to a problem
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpPost("{problemId:guid}/assets")]
+    [ProducesResponseType(typeof(ApiResponse<ProblemAssetDto>), 200)]
+    public async Task<IActionResult> AddProblemAsset(Guid problemId, [FromBody] CreateProblemAssetDto request)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        var asset = await _problemService.AddProblemAssetAsync(problemId, request);
+        var assetDto = _mapper.Map<ProblemAssetDto>(asset);
+        
+        return Ok(ApiResponse<ProblemAssetDto>.SuccessResponse(assetDto, "Asset added successfully"));
+    }
+
+    /// <summary>
+    /// Update an existing problem asset
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpPut("{problemId:guid}/assets/{assetId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<ProblemAssetDto>), 200)]
+    public async Task<IActionResult> UpdateProblemAsset(Guid problemId, Guid assetId, [FromBody] UpdateProblemAssetDto request)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        var asset = await _problemService.UpdateProblemAssetAsync(problemId, assetId, request);
+        var assetDto = _mapper.Map<ProblemAssetDto>(asset);
+        
+        return Ok(ApiResponse<ProblemAssetDto>.SuccessResponse(assetDto, "Asset updated successfully"));
+    }
+
+    /// <summary>
+    /// Delete a problem asset
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpDelete("{problemId:guid}/assets/{assetId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+    public async Task<IActionResult> DeleteProblemAsset(Guid problemId, Guid assetId)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        var result = await _problemService.DeleteProblemAssetAsync(problemId, assetId);
+        
+        return Ok(ApiResponse<bool>.SuccessResponse(result, "Asset deleted successfully"));
+    }
+
+    #endregion
+
+    #region Tag APIs
+
+    /// <summary>
+    /// Add tags to a problem
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpPost("{problemId:guid}/tags")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+    public async Task<IActionResult> AddTagsToProblem(Guid problemId, [FromBody] List<Guid> tagIds)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        await _problemService.AddTagsToProblemAsync(problemId, tagIds);
+        
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Tags added successfully"));
+    }
+
+    /// <summary>
+    /// Remove a tag from a problem
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpDelete("{problemId:guid}/tags/{tagId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+    public async Task<IActionResult> RemoveTagFromProblem(Guid problemId, Guid tagId)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        await _problemService.RemoveProblemTagAsync(problemId, tagId);
+        
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Tag removed successfully"));
+    }
+
+    /// <summary>
+    /// Search problems by tag name
+    /// </summary>
+    [HttpGet("by-tag/{tagName}")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemResponse>>), 200)]
+    public async Task<IActionResult> GetProblemsByTag(string tagName)
+    {
+        var problems = await _problemService.GetProblemsByTagAsync(tagName);
+        var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
+
+        return Ok(ApiResponse<List<ProblemResponse>>.SuccessResponse(problemDtos));
+    }
+
+    #endregion
+
+    #region ProblemLanguage APIs
+    
+    /// <summary>
+    /// Lấy danh sách ngôn ngữ lập trình được dùng cho một bài toán
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpGet("{problemId:guid}/available-languages")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
+    public async Task<IActionResult> GetAvailableLanguagesForProblem(Guid problemId)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        // Get existing problem language overrides
+        var existingOverrides = await _problemService.GetProblemLanguagesAsync(problemId);
+
+        var result = new List<ProblemLanguageDto>();
+        foreach (var pl in existingOverrides){
+            result.Add(_mapper.Map<ProblemLanguageDto>(pl));
+        }
+
+        return Ok(ApiResponse<List<ProblemLanguageDto>>.SuccessResponse(result));
+    }
+
+    /// <summary>
+    /// Add or update language configurations for a problem (batch operation)
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpPost("{problemId:guid}/languages")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
+    public async Task<IActionResult> AddOrUpdateProblemLanguages(Guid problemId, [FromBody] List<ProblemLanguageDto> requests)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        // Ensure all ProblemIds match route parameter
+        foreach (var request in requests)
+        {
+            request.ProblemId = problemId;
+        }
+
+        var languages = await _problemService.AddOrUpdateProblemLanguagesAsync(problemId, requests);
+        var languageDtos = _mapper.Map<List<ProblemLanguageDto>>(languages);
+        
+        return Ok(ApiResponse<List<ProblemLanguageDto>>.SuccessResponse(languageDtos, "Language configurations saved successfully"));
+    }
+
+    /// <summary>
+    /// Delete a language override for a problem
+    /// </summary>
+    [RequireRole("teacher")]
+    [HttpDelete("{problemId:guid}/languages/{languageId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+    public async Task<IActionResult> DeleteProblemLanguage(Guid problemId, Guid languageId)
+    {
+        var userId = GetAuthenticatedUserId();
+        await VerifyOwnershipLightweightAsync(problemId, userId);
+
+        var result = await _problemService.DeleteProblemLanguageAsync(problemId, languageId);
+        
+        return Ok(ApiResponse<bool>.SuccessResponse(result, "Language configuration deleted successfully"));
+    }
+
+    #endregion
+
+    #region Search & Statistics
+
+    /// <summary>
+    /// Search problems with filters
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProblemResponse>>), 200)]
+    public async Task<IActionResult> SearchProblems(
+        [FromQuery] string? keyword,
+        [FromQuery] string? difficulty,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (page < 1)
+            throw new ApiException("Page must be greater than 0");
+        
+        if (pageSize < 1 || pageSize > 100)
+            throw new ApiException("Page size must be between 1 and 100");
+
+        var (problems, total) = await _problemService.SearchProblemsAsync(keyword, difficulty, page, pageSize);
+        var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
+        
+        var pagedResponse = new PagedResponse<ProblemResponse>
+        {
+            Data = problemDtos,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total,
+            TotalPages = (int)Math.Ceiling(total / (double)pageSize)
+        };
+
+        return Ok(ApiResponse<PagedResponse<ProblemResponse>>.SuccessResponse(pagedResponse));
+    }
+
+    #endregion
 }

@@ -55,8 +55,11 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
 
         /* ===== Properties từ ProblemVersion ===== */
         
-        builder.Property(p => p.StatementMdRef)
-            .HasMaxLength(1000);
+        builder.Property(p => p.Statement)
+            .HasColumnType("NVARCHAR(MAX)");
+
+        builder.Property(p => p.Solution)
+            .HasColumnType("NVARCHAR(MAX)");
 
         builder.Property(p => p.IoMode)
             .IsRequired()
@@ -65,13 +68,13 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasDefaultValue(Domain.Enums.IoMode.STDIO);
 
         builder.Property(p => p.InputFormat)
-            .HasMaxLength(50);
+            .HasMaxLength(1000);
 
         builder.Property(p => p.OutputFormat)
-            .HasMaxLength(50);
+            .HasMaxLength(1000);
 
         builder.Property(p => p.Constraints)
-            .HasMaxLength(50);
+            .HasMaxLength(2000);
 
         builder.Property(p => p.MaxScore);
 
@@ -118,14 +121,14 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
          */
         builder.Property(p => p.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("SYSDATETIME()")
+            .HasDefaultValueSql("GETUTCDATE()")
             .ValueGeneratedOnAdd() // Chỉ tạo giá trị khi thêm mới
             .ValueGeneratedOnAddOrUpdate();
 
 
         builder.Property(p => p.UpdatedAt)
             .IsRequired()
-            .HasDefaultValueSql("SYSDATETIME()");
+            .HasDefaultValueSql("GETUTCDATE()");
         
         /* ===== Indexes =====
          * Tạo indexes cho performance
@@ -161,37 +164,11 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasDatabaseName("ix_problems_status_visibility");
         
         /* ===== Relationships =====
-         * HasOne/WithMany định nghĩa relationships
+         * ❌ REMOVED: All relationships đã được config ở phía dependent/junction table
+         * - Datasets → DatasetConfiguration
+         * - ProblemAssets → ProblemAssetConfiguration  
+         * - ProblemLanguages → ProblemLanguageConfiguration
+         * - ProblemTags → ProblemTagConfiguration
          */
-        
-        // Problem has many Datasets (One-to-Many)
-        builder.HasMany(p => p.Datasets)
-            .WithOne(d => d.Problem)
-            .HasForeignKey(d => d.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        // Problem has many CodeTemplates (One-to-Many)
-        builder.HasMany(p => p.CodeTemplates)
-            .WithOne(ct => ct.Problem)
-            .HasForeignKey(ct => ct.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        // Problem has many ProblemAssets (One-to-Many)
-        builder.HasMany(p => p.ProblemAssets)
-            .WithOne(pa => pa.Problem)
-            .HasForeignKey(pa => pa.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        // Problem has many LanguageLimits (One-to-Many)
-        builder.HasMany(p => p.LanguageLimits)
-            .WithOne(ll => ll.Problem)
-            .HasForeignKey(ll => ll.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        // Problem has many ProblemTags (Many-to-Many through junction table)
-        builder.HasMany(p => p.ProblemTags)
-            .WithOne(pt => pt.Problem)
-            .HasForeignKey(pt => pt.ProblemId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

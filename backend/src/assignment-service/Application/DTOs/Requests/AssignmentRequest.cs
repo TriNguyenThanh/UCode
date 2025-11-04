@@ -1,6 +1,7 @@
 using AssignmentService.Domain.Enums;
 using AssignmentService.Application.DTOs.Common;
 using System.ComponentModel.DataAnnotations;
+using AssignmentService.Application.Validators;
 
 namespace AssignmentService.Application.DTOs.Requests;
 
@@ -20,6 +21,8 @@ public class AssignmentRequest
     public string? Description { get; set; }
     
     public DateTime? StartTime { get; set; }
+    
+    [DateRange(nameof(StartTime), ErrorMessage = "EndTime must be after StartTime")]
     public DateTime? EndTime { get; set; }
     
     public bool AllowLateSubmission { get; set; } = false;
