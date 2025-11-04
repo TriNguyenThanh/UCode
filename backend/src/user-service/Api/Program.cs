@@ -188,9 +188,9 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Database seeded successfully!");
         
         logger.LogInformation("Default accounts created:");
-        logger.LogInformation("Admin: admin / Admin@123");
-        logger.LogInformation("Teacher: teacher01 / Teacher@123");
-        logger.LogInformation("Student: student01 / Student@123");
+        logger.LogInformation("Admin: admin / 123");
+        logger.LogInformation("Teacher: teacher01 / 123");
+        logger.LogInformation("Student: student01 / 123");
     }
     catch (Exception ex)
     {
