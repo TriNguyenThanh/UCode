@@ -1,5 +1,6 @@
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Application.Interfaces.Services;
+using AssignmentService.Application.Interfaces.MessageBrokers;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 
@@ -8,20 +9,20 @@ namespace AssignmentService.Infrastructure.Services;
 public class SubmissionService : ISubmissionService
 {
     private readonly ISubmissionRepository _repository;
-    private readonly IDatasetRepository _datasetRepository;
-    // private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository, IDatasetRepository datasetRepository)
+    private readonly IDatasetService _datasetService;
+    private readonly IExecuteService _exec;
+    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IExecuteService exec)
     {
         _repository = repository;
-        _datasetRepository = datasetRepository;
-        // _exec = exec;
+        _datasetService = datasetService;
+        _exec = exec;
     }
 
     public async Task<Submission> GetSubmission(Guid submissionId){
         try{
             var submission = await _repository.GetSubmission(submissionId);
-            var dataset = await _datasetRepository.GetByIdAsync(submission.DatasetId);
-            if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Done || submission.Status == SubmissionStatus.Failed))
+            var dataset = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
+            if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Passed || submission.Status == SubmissionStatus.Failed))
             {
                 await _repository.DeleteSubmission(submissionId);
             }
@@ -50,7 +51,7 @@ public class SubmissionService : ISubmissionService
         {
             submission.SubmissionId = Guid.NewGuid();
             submission.SubmittedAt = DateTime.Now;
-            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId);
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
@@ -65,7 +66,7 @@ public class SubmissionService : ISubmissionService
                 }
             }
             new_submission = await _repository.AddSubmission(submission);
-            // await _exec.ExecuteCode(new_submission);
+            await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge submission");
 
             return new_submission;
@@ -82,7 +83,7 @@ public class SubmissionService : ISubmissionService
         {
             submission.SubmissionId = Guid.NewGuid();
             submission.SubmittedAt = DateTime.Now;
-            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId);
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
@@ -97,7 +98,7 @@ public class SubmissionService : ISubmissionService
                 }
             }
             var new_submission = await _repository.AddSubmission(submission);
-            // await _exec.ExecuteCode(new_submission);
+            await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge run code");
 
             return new_submission;

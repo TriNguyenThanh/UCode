@@ -43,7 +43,7 @@ export function Navigation() {
           <Typography
             variant='h6'
             component={Link}
-            to={user?.role === 'teacher' ? '/teacher/home' : '/home'}
+            to={user?.role === 'admin' ? '/admin/home' : user?.role === 'teacher' ? '/teacher/home' : '/home'}
             sx={{
               mr: 4,
               fontWeight: 700,
@@ -61,7 +61,25 @@ export function Navigation() {
 
           {/* Navigation Links */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            {user?.role === 'teacher' ? (
+            {user?.role === 'admin' ? (
+              <>
+                <Button component={Link} to='/admin/home' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                  Dashboard
+                </Button>
+                <Button component={Link} to='/admin/users' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                  Người dùng
+                </Button>
+                <Button component={Link} to='/admin/classes' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                  Lớp học
+                </Button>
+                <Button component={Link} to='/admin/settings' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                  Cài đặt
+                </Button>
+                <Button component={Link} to='/admin/logs' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                  Logs
+                </Button>
+              </>
+            ) : user?.role === 'teacher' ? (
               <>
                 <Button component={Link} to='/teacher/home' sx={{ fontWeight: 500, color: 'primary.main' }}>
                   Dashboard

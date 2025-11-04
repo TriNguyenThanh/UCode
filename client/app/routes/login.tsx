@@ -34,7 +34,9 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   try {
     const user = await auth.login(email, password)
     // Redirect based on role
-    if (user.role === 'teacher') {
+    if (user.role === 'admin') {
+      return redirect('/admin/home')
+    } else if (user.role === 'teacher') {
       return redirect('/teacher/home')
     }
     return redirect('/home')
@@ -183,7 +185,11 @@ export default function Login() {
           </Button>
 
           <Typography variant='body2' sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
-            Demo: <code>admin@example.com</code> / <code>123456</code>
+            Demo Admin: <code>admin@example.com</code> / <code>123456</code>
+            <br />
+            Demo Student: <code>student@example.com</code> / <code>123456</code>
+            <br />
+            Demo Teacher: <code>teacher@example.com</code> / <code>123456</code>
           </Typography>
         </Box>
       </Paper>

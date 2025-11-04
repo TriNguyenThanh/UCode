@@ -4,8 +4,18 @@ export const auth = {
   async login(email: string, password: string): Promise<NonNullable<User>> {
     await new Promise((r) => setTimeout(r, 400))
     
-    // Student account
+    // Admin account
     if (email === 'admin@example.com' && password === '123456') {
+      const token = 'demo-token-admin-xyz'
+      const role = 'admin'
+      localStorage.setItem('token', token)
+      localStorage.setItem('email', email)
+      localStorage.setItem('role', role)
+      return { token, email, role }
+    }
+    
+    // Student account
+    if (email === 'student@example.com' && password === '123456') {
       const token = 'demo-token-abc123'
       const role = 'student'
       localStorage.setItem('token', token)
