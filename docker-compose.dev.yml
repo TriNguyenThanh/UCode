@@ -28,6 +28,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${USER_SERVICE_CONNECTION_STRING}
+      - JWT__KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - JWT__ISSUER=UserService
+      - JWT__AUDIENCE=UserServiceClient
     volumes:
       - ./backend/src/user-service:/app
     depends_on:
