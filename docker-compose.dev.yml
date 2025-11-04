@@ -28,6 +28,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${USER_SERVICE_CONNECTION_STRING}
+      - JWT__KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - JWT__ISSUER=UserService
+      - JWT__AUDIENCE=UserServiceClient
     volumes:
       - ./backend/src/user-service:/app
     depends_on:
@@ -129,13 +132,13 @@ services:
       retries: 10
       start_period: 60s
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
 
 volumes:
   redis-data:

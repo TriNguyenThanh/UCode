@@ -26,6 +26,12 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         builder.Property(au => au.UserId)
             .IsRequired();
 
+        builder.Property(au => au.TabSwitchCount)
+            .HasDefaultValue(0);
+
+        builder.Property(au => au.CapturedAICount)
+            .HasDefaultValue(0);
+
         // Relationships
         builder.HasOne(au => au.Assignment)
             .WithMany(a => a.AssignmentUsers)

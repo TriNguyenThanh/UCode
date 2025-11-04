@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251104134113_InitDB")]
-    partial class InitDB
+    [Migration("20251104161053_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,6 +156,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_id");
 
+                    b.Property<int>("CapturedAICount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("captured_ai_count");
+
                     b.Property<int?>("MaxScore")
                         .HasColumnType("int")
                         .HasColumnName("max_score");
@@ -173,6 +179,12 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
+
+                    b.Property<int>("TabSwitchCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("tab_switch_count");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")
@@ -832,14 +844,14 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("InputRef")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
                         .HasColumnName("input_ref");
 
                     b.Property<string>("OutputRef")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
                         .HasColumnName("output_ref");
 
                     b.Property<string>("Score")

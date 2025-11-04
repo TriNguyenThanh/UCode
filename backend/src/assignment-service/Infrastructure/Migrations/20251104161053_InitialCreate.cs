@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -114,6 +114,8 @@ namespace Infrastructure.Migrations
                     user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     assigned_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    tab_switch_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    captured_ai_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     started_at = table.Column<DateTime>(type: "datetime2", nullable: true),
                     score = table.Column<int>(type: "int", nullable: true),
                     max_score = table.Column<int>(type: "int", nullable: true)
@@ -303,8 +305,8 @@ namespace Infrastructure.Migrations
                     test_case_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     dataset_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     index_no = table.Column<int>(type: "int", nullable: false),
-                    input_ref = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    output_ref = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    input_ref = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: false),
+                    output_ref = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: false),
                     score = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false, defaultValue: "100")
                 },
                 constraints: table =>

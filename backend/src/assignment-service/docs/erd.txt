@@ -59,6 +59,8 @@ erDiagram
         nvarchar_50_ status
         datetime2 assigned_at
         datetime2 started_at
+        int tab_switch_count "Default 0"
+        int captured_ai_count "Default 0"
         int score
         int max_score
     }
