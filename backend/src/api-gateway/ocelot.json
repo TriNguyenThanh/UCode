@@ -112,7 +112,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/problems/{everything}",
@@ -135,7 +135,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/assignments/{everything}",
@@ -158,7 +158,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/datasets/{everything}",
@@ -181,7 +181,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/tags/{everything}",
@@ -204,7 +204,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/languages/{everything}",
@@ -227,7 +227,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "assignment-service",
-          "Port": 5003
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/v1/submissions/{everything}",

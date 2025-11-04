@@ -103,7 +103,7 @@ public class ProblemController : ControllerBase
     /// <response code="400">Invalid request data</response>
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="500">Internal server error</response>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPost("create")]
     [ProducesResponseType(typeof(ApiResponse<ProblemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
@@ -199,7 +199,7 @@ public class ProblemController : ControllerBase
     /// <response code="200">Problems retrieved successfully</response>
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="400">Bad request - Invalid pagination parameters</response>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpGet("all-problems")]
     [ProducesResponseType(typeof(ApiResponse<PagedResponse<ProblemResponse>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -242,7 +242,7 @@ public class ProblemController : ControllerBase
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="403">Forbidden - You don't have permission to delete this problem</response>
     /// <response code="500">Internal server error</response>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpDelete("del")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -277,7 +277,7 @@ public class ProblemController : ControllerBase
     /// <response code="403">Forbidden - You don't have permission to update this problem</response>
     /// <response code="422">Validation errors</response>
     /// <response code="500">Internal server error</response>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPut("update")]
     [ProducesResponseType(typeof(ApiResponse<ProblemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
@@ -327,7 +327,7 @@ public class ProblemController : ControllerBase
     /// <response code="404">Problem not found</response>
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="500">Internal server error</response>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpGet("get-datasets")]
     [ProducesResponseType(typeof(ApiResponse<List<DatasetDto>>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -369,7 +369,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Get all assets for a problem
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpGet("{problemId:guid}/assets")]
     [ProducesResponseType(typeof(ApiResponse<List<ProblemAssetDto>>), 200)]
     public async Task<IActionResult> GetProblemAssets(Guid problemId)
@@ -386,7 +386,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Add a new asset to a problem
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPost("{problemId:guid}/assets")]
     [ProducesResponseType(typeof(ApiResponse<ProblemAssetDto>), 200)]
     public async Task<IActionResult> AddProblemAsset(Guid problemId, [FromBody] CreateProblemAssetDto request)
@@ -403,7 +403,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Update an existing problem asset
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPut("{problemId:guid}/assets/{assetId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<ProblemAssetDto>), 200)]
     public async Task<IActionResult> UpdateProblemAsset(Guid problemId, Guid assetId, [FromBody] UpdateProblemAssetDto request)
@@ -420,7 +420,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Delete a problem asset
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpDelete("{problemId:guid}/assets/{assetId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     public async Task<IActionResult> DeleteProblemAsset(Guid problemId, Guid assetId)
@@ -440,7 +440,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Add tags to a problem
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPost("{problemId:guid}/tags")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     public async Task<IActionResult> AddTagsToProblem(Guid problemId, [FromBody] List<Guid> tagIds)
@@ -456,7 +456,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Remove a tag from a problem
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpDelete("{problemId:guid}/tags/{tagId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     public async Task<IActionResult> RemoveTagFromProblem(Guid problemId, Guid tagId)
@@ -489,7 +489,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Lấy danh sách ngôn ngữ lập trình được dùng cho một bài toán
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpGet("{problemId:guid}/available-languages")]
     [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
     public async Task<IActionResult> GetAvailableLanguagesForProblem(Guid problemId)
@@ -511,7 +511,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Add or update language configurations for a problem (batch operation)
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpPost("{problemId:guid}/languages")]
     [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
     public async Task<IActionResult> AddOrUpdateProblemLanguages(Guid problemId, [FromBody] List<ProblemLanguageDto> requests)
@@ -534,7 +534,7 @@ public class ProblemController : ControllerBase
     /// <summary>
     /// Delete a language override for a problem
     /// </summary>
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [HttpDelete("{problemId:guid}/languages/{languageId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     public async Task<IActionResult> DeleteProblemLanguage(Guid problemId, Guid languageId)

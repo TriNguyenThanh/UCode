@@ -13,7 +13,7 @@ namespace AssignmentService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/datasets")]
-[RequireRole("teacher")]
+[RequireRole("teacher,admin")]
 [ValidateUserId]
 public class DatasetController : ControllerBase
 {
