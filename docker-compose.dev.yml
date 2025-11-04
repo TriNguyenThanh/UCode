@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: assignment-service
     ports:
-      - "5003:5003"
+      - "5002:5002"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__AssignmentDb=${ASSIGNMENT_SERVICE_URL_SERVICE_CONNECTION_STRING}
@@ -122,13 +122,13 @@ services:
       retries: 10
       start_period: 60s
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
 
 volumes:
   redis-data:
