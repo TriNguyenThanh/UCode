@@ -209,8 +209,8 @@ class MessageHandler:
         response = {
             "SubmissionId": submission_id,
             "CompileResult": compile_result,  # "6" cho CompilationError, "3" cho RuntimeError
-            "TotalTime": total_time,
-            "TotalMemory": total_memory,
+            "TotalTime": 0,
+            "TotalMemory": 0,
             "ErrorCode": error_code,
             "ErrorMessage": error_message
         }

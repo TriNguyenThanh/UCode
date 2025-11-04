@@ -9,19 +9,19 @@ namespace AssignmentService.Infrastructure.Services;
 public class SubmissionService : ISubmissionService
 {
     private readonly ISubmissionRepository _repository;
-    private readonly IDatasetRepository _datasetRepository;
+    private readonly IDatasetService _datasetService;
     private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository, IDatasetRepository datasetRepository, IExecuteService exec)
+    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IExecuteService exec)
     {
         _repository = repository;
-        _datasetRepository = datasetRepository;
+        _datasetService = datasetService;
         _exec = exec;
     }
 
     public async Task<Submission> GetSubmission(Guid submissionId){
         try{
             var submission = await _repository.GetSubmission(submissionId);
-            var dataset = await _datasetRepository.GetByIdAsync(submission.DatasetId);
+            var dataset = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
             if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Passed || submission.Status == SubmissionStatus.Failed))
             {
                 await _repository.DeleteSubmission(submissionId);
@@ -51,7 +51,7 @@ public class SubmissionService : ISubmissionService
         {
             submission.SubmissionId = Guid.NewGuid();
             submission.SubmittedAt = DateTime.Now;
-            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId);
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
@@ -83,7 +83,7 @@ public class SubmissionService : ISubmissionService
         {
             submission.SubmissionId = Guid.NewGuid();
             submission.SubmittedAt = DateTime.Now;
-            var datasets = await _datasetRepository.GetByProblemIdAsync(submission.ProblemId);
+            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId);
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
