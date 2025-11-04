@@ -191,39 +191,39 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("AssignmentUserId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("assignment_user_id");
+                        .HasColumnName("AssignmentUserId");
 
                     b.Property<Guid>("BestSubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("best_submission_id");
+                        .HasColumnName("BestSubmissionId");
 
                     b.Property<int>("MaxScore")
                         .HasColumnType("int")
-                        .HasColumnName("max_score");
+                        .HasColumnName("MaxScore");
 
                     b.Property<Guid>("ProblemId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("problem_id");
+                        .HasColumnName("ProblemId");
 
                     b.Property<int>("Score")
                         .HasColumnType("int")
-                        .HasColumnName("score");
+                        .HasColumnName("Score");
 
                     b.Property<Guid>("SubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("submission_id");
+                        .HasColumnName("SubmissionId");
 
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_memory");
+                        .HasColumnName("TotalMemory");
 
                     b.Property<long>("TotalTime")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_time");
+                        .HasColumnName("TotalTime");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
+                        .HasColumnName("UpdatedAt");
 
                     b.ToTable((string)null);
 

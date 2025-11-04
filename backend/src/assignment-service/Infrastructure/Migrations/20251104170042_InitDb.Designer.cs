@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251104134113_InitDB")]
-    partial class InitDB
+    [Migration("20251104170042_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -194,39 +194,39 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("AssignmentUserId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("assignment_user_id");
+                        .HasColumnName("AssignmentUserId");
 
                     b.Property<Guid>("BestSubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("best_submission_id");
+                        .HasColumnName("BestSubmissionId");
 
                     b.Property<int>("MaxScore")
                         .HasColumnType("int")
-                        .HasColumnName("max_score");
+                        .HasColumnName("MaxScore");
 
                     b.Property<Guid>("ProblemId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("problem_id");
+                        .HasColumnName("ProblemId");
 
                     b.Property<int>("Score")
                         .HasColumnType("int")
-                        .HasColumnName("score");
+                        .HasColumnName("Score");
 
                     b.Property<Guid>("SubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("submission_id");
+                        .HasColumnName("SubmissionId");
 
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_memory");
+                        .HasColumnName("TotalMemory");
 
                     b.Property<long>("TotalTime")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_time");
+                        .HasColumnName("TotalTime");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
+                        .HasColumnName("UpdatedAt");
 
                     b.ToTable((string)null);
 
@@ -832,14 +832,14 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("InputRef")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
                         .HasColumnName("input_ref");
 
                     b.Property<string>("OutputRef")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
                         .HasColumnName("output_ref");
 
                     b.Property<string>("Score")

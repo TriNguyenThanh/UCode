@@ -59,7 +59,7 @@ public class SubmissionService : ISubmissionService
             }
             else
             {
-                var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE);
+                var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE || ds.Kind == DatasetKind.PUBLIC || ds.Kind == DatasetKind.OFFICIAL);
                 if (dataset != null)
                 {
                     submission.DatasetId = dataset.DatasetId;
