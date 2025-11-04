@@ -4,6 +4,7 @@ using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    partial class AssignmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103075820_InitDb")]
+    partial class InitDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -279,77 +282,61 @@ namespace Infrastructure.Migrations
                     b.ToTable("dataset", (string)null);
                 });
 
-            modelBuilder.Entity("AssignmentService.Domain.Entities.Language", b =>
+            modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
                 {
-                    b.Property<Guid>("LanguageId")
+                    b.Property<Guid>("ProblemLanguageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("language_id");
+                        .HasColumnName("language_limit_id");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("Body")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnName("body");
+
+                    b.Property<string>("Head")
+                        .HasMaxLength(4000)
+                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnName("head");
+
+                    b.Property<string>("Lang")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("code");
+                        .HasColumnName("lang");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("DefaultBody")
-                        .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("default_body");
-
-                    b.Property<string>("DefaultHead")
-                        .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("default_head");
-
-                    b.Property<int?>("DefaultMemoryKb")
+                    b.Property<int?>("MemoryKbOverride")
                         .HasColumnType("int")
-                        .HasColumnName("default_memory_kb");
+                        .HasColumnName("memory_kb_override");
 
-                    b.Property<string>("DefaultTail")
+                    b.Property<Guid>("ProblemId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("problem_id");
+
+                    b.Property<string>("Tail")
                         .HasMaxLength(4000)
                         .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("default_tail");
+                        .HasColumnName("tail");
 
-                    b.Property<decimal>("DefaultTimeFactor")
-                        .ValueGeneratedOnAdd()
+                    b.Property<decimal?>("TimeFactor")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)")
-                        .HasDefaultValue(1.0m)
-                        .HasColumnName("default_time_factor");
+                        .HasColumnName("time_factor");
 
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("display_name");
+                    b.HasKey("ProblemLanguageId")
+                        .HasName("pk_language_limit");
 
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int")
-                        .HasColumnName("display_order");
+                    b.HasIndex("Lang")
+                        .HasDatabaseName("ix_languagelimits_lang");
 
-                    b.Property<bool>("IsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_enabled");
+                    b.HasIndex("ProblemId")
+                        .HasDatabaseName("ix_languagelimits_problemid");
 
-                    b.HasKey("LanguageId")
-                        .HasName("pk_language");
-
-                    b.HasIndex("Code")
+                    b.HasIndex("ProblemId", "Lang")
                         .IsUnique()
-                        .HasDatabaseName("ix_language_code");
+                        .HasDatabaseName("ix_languagelimits_problemid_lang");
 
-                    b.HasIndex("DisplayOrder")
-                        .HasDatabaseName("ix_language_display_order");
-
-                    b.ToTable("language", (string)null);
+                    b.ToTable("language_limit", (string)null);
                 });
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.Problem", b =>
@@ -606,63 +593,6 @@ namespace Infrastructure.Migrations
                         .HasDatabaseName("ix_problemassets_problemid_type_orderindex");
 
                     b.ToTable("problem_asset", (string)null);
-                });
-
-            modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
-                {
-                    b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("problem_id");
-
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("language_id");
-
-                    b.Property<string>("BodyOverride")
-                        .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("body_override");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("HeadOverride")
-                        .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("head_override");
-
-                    b.Property<bool>("IsAllowed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_allowed");
-
-                    b.Property<int?>("MemoryKbOverride")
-                        .HasColumnType("int")
-                        .HasColumnName("memory_kb_override");
-
-                    b.Property<string>("TailOverride")
-                        .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
-                        .HasColumnName("tail_override");
-
-                    b.Property<decimal?>("TimeFactorOverride")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("time_factor_override");
-
-                    b.HasKey("ProblemId", "LanguageId")
-                        .HasName("pk_problem_language");
-
-                    b.HasIndex("LanguageId")
-                        .HasDatabaseName("ix_problem_language_language");
-
-                    b.HasIndex("ProblemId")
-                        .HasDatabaseName("ix_problem_language_problem");
-
-                    b.ToTable("problem_language", (string)null);
                 });
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemTag", b =>
@@ -924,6 +854,18 @@ namespace Infrastructure.Migrations
                     b.Navigation("Problem");
                 });
 
+            modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
+                {
+                    b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
+                        .WithMany("ProblemLanguages")
+                        .HasForeignKey("ProblemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_language_limit_problem_problem_id");
+
+                    b.Navigation("Problem");
+                });
+
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemAsset", b =>
                 {
                     b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
@@ -932,27 +874,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_problem_asset_problem_problem_id");
-
-                    b.Navigation("Problem");
-                });
-
-            modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
-                {
-                    b.HasOne("AssignmentService.Domain.Entities.Language", "Language")
-                        .WithMany("ProblemLanguages")
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_problem_language_language");
-
-                    b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
-                        .WithMany("ProblemLanguages")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_problem_language_problem");
-
-                    b.Navigation("Language");
 
                     b.Navigation("Problem");
                 });
@@ -1002,18 +923,13 @@ namespace Infrastructure.Migrations
                     b.Navigation("TestCases");
                 });
 
-            modelBuilder.Entity("AssignmentService.Domain.Entities.Language", b =>
-                {
-                    b.Navigation("ProblemLanguages");
-                });
-
             modelBuilder.Entity("AssignmentService.Domain.Entities.Problem", b =>
                 {
                     b.Navigation("Datasets");
 
-                    b.Navigation("ProblemAssets");
-
                     b.Navigation("ProblemLanguages");
+
+                    b.Navigation("ProblemAssets");
 
                     b.Navigation("ProblemTags");
                 });

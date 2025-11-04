@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using AssignmentService.Api.Middlewares;
 using AssignmentService.Domain.Entities;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 
 namespace AssignmentService.Api.Controllers;
 
@@ -23,11 +24,13 @@ namespace AssignmentService.Api.Controllers;
 public class ProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly ILanguageService _languageService;
     private readonly IMapper _mapper;
     
-    public ProblemController(IProblemService problemService, IMapper mapper)
+    public ProblemController(IProblemService problemService, ILanguageService languageService, IMapper mapper)
     {
         _problemService = problemService;
+        _languageService = languageService;
         _mapper = mapper;
     }
 
@@ -114,7 +117,7 @@ public class ProblemController : ControllerBase
         var ownerId = GetAuthenticatedUserId();
 
         var problem = await _problemService.CreateProblemAsync(
-            request.Code,
+            request.Code ?? string.Empty,
             request.Title,
             request.Difficulty,
             ownerId,
@@ -165,7 +168,7 @@ public class ProblemController : ControllerBase
     /// <response code="200">Problem retrieved successfully</response>
     /// <response code="404">Problem not found or not accessible</response>
     /// <response code="401">Unauthorized - Student role required</response>
-    [HttpGet("student/{problemId:guid}")]
+    [HttpGet("student/get/{problemId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<ProblemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -461,22 +464,9 @@ public class ProblemController : ControllerBase
         var userId = GetAuthenticatedUserId();
         await VerifyOwnershipLightweightAsync(problemId, userId);
 
-        await _problemService.RemoveTagFromProblemAsync(problemId, tagId);
+        await _problemService.RemoveProblemTagAsync(problemId, tagId);
         
         return Ok(ApiResponse<bool>.SuccessResponse(true, "Tag removed successfully"));
-    }
-
-    /// <summary>
-    /// Get all available tags
-    /// </summary>
-    [HttpGet("tags")]
-    [ProducesResponseType(typeof(ApiResponse<List<TagDto>>), 200)]
-    public async Task<IActionResult> GetAllTags()
-    {
-        var tags = await _problemService.GetAllTagsAsync();
-        var tagDtos = _mapper.Map<List<TagDto>>(tags);
-        
-        return Ok(ApiResponse<List<TagDto>>.SuccessResponse(tagDtos));
     }
 
     /// <summary>
@@ -488,62 +478,73 @@ public class ProblemController : ControllerBase
     {
         var problems = await _problemService.GetProblemsByTagAsync(tagName);
         var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
-        
+
         return Ok(ApiResponse<List<ProblemResponse>>.SuccessResponse(problemDtos));
     }
 
     #endregion
 
-    #region LanguageLimit APIs
-
+    #region ProblemLanguage APIs
+    
     /// <summary>
-    /// Get all language limits for a problem
+    /// Lấy danh sách ngôn ngữ lập trình được dùng cho một bài toán
     /// </summary>
     [RequireRole("teacher")]
-    [HttpGet("{problemId:guid}/language-limits")]
-    [ProducesResponseType(typeof(ApiResponse<List<LanguageLimitDto>>), 200)]
-    public async Task<IActionResult> GetLanguageLimits(Guid problemId)
+    [HttpGet("{problemId:guid}/available-languages")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
+    public async Task<IActionResult> GetAvailableLanguagesForProblem(Guid problemId)
     {
         var userId = GetAuthenticatedUserId();
         await VerifyOwnershipLightweightAsync(problemId, userId);
 
-        var limits = await _problemService.GetLanguageLimitsAsync(problemId);
-        var limitDtos = _mapper.Map<List<LanguageLimitDto>>(limits);
-        
-        return Ok(ApiResponse<List<LanguageLimitDto>>.SuccessResponse(limitDtos));
+        // Get existing problem language overrides
+        var existingOverrides = await _problemService.GetProblemLanguagesAsync(problemId);
+
+        var result = new List<ProblemLanguageDto>();
+        foreach (var pl in existingOverrides){
+            result.Add(_mapper.Map<ProblemLanguageDto>(pl));
+        }
+
+        return Ok(ApiResponse<List<ProblemLanguageDto>>.SuccessResponse(result));
     }
 
     /// <summary>
-    /// Add or update a language limit for a problem
+    /// Add or update language configurations for a problem (batch operation)
     /// </summary>
     [RequireRole("teacher")]
-    [HttpPost("{problemId:guid}/language-limits")]
-    [ProducesResponseType(typeof(ApiResponse<LanguageLimitDto>), 200)]
-    public async Task<IActionResult> AddOrUpdateLanguageLimit(Guid problemId, [FromBody] LanguageLimitDto request)
+    [HttpPost("{problemId:guid}/languages")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProblemLanguageDto>>), 200)]
+    public async Task<IActionResult> AddOrUpdateProblemLanguages(Guid problemId, [FromBody] List<ProblemLanguageDto> requests)
     {
         var userId = GetAuthenticatedUserId();
         await VerifyOwnershipLightweightAsync(problemId, userId);
 
-        var limit = await _problemService.AddOrUpdateLanguageLimitAsync(problemId, request);
-        var limitDto = _mapper.Map<LanguageLimitDto>(limit);
+        // Ensure all ProblemIds match route parameter
+        foreach (var request in requests)
+        {
+            request.ProblemId = problemId;
+        }
+
+        var languages = await _problemService.AddOrUpdateProblemLanguagesAsync(problemId, requests);
+        var languageDtos = _mapper.Map<List<ProblemLanguageDto>>(languages);
         
-        return Ok(ApiResponse<LanguageLimitDto>.SuccessResponse(limitDto, "Language limit saved successfully"));
+        return Ok(ApiResponse<List<ProblemLanguageDto>>.SuccessResponse(languageDtos, "Language configurations saved successfully"));
     }
 
     /// <summary>
-    /// Delete a language limit
+    /// Delete a language override for a problem
     /// </summary>
     [RequireRole("teacher")]
-    [HttpDelete("{problemId:guid}/language-limits/{limitId:guid}")]
+    [HttpDelete("{problemId:guid}/languages/{languageId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-    public async Task<IActionResult> DeleteLanguageLimit(Guid problemId, Guid limitId)
+    public async Task<IActionResult> DeleteProblemLanguage(Guid problemId, Guid languageId)
     {
         var userId = GetAuthenticatedUserId();
         await VerifyOwnershipLightweightAsync(problemId, userId);
 
-        var result = await _problemService.DeleteLanguageLimitAsync(problemId, limitId);
+        var result = await _problemService.DeleteProblemLanguageAsync(problemId, languageId);
         
-        return Ok(ApiResponse<bool>.SuccessResponse(result, "Language limit deleted successfully"));
+        return Ok(ApiResponse<bool>.SuccessResponse(result, "Language configuration deleted successfully"));
     }
 
     #endregion

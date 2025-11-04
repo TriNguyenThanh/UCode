@@ -26,7 +26,7 @@ public class UserServiceClient : IUserServiceClient
         _context = context;
     }
 
-    public async Task<List<Guid>> GetStudentIdsByClassIdAsync(Guid classId, CancellationToken cancellationToken = default)
+    public async Task<List<Guid>> GetUserIdsByClassIdAsync(Guid classId, CancellationToken cancellationToken = default)
     {
         try
         {

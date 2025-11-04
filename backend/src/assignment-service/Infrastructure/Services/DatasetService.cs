@@ -4,6 +4,8 @@ using AssignmentService.Domain.Entities;
 using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using AssignmentService.Application.DTOs.Common;
+using System.Data.Common;
 
 namespace AssignmentService.Infrastructure.Services;
 /// <summary>
@@ -20,41 +22,109 @@ public class DatasetService : IDatasetService
 
     public async Task<Dataset> CreateDatasetAsync(Dataset dataset)
     {
-        return await _datasetRepository.AddAsync(dataset);
+        try
+        {
+            return await _datasetRepository.AddAsync(dataset);
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while creating dataset: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error creating dataset: {ex.Message}", 500);
+        }
     }
 
     public async Task<bool> DeleteDatasetAsync(Guid id)
     {
-        return await _datasetRepository.RemoveAsync(id);
+        try
+        {
+            return await _datasetRepository.RemoveAsync(id);
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while deleting dataset: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error deleting dataset: {ex.Message}", 500);
+        }
     }
 
     public async Task<List<Dataset>> GetAllDatasetsAsync()
     {
-        return await _datasetRepository.GetAllAsync();
+        try
+        {
+            return await _datasetRepository.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving all datasets: {ex.Message}", 500);
+        }
     }
 
     public async Task<Dataset?> GetDatasetByIdAsync(Guid id)
     {
-        return await _datasetRepository.GetByIdAsync(id);
+        try
+        {
+            return await _datasetRepository.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving dataset: {ex.Message}", 500);
+        }
     }
 
     public async Task<Dataset?> GetDatasetByIdWithDetailsAsync(Guid id)
     {
-        return await _datasetRepository.GetByIdWithDetailsAsync(id);
+        try
+        {
+            return await _datasetRepository.GetByIdWithDetailsAsync(id);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving dataset with details: {ex.Message}", 500);
+        }
     }
 
     public async Task<List<Dataset>> GetDatasetsByProblemIdAsync(Guid problemId)
     {
-        return await _datasetRepository.GetByProblemIdAsync(problemId);
+        try
+        {
+            return await _datasetRepository.GetByProblemIdAsync(problemId);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving datasets for problem: {ex.Message}", 500);
+        }
     }
 
     public async Task<Dataset> UpdateDatasetAsync(Dataset dataset)
     {
-        return await _datasetRepository.UpdateAsync(dataset);
+        try
+        {
+            return await _datasetRepository.UpdateAsync(dataset);
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while updating dataset: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error updating dataset: {ex.Message}", 500);
+        }
     }
 
     public async Task<bool> CheckDatasetExistsByUserIdAsync(Guid userId)
     {
-        return await _datasetRepository.CheckDatasetExistsByUserIdAsync(userId);
+        try
+        {
+            return await _datasetRepository.CheckDatasetExistsByUserIdAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error checking dataset existence for user: {ex.Message}", 500);
+        }
     }
 }

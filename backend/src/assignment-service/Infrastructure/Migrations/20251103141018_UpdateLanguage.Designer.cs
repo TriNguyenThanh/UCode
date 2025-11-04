@@ -4,6 +4,7 @@ using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    partial class AssignmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103141018_UpdateLanguage")]
+    partial class UpdateLanguage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -610,13 +613,10 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
                 {
-                    b.Property<Guid>("ProblemId")
+                    b.Property<Guid>("ProblemLanguageId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("problem_id");
-
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("language_id");
+                        .HasColumnName("problem_language_id");
 
                     b.Property<string>("BodyOverride")
                         .HasMaxLength(4000)
@@ -640,9 +640,17 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("is_allowed");
 
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("language_id");
+
                     b.Property<int?>("MemoryKbOverride")
                         .HasColumnType("int")
                         .HasColumnName("memory_kb_override");
+
+                    b.Property<Guid>("ProblemId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("problem_id");
 
                     b.Property<string>("TailOverride")
                         .HasMaxLength(4000)
@@ -653,7 +661,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("decimal(5,2)")
                         .HasColumnName("time_factor_override");
 
-                    b.HasKey("ProblemId", "LanguageId")
+                    b.HasKey("ProblemLanguageId")
                         .HasName("pk_problem_language");
 
                     b.HasIndex("LanguageId")
@@ -661,6 +669,10 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ProblemId")
                         .HasDatabaseName("ix_problem_language_problem");
+
+                    b.HasIndex("ProblemId", "LanguageId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_problem_language_problem_language");
 
                     b.ToTable("problem_language", (string)null);
                 });

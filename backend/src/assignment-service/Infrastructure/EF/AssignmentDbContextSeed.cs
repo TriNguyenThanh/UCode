@@ -60,7 +60,7 @@ public static class AssignmentDbContextSeed
             OwnerId = teacherId,
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
-            StatementMdRef = "problems/two-sum/statement.md",
+            Statement = "problems/two-sum/statement.md",
             IoMode = IoMode.STDIO,
             InputFormat = "First line: n (number of elements)\nSecond line: n space-separated integers\nThird line: target value",
             OutputFormat = "Two space-separated integers representing the indices",
@@ -89,7 +89,7 @@ public static class AssignmentDbContextSeed
             OwnerId = teacherId,
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
-            StatementMdRef = "problems/reverse-string/statement.md",
+            Statement = "problems/reverse-string/statement.md",
             IoMode = IoMode.STDIO,
             InputFormat = "A single line containing a string",
             OutputFormat = "The reversed string",
@@ -118,7 +118,7 @@ public static class AssignmentDbContextSeed
             OwnerId = teacherId,
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
-            StatementMdRef = "problems/fibonacci/statement.md",
+            Statement = "problems/fibonacci/statement.md",
             IoMode = IoMode.STDIO,
             InputFormat = "A single integer n",
             OutputFormat = "The nth Fibonacci number",
@@ -147,7 +147,7 @@ public static class AssignmentDbContextSeed
             OwnerId = teacherId,
             Visibility = Visibility.PUBLIC,
             Status = ProblemStatus.PUBLISHED,
-            StatementMdRef = "problems/binary-search/statement.md",
+            Statement = "problems/binary-search/statement.md",
             IoMode = IoMode.STDIO,
             InputFormat = "First line: n (number of elements)\nSecond line: n space-separated integers (sorted)\nThird line: target value",
             OutputFormat = "A single integer representing the index of target (-1 if not found)",
@@ -268,35 +268,128 @@ public static class AssignmentDbContextSeed
         await context.SaveChangesAsync();
         Console.WriteLine($"✓ Seeded {testCases.Count} test cases");
 
-        // ===== 6. Seed LanguageLimits =====
-        Console.WriteLine("\nSeeding LanguageLimits...");
-        var languageLimits = new List<LanguageLimit>
+        // ===== 6. Seed Languages (Global Configurations) =====
+        Console.WriteLine("\nSeeding Languages...");
+        var languages = new List<Language>
         {
-            // Problem 1 - Two Sum
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem1.ProblemId, Lang = "cpp", TimeFactor = 1.0m, MemoryKbOverride = null },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem1.ProblemId, Lang = "java", TimeFactor = 1.5m, MemoryKbOverride = 524288 },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem1.ProblemId, Lang = "python", TimeFactor = 2.5m, MemoryKbOverride = null },
-            
-            // Problem 2 - Reverse String
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem2.ProblemId, Lang = "cpp", TimeFactor = 1.0m, MemoryKbOverride = null },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem2.ProblemId, Lang = "python", TimeFactor = 2.5m, MemoryKbOverride = null },
-            
-            // Problem 3 - Fibonacci
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem3.ProblemId, Lang = "cpp", TimeFactor = 1.0m, MemoryKbOverride = null },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem3.ProblemId, Lang = "java", TimeFactor = 1.5m, MemoryKbOverride = 524288 },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem3.ProblemId, Lang = "python", TimeFactor = 2.5m, MemoryKbOverride = null },
-            
-            // Problem 4 - Binary Search
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem4.ProblemId, Lang = "cpp", TimeFactor = 1.0m, MemoryKbOverride = null },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem4.ProblemId, Lang = "java", TimeFactor = 1.5m, MemoryKbOverride = null },
-            new LanguageLimit { LanguageLimitId = Guid.NewGuid(), ProblemId = problem4.ProblemId, Lang = "python", TimeFactor = 2.5m, MemoryKbOverride = null }
+            new Language 
+            { 
+                LanguageId = Guid.NewGuid(), 
+                Code = "cpp", 
+                DisplayName = "C++17", 
+                DefaultTimeFactor = 1.0m,
+                DefaultMemoryKb = 262144, // 256MB default
+                DefaultHead = "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n",
+                DefaultBody = "int main() {\n    // Your code here\n    return 0;\n}",
+                DefaultTail = null,
+                IsEnabled = true,
+                DisplayOrder = 1,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language 
+            { 
+                LanguageId = Guid.NewGuid(), 
+                Code = "java", 
+                DisplayName = "Java 17", 
+                DefaultTimeFactor = 1.5m,
+                DefaultMemoryKb = 524288, // 512MB - Java cần nhiều memory hơn
+                DefaultHead = "import java.util.*;\nimport java.io.*;\n",
+                DefaultBody = "public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}",
+                DefaultTail = null,
+                IsEnabled = true,
+                DisplayOrder = 2,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language 
+            { 
+                LanguageId = Guid.NewGuid(), 
+                Code = "python", 
+                DisplayName = "Python 3.11", 
+                DefaultTimeFactor = 2.5m, // Python chậm hơn C++
+                DefaultMemoryKb = 262144, // 256MB
+                DefaultHead = "import sys\nimport math\nfrom typing import *\n",
+                DefaultBody = "def main():\n    # Your code here\n    pass\n\nif __name__ == '__main__':\n    main()",
+                DefaultTail = null,
+                IsEnabled = true,
+                DisplayOrder = 3,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language 
+            { 
+                LanguageId = Guid.NewGuid(), 
+                Code = "javascript", 
+                DisplayName = "Node.js 20", 
+                DefaultTimeFactor = 2.0m,
+                DefaultMemoryKb = 262144, // 256MB
+                DefaultHead = "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n",
+                DefaultBody = "// Your code here\n",
+                DefaultTail = null,
+                IsEnabled = true,
+                DisplayOrder = 4,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language 
+            { 
+                LanguageId = Guid.NewGuid(), 
+                Code = "csharp", 
+                DisplayName = "C# .NET 8", 
+                DefaultTimeFactor = 1.2m,
+                DefaultMemoryKb = 262144, // 256MB
+                DefaultHead = "using System;\nusing System.Collections.Generic;\nusing System.Linq;\n",
+                DefaultBody = "class Program\n{\n    static void Main(string[] args)\n    {\n        // Your code here\n    }\n}",
+                DefaultTail = null,
+                IsEnabled = true,
+                DisplayOrder = 5,
+                CreatedAt = DateTime.UtcNow
+            }
         };
 
-        await context.LanguageLimits.AddRangeAsync(languageLimits);
+        await context.Languages.AddRangeAsync(languages);
         await context.SaveChangesAsync();
-        Console.WriteLine($"✓ Seeded {languageLimits.Count} language limits with code templates");
+        Console.WriteLine($"✓ Seeded {languages.Count} languages");
 
-        // ===== 7. Seed ProblemAssets =====
+        // ===== 7. Seed ProblemLanguages (Problem-specific overrides - Optional) =====
+        // CHỈ seed nếu cần override global config
+        // Ví dụ: Problem 1 cần Python chạy nhanh hơn default
+        Console.WriteLine("\nSeeding ProblemLanguages (overrides)...");
+        var cppLang = languages.First(l => l.Code == "cpp");
+        var javaLang = languages.First(l => l.Code == "java");
+        var pythonLang = languages.First(l => l.Code == "python");
+        
+        var problemLanguages = new List<ProblemLanguage>
+        {
+            // Problem 1 - Two Sum: Allow all languages (no overrides needed, sẽ dùng default)
+            // Chỉ cần specify nếu muốn customize
+            
+            // Problem 2 - Reverse String: Only allow C++ and Python
+            new ProblemLanguage 
+            { 
+                ProblemId = problem2.ProblemId, 
+                LanguageId = cppLang.LanguageId,
+                IsAllowed = true // Explicit allow
+            },
+            new ProblemLanguage 
+            { 
+                ProblemId = problem2.ProblemId, 
+                LanguageId = pythonLang.LanguageId,
+                IsAllowed = true
+            },
+            
+            // Problem 3 - Fibonacci: Java needs more memory for this specific problem
+            new ProblemLanguage 
+            { 
+                ProblemId = problem3.ProblemId, 
+                LanguageId = javaLang.LanguageId,
+                MemoryKbOverride = 1048576, // 1GB for Fibonacci (override default 512MB)
+                IsAllowed = true
+            }
+        };
+
+        await context.ProblemLanguages.AddRangeAsync(problemLanguages);
+        await context.SaveChangesAsync();
+        Console.WriteLine($"✓ Seeded {problemLanguages.Count} problem language overrides");
+
+        // ===== 8. Seed ProblemAssets =====
         Console.WriteLine("\nSeeding ProblemAssets...");
         var problemAssets = new List<ProblemAsset>
         {
@@ -729,7 +822,8 @@ public static class AssignmentDbContextSeed
         Console.WriteLine($"  ✓ {problemTags.Count} ProblemTags");
         Console.WriteLine($"  ✓ {datasets.Count} Datasets");
         Console.WriteLine($"  ✓ {testCases.Count} TestCases");
-        Console.WriteLine($"  ✓ {languageLimits.Count} LanguageLimits (with Code Templates)");
+        Console.WriteLine($"  ✓ {languages.Count} Languages (Global Configurations)");
+        Console.WriteLine($"  ✓ {problemLanguages.Count} ProblemLanguages (Problem-specific Overrides)");
         Console.WriteLine($"  ✓ {problemAssets.Count} ProblemAssets");
         Console.WriteLine($"  ✓ 3 Assignments");
         Console.WriteLine($"  ✓ {assignmentProblems.Count} AssignmentProblems");

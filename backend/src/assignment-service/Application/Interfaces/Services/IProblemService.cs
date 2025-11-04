@@ -47,14 +47,14 @@ public interface IProblemService
     
     // Tag methods
     Task AddTagsToProblemAsync(Guid problemId, List<Guid> tagIds);
-    Task RemoveTagFromProblemAsync(Guid problemId, Guid tagId);
+    Task RemoveProblemTagAsync(Guid problemId, Guid tagId);
     Task<List<Tag>> GetAllTagsAsync();
     Task<List<Problem>> GetProblemsByTagAsync(string tagName);
     
-    // LanguageLimit methods
-    Task<List<LanguageLimit>> GetLanguageLimitsAsync(Guid problemId);
-    Task<LanguageLimit> AddOrUpdateLanguageLimitAsync(Guid problemId, LanguageLimitDto request);
-    Task<bool> DeleteLanguageLimitAsync(Guid problemId, Guid limitId);
+    // ProblemLanguage methods (using new Language + ProblemLanguage schema)
+    Task<List<ProblemLanguage>> GetProblemLanguagesAsync(Guid problemId);
+    Task<List<ProblemLanguage>> AddOrUpdateProblemLanguagesAsync(Guid problemId, List<ProblemLanguageDto> requests);
+    Task<bool> DeleteProblemLanguageAsync(Guid problemId, Guid languageId);
     
     // Search methods
     Task<(List<Problem> problems, int total)> SearchProblemsAsync(string? keyword, string? difficulty, int page, int pageSize);

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,8 +46,8 @@ namespace Infrastructure.Migrations
                     owner_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     visibility = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     status = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    statement_md_ref = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    solution = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    statement = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: true),
+                    solution = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: true),
                     io_mode = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false, defaultValue: "STDIO"),
                     input_format = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     output_format = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
@@ -63,8 +63,8 @@ namespace Infrastructure.Migrations
                     description = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: true),
                     sample_input = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: true),
                     sample_output = table.Column<string>(type: "NVARCHAR(MAX)", maxLength: 4000, nullable: true),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSDATETIME()"),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSDATETIME()")
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {

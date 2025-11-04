@@ -87,9 +87,11 @@ public class ProblemRepository : IProblemRepository
             .AsSplitQuery()
             .Include(p => p.Datasets)
                 .ThenInclude(d => d.TestCases)
-            .Include(p => p.LanguageLimits)
+            .Include(p => p.ProblemLanguages)
+                .ThenInclude(pl => pl.Language)
             .Include(p => p.ProblemAssets)
             .Include(p => p.ProblemTags)
+                .ThenInclude(pt => pt.Tag)
             .FirstOrDefaultAsync(p => p.ProblemId == problemId);
     }
 
@@ -101,14 +103,19 @@ public class ProblemRepository : IProblemRepository
             .ToListAsync();
     }
 
-    public Task<Problem?> GetBySlugAsync(string slug)
+    public async Task<Problem?> GetBySlugAsync(string slug)
     {
-        throw new NotImplementedException();
+        return await _context.Problems
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Slug == slug);
     }
 
-    public Task<List<Problem>> GetByTagNameAsync(string tagName)
+    public async Task<List<Problem>> GetByTagNameAsync(string tagName)
     {
-        throw new NotImplementedException();
+        return await _context.Problems
+            .AsNoTracking()
+            .Where(p => p.ProblemTags.Any(pt => Microsoft.EntityFrameworkCore.EF.Functions.Like(pt.Tag.Name, tagName)))
+            .ToListAsync();
     }
 
     public async Task<(List<Problem> Items, int Total)> GetPagedAsync(int page, int pageSize, Expression<Func<Problem, bool>>? predicate = null, Func<IQueryable<Problem>, IOrderedQueryable<Problem>>? orderBy = null)
@@ -200,7 +207,8 @@ public class ProblemRepository : IProblemRepository
             .Include(p => p.ProblemAssets)
             .Include(p => p.Datasets)
                 .ThenInclude(d => d.TestCases)
-            .Include(p => p.LanguageLimits)
+            .Include(p => p.ProblemLanguages)
+                .ThenInclude(pl => pl.Language)
             .Include(p => p.ProblemTags)
             .FirstOrDefaultAsync(p => p.ProblemId == entity.ProblemId);
             
@@ -229,13 +237,13 @@ public class ProblemRepository : IProblemRepository
         return await GetProblemWithDetailsAsync(existingProblem.ProblemId) ?? existingProblem;
     }
 
-    public async Task<string> GetNextCodeSequenceAsync()
+    public Task<string> GetNextCodeSequenceAsync()
     {
         var result = Convert.ToBase64String(Guid.NewGuid().ToByteArray())
                       .Replace("/", "").Replace("+", "").Replace("=", "")
                       .Substring(0, 5)
                       .ToUpperInvariant();
-        return result;
+        return Task.FromResult(result);
     }
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeProblemId = null)
@@ -381,47 +389,63 @@ public class ProblemRepository : IProblemRepository
         }
     }
 
-    // LanguageLimit methods
-    public async Task<List<LanguageLimit>> GetLanguageLimitsAsync(Guid problemId)
+    // ProblemLanguage methods (using new Language + ProblemLanguage schema with composite PK)
+    public async Task<Problem?> GetByIdWithLanguagesAsync(Guid problemId)
     {
-        return await _context.LanguageLimits
-            .Where(ll => ll.ProblemId == problemId)
-            .OrderBy(ll => ll.Lang)
+        return await _context.Problems
+            // .AsNoTracking()
+            .Include(p => p.ProblemLanguages)
+                .ThenInclude(pl => pl.Language)
+            .FirstOrDefaultAsync(p => p.ProblemId == problemId);
+    }
+
+    public async Task<List<ProblemLanguage>> GetProblemLanguagesAsync(Guid problemId)
+    {
+        return await _context.ProblemLanguages
+            .Include(pl => pl.Language) // Include global language config
+            .Where(pl => pl.ProblemId == problemId)
+            .OrderBy(pl => pl.Language.DisplayOrder)
             .ToListAsync();
     }
 
-    public async Task<LanguageLimit?> GetLanguageLimitByIdAsync(Guid limitId)
+    public async Task<ProblemLanguage?> GetProblemLanguageAsync(Guid problemId, Guid languageId)
     {
-        return await _context.LanguageLimits.FindAsync(limitId);
+        return await _context.ProblemLanguages
+            .Include(pl => pl.Language)
+            .FirstOrDefaultAsync(pl => pl.ProblemId == problemId && pl.LanguageId == languageId);
     }
 
-    public async Task<LanguageLimit?> GetLanguageLimitByLangAsync(Guid problemId, string lang)
+    public async Task<ProblemLanguage> AddProblemLanguageAsync(ProblemLanguage problemLanguage)
     {
-        return await _context.LanguageLimits
-            .FirstOrDefaultAsync(ll => ll.ProblemId == problemId && ll.Lang == lang);
-    }
-
-    public async Task<LanguageLimit> AddLanguageLimitAsync(LanguageLimit limit)
-    {
-        await _context.LanguageLimits.AddAsync(limit);
+        await _context.ProblemLanguages.AddAsync(problemLanguage);
         await _context.SaveChangesAsync();
-        return limit;
+        
+        // Reload with Language navigation
+        return await GetProblemLanguageAsync(problemLanguage.ProblemId, problemLanguage.LanguageId) 
+            ?? problemLanguage;
     }
 
-    public async Task<bool> UpdateLanguageLimitAsync(LanguageLimit limit)
+    public async Task<bool> UpdateProblemLanguageAsync(ProblemLanguage problemLanguage)
     {
-        _context.LanguageLimits.Update(limit);
+        _context.ProblemLanguages.Update(problemLanguage);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteProblemLanguageAsync(Guid problemId, Guid languageId)
+    {
+        var problemLanguage = await _context.ProblemLanguages
+            .FindAsync(problemId, languageId); // Composite key
+
+        if (problemLanguage == null) return false;
+
+        _context.ProblemLanguages.Remove(problemLanguage);
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> DeleteLanguageLimitAsync(Guid limitId)
+    public async Task SaveChangesAsync()
     {
-        var limit = await _context.LanguageLimits.FindAsync(limitId);
-        if (limit == null) return false;
-
-        _context.LanguageLimits.Remove(limit);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

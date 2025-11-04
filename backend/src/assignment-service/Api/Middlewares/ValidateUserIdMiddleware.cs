@@ -30,7 +30,7 @@ public class ValidateUserIdAttribute : ActionFilterAttribute
         context.HttpContext.Items["X-User-Id"] = userId;
     }
 
-    public void OnActionExecuted(ActionExecutedContext context)
+    public override void OnActionExecuted(ActionExecutedContext context)
     {
         // Không cần xử lý sau khi action thực thi
     }

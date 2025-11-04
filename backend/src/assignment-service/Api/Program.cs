@@ -12,10 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using AssignmentService.Application.DTOs.Common;
 using Scrutor;
 using AssignmentService.Api.Filters;
-using AssignmentService.Api.Middlewares;
-
-using AssignmentService.Infrastructure.EF;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +21,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never; //dòng này Híu sửa, merge thì hãy giữ nhé
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     })
     .ConfigureApiBehaviorOptions(options =>
@@ -132,11 +128,11 @@ builder.Services.Scan(scan => scan
 
 // Register Repositories
 // builder.Services.AddScoped<IProblemRepository, ProblemRepository>();
-// // builder.Services.AddScoped<IDatasetRepository, DatasetRepository>();
+// builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
 
-// // Register Services
-// builder.Services.AddScoped<IAsService, AssignmentService>();
-// // builder.Services.AddScoped<IDatasetService, DatasetService>();
+// Register Services
+// builder.Services.AddScoped<IProblemService, ProblemService>();
+// builder.Services.AddScoped<ILanguageService, LanguageService>();
 
 //Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

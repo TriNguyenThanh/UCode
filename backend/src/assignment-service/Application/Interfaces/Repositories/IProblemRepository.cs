@@ -36,11 +36,13 @@ public interface IProblemRepository : IRepository<Problem>
     Task AddProblemTagsAsync(Guid problemId, List<Guid> tagIds);
     Task RemoveProblemTagAsync(Guid problemId, Guid tagId);
     
-    // LanguageLimit methods
-    Task<List<LanguageLimit>> GetLanguageLimitsAsync(Guid problemId);
-    Task<LanguageLimit?> GetLanguageLimitByIdAsync(Guid limitId);
-    Task<LanguageLimit?> GetLanguageLimitByLangAsync(Guid problemId, string lang);
-    Task<LanguageLimit> AddLanguageLimitAsync(LanguageLimit limit);
-    Task<bool> UpdateLanguageLimitAsync(LanguageLimit limit);
-    Task<bool> DeleteLanguageLimitAsync(Guid limitId);
+    // ProblemLanguage methods (using new Language + ProblemLanguage schema)
+    Task<Problem?> GetByIdWithLanguagesAsync(Guid problemId);
+    Task<List<ProblemLanguage>> GetProblemLanguagesAsync(Guid problemId);
+    Task<ProblemLanguage?> GetProblemLanguageAsync(Guid problemId, Guid languageId);
+    Task<ProblemLanguage> AddProblemLanguageAsync(ProblemLanguage problemLanguage);
+    Task<bool> UpdateProblemLanguageAsync(ProblemLanguage problemLanguage);
+    Task<bool> DeleteProblemLanguageAsync(Guid problemId, Guid languageId);
+
+    Task SaveChangesAsync();
 }

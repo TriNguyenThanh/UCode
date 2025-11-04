@@ -28,7 +28,8 @@ erDiagram
     %% 4️⃣ PROBLEM META
     %% ================================
     Problem ||--o{ ProblemAsset : "has_asset"
-    Problem ||--o{ LanguageLimit : "has_limit"
+    Problem ||--o{ ProblemLanguage : "has_language_override"
+    Language ||--o{ ProblemLanguage : "overridden_in"
     Problem ||--o{ ProblemTag : "tagged"
     Tag ||--o{ ProblemTag : "used_in"
 
@@ -132,15 +133,30 @@ erDiagram
         nvarchar_100_ score
     }
 
-    LanguageLimit {
-        UUID LanguageLimitId PK
-        UUID problem_id FK
-        nvarchar_50_ lang
-        decimal_5_2_ time_factor
-        int memory_kb_override
-        nvarchar_max_ head "Code template - phần đầu (imports, setup)"
-        nvarchar_max_ body "Code template - phần chính (user code placeholder)"
-        nvarchar_max_ tail "Code template - phần cuối (test runner)"
+    Language {
+        UUID id PK
+        nvarchar_50_ code "cpp, java, python, javascript, csharp, rust, go..."
+        nvarchar_100_ display_name "C++17, Java 17, Python 3..."
+        decimal_5_2_ default_time_factor "Multiplier for time limit (Python=2.5, C++=1.0)"
+        int default_memory_kb "Default memory override (NULL = use problem default)"
+        nvarchar_max_ default_head "Default code template - imports/setup"
+        nvarchar_max_ default_body "Default code template - main function"
+        nvarchar_max_ default_tail "Default code template - test runner"
+        bit is_enabled "Admin can disable languages"
+        int display_order "Display order in UI"
+        datetime2 created_at
+    }
+
+    ProblemLanguage {
+        UUID problem_id PK, FK "Composite PK with language_id"
+        UUID language_id PK, FK "Composite PK with problem_id"
+        decimal_5_2_ time_factor_override "NULL = use Language.default_time_factor"
+        int memory_kb_override "NULL = use Language.default_memory_kb"
+        nvarchar_max_ head_override "NULL = use Language.default_head"
+        nvarchar_max_ body_override "NULL = use Language.default_body"
+        nvarchar_max_ tail_override "NULL = use Language.default_tail"
+        bit is_allowed "Teacher can disable specific language for this problem"
+        datetime2 created_at
     }
 
     Submission {

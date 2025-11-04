@@ -453,7 +453,7 @@ public class AssignmentController : ControllerBase
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionDto request)
+    public Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionDto request)
     {
         // try {
 
@@ -514,14 +514,14 @@ public class AssignmentController : ControllerBase
         //     var created = await _assignmentService.SaveSubmissionAsync(submission);
         //     var response = _mapper.Map<BestSubmissionDto>(created);
             
-        //     return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission saved successfully"));
+        // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission saved successfully"));
         // } catch (Exception e) {
         //     Console.Write(e);
         //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse(e.Message));
 
         // }
 
-        return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé"));
+        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
     }
 
     /// <summary>
@@ -575,7 +575,7 @@ public class AssignmentController : ControllerBase
     [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GradeSubmission(Guid id, Guid submissionId, [FromBody] BestSubmissionDto request)
+    public Task<IActionResult> GradeSubmission(Guid id, Guid submissionId, [FromBody] BestSubmissionDto request)
     {
         // var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
         // if (assignment == null)
@@ -602,6 +602,6 @@ public class AssignmentController : ControllerBase
         
         // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
 
-        return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé"));
+        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
     }
 }
