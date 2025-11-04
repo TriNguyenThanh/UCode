@@ -21,7 +21,10 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import SendIcon from '@mui/icons-material/Send'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { mockProblems } from '~/data/mock'
+import { CodeEditor } from '~/components/CodeEditor'
+import { getCodeTemplate } from '~/utils/codeTemplates'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giải bài tập | UCode' },
@@ -57,14 +60,46 @@ export default function ProblemDetail() {
   const { problem } = useLoaderData<typeof clientLoader>()
   const [tabValue, setTabValue] = React.useState(0)
   const [language, setLanguage] = React.useState('cpp')
-  const [code, setCode] = React.useState(`// Viết code của bạn ở đây
-#include <iostream>
-using namespace std;
+  const [code, setCode] = React.useState(getCodeTemplate('cpp'))
+  const [output, setOutput] = React.useState('')
+  const [isRunning, setIsRunning] = React.useState(false)
 
-int main() {
-    // Code here
-    return 0;
-}`)
+  // Handle language change
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage)
+    setCode(getCodeTemplate(newLanguage))
+    setOutput('')
+  }
+
+  // Handle reset code
+  const handleResetCode = () => {
+    setCode(getCodeTemplate(language))
+    setOutput('')
+  }
+
+  // Handle run code
+  const handleRunCode = () => {
+    setIsRunning(true)
+    setOutput('⏳ Compiling and running code...\n')
+    
+    // Simulate code execution
+    setTimeout(() => {
+      setOutput(`✅ Compiled successfully!\n\n📋 Running test cases:\n\nTest case 1: ✓ Passed\nTest case 2: ✓ Passed\nTest case 3: ✓ Passed\n\n⏱️  Execution Time: 0.45s\n💾 Memory Used: 2.3 MB`)
+      setIsRunning(false)
+    }, 1500)
+  }
+
+  // Handle submit code
+  const handleSubmitCode = () => {
+    setIsRunning(true)
+    setOutput('📤 Submitting code to judge...\n')
+    
+    // Simulate submission
+    setTimeout(() => {
+      setOutput(`🎉 Submission successful!\n\n✅ Status: Accepted\n📊 Test cases passed: 10/10\n⏱️  Execution Time: 0.52s\n💾 Memory Used: 2.8 MB\n\n🏆 Score: 100/100\n\nCongratulations! Your solution is correct!`)
+      setIsRunning(false)
+    }, 2000)
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -234,7 +269,7 @@ int main() {
             <FormControl size='small' sx={{ minWidth: 150 }}>
               <Select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={(e) => handleLanguageChange(e.target.value)}
                 sx={{
                   color: 'white',
                   '.MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
@@ -246,8 +281,22 @@ int main() {
                 <MenuItem value='java'>Java</MenuItem>
                 <MenuItem value='python'>Python</MenuItem>
                 <MenuItem value='javascript'>JavaScript</MenuItem>
+                <MenuItem value='typescript'>TypeScript</MenuItem>
+                <MenuItem value='c'>C</MenuItem>
+                <MenuItem value='csharp'>C#</MenuItem>
+                <MenuItem value='go'>Go</MenuItem>
+                <MenuItem value='rust'>Rust</MenuItem>
               </Select>
             </FormControl>
+
+            <Button
+              startIcon={<RestartAltIcon />}
+              size='small'
+              onClick={handleResetCode}
+              sx={{ color: '#86868b' }}
+            >
+              Reset Code
+            </Button>
 
             <Box sx={{ flexGrow: 1 }} />
 
@@ -255,38 +304,25 @@ int main() {
               startIcon={<PlayArrowIcon />}
               variant='outlined'
               sx={{ color: 'primary.main', borderColor: 'primary.main' }}
+              onClick={handleRunCode}
+              disabled={isRunning}
             >
-              Chạy thử
+              {isRunning ? 'Đang chạy...' : 'Chạy thử'}
             </Button>
             <Button
               startIcon={<SendIcon />}
               variant='contained'
               sx={{ bgcolor: 'primary.main', color: 'secondary.main', fontWeight: 600 }}
+              onClick={handleSubmitCode}
+              disabled={isRunning}
             >
               Nộp bài
             </Button>
           </Box>
 
           {/* Code Editor Area */}
-          <Box sx={{ flexGrow: 1, p: 2 }}>
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: '#1e1e1e',
-                color: '#d4d4d4',
-                border: 'none',
-                outline: 'none',
-                fontFamily: "'Fira Code', 'Consolas', monospace",
-                fontSize: '14px',
-                lineHeight: '1.6',
-                padding: '16px',
-                resize: 'none',
-              }}
-              spellCheck={false}
-            />
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <CodeEditor value={code} onChange={(value) => setCode(value || '')} language={language} />
           </Box>
 
           {/* Output Console */}
@@ -301,8 +337,16 @@ int main() {
             }}
           >
             <Box sx={{ p: 2 }}>
-              <Typography variant='body2' sx={{ fontFamily: 'monospace', color: '#d4d4d4' }}>
-                Output console...
+              <Typography
+                variant='body2'
+                sx={{
+                  fontFamily: 'monospace',
+                  color: '#d4d4d4',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {output || 'Output console...\n\nNhấn "Chạy thử" để test code hoặc "Nộp bài" để submit.'}
               </Typography>
             </Box>
           </Paper>

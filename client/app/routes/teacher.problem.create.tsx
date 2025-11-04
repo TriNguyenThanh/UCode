@@ -42,7 +42,7 @@ function TabPanel({ children, value, index }: TabPanelProps) {
   )
 }
 
-export async function clientLoader({}: Route.ClientLoaderArgs) {
+export async function clientLoader({ }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user || user.role !== 'teacher') {
     throw redirect('/home')
@@ -53,14 +53,14 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData()
   const title = formData.get('title') as string
-  
+
   if (!title) {
     return { error: 'Vui lòng điền tên bài toán' }
   }
 
   // Create problem (mock - in real app, this would call API)
   const newProblemId = `problem-${Date.now()}`
-  
+
   // Redirect to problem detail or problem list
   return redirect(`/teacher/problem/${newProblemId}`)
 }
@@ -85,16 +85,16 @@ export default function CreateProblem() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
       <Navigation />
-      
+
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1d1d1f', mb: 1 }}>
             Tạo bài toán mới
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" sx={{ color: '#86868b' }}>
             Tạo bài toán để thêm vào assignments hoặc cho sinh viên luyện tập
           </Typography>
         </Box>
@@ -106,17 +106,17 @@ export default function CreateProblem() {
         )}
 
         <Form method="post">
-          <Paper sx={{ mb: 3 }}>
+          <Paper elevation={0} sx={{ mb: 3, bgcolor: '#ffffff', border: '1px solid #d2d2d7', borderRadius: 2 }}>
             {/* Tabs */}
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Box sx={{ borderBottom: 1, borderColor: '#d2d2d7' }}>
               <Tabs
                 value={tabValue}
                 onChange={(_, newValue) => setTabValue(newValue)}
                 sx={{
                   px: 2,
-                  '& .MuiTab-root': { color: 'text.secondary', textTransform: 'none', fontSize: '1rem' },
-                  '& .Mui-selected': { color: 'secondary.main', fontWeight: 'bold' },
-                  '& .MuiTabs-indicator': { bgcolor: 'primary.main', height: 3 },
+                  '& .MuiTab-root': { color: '#86868b', textTransform: 'none', fontSize: '1rem', fontWeight: 500 },
+                  '& .Mui-selected': { color: '#007AFF', fontWeight: 600 },
+                  '& .MuiTabs-indicator': { bgcolor: '#007AFF', height: 3 },
                 }}
               >
                 <Tab label="Problem Statement" />
@@ -197,7 +197,7 @@ export default function CreateProblem() {
             {/* Tab 2: Input & Output Format */}
             <TabPanel value={tabValue} index={1}>
               <Box sx={{ px: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Input Format
                 </Typography>
                 <TextField
@@ -214,7 +214,7 @@ VD:
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Output Format
                 </Typography>
                 <TextField
@@ -233,7 +233,7 @@ VD:
             {/* Tab 3: Constraints & Scoring */}
             <TabPanel value={tabValue} index={2}>
               <Box sx={{ px: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Constraints
                 </Typography>
                 <TextField
@@ -252,7 +252,7 @@ VD:
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Time & Memory Limits
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
@@ -282,7 +282,7 @@ VD:
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Tags
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
@@ -291,8 +291,7 @@ VD:
                       key={tag}
                       label={tag}
                       onDelete={() => handleDeleteTag(tag)}
-                      color="primary"
-                      sx={{ bgcolor: 'primary.main', color: 'secondary.main' }}
+                      sx={{ bgcolor: '#007AFF', color: '#ffffff', fontWeight: 600 }}
                     />
                   ))}
                 </Box>
@@ -325,8 +324,8 @@ VD:
             <TabPanel value={tabValue} index={3}>
               <Box sx={{ px: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <NotificationsActiveIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                  <NotificationsActiveIcon sx={{ color: '#007AFF', fontSize: 28 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
                     Notifications & Hints
                   </Typography>
                 </Box>
@@ -372,7 +371,7 @@ VD:
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'secondary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
                   Editorial / Solution (Optional)
                 </Typography>
                 <TextField
@@ -394,21 +393,25 @@ VD:
               startIcon={<CancelIcon />}
               onClick={() => navigate(-1)}
               sx={{
-                borderColor: 'text.secondary',
-                color: 'text.secondary',
+                borderColor: '#d2d2d7',
+                color: '#86868b',
+                textTransform: 'none',
+                fontWeight: 600,
               }}
             >
               Hủy
             </Button>
-            
+
             <Box sx={{ display: 'flex', gap: 2 }}>
               {tabValue < 3 && (
                 <Button
                   variant="outlined"
                   onClick={() => setTabValue(tabValue + 1)}
                   sx={{
-                    borderColor: 'secondary.main',
-                    color: 'secondary.main',
+                    borderColor: '#007AFF',
+                    color: '#007AFF',
+                    textTransform: 'none',
+                    fontWeight: 600,
                   }}
                 >
                   Tiếp theo
@@ -419,12 +422,13 @@ VD:
                 variant="contained"
                 startIcon={<SaveIcon />}
                 sx={{
-                  bgcolor: 'secondary.main',
-                  color: 'primary.main',
+                  bgcolor: '#007AFF',
+                  color: '#ffffff',
                   px: 4,
+                  textTransform: 'none',
+                  fontWeight: 600,
                   '&:hover': {
-                    bgcolor: 'primary.main',
-                    color: 'secondary.main',
+                    bgcolor: '#0051D5',
                   },
                 }}
               >
