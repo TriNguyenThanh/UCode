@@ -3,33 +3,28 @@ import pika
 import json
 import os
 import time
-import threading
-from app.health_check import should_accept_submission, log_system_stats
 from app.message_handler import MessageHandler
 
 
 # =============================================================================
-# ADAPTIVE CONSUMER - Tự động điều chỉnh theo tải hệ thống
+# ADAPTIVE CONSUMER - Consumer đơn giản không kiểm tra quá tải
 # =============================================================================
-# Thay vì reject và requeue, consumer sẽ:
-# 1. TẠM DỪNG khi hệ thống quá tải (stop consuming)
-# 2. TỰ ĐỘNG BẬT LẠI khi hệ thống khỏe (resume consuming)
-# 3. Không lãng phí CPU cho việc reject/requeue liên tục
+# Consumer sẽ:
+# 1. Luôn chạy và xử lý message
+# 2. Không tạm dừng khi hệ thống quá tải
+# 3. Đơn giản và ổn định
 # =============================================================================
 
 MAX_CONCURRENT_SUBMISSIONS = int(os.getenv("MAX_CONCURRENT_SUBMISSIONS", "1"))
-HEALTH_CHECK_INTERVAL = 5  # Kiểm tra health mỗi 5 giây
 
 class AdaptiveConsumer:
     def __init__(self):
         self.connection = None
         self.channel = None
-        self.consumer_tag = None
-        self.is_consuming = False
         self.should_stop = False
         
     def start(self):
-        """Khởi động consumer với adaptive behavior"""
+        """Khởi động consumer đơn giản, không kiểm tra quá tải"""
         rabbit_host = os.getenv("RABBITMQ_HOST", "localhost")
         rabbit_user = os.getenv("RABBITMQ_USER", "guest")
         rabbit_pass = os.getenv("RABBITMQ_PASS", "guest")
@@ -60,73 +55,39 @@ class AdaptiveConsumer:
                 time.sleep(retry_delay)
         
         self.channel = self.connection.channel()
+        
+        # Declare cả submission_queue và result_queue
         self.channel.queue_declare(queue="submission_queue", durable=True)
+        self.channel.queue_declare(queue="result_queue", durable=True)
+        
         self.channel.basic_qos(prefetch_count=MAX_CONCURRENT_SUBMISSIONS)
         
-        print("[*] Adaptive Consumer started")
-        
-        # Thread để monitor health và điều chỉnh consumer
-        health_monitor = threading.Thread(target=self._health_monitor_loop, daemon=True)
-        health_monitor.start()
-        
         # Bắt đầu consuming
-        self._start_consuming()
+        self.channel.basic_consume(
+            queue="submission_queue",
+            on_message_callback=self._message_callback,
+            auto_ack=False
+        )
+        
+        print("[✓] Consumer started - Ready to process submissions")
         
         try:
-            # Giữ connection alive
-            while not self.should_stop:
-                self.connection.process_data_events(time_limit=1)
+            # Bắt đầu consuming messages
+            self.channel.start_consuming()
         except KeyboardInterrupt:
             print("\n[*] Shutting down...")
             self.should_stop = True
+            self.channel.stop_consuming()
+        except Exception as e:
+            print(f"[ERROR] Connection error: {e}")
+            self.should_stop = True
         finally:
-            self._stop_consuming()
-            self.connection.close()
-    
-    def _start_consuming(self):
-        """Bắt đầu nhận messages từ queue"""
-        if not self.is_consuming:
-            self.consumer_tag = self.channel.basic_consume(
-                queue="submission_queue",
-                on_message_callback=self._message_callback,
-                auto_ack=False
-            )
-            self.is_consuming = True
-            print("[✓] Consumer STARTED - Ready to process submissions")
-    
-    def _stop_consuming(self):
-        """Tạm dừng nhận messages từ queue"""
-        if self.is_consuming and self.consumer_tag:
-            self.channel.basic_cancel(self.consumer_tag)
-            self.is_consuming = False
-            print("[⏸] Consumer PAUSED - System overloaded")
-    
-    def _health_monitor_loop(self):
-        """
-        Background thread để monitor health và điều chỉnh consumer.
-        Chạy độc lập, không block message processing.
-        """
-        while not self.should_stop:
-            try:
-                can_accept, reason = should_accept_submission()
-                
-                if can_accept and not self.is_consuming:
-                    # Hệ thống đã khỏe lại → BẬT consumer
-                    print(f"[✓] System healthy again, resuming consumer...")
-                    log_system_stats()
-                    self._start_consuming()
-                    
-                elif not can_accept and self.is_consuming:
-                    # Hệ thống quá tải → TẮT consumer
-                    print(f"[⚠] System overloaded: {reason}")
-                    log_system_stats()
-                    self._stop_consuming()
-                
-            except Exception as e:
-                print(f"[ERROR] Health monitor error: {e}")
-            
-            # Kiểm tra health mỗi X giây
-            time.sleep(HEALTH_CHECK_INTERVAL)
+            # Only close connection if it's still open
+            if self.connection and self.connection.is_open:
+                try:
+                    self.connection.close()
+                except Exception as e:
+                    print(f"[WARNING] Error closing connection: {e}")
 
     def _message_callback(self, ch, method, properties, body):
         # Lấy retry count từ headers
@@ -159,16 +120,24 @@ class AdaptiveConsumer:
         # 3. Gửi response về server
         if result["response"] and properties.reply_to:
             try:
+                print(f"[→] Sending response to queue: {properties.reply_to}")
+                print(f"    Correlation ID: {properties.correlation_id}")
+                print(f"    Response: {json.dumps(result['response'], indent=2)}")
+                
                 ch.basic_publish(
                     exchange="",
                     routing_key=properties.reply_to,
                     body=json.dumps(result["response"]),
                     properties=pika.BasicProperties(
-                        correlation_id=properties.correlation_id
+                        correlation_id=properties.correlation_id,
+                        delivery_mode=2  # persistent message
                     )
                 )
+                print(f"[✓] Response sent successfully to {properties.reply_to}")
             except Exception as e:
                 print(f"[ERROR] Failed to send response to server: {e}")
+                import traceback
+                traceback.print_exc()
 
 def main():
     consumer = AdaptiveConsumer()

@@ -128,7 +128,7 @@ builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 
 // Register RabbitMQ Connection Provider as Singleton (connection pooling)
 builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
-
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -138,7 +138,8 @@ builder.Services.Scan(scan => scan
     .AddClasses(classes => classes.InNamespaces(
         "AssignmentService.Infrastructure.Services",
         "AssignmentService.Infrastructure.Repositories",
-        "AssignmentService.Infrastructure.MessageBrokers"))
+        "AssignmentService.Infrastructure.MessageBrokers")
+        .Where(type => type != typeof(AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider))) // Exclude RabbitMqConnectionProvider (already registered as Singleton)
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 
@@ -152,8 +153,6 @@ builder.Services.Scan(scan => scan
 
 //Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
