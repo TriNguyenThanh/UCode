@@ -225,43 +225,43 @@ public static class AssignmentDbContextSeed
         var testCases = new List<TestCase>
         {
             // Two Sum - Sample Dataset
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[0].DatasetId, IndexNo = 0, InputRef = "testcases/p001/sample/0.in", OutputRef = "testcases/p001/sample/0.out", Score = "100" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[0].DatasetId, IndexNo = 0, InputRef = "4\n2 7 11 15\n9", OutputRef = "0 1", Score = "100" },
             
             // Two Sum - Basic Tests
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 0, InputRef = "testcases/p001/basic/0.in", OutputRef = "testcases/p001/basic/0.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 1, InputRef = "testcases/p001/basic/1.in", OutputRef = "testcases/p001/basic/1.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 2, InputRef = "testcases/p001/basic/2.in", OutputRef = "testcases/p001/basic/2.out", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 0, InputRef = "3\n1 2 3\n4", OutputRef = "0 2", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 1, InputRef = "5\n5 10 15 20 25\n35", OutputRef = "1 3", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[1].DatasetId, IndexNo = 2, InputRef = "2\n-1 -2\n-3", OutputRef = "0 1", Score = "20" },
             
             // Two Sum - Advanced Tests
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[2].DatasetId, IndexNo = 0, InputRef = "testcases/p001/advanced/0.in", OutputRef = "testcases/p001/advanced/0.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[2].DatasetId, IndexNo = 1, InputRef = "testcases/p001/advanced/1.in", OutputRef = "testcases/p001/advanced/1.out", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[2].DatasetId, IndexNo = 0, InputRef = "6\n1 5 7 9 11 13\n20", OutputRef = "2 4", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[2].DatasetId, IndexNo = 1, InputRef = "4\n-5 -2 3 8\n6", OutputRef = "1 3", Score = "20" },
             
             // Reverse String - Sample
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[3].DatasetId, IndexNo = 0, InputRef = "testcases/p002/sample/0.in", OutputRef = "testcases/p002/sample/0.out", Score = "100" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[3].DatasetId, IndexNo = 0, InputRef = "hello", OutputRef = "olleh", Score = "100" },
             
             // Reverse String - Basic Tests
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 0, InputRef = "testcases/p002/basic/0.in", OutputRef = "testcases/p002/basic/0.out", Score = "33" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 1, InputRef = "testcases/p002/basic/1.in", OutputRef = "testcases/p002/basic/1.out", Score = "33" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 2, InputRef = "testcases/p002/basic/2.in", OutputRef = "testcases/p002/basic/2.out", Score = "34" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 0, InputRef = "world", OutputRef = "dlrow", Score = "33" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 1, InputRef = "a", OutputRef = "a", Score = "33" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[4].DatasetId, IndexNo = 2, InputRef = "programming", OutputRef = "gnimmargorp", Score = "34" },
             
             // Fibonacci - Sample
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[5].DatasetId, IndexNo = 0, InputRef = "testcases/p003/sample/0.in", OutputRef = "testcases/p003/sample/0.out", Score = "100" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[5].DatasetId, IndexNo = 0, InputRef = "10", OutputRef = "55", Score = "100" },
             
             // Fibonacci - Official Tests
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 0, InputRef = "testcases/p003/official/0.in", OutputRef = "testcases/p003/official/0.out", Score = "25" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 1, InputRef = "testcases/p003/official/1.in", OutputRef = "testcases/p003/official/1.out", Score = "25" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 2, InputRef = "testcases/p003/official/2.in", OutputRef = "testcases/p003/official/2.out", Score = "25" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 3, InputRef = "testcases/p003/official/3.in", OutputRef = "testcases/p003/official/3.out", Score = "25" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 0, InputRef = "0", OutputRef = "0", Score = "25" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 1, InputRef = "1", OutputRef = "1", Score = "25" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 2, InputRef = "15", OutputRef = "610", Score = "25" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[6].DatasetId, IndexNo = 3, InputRef = "20", OutputRef = "6765", Score = "25" },
             
             // Binary Search - Sample
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[7].DatasetId, IndexNo = 0, InputRef = "testcases/p004/sample/0.in", OutputRef = "testcases/p004/sample/0.out", Score = "100" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[7].DatasetId, IndexNo = 0, InputRef = "6\n-1 0 3 5 9 12\n9", OutputRef = "4", Score = "100" },
             
             // Binary Search - Full Tests
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 0, InputRef = "testcases/p004/full/0.in", OutputRef = "testcases/p004/full/0.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 1, InputRef = "testcases/p004/full/1.in", OutputRef = "testcases/p004/full/1.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 2, InputRef = "testcases/p004/full/2.in", OutputRef = "testcases/p004/full/2.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 3, InputRef = "testcases/p004/full/3.in", OutputRef = "testcases/p004/full/3.out", Score = "20" },
-            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 4, InputRef = "testcases/p004/full/4.in", OutputRef = "testcases/p004/full/4.out", Score = "20" }
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 0, InputRef = "5\n1 2 3 4 5\n3", OutputRef = "2", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 1, InputRef = "6\n-1 0 3 5 9 12\n2", OutputRef = "-1", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 2, InputRef = "1\n5\n5", OutputRef = "0", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 3, InputRef = "10\n1 3 5 7 9 11 13 15 17 19\n13", OutputRef = "6", Score = "20" },
+            new TestCase { TestCaseId = Guid.NewGuid(), DatasetId = datasets[8].DatasetId, IndexNo = 4, InputRef = "8\n-10 -5 0 2 4 6 8 10\n-5", OutputRef = "1", Score = "20" }
         };
 
         await context.TestCases.AddRangeAsync(testCases);
