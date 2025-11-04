@@ -83,8 +83,6 @@ public class ResultConsumer : BackgroundService
 
     private async Task ProcessMessage(BasicDeliverEventArgs ea, CancellationToken stoppingToken)
     {
-        Submission submission = null!;
-        int AttemptCount = 0;
         var json = Encoding.UTF8.GetString(ea.Body.ToArray());
         var options = new JsonSerializerOptions
         {
@@ -101,28 +99,21 @@ public class ResultConsumer : BackgroundService
 
             if (results_message != null)
             {
-                // Passed = 3,
-                // TimeLimitExceeded = 4,
-                // MemoryLimitExceeded = 5,
-                // RuntimeError = 6,
-                // InternalError = 7,
-                // WrongAnswer = 8,
-                // CompilationError = 9
 
                 int testcasePassed = 0;
-                submission = await submissionRepo.GetSubmission(results_message.SubmissionId);
                 foreach (var result in results_message.CompileResult)
                 {
-                    if (result == '3')
+                    if (result == '0')
                     {
                         testcasePassed++;
                     }
                 }
+                var submission = await submissionRepo.GetSubmission(results_message.SubmissionId);
 
                 submission.PassedTestcase = testcasePassed;
                 submission.TotalTime = results_message.TotalTime;
                 submission.TotalMemory = results_message.TotalMemory;
-                submission.Status = (submission.PassedTestcase == submission.TotalTestcase) ? SubmissionStatus.Done : SubmissionStatus.Failed;
+                submission.Status = (submission.PassedTestcase == submission.TotalTestcase) ? SubmissionStatus.Passed : SubmissionStatus.Failed;
                 submission.ErrorCode = results_message.ErrorCode;
                 submission.ErrorMessage = results_message.ErrorMessage;
 

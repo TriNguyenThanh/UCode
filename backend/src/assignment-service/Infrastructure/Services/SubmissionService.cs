@@ -17,8 +17,20 @@ public class SubmissionService : ISubmissionService
         // _exec = exec;
     }
 
-    public Task<Submission> GetSubmission(Guid submissionId)
-        => _repository.GetSubmission(submissionId);
+    public async Task<Submission> GetSubmission(Guid submissionId){
+        try{
+            var submission = await _repository.GetSubmission(submissionId);
+            var dataset = await _datasetRepository.GetByIdAsync(submission.DatasetId);
+            if (dataset?.Kind == DatasetKind.SAMPLE && (submission.Status == SubmissionStatus.Done || submission.Status == SubmissionStatus.Failed))
+            {
+                await _repository.DeleteSubmission(submissionId);
+            }
+            return submission; 
+        }
+        catch(Exception ex){
+            throw new Exception(ex.Message);
+        }
+    }
 
     public Task<List<Submission>> GetAllUserSubmission(Guid userId, int pageNumber, int pageSize)
     {

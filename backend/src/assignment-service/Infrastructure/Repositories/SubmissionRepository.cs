@@ -15,7 +15,7 @@ public class SubmissionRepository : ISubmissionRepository
         _context = context;
     }
 
-    public async Task<Submission> SubmitCode(Submission submission)
+    public async Task<Submission> AddSubmission(Submission submission)
     {
         _context.Submissions.Add(submission);
         if (await _context.SaveChangesAsync() > 0)
