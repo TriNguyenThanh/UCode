@@ -34,13 +34,13 @@ public class TeacherAppService : ITeacherService
         if (await _userRepository.EmailExistsAsync(request.Email))
             throw new ApiException("Email already exists");
 
-        if (await _teacherRepository.EmployeeIdExistsAsync(request.EmployeeId))
-            throw new ApiException("EmployeeId already exists");
+        if (await _teacherRepository.TeacherCodeExistsAsync(request.TeacherCode))
+            throw new ApiException("TeacherCode already exists");
 
         var teacher = new Teacher
         {
             UserId = Guid.NewGuid(),
-            TeacherCode = request.EmployeeId,
+            TeacherCode = request.TeacherCode,
             Username = request.Username,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
@@ -62,9 +62,9 @@ public class TeacherAppService : ITeacherService
         return teacher != null ? _mapper.Map<TeacherResponse>(teacher) : null;
     }
 
-    public async Task<TeacherResponse?> GetTeacherByEmployeeIdAsync(string employeeId)
+    public async Task<TeacherResponse?> GetTeacherByTeacherCodeAsync(string teacherCode)
     {
-        var teacher = await _teacherRepository.GetByEmployeeIdAsync(employeeId);
+        var teacher = await _teacherRepository.GetByTeacherCodeAsync(teacherCode);
         return teacher != null ? _mapper.Map<TeacherResponse>(teacher) : null;
     }
 

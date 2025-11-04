@@ -20,12 +20,12 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .FirstOrDefaultAsync(s => s.UserId == id);
     }
 
-    public async Task<Student?> GetByStudentIdAsync(string studentId)
+    public async Task<Student?> GetByStudentCodeAsync(string studentCode)
     {
         return await _dbSet
             .Include(s => s.UserClasses)
                 .ThenInclude(uc => uc.Class)
-            .FirstOrDefaultAsync(s => s.StudentCode == studentId);
+            .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
     }
 
     public async Task<List<Student>> GetStudentsByClassIdAsync(Guid classId)
@@ -37,9 +37,9 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .ToListAsync();
     }
 
-    public async Task<bool> StudentIdExistsAsync(string studentId)
+    public async Task<bool> StudentCodeExistsAsync(string studentCode)
     {
-        return await _dbSet.AnyAsync(s => s.StudentCode == studentId);
+        return await _dbSet.AnyAsync(s => s.StudentCode == studentCode);
     }
 
     public async Task<List<Student>> GetStudentsByClassYearAsync(int classYear)

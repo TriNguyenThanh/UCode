@@ -10,9 +10,9 @@ public class CreateStudentRequest
     /// <summary>
     /// Mã sinh viên (unique): SV001, SV002,...
     /// </summary>
-    [Required(ErrorMessage = "StudentId is required")]
+    [Required(ErrorMessage = "StudentCode is required")]
     [MaxLength(20)]
-    public string StudentId { get; set; } = string.Empty;
+    public string StudentCode { get; set; } = string.Empty;
 
     /// <summary>
     /// Tên đăng nhập (unique)

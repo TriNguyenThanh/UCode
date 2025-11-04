@@ -21,7 +21,7 @@ public class ExcelAppService : IExcelService
             if (worksheet == null)
                 throw new ApiException("Excel file is empty or invalid");
 
-            // Expected columns: StudentId, Username, Email, Password, FullName, Major, EnrollmentYear, ClassYear
+            // Expected columns: StudentCode, Username, Email, Password, FullName, Major, EnrollmentYear, ClassYear
             var rowCount = worksheet.Dimension?.Rows ?? 0;
 
             // Start from row 2 (skip header)
@@ -53,7 +53,7 @@ public class ExcelAppService : IExcelService
 
                     students.Add(new CreateStudentRequest
                     {
-                        StudentId = studentId,
+                        StudentCode = studentId,
                         Username = username,
                         Email = email,
                         Password = password,

@@ -8,7 +8,7 @@ using AssignmentService.Api.Middlewares;
 namespace AssignmentService.Api.Controllers;
 
 [ApiController]
-[Route("api/languages")]
+[Route("api/v1/languages")]
 public class LanguageController : ControllerBase
 {
     private readonly ILanguageService _languageService;

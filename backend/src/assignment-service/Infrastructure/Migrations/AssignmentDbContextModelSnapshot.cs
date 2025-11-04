@@ -153,6 +153,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_id");
 
+                    b.Property<int>("CapturedAICount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("captured_ai_count");
+
                     b.Property<int?>("MaxScore")
                         .HasColumnType("int")
                         .HasColumnName("max_score");
@@ -170,6 +176,12 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
+
+                    b.Property<int>("TabSwitchCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("tab_switch_count");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")

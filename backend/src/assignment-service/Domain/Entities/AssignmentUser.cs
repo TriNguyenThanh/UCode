@@ -29,7 +29,17 @@ public class AssignmentUser
     /// Thời gian được giao
     /// </summary>
     public DateTime AssignedAt { get; set; }
+
+    /// <summary>
+    /// Số lần chuyển tab ra ngoài (tab switch)
+    /// </summary>
+    public int TabSwitchCount { get; set; } = 0;
     
+    /// <summary>
+    /// Số lần phát hiện sử dụng AI (AI detection)
+    /// </summary>
+    public int CapturedAICount { get; set; } = 0;
+
     /// <summary>
     /// Thời gian bắt đầu làm
     /// </summary>

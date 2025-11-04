@@ -34,13 +34,13 @@ public class StudentAppService : IStudentService
         if (await _userRepository.EmailExistsAsync(request.Email))
             throw new ApiException("Email already exists");
 
-        if (await _studentRepository.StudentIdExistsAsync(request.StudentId))
-            throw new ApiException("StudentId already exists");
+        if (await _studentRepository.StudentCodeExistsAsync(request.StudentCode))
+            throw new ApiException("StudentCode already exists");
 
         var student = new Student
         {
             UserId = Guid.NewGuid(),
-            StudentCode = request.StudentId,
+            StudentCode = request.StudentCode,
             Username = request.Username,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
@@ -62,9 +62,9 @@ public class StudentAppService : IStudentService
         return student != null ? _mapper.Map<StudentResponse>(student) : null;
     }
 
-    public async Task<StudentResponse?> GetStudentByStudentIdAsync(string studentId)
+    public async Task<StudentResponse?> GetStudentByStudentCodeAsync(string studentCode)
     {
-        var student = await _studentRepository.GetByStudentIdAsync(studentId);
+        var student = await _studentRepository.GetByStudentCodeAsync(studentCode);
         return student != null ? _mapper.Map<StudentResponse>(student) : null;
     }
 

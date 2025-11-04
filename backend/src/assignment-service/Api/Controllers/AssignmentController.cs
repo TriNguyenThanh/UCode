@@ -66,7 +66,7 @@ public class AssignmentController : ControllerBase
     /// <response code="422">Validation errors</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("create")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -99,7 +99,7 @@ public class AssignmentController : ControllerBase
     /// <response code="422">Validation errors</response>
     /// <response code="500">Internal server error</response>
     [HttpPut("update/{id:guid}")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -133,7 +133,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
     [HttpDelete("delete/{id:guid}")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<object>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
@@ -210,7 +210,7 @@ public class AssignmentController : ControllerBase
     /// <response code="401">Unauthorized - Teacher role required</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("my-assignments")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<List<AssignmentResponse>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
@@ -233,7 +233,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id:guid}/students")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<List<AssignmentUserDto>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -256,7 +256,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id:guid}/statistics")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentStatistics>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -535,7 +535,7 @@ public class AssignmentController : ControllerBase
     // /// <response code="404">Assignment not found</response>
     // /// <response code="500">Internal server error</response>
     // [HttpGet("{id:guid}/all-submissions")]
-    // [RequireRole("teacher")]
+    // [RequireRole("teacher,admin")]
     // [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionDto>>), 200)]
     // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     // [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
@@ -568,7 +568,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment or submission not found</response>
     /// <response code="500">Internal server error</response>
     [HttpPut("{id:guid}/grade-submission/{submissionId:guid}")]
-    [RequireRole("teacher")]
+    [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
