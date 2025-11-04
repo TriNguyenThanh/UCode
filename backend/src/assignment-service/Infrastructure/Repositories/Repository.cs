@@ -35,30 +35,30 @@ public class Repository<T> : IRepository<T> where T : class
     }
 
     public virtual async Task<(List<T> Items, int Total)> GetPagedAsync(
-        int page, 
-        int pageSize, 
+        int page,
+        int pageSize,
         Expression<Func<T, bool>>? predicate = null,
         Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
     {
         IQueryable<T> query = _dbSet;
-        
+
         if (predicate != null)
         {
             query = query.Where(predicate);
         }
-        
+
         var total = await query.CountAsync();
-        
+
         if (orderBy != null)
         {
             query = orderBy(query);
         }
-        
+
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        
+
         return (items, total);
     }
 
@@ -101,7 +101,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             return await _dbSet.CountAsync();
         }
-        
+
         return await _dbSet.CountAsync(predicate);
     }
 
@@ -113,8 +113,8 @@ public class Repository<T> : IRepository<T> where T : class
     public Task<bool> RemoveRangeAsync(IEnumerable<Guid> ids)
     {
         throw new NotSupportedException(
-        $"RemoveRangeAsync is not supported for {typeof(T).Name}. " +
-        "Please implement in specific repository if needed."
-    );
+            $"RemoveRangeAsync is not supported for {typeof(T).Name}. " +
+            "Please implement in specific repository if needed."
+        );
     }
 }

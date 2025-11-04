@@ -53,12 +53,12 @@ public class AssignmentRepository : IAssignmentRepository
     {
         var assignment = await _context.Assignments
             .AsNoTracking()
-            .Where(a => a.AssignmentId == id) 
+            .Where(a => a.AssignmentId == id)
             .Select(a => new
             {
                 Assignment = a,
                 Problems = a.AssignmentProblems
-                    .OrderBy(ap => ap.OrderIndex) 
+                    .OrderBy(ap => ap.OrderIndex)
                     .Select(ap => new
                     {
                         ap.AssignmentId,
@@ -99,6 +99,7 @@ public class AssignmentRepository : IAssignmentRepository
     {
         return await _context.Assignments
             .AsNoTracking()
+            .Include(a => a.AssignmentProblems)
             .Where(a => a.AssignedBy == teacherId)
             .OrderByDescending(a => a.AssignedAt)
             .ToListAsync();
@@ -107,10 +108,11 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<List<Assignment>> GetByClassIdAsync(Guid classId)
     {
         return await _context.Assignments
-            .AsNoTracking()
-            .Where(a => a.ClassId == classId)
-            .OrderByDescending(a => a.AssignedAt)
-            .ToListAsync();
+               .AsNoTracking()
+               .Include(a => a.AssignmentProblems)
+               .Where(a => a.ClassId == classId)
+               .OrderByDescending(a => a.AssignedAt)
+               .ToListAsync();
     }
 
     public async Task<List<Assignment>> GetByUserIdAsync(Guid UserId)
@@ -155,26 +157,24 @@ public class AssignmentRepository : IAssignmentRepository
         existingAssignment.Description = entity.Description;
         existingAssignment.StartTime = entity.StartTime;
         existingAssignment.EndTime = entity.EndTime;
-        existingAssignment.AssignedAt = entity.AssignedAt;
-        existingAssignment.TotalPoints = entity.TotalPoints;
+        // existingAssignment.AssignedAt = entity.AssignedAt;
+        // existingAssignment.TotalPoints = entity.TotalPoints;
         existingAssignment.AllowLateSubmission = entity.AllowLateSubmission;
         existingAssignment.Status = entity.Status;
 
         var newProblems = (entity.AssignmentProblems ?? new List<AssignmentProblem>()).ToList();
 
+        existingAssignment.TotalPoints = newProblems.Sum(p => p.Points);
         existingAssignment.AssignmentProblems = newProblems;
 
-        _context.Assignments.Update(existingAssignment);
+        // _context.Assignments.Update(existingAssignment);
 
         await _context.SaveChangesAsync();
 
         var newMaxScore = await GetAssignmentMaxScoreAsync(entity.AssignmentId);
         await UpdateAssignmentUsersMaxScoreAsync(entity.AssignmentId, newMaxScore);
 
-        return await _context.Assignments
-            .Include(a => a.AssignmentProblems)
-                .ThenInclude(ap => ap.Problem)
-            .FirstOrDefaultAsync(a => a.AssignmentId == entity.AssignmentId) ?? existingAssignment;
+        return await GetByIdWithProblemBasicsAsync(entity.AssignmentId) ?? existingAssignment;
     }
 
     public async Task<bool> RemoveAsync(Guid id)
@@ -355,7 +355,7 @@ public class AssignmentRepository : IAssignmentRepository
     //         .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
     // }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
+    public Task<List<BestSubmission>> GetSubmissionsByAssignmentUserAsync(Guid AssignmentUserId)
     {
         // return await _context.Submissions
         //     .AsNoTracking()
@@ -366,7 +366,7 @@ public class AssignmentRepository : IAssignmentRepository
         throw new NotImplementedException("Cái này thuộc bên Trí");
     }
 
-    public async Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
+    public Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
     {
         // return await _context.Submissions
         //     .Where(s => s.AssignmentUser.AssignmentId == assignmentId)
@@ -406,7 +406,7 @@ public class AssignmentRepository : IAssignmentRepository
         }
 
         return await query.CountAsync();
-        
+
     }
 
     public async Task<bool> AnyAsync(Expression<Func<Assignment, bool>> predicate)

@@ -20,7 +20,7 @@
         Skipped = 7
     }
 
-    public enum Language
+    public enum LanguageEnum
     {
         cpp = 1,
         python = 2

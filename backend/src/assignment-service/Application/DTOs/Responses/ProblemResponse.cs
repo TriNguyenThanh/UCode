@@ -90,7 +90,7 @@ public class ProblemResponse
     /// Reference to problem statement markdown file
     /// </summary>
     /// <example>problems/two-sum/statement.md</example>
-    public string? StatementMdRef { get; set; }
+    public string? Statement { get; set; }
     
     /// <summary>
     /// Reference solution for the problem
@@ -145,15 +145,22 @@ public class ProblemResponse
     /// </summary>
     /// <example>2024-01-15T10:30:00Z</example>
     public DateTime UpdatedAt { get; set; }
-    
+
     /// <summary>
     /// List of tag IDs associated with this problem
     /// </summary>
-    /// <example>["11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"]</example>
-    public List<Guid> TagIds { get; set; } = new List<Guid>();
-    
+    /// <example>[""]</example>
+    public List<string> TagNames { get; set; } = new List<string>();
+
+    /// <summary>
+    /// List of language configurations with defaults and overrides merged
+    /// </summary>
+    public List<ProblemLanguageDto> ProblemLanguages { get; set; } = new List<ProblemLanguageDto>();
+
     /// <summary>
     /// List of problem assets (statements, solutions, tutorials, etc.)
     /// </summary>
     public List<ProblemAssetDto> ProblemAssets { get; set; } = new List<ProblemAssetDto>();
+    
+
 }

@@ -435,27 +435,27 @@ public class AssignmentController : ControllerBase
 
     // ///================[ PHẦN NÀY THUỘC PHẦN CỦA SUBMISSION SERVICE RỒI, CHỈ ĐỂ TEST THÔI ]
 
-    // /// <summary>
-    // /// Webhook endpoint for Submission Service to save assignment problem submission results
-    // /// </summary>
-    // /// <param name="assignmentId">The unique identifier of the assignment</param>
-    // /// <param name="problemId">The unique identifier of the problem</param>
-    // /// <param name="request">Submission result containing solution code, test results, and execution metrics</param>
-    // /// <returns>Saved submission information with calculated score</returns>
-    // /// <response code="200">Submission saved successfully with calculated score</response>
-    // /// <response code="400">Invalid request data</response>
-    // /// <response code="401">Unauthorized - api-key webhook required</response>
-    // /// <response code="404">Assignment detail not found</response>
-    // /// <response code="500">Internal server error</response>
-    // [HttpPost("webhook/{assignmentId:guid}/save-assignment-problem-submission")]
-    // [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
-    // [ProducesResponseType(typeof(ErrorResponse), 400)]
-    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    // [ProducesResponseType(typeof(ErrorResponse), 404)]
-    // [ProducesResponseType(typeof(ErrorResponse), 500)]
-    // public async Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionDto request)
-    // {
-    //     // try {
+    /// <summary>
+    /// Webhook endpoint for Submission Service to save assignment problem submission results
+    /// </summary>
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <param name="request">Submission result containing solution code, test results, and execution metrics</param>
+    /// <returns>Saved submission information with calculated score</returns>
+    /// <response code="200">Submission saved successfully with calculated score</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - api-key webhook required</response>
+    /// <response code="404">Assignment detail not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("webhook/{assignmentId:guid}/save-assignment-problem-submission")]
+    [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionDto request)
+    {
+        // try {
 
     //     //     var userId = request.UserId ?? Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
 
@@ -514,15 +514,15 @@ public class AssignmentController : ControllerBase
     //     //     var created = await _assignmentService.SaveSubmissionAsync(submission);
     //     //     var response = _mapper.Map<BestSubmissionDto>(created);
             
-    //     //     return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission saved successfully"));
-    //     // } catch (Exception e) {
-    //     //     Console.Write(e);
-    //     //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse(e.Message));
+        // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission saved successfully"));
+        // } catch (Exception e) {
+        //     Console.Write(e);
+        //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse(e.Message));
 
     //     // }
 
-    //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé"));
-    // }
+        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
+    }
 
     // /// <summary>
     // /// Retrieves all submissions for a specific assignment (Teacher only)
@@ -554,32 +554,32 @@ public class AssignmentController : ControllerBase
     //     return Ok(ApiResponse<List<BestSubmissionDto>>.SuccessResponse(response));
     // }
 
-    // /// <summary>
-    // /// Grades a specific submission (Teacher only)
-    // /// </summary>
-    // /// <param name="id">The unique identifier of the assignment</param>
-    // /// <param name="submissionId">The unique identifier of the submission to grade</param>
-    // /// <param name="request">Grading request containing score and feedback</param>
-    // /// <returns>Updated submission with grade information</returns>
-    // /// <response code="200">Submission graded successfully</response>
-    // /// <response code="400">Invalid request data</response>
-    // /// <response code="401">Unauthorized - Teacher role required</response>
-    // /// <response code="403">Forbidden - You don't have permission to grade this assignment</response>
-    // /// <response code="404">Assignment or submission not found</response>
-    // /// <response code="500">Internal server error</response>
-    // [HttpPut("{id:guid}/grade-submission/{submissionId:guid}")]
-    // [RequireRole("teacher")]
-    // [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
-    // [ProducesResponseType(typeof(ErrorResponse), 400)]
-    // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
-    // [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
-    // [ProducesResponseType(typeof(ErrorResponse), 404)]
-    // [ProducesResponseType(typeof(ErrorResponse), 500)]
-    // public async Task<IActionResult> GradeSubmission(Guid id, Guid submissionId, [FromBody] BestSubmissionDto request)
-    // {
-    //     // var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
-    //     // if (assignment == null)
-    //     //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Assignment not found"));
+    /// <summary>
+    /// Grades a specific submission (Teacher only)
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <param name="submissionId">The unique identifier of the submission to grade</param>
+    /// <param name="request">Grading request containing score and feedback</param>
+    /// <returns>Updated submission with grade information</returns>
+    /// <response code="200">Submission graded successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized - Teacher role required</response>
+    /// <response code="403">Forbidden - You don't have permission to grade this assignment</response>
+    /// <response code="404">Assignment or submission not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPut("{id:guid}/grade-submission/{submissionId:guid}")]
+    [RequireRole("teacher")]
+    [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public Task<IActionResult> GradeSubmission(Guid id, Guid submissionId, [FromBody] BestSubmissionDto request)
+    {
+        // var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
+        // if (assignment == null)
+        //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Assignment not found"));
         
     //     // var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
     //     // if (assignment.AssignedBy != userId)
@@ -602,6 +602,6 @@ public class AssignmentController : ControllerBase
         
     //     // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
 
-    //     return BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé"));
-    // }
+        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
+    }
 }
