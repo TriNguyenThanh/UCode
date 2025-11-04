@@ -5,7 +5,6 @@ Xử lý các message từ RabbitMQ queue
 import json
 import os
 from app.executor_isolate import execute_in_sandbox, TESTCASE_STATUS
-from app.health_check import should_accept_submission
 
 MAX_RETRY_COUNT = int(os.getenv("MAX_RETRY_COUNT", "3"))  # Số lần retry tối đa
 
@@ -101,22 +100,7 @@ class MessageHandler:
         print(f"[*] Processing submission {submission_id}")
         print(f"[DEBUG] Message data: language={data.get('Language')}, testcases_count={len(data.get('Testcases', []))}")
         
-        # 3. Kiểm tra health last-minute
-        can_accept, reason = should_accept_submission()
-        if not can_accept:
-            print(f"[WARNING] Last-minute overload detected, requeuing {submission_id} (retry {retry_count + 1}/{MAX_RETRY_COUNT})")
-            
-            # Chuẩn bị requeue
-            new_headers = properties.headers.copy() if properties.headers else {}
-            new_headers['x-retry-count'] = retry_count + 1
-            
-            result["should_ack"] = True  # ACK message cũ
-            result["should_requeue"] = True
-            result["new_body"] = body
-            result["new_headers"] = new_headers
-            return result
-        
-        # 4. Validate dữ liệu
+        # 3. Validate dữ liệu
         language = data.get("Language")
         code = data.get("Code")
         timelimit = data.get("TimeLimit", 3)
@@ -150,7 +134,7 @@ class MessageHandler:
             )
             return result
         
-        # 5. Xử lý submission
+        # 4. Xử lý submission
         try:
             success, results, error_code, error_msg, compile_result = MessageHandler._process_submission(
                 data=data,
@@ -171,7 +155,7 @@ class MessageHandler:
                 )
                 return result
             
-            # 6. Tạo success response
+            # 5. Tạo success response
             result["should_ack"] = True
             result["response"] = MessageHandler._create_success_response(
                 submission_id=submission_id,
