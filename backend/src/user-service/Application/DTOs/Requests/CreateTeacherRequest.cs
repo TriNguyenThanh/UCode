@@ -8,11 +8,11 @@ namespace UserService.Application.DTOs.Requests;
 public class CreateTeacherRequest
 {
     /// <summary>
-    /// Mã nhân viên (unique): GV001, GV002,...
+    /// Mã giảng viên (unique): GV001, GV002,...
     /// </summary>
-    [Required(ErrorMessage = "EmployeeId is required")]
+    [Required(ErrorMessage = "TeacherCode is required")]
     [MaxLength(20)]
-    public string EmployeeId { get; set; } = string.Empty;
+    public string TeacherCode { get; set; } = string.Empty;
 
     /// <summary>
     /// Tên đăng nhập (unique)

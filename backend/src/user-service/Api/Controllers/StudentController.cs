@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -11,6 +13,7 @@ namespace UserService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/students")]
+[Authorize]
 public class StudentController : ControllerBase
 {
     private readonly IStudentService _studentService;
@@ -23,14 +26,88 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Tạo sinh viên mới
+    /// Helper method để lấy UserId từ JWT token
+    /// </summary>
+    private string GetUserIdFromToken()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+    }
+
+    #region Student Self-Service APIs
+
+    /// <summary>
+    /// [STUDENT] Lấy thông tin cá nhân
+    /// </summary>
+    /// <returns>Thông tin sinh viên</returns>
+    /// <response code="200">Trả về thông tin sinh viên</response>
+    /// <response code="404">Không tìm thấy sinh viên</response>
+    [HttpGet("me")]
+    [Authorize(Roles = "Student")]
+    [SwaggerOperation(Summary = "[STUDENT] Lấy thông tin cá nhân", Description = "Sinh viên lấy thông tin của chính mình từ JWT token")]
+    [SwaggerResponse(200, "Thông tin sinh viên", typeof(ApiResponse<object>))]
+    [SwaggerResponse(404, "Không tìm thấy sinh viên", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var userId = GetUserIdFromToken();
+        var student = await _studentService.GetStudentByIdAsync(userId);
+        
+        if (student == null)
+            return NotFound(ApiResponse<object>.ErrorResponse("Student not found"));
+
+        return Ok(ApiResponse<object>.SuccessResponse(student, "Student retrieved successfully"));
+    }
+
+    /// <summary>
+    /// [STUDENT] Cập nhật thông tin cá nhân
+    /// </summary>
+    /// <param name="request">Thông tin cập nhật (không cần userId, lấy từ token)</param>
+    /// <returns>Trạng thái cập nhật</returns>
+    /// <response code="200">Cập nhật thành công</response>
+    /// <response code="400">Cập nhật thất bại</response>
+    [HttpPut("me")]
+    [Authorize(Roles = "Student")]
+    [SwaggerOperation(Summary = "[STUDENT] Cập nhật thông tin cá nhân", Description = "Sinh viên cập nhật thông tin của chính mình (userId lấy từ JWT token)")]
+    [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
+    [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateMyProfileRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
+
+        var userId = GetUserIdFromToken();
+        
+        // Map từ UpdateMyProfileRequest sang UpdateUserRequest
+        var updateRequest = new UpdateUserRequest
+        {
+            Email = request.Email,
+            FullName = request.FullName,
+            Phone = request.Phone
+        };
+        
+        var result = await _studentService.UpdateStudentAsync(userId, updateRequest);
+        
+        if (!result)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update student"));
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "Student updated successfully"));
+    }
+
+    #endregion
+
+    #region Admin & Teacher - Full Management APIs
+
+    /// <summary>
+    /// [ADMIN/TEACHER] Tạo sinh viên mới
     /// </summary>
     /// <param name="request">Thông tin sinh viên</param>
     /// <returns>Thông tin sinh viên đã tạo</returns>
     /// <response code="200">Sinh viên được tạo thành công</response>
     /// <response code="400">Dữ liệu không hợp lệ</response>
     [HttpPost("create")]
-    [SwaggerOperation(Summary = "Tạo sinh viên", Description = "Tạo một sinh viên mới")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Tạo sinh viên", Description = "Admin hoặc Teacher tạo sinh viên mới")]
     [SwaggerResponse(200, "Sinh viên được tạo thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Dữ liệu không hợp lệ", typeof(ApiResponse<object>))]
     public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
@@ -43,14 +120,15 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy thông tin sinh viên theo ID
+    /// [ADMIN/TEACHER] Lấy sinh viên theo ID
     /// </summary>
     /// <param name="id">ID sinh viên</param>
     /// <returns>Thông tin sinh viên</returns>
     /// <response code="200">Trả về thông tin sinh viên</response>
     /// <response code="404">Không tìm thấy sinh viên</response>
     [HttpGet("{id}")]
-    [SwaggerOperation(Summary = "Lấy sinh viên theo ID", Description = "Lấy thông tin sinh viên theo ID")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Lấy sinh viên theo ID", Description = "Lấy thông tin sinh viên theo ID")]
     [SwaggerResponse(200, "Thông tin sinh viên", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "Không tìm thấy sinh viên", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetStudent(string id)
@@ -63,19 +141,20 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy thông tin sinh viên theo mã sinh viên
+    /// [ADMIN/TEACHER] Lấy sinh viên theo mã sinh viên
     /// </summary>
-    /// <param name="studentId">Mã sinh viên</param>
+    /// <param name="studentCode">Mã sinh viên</param>
     /// <returns>Thông tin sinh viên</returns>
     /// <response code="200">Trả về thông tin sinh viên</response>
     /// <response code="404">Không tìm thấy sinh viên</response>
-    [HttpGet("by-student-id/{studentId}")]
-    [SwaggerOperation(Summary = "Lấy sinh viên theo mã sinh viên", Description = "Lấy thông tin sinh viên theo mã sinh viên")]
+    [HttpGet("by-student-code/{studentCode}")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Lấy sinh viên theo mã sinh viên", Description = "Lấy thông tin sinh viên theo mã sinh viên (StudentCode)")]
     [SwaggerResponse(200, "Thông tin sinh viên", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "Không tìm thấy sinh viên", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> GetStudentByStudentId(string studentId)
+    public async Task<IActionResult> GetStudentByStudentCode(string studentCode)
     {
-        var student = await _studentService.GetStudentByStudentIdAsync(studentId);
+        var student = await _studentService.GetStudentByStudentCodeAsync(studentCode);
         if (student == null)
             return NotFound(ApiResponse<object>.ErrorResponse("Student not found"));
 
@@ -83,7 +162,7 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy danh sách sinh viên
+    /// [ADMIN/TEACHER] Lấy danh sách sinh viên
     /// </summary>
     /// <param name="pageNumber">Số trang</param>
     /// <param name="pageSize">Số lượng mỗi trang</param>
@@ -91,7 +170,8 @@ public class StudentController : ControllerBase
     /// <returns>Danh sách sinh viên</returns>
     /// <response code="200">Trả về danh sách sinh viên</response>
     [HttpGet]
-    [SwaggerOperation(Summary = "Lấy danh sách sinh viên", Description = "Lấy danh sách sinh viên có phân trang và lọc theo lớp học")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Lấy danh sách sinh viên", Description = "Lấy danh sách sinh viên có phân trang")]
     [SwaggerResponse(200, "Danh sách sinh viên", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetStudents(
         [FromQuery] int pageNumber = 1,
@@ -103,22 +183,24 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Cập nhật thông tin sinh viên
+    /// [ADMIN/TEACHER] Cập nhật thông tin sinh viên
     /// </summary>
+    /// <param name="id">ID sinh viên</param>
     /// <param name="request">Thông tin cập nhật</param>
     /// <returns>Trạng thái cập nhật</returns>
     /// <response code="200">Cập nhật thành công</response>
     /// <response code="400">Cập nhật thất bại</response>
-    [HttpPut("update")]
-    [SwaggerOperation(Summary = "Cập nhật sinh viên", Description = "Cập nhật thông tin sinh viên")]
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Cập nhật sinh viên", Description = "Cập nhật thông tin sinh viên")]
     [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> UpdateStudent([FromBody] UpdateStudentRequest request)
+    public async Task<IActionResult> UpdateStudent(string id, [FromBody] UpdateUserRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
 
-        var result = await _studentService.UpdateStudentAsync(request.UserId.ToString(), request);
+        var result = await _studentService.UpdateStudentAsync(id, request);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update student"));
 
@@ -126,17 +208,18 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Xóa sinh viên
+    /// [ADMIN/TEACHER] Xóa sinh viên
     /// </summary>
     /// <param name="id">ID sinh viên</param>
     /// <returns>Trạng thái xóa</returns>
     /// <response code="200">Xóa thành công</response>
     /// <response code="400">Xóa thất bại</response>
-    [HttpDelete("delete")]
-    [SwaggerOperation(Summary = "Xóa sinh viên", Description = "Xóa một sinh viên")]
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Xóa sinh viên", Description = "Xóa một sinh viên")]
     [SwaggerResponse(200, "Xóa thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> DeleteStudent([FromQuery] string id)
+    public async Task<IActionResult> DeleteStudent(string id)
     {
         var result = await _studentService.DeleteStudentAsync(id);
         if (!result)
@@ -146,14 +229,15 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Import sinh viên từ file Excel
+    /// [ADMIN/TEACHER] Import sinh viên từ file Excel
     /// </summary>
     /// <param name="file">File Excel chứa danh sách sinh viên</param>
     /// <returns>Kết quả import</returns>
     /// <response code="200">Import thành công</response>
     /// <response code="400">Import thất bại</response>
     [HttpPost("import-excel")]
-    [SwaggerOperation(Summary = "Import sinh viên từ Excel", Description = "Import danh sách sinh viên từ file Excel (.xlsx, .xls)")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Import sinh viên từ Excel", Description = "Import danh sách sinh viên từ file Excel")]
     [SwaggerResponse(200, "Import thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Import thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> ImportStudentsFromExcel(IFormFile file)
@@ -181,7 +265,7 @@ public class StudentController : ControllerBase
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Failed to create student {request.StudentId}: {ex.Message}");
+                    errors.Add($"Failed to create student {request.StudentCode}: {ex.Message}");
                 }
             }
 
@@ -203,14 +287,15 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
-    /// Export sinh viên ra file Excel
+    /// [ADMIN/TEACHER] Export sinh viên ra file Excel
     /// </summary>
     /// <param name="studentIds">Danh sách ID sinh viên cần export</param>
     /// <returns>File Excel</returns>
     /// <response code="200">Export thành công</response>
     /// <response code="400">Export thất bại</response>
     [HttpGet("export-excel")]
-    [SwaggerOperation(Summary = "Export sinh viên ra Excel", Description = "Export danh sách sinh viên ra file Excel")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Export sinh viên ra Excel", Description = "Export danh sách sinh viên ra file Excel")]
     [SwaggerResponse(200, "Export thành công")]
     [SwaggerResponse(400, "Export thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> ExportStudentsToExcel([FromQuery] List<string> studentIds)
@@ -226,11 +311,6 @@ public class StudentController : ControllerBase
             return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to export Excel file: {ex.Message}"));
         }
     }
-}
 
-// Helper DTO for UpdateStudent
-public class UpdateStudentRequest : UpdateUserRequest
-{
-    // Inherits all properties from UpdateUserRequest
+    #endregion
 }
-

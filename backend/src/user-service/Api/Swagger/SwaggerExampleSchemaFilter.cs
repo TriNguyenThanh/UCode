@@ -70,10 +70,10 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
     {
         return new Microsoft.OpenApi.Any.OpenApiObject
         {
-            ["studentId"] = new Microsoft.OpenApi.Any.OpenApiString("SV001"),
+            ["studentCode"] = new Microsoft.OpenApi.Any.OpenApiString("SV001"),
             ["username"] = new Microsoft.OpenApi.Any.OpenApiString("student01"),
             ["email"] = new Microsoft.OpenApi.Any.OpenApiString("student01@ucode.io.vn"),
-            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("Student@123"),
+            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("123"),
             ["fullName"] = new Microsoft.OpenApi.Any.OpenApiString("Nguyễn Văn An"),
             ["major"] = new Microsoft.OpenApi.Any.OpenApiString("Khoa học máy tính"),
             ["enrollmentYear"] = new Microsoft.OpenApi.Any.OpenApiInteger(2023),
@@ -85,10 +85,10 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
     {
         return new Microsoft.OpenApi.Any.OpenApiObject
         {
-            ["employeeId"] = new Microsoft.OpenApi.Any.OpenApiString("GV001"),
+            ["teacherCode"] = new Microsoft.OpenApi.Any.OpenApiString("GV001"),
             ["username"] = new Microsoft.OpenApi.Any.OpenApiString("teacher01"),
             ["email"] = new Microsoft.OpenApi.Any.OpenApiString("teacher01@ucode.io.vn"),
-            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("Teacher@123"),
+            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("123"),
             ["fullName"] = new Microsoft.OpenApi.Any.OpenApiString("Nguyễn Văn Giáo"),
             ["department"] = new Microsoft.OpenApi.Any.OpenApiString("Khoa Công Nghệ Thông Tin"),
             ["title"] = new Microsoft.OpenApi.Any.OpenApiString("Giảng viên"),
@@ -153,7 +153,7 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
         {
             ["email"] = new Microsoft.OpenApi.Any.OpenApiString("student01@ucode.io.vn"),
             ["otp"] = new Microsoft.OpenApi.Any.OpenApiString("123456"),
-            ["newPassword"] = new Microsoft.OpenApi.Any.OpenApiString("NewPassword@123")
+            ["newPassword"] = new Microsoft.OpenApi.Any.OpenApiString("123")
         };
     }
 
@@ -169,8 +169,8 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
     {
         return new Microsoft.OpenApi.Any.OpenApiObject
         {
-            ["currentPassword"] = new Microsoft.OpenApi.Any.OpenApiString("OldPassword@123"),
-            ["newPassword"] = new Microsoft.OpenApi.Any.OpenApiString("NewPassword@123")
+            ["currentPassword"] = new Microsoft.OpenApi.Any.OpenApiString("123"),
+            ["newPassword"] = new Microsoft.OpenApi.Any.OpenApiString("456")
         };
     }
 
@@ -178,8 +178,8 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
     {
         return new Microsoft.OpenApi.Any.OpenApiObject
         {
-            ["emailOrUsername"] = new Microsoft.OpenApi.Any.OpenApiString("student01@ucode.io.vn"),
-            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("Student@123"),
+            ["emailOrUsername"] = new Microsoft.OpenApi.Any.OpenApiString("student01"),
+            ["password"] = new Microsoft.OpenApi.Any.OpenApiString("123"),
             ["rememberMe"] = new Microsoft.OpenApi.Any.OpenApiBoolean(false)
         };
     }
