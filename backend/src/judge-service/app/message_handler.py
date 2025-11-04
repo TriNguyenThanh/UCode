@@ -226,6 +226,7 @@ class MessageHandler:
         compile_result = ""
         total_time = 0
         total_memory = 0
+        first_error_message = ""  # Lưu error message của testcase lỗi đầu tiên
         
         for result in results:
             # Lấy status code (0-7) từ result
@@ -242,6 +243,11 @@ class MessageHandler:
                 print(f"[✓] Test case {result.get('testcaseId')} passed")
             else:
                 print(f"[ERROR] Test case {result.get('testcaseId')} failed: {status}")
+                # Lấy error message của testcase lỗi đầu tiên
+                if not first_error_message:
+                    error_detail = result.get("error", "")
+                    testcase_index = result.get("indexNo", "?")
+                    first_error_message = f"Testcase #{testcase_index} - {status}: {error_detail}"
         
         # Kiểm tra nếu tất cả passed
         all_passed = all(c == "0" for c in compile_result)
@@ -252,12 +258,14 @@ class MessageHandler:
             "TotalTime": total_time,
             "TotalMemory": total_memory,
             "ErrorCode": SubmissionStatus.PASSED if all_passed else SubmissionStatus.FAILED,
-            "ErrorMessage": "" if all_passed else "Some test cases failed"
+            "ErrorMessage": "" if all_passed else (first_error_message or "Some test cases failed")
         }
         
         print(f"[✓] Created success response for submission {submission_id}")
         print(f"    CompileResult: {compile_result} ({len(results)} testcases)")
         print(f"    TotalTime: {total_time}ms, TotalMemory: {total_memory}KB")
+        if first_error_message:
+            print(f"    First Error: {first_error_message}")
         print("=" * 81)
         return response
     

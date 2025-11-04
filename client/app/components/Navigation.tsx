@@ -84,7 +84,7 @@ export function Navigation() {
                 <Button component={Link} to='/teacher/home' sx={{ fontWeight: 500, color: 'primary.main' }}>
                   Dashboard
                 </Button>
-                <Button component={Link} to='/practice' sx={{ fontWeight: 500, color: 'primary.main' }}>
+                <Button component={Link} to='/teacher/problems' sx={{ fontWeight: 500, color: 'primary.main' }}>
                   Ngân hàng bài
                 </Button>
               </>

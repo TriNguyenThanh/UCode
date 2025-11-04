@@ -14,6 +14,7 @@ export default [
   route('settings', 'routes/settings.tsx'),
   // Teacher routes
   route('teacher/home', 'routes/teacher.home.tsx'),
+  route('teacher/problems', 'routes/teacher.problems.tsx'),
   route('teacher/class/create', 'routes/teacher.class.create.tsx'),
   route('teacher/class/:id', 'routes/teacher.class.$id.tsx'),
   route('teacher/class/:classId/students', 'routes/teacher.class.$classId.students.tsx'),

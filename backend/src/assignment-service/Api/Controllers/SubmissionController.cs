@@ -90,7 +90,7 @@ public class SubmissionController : ControllerBase
         var created = await _submissionService.SubmitCode(submission);
         var response = _mapper.Map<CreateSubmissionResponse>(created);
 
-        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Code submitted successfully"));
+        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Judging in progress"));
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class SubmissionController : ControllerBase
         var created = await _submissionService.RunCode(submission);
         var response = _mapper.Map<CreateSubmissionResponse>(created);
 
-        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Code run successfully"));
+        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Judging in progress"));
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public class SubmissionController : ControllerBase
     /// <summary>
     /// Get best submissions (leaderboard) for a specific problem in an assignment
     /// </summary>
-    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="assignmentUserId">The unique identifier of the assignment</param>
     /// <param name="problemId">The unique identifier of the problem</param>
     /// <param name="pageNumber">The page number (default: 1)</param>
     /// <param name="pageSize">Number of items per page (default: 10)</param>
@@ -178,13 +178,13 @@ public class SubmissionController : ControllerBase
     /// <response code="200">Best submissions retrieved successfully</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best")]
+    [HttpGet("assignment/{assignmentUserId:guid}/problem/{problemId:guid}/best")]
     [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionResponse>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetBestSubmissions(Guid assignmentId, Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetBestSubmissions(Guid assignmentUserId, Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var bestSubmissions = await _submissionService.GetBestSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
+        var bestSubmissions = await _submissionService.GetBestSubmissionByProblemId(assignmentUserId, problemId, pageNumber, pageSize);
         var response = _mapper.Map<List<BestSubmissionResponse>>(bestSubmissions);
 
         return Ok(ApiResponse<List<BestSubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} best submissions"));

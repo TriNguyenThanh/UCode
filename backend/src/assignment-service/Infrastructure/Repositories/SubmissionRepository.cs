@@ -29,6 +29,19 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<bool> DeleteSubmission(Guid submissionId)
     {
+        // First, try to find if the entity is already being tracked
+        var trackedEntity = _context.ChangeTracker.Entries<Submission>()
+            .FirstOrDefault(e => e.Entity.SubmissionId == submissionId);
+        
+        if (trackedEntity != null)
+        {
+            // If it's already tracked, just remove it directly
+            _context.Submissions.Remove(trackedEntity.Entity);
+            Console.WriteLine($"[x] Deleted tracked submission {submissionId} from database");
+            return await _context.SaveChangesAsync() > 0;
+        }
+        
+        // If not tracked, fetch without tracking and remove
         var submission = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(p => p.SubmissionId == submissionId);
         if (submission != null)
         {
