@@ -15,8 +15,15 @@ namespace ApiGateway.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Skip size validation for file upload endpoints
+            if (IsFileUploadEndpoint(context.Request.Path))
+            {
+                await _next(context);
+                return;
+            }
+
             // Validate request size
-            if (context.Request.ContentLength > 10 * 1024 * 1024) // 10MB limit
+            if (context.Request.ContentLength > 30 * 1024 * 1024) // 30MB limit
             {
                 _logger.LogWarning("Request too large: {ContentLength} bytes from {RemoteIpAddress}", 
                     context.Request.ContentLength, context.Connection.RemoteIpAddress);
@@ -91,6 +98,20 @@ namespace ApiGateway.Middlewares
             }
 
             return false;
+        }
+
+        private bool IsFileUploadEndpoint(PathString path)
+        {
+            var fileUploadPaths = new[]
+            {
+                "/api/files/upload",
+                "/api/assignments/submit_code",
+                "/api/assignments/run_code",
+                "/api/problems/testcases/upload"
+            };
+
+            return fileUploadPaths.Any(uploadPath => 
+                path.StartsWithSegments(uploadPath, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

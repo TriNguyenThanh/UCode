@@ -19,7 +19,7 @@ aws configure
 ```bash
 # Windows PowerShell
 $env:AWS__Region="ap-southeast-1"
-$env:AWS__BucketName="ucode-files-dev"
+$env:AWS__BucketName="ucode-utc2"
 $env:AWS__AccessKey="YOUR_ACCESS_KEY"
 $env:AWS__SecretKey="YOUR_SECRET_KEY"
 

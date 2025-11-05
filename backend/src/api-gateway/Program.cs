@@ -93,11 +93,11 @@ app.UseCors("AllowAll"); // Hoặc dùng built-in như hiện tại
 app.UseMiddleware<RequestValidationMiddleware>();
 
 // JWT Authentication middleware (custom) hoặc dùng built-in
-// app.UseMiddleware<JwtAuthenticationMiddleware>(); // Nếu muốn dùng custom
-app.UseAuthentication(); // Hoặc dùng built-in như hiện tại
-app.UseAuthorization();
+app.UseMiddleware<JwtAuthenticationMiddleware>(); // Nếu muốn dùng custom
+// app.UseAuthentication(); // Hoặc dùng built-in như hiện tại
+// app.UseAuthorization();
 
-app.UseMiddleware<ClaimsToHeadersMiddleware>();
+// app.UseMiddleware<ClaimsToHeadersMiddleware>();
 
 app.UseMiddleware<CustomRateLimitMiddleware>();
 

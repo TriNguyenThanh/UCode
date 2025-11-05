@@ -15,7 +15,7 @@ namespace ApiGateway.Middlewares
         {
             _next = next;
             _logger = logger;
-            _maxRequests = 100; // 100 requests per minute
+            _maxRequests = 500; // 500 requests per minute
             _window = TimeSpan.FromMinutes(1);
         }
 
