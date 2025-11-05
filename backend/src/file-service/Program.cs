@@ -1,13 +1,34 @@
 using Amazon.S3;
+using Amazon.Runtime;
 using file_service.Services;
 using file_service.Middlewares;
 using file_service.HealthChecks;
+using file_service.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add AWS S3 Service
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonS3>();
+// Add AWS S3 Service with explicit credentials
+var awsAccessKey = builder.Configuration["AWS:AccessKey"];
+var awsSecretKey = builder.Configuration["AWS:SecretKey"];
+var awsRegion = builder.Configuration["AWS:Region"];
+
+if (!string.IsNullOrEmpty(awsAccessKey) && !string.IsNullOrEmpty(awsSecretKey))
+{
+    // Use explicit credentials
+    var credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+    var config = new Amazon.S3.AmazonS3Config
+    {
+        RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(awsRegion)
+    };
+    builder.Services.AddSingleton<IAmazonS3>(new Amazon.S3.AmazonS3Client(credentials, config));
+}
+else
+{
+    // Fallback to default credentials chain (for production/EC2)
+    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+    builder.Services.AddAWSService<IAmazonS3>();
+}
+
 builder.Services.AddScoped<IS3Service, S3Service>();
 
 // Add Health Checks
@@ -15,22 +36,26 @@ builder.Services.AddHealthChecks()
     .AddCheck<S3HealthCheck>("s3_health_check");
 
 // Add Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
-            ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+// builder.Services.AddCors(options =>
+// {
+//     options.AddDefaultPolicy(policy =>
+//     {
+//         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+//             ?? new[] { "http://localhost:3000", "http://localhost:5173" };
         
-        policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
+//         policy.WithOrigins(allowedOrigins)
+//               .AllowAnyMethod()
+//               .AllowAnyHeader()
+//               .AllowCredentials();
+//     });
+// });
 
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +66,9 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "API for managing files using AWS S3"
     });
+    
+    // Configure Swagger to show enum names instead of numbers
+    c.UseInlineDefinitionsForEnums();
 });
 
 var app = builder.Build();
@@ -60,6 +88,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.UseMiddleware<GatewayRoleMiddleware>();
 
 app.UseAuthorization();
 

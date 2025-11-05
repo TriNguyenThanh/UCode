@@ -106,20 +106,34 @@ public class UserController : ControllerBase
     /// <summary>
     /// Cập nhật thông tin user
     /// </summary>
+    /// <param name="id">ID của user cần cập nhật</param>
     /// <param name="request">Thông tin cập nhật</param>
     /// <returns>Trạng thái cập nhật</returns>
     /// <response code="200">Cập nhật thành công</response>
     /// <response code="400">Cập nhật thất bại</response>
-    [HttpPut("update")]
+    [HttpPut("{id}")]
     [SwaggerOperation(Summary = "Update user", Description = "Cập nhật thông tin user")]
     [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest request)
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserByAdminRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
 
-        var result = await _userService.UpdateUserAsync(request.UserId.ToString(), request);
+        // Tạo UpdateUserRequest từ UpdateUserByAdminRequest
+        var updateRequest = new UpdateUserRequest
+        {
+            UserId = Guid.Parse(id),
+            Email = request.Email,
+            FullName = request.FullName,
+            Phone = request.Phone,
+            Major = request.Major,
+            ClassYear = request.ClassYear,
+            Department = request.Department,
+            Title = request.Title
+        };
+
+        var result = await _userService.UpdateUserAsync(id, updateRequest);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user"));
 
