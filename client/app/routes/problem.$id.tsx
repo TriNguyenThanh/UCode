@@ -25,6 +25,8 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { mockProblems } from '~/data/mock'
 import { CodeEditor } from '~/components/CodeEditor'
 import { getCodeTemplate } from '~/utils/codeTemplates'
+import { submitCode, runCode, pollSubmissionResult } from '~/services/submissionService'
+import type { SubmissionRequest } from '~/types'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giải bài tập | UCode' },
@@ -78,27 +80,109 @@ export default function ProblemDetail() {
   }
 
   // Handle run code
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     setIsRunning(true)
     setOutput('⏳ Compiling and running code...\n')
-    
-    // Simulate code execution
-    setTimeout(() => {
-      setOutput(`✅ Compiled successfully!\n\n📋 Running test cases:\n\nTest case 1: ✓ Passed\nTest case 2: ✓ Passed\nTest case 3: ✓ Passed\n\n⏱️  Execution Time: 0.45s\n💾 Memory Used: 2.3 MB`)
+
+    try {
+      const request: SubmissionRequest = {
+        problemId: problem.id,
+        sourceCode: code,
+        language: language,
+      }
+
+      // Call run-code API (test with sample cases only)
+      const response = await runCode(request)
+      setOutput(`⏳ Running test cases... (Submission ID: ${response.submissionId})\n`)
+
+      // Poll for result
+      const result = await pollSubmissionResult(response.submissionId)
+
+      // Format output
+      let outputText = ''
+      if (result.status === 'Passed') {
+        outputText = `✅ All test cases passed!\n\n`
+        outputText += `📊 Test cases passed: ${result.passedTestcase}/${result.totalTestcase}\n`
+        outputText += `⏱️  Execution Time: ${(result.totalTime / 1000).toFixed(2)}s\n`
+        outputText += `💾 Memory Used: ${(result.totalMemory / 1024).toFixed(2)} MB\n`
+      } else if (result.status === 'Failed') {
+        outputText = `❌ Some test cases failed\n\n`
+        outputText += `📊 Test cases passed: ${result.passedTestcase}/${result.totalTestcase}\n`
+        outputText += `⏱️  Execution Time: ${(result.totalTime / 1000).toFixed(2)}s\n`
+        outputText += `💾 Memory Used: ${(result.totalMemory / 1024).toFixed(2)} MB\n`
+        if (result.compareResult) {
+          outputText += `\n${result.compareResult}`
+        }
+      } else if (result.status === 'CompilationError') {
+        outputText = `❌ Compilation Error\n\n${result.errorMessage || 'Unknown compilation error'}`
+      } else if (result.status === 'RuntimeError') {
+        outputText = `❌ Runtime Error\n\n${result.errorMessage || 'Unknown runtime error'}`
+      } else if (result.status === 'TimeLimitExceeded') {
+        outputText = `⏰ Time Limit Exceeded\n\nYour code took too long to execute.`
+      } else if (result.status === 'MemoryLimitExceeded') {
+        outputText = `💾 Memory Limit Exceeded\n\nYour code used too much memory.`
+      }
+
+      setOutput(outputText)
+    } catch (error) {
+      setOutput(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}\n\nPlease try again.`)
+    } finally {
       setIsRunning(false)
-    }, 1500)
+    }
   }
 
   // Handle submit code
-  const handleSubmitCode = () => {
+  const handleSubmitCode = async () => {
     setIsRunning(true)
     setOutput('📤 Submitting code to judge...\n')
-    
-    // Simulate submission
-    setTimeout(() => {
-      setOutput(`🎉 Submission successful!\n\n✅ Status: Accepted\n📊 Test cases passed: 10/10\n⏱️  Execution Time: 0.52s\n💾 Memory Used: 2.8 MB\n\n🏆 Score: 100/100\n\nCongratulations! Your solution is correct!`)
+
+    try {
+      const request: SubmissionRequest = {
+        problemId: problem.id,
+        sourceCode: code,
+        language: language,
+      }
+
+      // Call submit-code API (official judging)
+      const response = await submitCode(request)
+      setOutput(`⏳ Judging in progress... (Submission ID: ${response.submissionId})\n`)
+
+      // Poll for result
+      const result = await pollSubmissionResult(response.submissionId, 120, 1000) // 2 minutes timeout
+
+      // Format output
+      let outputText = ''
+      if (result.status === 'Passed') {
+        outputText = `🎉 Submission successful!\n\n`
+        outputText += `✅ Status: Accepted\n`
+        outputText += `📊 Test cases passed: ${result.passedTestcase}/${result.totalTestcase}\n`
+        outputText += `⏱️  Execution Time: ${(result.totalTime / 1000).toFixed(2)}s\n`
+        outputText += `💾 Memory Used: ${(result.totalMemory / 1024).toFixed(2)} MB\n\n`
+        outputText += `🏆 Congratulations! Your solution is correct!`
+      } else if (result.status === 'Failed') {
+        outputText = `❌ Submission failed\n\n`
+        outputText += `📊 Test cases passed: ${result.passedTestcase}/${result.totalTestcase}\n`
+        outputText += `⏱️  Execution Time: ${(result.totalTime / 1000).toFixed(2)}s\n`
+        outputText += `💾 Memory Used: ${(result.totalMemory / 1024).toFixed(2)} MB\n`
+        if (result.compareResult) {
+          outputText += `\n${result.compareResult}`
+        }
+      } else if (result.status === 'CompilationError') {
+        outputText = `❌ Compilation Error\n\n${result.errorMessage || 'Unknown compilation error'}`
+      } else if (result.status === 'RuntimeError') {
+        outputText = `❌ Runtime Error\n\n${result.errorMessage || 'Unknown runtime error'}`
+      } else if (result.status === 'TimeLimitExceeded') {
+        outputText = `⏰ Time Limit Exceeded\n\nYour code took too long to execute.`
+      } else if (result.status === 'MemoryLimitExceeded') {
+        outputText = `💾 Memory Limit Exceeded\n\nYour code used too much memory.`
+      }
+
+      setOutput(outputText)
+    } catch (error) {
+      setOutput(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}\n\nPlease try again.`)
+    } finally {
       setIsRunning(false)
-    }, 2000)
+    }
   }
 
   const getDifficultyColor = (difficulty: string) => {
