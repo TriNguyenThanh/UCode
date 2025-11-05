@@ -19,7 +19,7 @@ public static class FileCategoryConfiguration
         {
             Category = FileCategory.AssignmentDocument,
             FolderPath = "assignments",
-            MaxFileSizeBytes = 10 * 1024 * 1024, // 10MB
+            MaxFileSizeBytes = 20 * 1024 * 1024, // 20MB
             AllowedExtensions = new List<string> { ".pdf", ".docx", ".doc", ".txt", ".md" },
             AllowedMimeTypes = new List<string>
             {
@@ -69,7 +69,7 @@ public static class FileCategoryConfiguration
         {
             Category = FileCategory.Image,
             FolderPath = "images",
-            MaxFileSizeBytes = 5 * 1024 * 1024, // 5MB
+            MaxFileSizeBytes = 10 * 1024 * 1024, // 10MB
             AllowedExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp" },
             AllowedMimeTypes = new List<string>
             {
@@ -97,7 +97,7 @@ public static class FileCategoryConfiguration
         {
             Category = FileCategory.TestCase,
             FolderPath = "testcases",
-            MaxFileSizeBytes = 1 * 1024 * 1024, // 1MB
+            MaxFileSizeBytes = 2 * 1024 * 1024, // 2MB
             AllowedExtensions = new List<string> { ".txt", ".in", ".out" },
             AllowedMimeTypes = new List<string>
             {

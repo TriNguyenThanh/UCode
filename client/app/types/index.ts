@@ -1,3 +1,29 @@
+
+export interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  message?: string
+  errors?: string[]
+  timestamp?: string
+}
+
+export interface PagedResponse<T> {
+  data: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
+
+export interface ErrorResponse {
+  error: string
+  message: string
+  timestamp?: string
+  path?: string
+  errors?: { [key: string]: string[] }
+}
+
+
 // ============================================
 // AUTH & USER TYPES
 // ============================================
@@ -63,7 +89,7 @@ export interface ResetPasswordRequest {
 }
 
 // ============================================
-// CLASS TYPES
+// CLASS
 // ============================================
 
 export interface Class {
@@ -184,133 +210,256 @@ export interface CreateAdminRequest {
 }
 
 // ============================================
-// COMMON TYPES
+// PROBLEM
 // ============================================
 
-export interface PagedResult<T> {
-  items: T[]
-  pageNumber: number
-  pageSize: number
-  totalPages: number
-  totalCount: number
-  hasPreviousPage: boolean
-  hasNextPage: boolean
-}
-
-export interface ApiResponse<T> {
-  success: boolean
-  message: string
-  data?: T
-  errors?: string[]
-}
-
-// ============================================
-// PROBLEM TYPES (Cho Assignment Service - tương lai)
-// ============================================
+export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
+export type Visibility = 'PUBLIC' | 'PRIVATE'
+export type ProblemStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type IoMode = 'STDIO' | 'FILE'
 
 export interface Problem {
   problemId: string
+  code: string
+  slug: string
   title: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  description: string
-  category: string
-  tags: string[]
-  timeLimit: number // seconds
-  memoryLimit: number // MB
-  testCases: TestCase[]
-  sampleInput?: string
-  sampleOutput?: string
-  createdBy?: string // teacherId
-  createdAt?: string
+  difficulty: Difficulty
+  ownerId: string
+  visibility: Visibility
+  status: ProblemStatus
+  timeLimitMs: number
+  memoryLimitKb: number
+  sourceLimitKb: number
+  stackLimitKb: number
+  ioMode: IoMode
+  statement?: string
+  solution?: string
+  inputFormat?: string
+  outputFormat?: string
+  constraints?: string
+  validatorRef?: string
+  changelog?: string
+  isLocked: boolean
+  createdAt: string
+  updatedAt: string
+  tagNames: string[]
+  problemLanguages: ProblemLanguage[]
+  problemAssets: ProblemAsset[]
 }
+
+export interface ProblemLanguage {
+  problemId: string
+  languageId: string
+  languageCode?: string
+  languageDisplayName?: string
+  timeFactor?: number
+  memoryKb?: number
+  head?: string
+  body?: string
+  tail?: string
+  isAllowed: boolean
+}
+
+export type AssetType = 'STATEMENT' | 'SOLUTION' | 'EDITORIAL' | 'TUTORIAL' | 'HINT' | 'TESTCASE'
+export type ContentFormat = 'MARKDOWN' | 'HTML' | 'PDF' | 'TEXT'
+
+export interface ProblemAsset {
+  problemAssetId: string
+  problemId: string
+  type: AssetType
+  objectRef: string
+  checksum?: string
+  title?: string
+  format: ContentFormat
+  orderIndex: number
+  isActive: boolean
+  createdAt: string
+  createdBy?: string 
+}
+
+/// =====================
+/// TESTCASE STATUS
+/// =====================
+export type TestcaseStatus =
+        'Passed' |
+        'TimeLimitExceeded' |
+        'MemoryLimitExceeded' |
+        'RuntimeError' |
+        'InternalError' |
+        'WrongAnswer' |
+        'CompilationError' |
+        'Skipped'
+
+// ============================================
+// DATASET & TEST CASE
+// ============================================
+
+export type DatasetKind = 'SAMPLE' | 'HIDDEN' | 'CUSTOM'
 
 export interface TestCase {
-  testCaseId: string
+  testCaseId?: string
+  datasetId?: string
   input: string
   expectedOutput: string
-  isHidden: boolean
-  points?: number
+  orderIndex: number
 }
 
-export interface CreateProblemRequest {
-  title: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  description: string
-  category: string
-  tags: string[]
-  timeLimit: number
-  memoryLimit: number
-  testCases: Omit<TestCase, 'testCaseId'>[]
-  sampleInput?: string
-  sampleOutput?: string
+export interface Dataset {
+  datasetId?: string
+  problemId: string
+  name: string
+  kind: DatasetKind
+  testCases: TestCase[]
 }
 
 // ============================================
-// ASSIGNMENT TYPES (Cho Assignment Service - tương lai)
+// ASSIGNMENT
 // ============================================
+
+export type AssignmentType = 'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'
+export type AssignmentStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'GRADED'
 
 export interface Assignment {
   assignmentId: string
+  assignmentType: AssignmentType
+  status: AssignmentStatus
   classId: string
-  className: string
   title: string
-  description: string
-  dueDate: string // ISO date string
-  startDate: string
-  problems: Problem[]
-  totalPoints: number
-  status: 'upcoming' | 'active' | 'completed' | 'overdue'
-  createdBy?: string // teacherId
-  createdAt?: string
+  description?: string
+  startTime?: string
+  endTime?: string
+  assignedBy: string
+  createdAt: string
+  assignedAt?: string
+  totalPoints?: number
+  totalProblems?: number
+  allowLateSubmission: boolean
+  problems?: AssignmentProblemDetail[]
+  statistics?: AssignmentStatistics
 }
 
-export interface CreateAssignmentRequest {
-  classId: string
+export interface AssignmentProblemDetail {
+  problemId: string
+  code: string
   title: string
-  description: string
-  dueDate: string
-  startDate: string
-  problemIds: string[]
-  totalPoints: number
+  difficulty: Difficulty
+  points: number
+  orderIndex: number
+}
+
+export interface AssignmentStatistics {
+  totalStudents: number
+  notStarted: number
+  inProgress: number
+  submitted: number
+  graded: number
+  averageScore: number
+  completionRate: number
 }
 
 // ============================================
-// SUBMISSION TYPES (Cho Grading Service - tương lai)
+// ASSIGNMENT USER (Student's assignment status)
 // ============================================
+
+export type AssignmentUserStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED'
+
+export interface AssignmentUser {
+  assignmentUserId?: string
+  assignmentId: string
+  userId: string
+  status: AssignmentUserStatus
+  assignedAt: string
+  startedAt?: string
+  score?: number
+  maxScore?: number
+}
+
+// ============================================
+// SUBMISSION
+// ============================================
+
+export type SubmissionStatus = 
+  | 'Pending' 
+  | 'Judging' 
+  | 'Accepted' 
+  | 'WrongAnswer' 
+  | 'TimeLimitExceeded' 
+  | 'MemoryLimitExceeded' 
+  | 'RuntimeError' 
+  | 'CompilationError' 
+  | 'SystemError'
 
 export interface Submission {
   submissionId: string
   problemId: string
   userId: string
-  assignmentId?: string
-  code: string
+  sourceCodeRef: string
   language: string
-  status: 'Pending' | 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error'
-  score: number
-  executionTime?: number // ms
-  memoryUsed?: number // MB
-  testResults?: TestResult[]
+  status: SubmissionStatus
+  compareResult?: string
+  errorCode?: string
+  errorMessage?: string
+  totalTime: number
+  totalMemory: number
+  resultFileRef?: string
   submittedAt: string
 }
 
-export interface TestResult {
-  testCaseId: string
-  passed: boolean
-  executionTime: number
-  memoryUsed: number
-  output?: string
-  error?: string
+export interface BestSubmission {
+  submissionId?: string
+  assignmentUserId?: string
+  problemId: string
+  userId?: string
+  status: SubmissionStatus
+  startedAt?: string
+  submittedAt?: string
+  score?: number
+  maxScore: number
+  solutionCode?: string
+  teacherFeedback?: string
+  attemptCount: number
+  totalTestCases?: number
+  passedTestCases?: number
+  executionTime?: number
+  memoryUsed?: number
 }
 
-export interface SubmitCodeRequest {
-  problemId: string
-  assignmentId?: string
+
+
+
+// ============================================
+// LANGUAGE
+// ============================================
+
+export interface Language {
+  languageId: string
   code: string
-  language: string
+  displayName: string
+  defaultTimeFactor: number
+  defaultMemoryKb: number
+  defaultHead: string
+  defaultBody: string
+  defaultTail: string
+  isEnabled: boolean
+  displayOrder: number
 }
 
 // ============================================
-// PRACTICE TYPES
+// TAG
+// ============================================
+
+export type TagCategory = 'ALGORITHM' | 'DATA_STRUCTURE' | 'DIFFICULTY' | 'TOPIC' | 'OTHER'
+
+export interface Tag {
+  tagId: string
+  name: string
+  category: TagCategory
+  color?: string
+  problemCount?: number
+}
+
+// ============================================
+// PRACTICE CATEGORY
 // ============================================
 
 export interface PracticeCategory {
@@ -328,7 +477,6 @@ export interface PracticeCategory {
 export type UserRole = 'Student' | 'Teacher' | 'Admin'
 export type UserStatus = 'Active' | 'Inactive' | 'Banned'
 export type ProblemDifficulty = 'Easy' | 'Medium' | 'Hard'
-export type SubmissionStatus = 'Pending' | 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error'
 
 // ============================================
 // TYPE GUARDS

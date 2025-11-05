@@ -13,7 +13,7 @@ namespace ApiGateway.Middlewares
         private readonly ILogger<JwtAuthenticationMiddleware> _logger;
 
         public JwtAuthenticationMiddleware(
-            RequestDelegate next, 
+            RequestDelegate next,
             IConfiguration configuration,
             ILogger<JwtAuthenticationMiddleware> logger)
         {
@@ -35,7 +35,7 @@ namespace ApiGateway.Middlewares
 
                 // Extract JWT token from Authorization header
                 var token = ExtractTokenFromHeader(context);
-                
+
                 if (string.IsNullOrEmpty(token))
                 {
                     _logger.LogWarning("Missing JWT token for path: {Path}", context.Request.Path);
@@ -45,7 +45,7 @@ namespace ApiGateway.Middlewares
 
                 // Validate and decode JWT token
                 var (isValid, claims) = await ValidateJwtToken(token);
-                
+
                 if (!isValid)
                 {
                     _logger.LogWarning("Invalid JWT token for path: {Path}", context.Request.Path);
@@ -54,9 +54,16 @@ namespace ApiGateway.Middlewares
                 }
 
                 // Extract user information from claims
-                var userId = claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "user_id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
-                var userRole = claims.FirstOrDefault(c => c.Type == "role" || c.Type == ClaimTypes.Role)?.Value;
-                var userName = claims.FirstOrDefault(c => c.Type == "name" || c.Type == ClaimTypes.Name)?.Value;
+                // Lấy claims từ JWT token
+                var userId = context.User.FindFirst("sub")?.Value
+                          ?? context.User.FindFirst("nameid")?.Value
+                          ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                var userRole = context.User.FindFirst("role")?.Value
+                        ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                var userName = context.User.FindFirst("name")?.Value
+                            ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -67,20 +74,15 @@ namespace ApiGateway.Middlewares
 
                 // Add secure headers for downstream services
                 context.Request.Headers.Append("X-User-Id", userId);
-                if (!string.IsNullOrEmpty(userRole))
-                {
-                    context.Request.Headers.Append("X-Role", userRole);
-                }
-                if (!string.IsNullOrEmpty(userName))
-                {
-                    context.Request.Headers.Append("X-User-Name", userName);
-                }
+                context.Request.Headers.Append("X-Role", userRole);
+                context.Request.Headers.Append("X-User-Name", userName);
+
 
                 // Add user info to context for logging
                 context.Items["AuthenticatedUserId"] = userId;
                 context.Items["AuthenticatedUserRole"] = userRole;
 
-                _logger.LogInformation("Authenticated user {UserId} with role {Role} for path {Path}", 
+                _logger.LogInformation("Authenticated user {UserId} with role {Role} for path {Path}",
                     userId, userRole ?? "No Role", context.Request.Path);
 
                 await _next(context);
@@ -95,7 +97,7 @@ namespace ApiGateway.Middlewares
         private string? ExtractTokenFromHeader(HttpContext context)
         {
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-            
+
             if (string.IsNullOrEmpty(authHeader))
                 return null;
 
@@ -127,7 +129,7 @@ namespace ApiGateway.Middlewares
                 };
 
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
-                
+
                 if (validatedToken is not JwtSecurityToken jwtToken)
                 {
                     return Task.FromResult((false, Enumerable.Empty<Claim>()));
@@ -163,13 +165,14 @@ namespace ApiGateway.Middlewares
         {
             context.Response.StatusCode = 401;
             context.Response.ContentType = "application/json";
-            
+
             var response = new
             {
                 error = "Unauthorized",
                 message = message,
                 timestamp = DateTime.UtcNow,
-                path = context.Request.Path
+                path = context.Request.Path,
+                success = false
             };
 
             await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
