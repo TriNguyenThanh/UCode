@@ -32,6 +32,10 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
                 schema.Example = UpdateUserExample();
                 break;
             
+            case nameof(UpdateUserByAdminRequest):
+                schema.Example = UpdateUserByAdminExample();
+                break;
+            
             case nameof(UpdateClassRequest):
                 schema.Example = UpdateClassExample();
                 break;
@@ -112,6 +116,20 @@ public class SwaggerExampleSchemaFilter : ISchemaFilter
         return new Microsoft.OpenApi.Any.OpenApiObject
         {
             ["userId"] = new Microsoft.OpenApi.Any.OpenApiString("11111111-1111-1111-1111-111111111111"),
+            ["email"] = new Microsoft.OpenApi.Any.OpenApiString("newemail@ucode.io.vn"),
+            ["fullName"] = new Microsoft.OpenApi.Any.OpenApiString("Nguyễn Văn An (Updated)"),
+            ["phone"] = new Microsoft.OpenApi.Any.OpenApiString("0987654321"),
+            ["major"] = new Microsoft.OpenApi.Any.OpenApiString("Công nghệ thông tin"),
+            ["classYear"] = new Microsoft.OpenApi.Any.OpenApiInteger(3),
+            ["department"] = new Microsoft.OpenApi.Any.OpenApiString("Khoa CNTT"),
+            ["title"] = new Microsoft.OpenApi.Any.OpenApiString("Phó Giáo sư")
+        };
+    }
+
+    private static Microsoft.OpenApi.Any.OpenApiObject UpdateUserByAdminExample()
+    {
+        return new Microsoft.OpenApi.Any.OpenApiObject
+        {
             ["email"] = new Microsoft.OpenApi.Any.OpenApiString("newemail@ucode.io.vn"),
             ["fullName"] = new Microsoft.OpenApi.Any.OpenApiString("Nguyễn Văn An (Updated)"),
             ["phone"] = new Microsoft.OpenApi.Any.OpenApiString("0987654321"),

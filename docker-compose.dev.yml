@@ -131,6 +131,24 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
+  
+  file-service:
+    build:
+      context: ./backend/src/file-service
+      dockerfile: Dockerfile.dev
+    container_name: file-service
+    ports:
+      - "5073:5073"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AWS__Region=${AWS_REGION}
+      - AWS__BucketName=${AWS_S3_BUCKET_NAME}
+      - AWS__AccessKey=${AWS_ACCESS_KEY_ID}
+      - AWS__SecretKey=${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./backend/src/file-service:/app
+    restart: on-failure
+    command: dotnet watch run --project file-service.csproj --urls http://0.0.0.0:5073
 
   # redis:
   #   image: redis:latest
