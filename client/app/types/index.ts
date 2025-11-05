@@ -1,14 +1,91 @@
+
+export interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  message?: string
+  errors?: string[]
+  timestamp?: string
+}
+
+export interface PagedResponse<T> {
+  data: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
+
+export interface ErrorResponse {
+  error: string
+  message: string
+  timestamp?: string
+  path?: string
+  errors?: { [key: string]: string[] }
+}
+
+
 // ============================================
-// USER & AUTHENTICATION
+// AUTH & USER TYPES
 // ============================================
 
 export interface User {
-  id: string
+  userId: string // Map từ backend UserId (Guid)
+  username: string
   email: string
-  name: string
-  studentId?: string
-  teacherId?: string
-  role: 'student' | 'teacher' | 'admin'
+  fullName: string // Map từ backend FullName
+  role: 'Student' | 'Teacher' | 'Admin' // Map từ UserRole enum
+  status?: 'Active' | 'Inactive' | 'Banned' // Map từ UserStatus enum
+  
+  // Student specific
+  studentCode?: string // Map từ backend StudentCode
+  major?: string
+  enrollmentYear?: number
+  classYear?: number
+  
+  // Teacher specific
+  teacherCode?: string // Map từ backend TeacherCode
+  department?: string
+  title?: string
+  
+  // Common
+  phone?: string
+  address?: string
+  dateOfBirth?: string // ISO date string
+  avatarUrl?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface LoginRequest {
+  emailOrUsername: string // Backend expects EmailOrUsername
+  password: string
+  rememberMe?: boolean
+}
+
+export interface LoginResponse {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  user: User
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  email: string
+  token: string
+  newPassword: string
 }
 
 // ============================================
@@ -16,14 +93,120 @@ export interface User {
 // ============================================
 
 export interface Class {
-  id: string
-  name: string
-  code: string
+  classId: string // Backend: ClassId (Guid)
+  className: string // Backend: ClassName
+  classCode: string // Backend: ClassCode
+  teacherId: string
   teacherName: string
   semester: string
   description?: string
   coverImage?: string
   studentCount: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface CreateClassRequest {
+  className: string
+  classCode: string
+  teacherId: string
+  semester: string
+  description?: string
+  coverImage?: string
+}
+
+export interface UpdateClassRequest {
+  className?: string
+  description?: string
+  coverImage?: string
+}
+
+export interface GetClassesRequest {
+  pageNumber?: number
+  pageSize?: number
+  teacherId?: string
+  semester?: string
+  search?: string
+}
+
+export interface ClassWithStudents extends Class {
+  students: User[]
+}
+
+// ============================================
+// STUDENT TYPES
+// ============================================
+
+export interface CreateStudentRequest {
+  studentCode: string
+  username: string
+  email: string
+  password: string
+  fullName: string
+  phone?: string
+  dateOfBirth?: string
+  address?: string
+  major?: string
+  enrollmentYear?: number
+  classYear?: number
+}
+
+export interface UpdateStudentRequest {
+  fullName?: string
+  email?: string
+  phone?: string
+  address?: string
+  major?: string
+  classYear?: number
+}
+
+export interface StudentResponse extends User {
+  studentCode: string
+  major?: string
+  enrollmentYear?: number
+  classYear?: number
+}
+
+// ============================================
+// TEACHER TYPES
+// ============================================
+
+export interface CreateTeacherRequest {
+  teacherCode: string
+  username: string
+  email: string
+  password: string
+  fullName: string
+  phone?: string
+  department?: string
+  title?: string
+}
+
+export interface UpdateTeacherRequest {
+  fullName?: string
+  email?: string
+  phone?: string
+  department?: string
+  title?: string
+}
+
+export interface TeacherResponse extends User {
+  teacherCode: string
+  department?: string
+  title?: string
+  classes?: Class[]
+}
+
+// ============================================
+// ADMIN TYPES
+// ============================================
+
+export interface CreateAdminRequest {
+  username: string
+  email: string
+  password: string
+  fullName: string
+  phone?: string
 }
 
 // ============================================
@@ -91,7 +274,21 @@ export interface ProblemAsset {
   orderIndex: number
   isActive: boolean
   createdAt: string
+  createdBy?: string 
 }
+
+/// =====================
+/// TESTCASE STATUS
+/// =====================
+export type TestcaseStatus =
+        'Passed' |
+        'TimeLimitExceeded' |
+        'MemoryLimitExceeded' |
+        'RuntimeError' |
+        'InternalError' |
+        'WrongAnswer' |
+        'CompilationError' |
+        'Skipped'
 
 // ============================================
 // DATASET & TEST CASE
@@ -227,6 +424,9 @@ export interface BestSubmission {
   memoryUsed?: number
 }
 
+
+
+
 // ============================================
 // LANGUAGE
 // ============================================
@@ -263,7 +463,7 @@ export interface Tag {
 // ============================================
 
 export interface PracticeCategory {
-  id: string
+  categoryId: string
   name: string
   description: string
   problemCount: number
@@ -271,29 +471,25 @@ export interface PracticeCategory {
 }
 
 // ============================================
-// API RESPONSE WRAPPERS
+// UTILITY TYPES
 // ============================================
 
-export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  message?: string
-  errors?: string[]
-  timestamp?: string
+export type UserRole = 'Student' | 'Teacher' | 'Admin'
+export type UserStatus = 'Active' | 'Inactive' | 'Banned'
+export type ProblemDifficulty = 'Easy' | 'Medium' | 'Hard'
+
+// ============================================
+// TYPE GUARDS
+// ============================================
+
+export function isStudent(user: User): user is User & Required<Pick<User, 'studentCode'>> {
+  return user.role === 'Student' && !!user.studentCode
 }
 
-export interface PagedResponse<T> {
-  data: T[]
-  page: number
-  pageSize: number
-  totalCount: number
-  totalPages: number
+export function isTeacher(user: User): user is User & Required<Pick<User, 'teacherCode'>> {
+  return user.role === 'Teacher' && !!user.teacherCode
 }
 
-export interface ErrorResponse {
-  error: string
-  message: string
-  timestamp?: string
-  path?: string
-  errors?: { [key: string]: string[] }
+export function isAdmin(user: User): boolean {
+  return user.role === 'Admin'
 }
