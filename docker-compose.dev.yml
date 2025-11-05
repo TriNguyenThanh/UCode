@@ -28,6 +28,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${USER_SERVICE_CONNECTION_STRING}
+      - JWT__KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - JWT__ISSUER=UserService
+      - JWT__AUDIENCE=UserServiceClient
     volumes:
       - ./backend/src/user-service:/app
     depends_on:
@@ -35,7 +38,7 @@ services:
         condition: service_healthy
     restart: on-failure
     command: 
-      bash -c "dotnet ef database update --no-build"
+      bash -c "dotnet ef database update -s Api/UserService.Api.csproj -p Infrastructure/UserService.Infrastructure.csproj && dotnet run --project Api/UserService.Api.csproj --urls http://0.0.0.0:5001"
 
   assignment-service:
     build:
@@ -43,25 +46,32 @@ services:
       dockerfile: Dockerfile.dev
     container_name: assignment-service
     ports:
-      - "5003:5003"
+      - "5002:5002"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__AssignmentDb=${ASSIGNMENT_SERVICE_URL_SERVICE_CONNECTION_STRING}
+      - ConnectionStrings__AssignmentDb=${ASSIGNMENT_SERVICE_CONNECTION_STRING}
+      - AssignmentDb=${ASSIGNMENT_SERVICE_CONNECTION_STRING}
       - UserService__BaseUrl=${USER_SERVICE_URL}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
+      - RabbitMQ__Port=${RABBITMQ_PORT}
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS}
     volumes:
       - ./backend/src/assignment-service:/app
     depends_on:
       sqlserver:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     command: 
-      bash -c "dotnet ef database update --no-build"
+      bash -c "dotnet ef database update -s Api/Api.csproj -p Infrastructure/Infrastructure.csproj && dotnet run --project Api/Api.csproj --urls http://0.0.0.0:5002"
 
-  execution-service:
+  judge-service:
     build:
       context: ./backend/src/judge-service
       dockerfile: Dockerfile.dev
-    container_name: execution-service
+    container_name: judge-service
     privileged: true  # Cần thiết để sử dụng isolate với các tính năng đầy đủ
     cap_add:
       - SYS_ADMIN
@@ -82,7 +92,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./backend/src/ExecutionService:/app
+      - ./backend/src/judge-service:/app
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
     depends_on:
       rabbitmq:
@@ -116,9 +126,37 @@ services:
       # - MSSQL_PID=Developer               # bật dòng này nếu là môi trường dev/test
       # - MSSQL_AGENT_ENABLED=true          # tùy chọn: bật SQL Agent nếu cần
     healthcheck:
-      test: /bin/bash -c '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -Q "SELECT 1" -b -o /dev/null || exit 1'
+      test: /bin/bash -c "</dev/tcp/localhost/1433" || exit 1
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 60s
   
+  file-service:
+    build:
+      context: ./backend/src/file-service
+      dockerfile: Dockerfile.dev
+    container_name: file-service
+    ports:
+      - "5073:5073"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AWS__Region=${AWS_REGION}
+      - AWS__BucketName=${AWS_S3_BUCKET_NAME}
+      - AWS__AccessKey=${AWS_ACCESS_KEY_ID}
+      - AWS__SecretKey=${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./backend/src/file-service:/app
+    restart: on-failure
+    command: dotnet watch run --project file-service.csproj --urls http://0.0.0.0:5073
+
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+
+volumes:
+  redis-data:

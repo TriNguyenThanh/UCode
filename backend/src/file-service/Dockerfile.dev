@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+WORKDIR /app
+
+# Copy csproj and restore dependencies
+COPY ["file-service.csproj", "./"]
+RUN dotnet restore "file-service.csproj"
+
+# Copy everything else
+COPY . .
+
+EXPOSE 5073
+
+# Run in dev mode with hot reload
+CMD ["dotnet", "run", "--project", "file-service.csproj", "--urls", "http://0.0.0.0:5073"]

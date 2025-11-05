@@ -1,0 +1,251 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/v1/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "auth",
+      "SwaggerKey": "user-service"
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/users/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/users/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "users",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/teachers/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/teachers/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "teachers",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/students/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/students/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "students",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/classes/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/classes/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "classes",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/problems/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/problems/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "problems",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/assignments/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assignments/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "assignments",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/datasets/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/datasets/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "datasets",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/tags/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/tags/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "tags",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/languages/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/languages/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "languages",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/submissions/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assignment-service",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/submissions/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "submissions",
+      "SwaggerKey": "assignment-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000"
+  }
+}

@@ -1,6 +1,6 @@
-using ProblemService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
-namespace ProblemService.Domain.Entities;
+namespace AssignmentService.Domain.Entities;
 
 /// <summary>
 /// Entity đại diện cho bảng Problems
@@ -13,7 +13,7 @@ public class Problem
     /// <summary>
     /// Mã đề bài (unique): P001, P002,...
     /// </summary>
-    public string Code { get; set; } = string.Empty;
+    public string? Code { get; set; } = string.Empty;
     
     /// <summary>
     /// URL-friendly slug (unique): two-sum, reverse-string,...
@@ -50,12 +50,37 @@ public class Problem
     /// <summary>
     /// Đường dẫn file Markdown chứa đề bài
     /// </summary>
-    public string? StatementMdRef { get; set; }
-    
+    public string? Statement { get; set; }
+
+    /// <summary>
+    /// Giải pháp tham khảo (reference solution)
+    /// </summary>
+    public string? Solution { get; set; }
+
     /// <summary>
     /// Chế độ I/O: STDIO hoặc FILE
     /// </summary>
     public IoMode IoMode { get; set; } = IoMode.STDIO;
+    
+    /// <summary>
+    /// Định dạng input (mô tả cách đọc input)
+    /// </summary>
+    public string? InputFormat { get; set; }
+    
+    /// <summary>
+    /// Định dạng output (mô tả cách xuất output)
+    /// </summary>
+    public string? OutputFormat { get; set; }
+    
+    /// <summary>
+    /// Ràng buộc của bài toán
+    /// </summary>
+    public string? Constraints { get; set; }
+    
+    /// <summary>
+    /// Điểm tối đa cho bài toán này
+    /// </summary>
+    public int? MaxScore { get; set; }
     
     /// <summary>
     /// Giới hạn thời gian (milliseconds)
@@ -109,17 +134,11 @@ public class Problem
     /// </summary>
     public string? SampleOutput { get; set; }
     
-    /// <summary>
-    /// Problem constraints
-    /// </summary>
-    public string? Constraints { get; set; }
-    
     // === Timestamps ===
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // === Navigation Properties ===
-    // public User Owner { get; set; } = null!;
     
     /// <summary>
     /// Collection các tags gắn với đề bài
@@ -132,18 +151,13 @@ public class Problem
     public ICollection<Dataset> Datasets { get; set; } = new List<Dataset>();
     
     /// <summary>
-    /// Collection các code templates
-    /// </summary>
-    public ICollection<CodeTemplate> CodeTemplates { get; set; } = new List<CodeTemplate>();
-    
-    /// <summary>
     /// Collection các assets (PDF, images,...)
     /// </summary>
     public ICollection<ProblemAsset> ProblemAssets { get; set; } = new List<ProblemAsset>();
     
     /// <summary>
-    /// Collection các language limits
+    /// Collection các language overrides (problem-specific language configurations)
     /// </summary>
-    public ICollection<LanguageLimit> LanguageLimits { get; set; } = new List<LanguageLimit>();
+    public ICollection<ProblemLanguage> ProblemLanguages { get; set; } = new List<ProblemLanguage>();
 
 }
