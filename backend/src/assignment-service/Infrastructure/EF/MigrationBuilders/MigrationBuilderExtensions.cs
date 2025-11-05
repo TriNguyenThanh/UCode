@@ -34,7 +34,7 @@ public static class MigrationBuilderExtensions
                 FROM submission sub
                 WHERE sub.assignment_user_id = au.assignment_user_id
                     AND sub.problem_id = ap.problem_id
-                    AND sub.status = 4
+                    AND (sub.status = 'Passed' OR sub.status = 'Failed')
                 ORDER BY 
                     CASE 
                         WHEN sub.total_testcase = 0 THEN 0

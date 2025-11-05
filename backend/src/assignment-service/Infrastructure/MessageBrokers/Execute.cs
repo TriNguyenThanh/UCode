@@ -27,21 +27,30 @@ public class ExecuteService : IExecuteService
         var dataset = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
         var testcases = dataset?.TestCases;
 
-        var message = new RabbitMqMessage
+RabbitMqMessage message = null;
+        try
         {
-            SubmissionId = submission.SubmissionId.ToString(),
-            Code = submission.SourceCode,
-            Language = submission.Language,
-            TimeLimit = 2,
-            MemoryLimit = 128,
-            Testcases = testcases!.Select(tc => new TestCaseDto
+            message = new RabbitMqMessage
             {
-                TestCaseId = tc.TestCaseId,
-                InputRef = tc.InputRef,
-                OutputRef = tc.OutputRef,
-                IndexNo = tc.IndexNo 
-            }).ToList()
-        };
+                SubmissionId = submission.SubmissionId.ToString(),
+                Code = submission.SourceCode,
+                Language = submission.Language,
+                TimeLimit = 2,
+                MemoryLimit = 128,
+                Testcases = testcases!.Select(tc => new TestCaseDto
+                {
+                    TestCaseId = tc.TestCaseId,
+                    InputRef = tc.InputRef,
+                    OutputRef = tc.OutputRef,
+                    IndexNo = tc.IndexNo
+                }).ToList()
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[x] Error preparing execution message: {ex.Message}");
+            return;
+        }
 
         // gui du lieu qua RabbitMQ server
         await _rabbitMqService.DeclareQueueAsync("submission_queue");

@@ -116,6 +116,7 @@ public class ResultConsumer : BackgroundService
                 submission.Status = (submission.PassedTestcase == submission.TotalTestcase) ? SubmissionStatus.Passed : SubmissionStatus.Failed;
                 submission.ErrorCode = results_message.ErrorCode;
                 submission.ErrorMessage = results_message.ErrorMessage;
+                submission.CompareResult = results_message.CompileResult;
 
                 if (await submissionRepo.UpdateSubmission(submission))
                 {

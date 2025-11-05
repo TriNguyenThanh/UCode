@@ -14,15 +14,16 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         // Đánh dấu là keyless vì NEWID() trong view tạo ID mới mỗi lần query
         builder.HasNoKey();
         
-        // Properties (không cần IsRequired cho view)
-        builder.Property(bs => bs.AssignmentUserId);
-        builder.Property(bs => bs.ProblemId);
-        builder.Property(bs => bs.SubmissionId);
-        builder.Property(bs => bs.Score);
-        builder.Property(bs => bs.MaxScore);
-        builder.Property(bs => bs.TotalTime);
-        builder.Property(bs => bs.TotalMemory);
-        builder.Property(bs => bs.UpdatedAt);
+        // Map tên cột từ PascalCase trong entity sang PascalCase trong database
+        builder.Property(bs => bs.BestSubmissionId).HasColumnName("BestSubmissionId");
+        builder.Property(bs => bs.AssignmentUserId).HasColumnName("AssignmentUserId");
+        builder.Property(bs => bs.ProblemId).HasColumnName("ProblemId");
+        builder.Property(bs => bs.SubmissionId).HasColumnName("SubmissionId");
+        builder.Property(bs => bs.Score).HasColumnName("Score");
+        builder.Property(bs => bs.MaxScore).HasColumnName("MaxScore");
+        builder.Property(bs => bs.TotalTime).HasColumnName("TotalTime");
+        builder.Property(bs => bs.TotalMemory).HasColumnName("TotalMemory");
+        builder.Property(bs => bs.UpdatedAt).HasColumnName("UpdatedAt");
         
         // VIEW không có relationships, indexes, hoặc constraints
         // Đây là read-only computed view

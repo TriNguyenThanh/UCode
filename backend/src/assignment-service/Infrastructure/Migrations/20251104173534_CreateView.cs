@@ -5,7 +5,7 @@ using AssignmentService.Infrastructure.EF.MigrationBuilders;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateBestSubmissionsView : Migration
+    public partial class CreateView : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,6 +17,7 @@ namespace Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropBestSubmissionsView();
+
         }
     }
 }
