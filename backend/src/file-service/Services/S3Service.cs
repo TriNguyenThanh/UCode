@@ -67,8 +67,7 @@ public class S3Service : IS3Service
                 Key = key,
                 BucketName = _bucketName,
                 ContentType = file.ContentType,
-                CannedACL = S3CannedACL.Private,
-                // Add metadata
+                CannedACL = S3CannedACL.PublicRead, // Public access for students to view problem attachments
                 Metadata =
                 {
                     ["original-filename"] = originalFileName,
@@ -78,18 +77,39 @@ public class S3Service : IS3Service
             };
 
             var transferUtility = new TransferUtility(_s3Client);
+            
+            _logger.LogInformation($"Starting upload for file: {originalFileName} to key: {key}");
+            
             await transferUtility.UploadAsync(uploadRequest);
 
-            _logger.LogInformation($"File uploaded successfully: {key} (Category: {category})");
+            // Verify upload thành công bằng cách kiểm tra file tồn tại
+            var uploadSuccessful = await FileExistsAsync(key);
+            
+            if (!uploadSuccessful)
+            {
+                _logger.LogError($"Upload verification failed for file: {originalFileName}");
+                throw new InvalidOperationException($"File upload failed - file not found in S3 after upload: {key}");
+            }
+
+            _logger.LogInformation($"File uploaded and verified successfully: {originalFileName} -> {key} (Category: {category})");
+
+            // Return public S3 URL
+            var region = _configuration["AWS:Region"];
+            var publicUrl = $"https://{_bucketName}.s3.{region}.amazonaws.com/{key}";
 
             return new Models.FileUploadResponse
             {
                 FileName = originalFileName,
-                FileUrl = $"https://{_bucketName}.s3.amazonaws.com/{key}",
+                FileUrl = publicUrl,
                 Key = key,
                 Size = file.Length,
                 ContentType = file.ContentType
             };
+        }
+        catch (AmazonS3Exception s3Ex)
+        {
+            _logger.LogError(s3Ex, $"S3 error uploading file: {file?.FileName}. Error Code: {s3Ex.ErrorCode}, Status: {s3Ex.StatusCode}");
+            throw new InvalidOperationException($"S3 upload failed: {s3Ex.Message}", s3Ex);
         }
         catch (Exception ex)
         {

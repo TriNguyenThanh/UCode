@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using file_service.Models;
 using file_service.Services;
 using file_service.Enums;
+using file_service.Api.Middlewares;
 
 namespace file_service.Controllers;
 
 [ApiController]
 [Route("api/files")]
+// [RequireRole("teacher,admin")]
 public class FilesController : ControllerBase
 {
     private readonly IS3Service _s3Service;
@@ -22,16 +24,15 @@ public class FilesController : ControllerBase
     /// Upload a file to S3 with category-based validation
     /// </summary>
     /// <param name="file">File to upload</param>
-    /// <param name="category">File category (1=AssignmentDocument, 2=CodeSubmission, 3=Image, 4=Avatar, 5=TestCase, 6=Reference)</param>
-    /// <param name="customFileName">Custom file name (optional)</param>
+    /// <param name="category">File category (AssignmentDocument, CodeSubmission, Image, Avatar, TestCase, Reference, Dument)</param>
     [HttpPost("upload")]
+    [Consumes("multipart/form-data")]
     [RequestSizeLimit(100_000_000)] // 100MB global limit
     [ProducesResponseType(typeof(ApiResponse<FileUploadResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
-        [FromForm] IFormFile file, 
-        [FromForm] FileCategory category,
-        [FromForm] string? customFileName = null)
+        IFormFile file, 
+        FileCategory category)
     {
         try
         {
@@ -46,7 +47,7 @@ public class FilesController : ControllerBase
                 return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}"));
             }
 
-            var result = await _s3Service.UploadFileAsync(file, category, customFileName);
+            var result = await _s3Service.UploadFileAsync(file, category, null);
             return Ok(ApiResponse<FileUploadResponse>.SuccessResponse(result, "File uploaded successfully"));
         }
         catch (ArgumentException ex)
