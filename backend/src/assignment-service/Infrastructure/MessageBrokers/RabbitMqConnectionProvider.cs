@@ -16,18 +16,25 @@ public class RabbitMqConnectionProvider : IRabbitMqConnectionProvider, IDisposab
 
     public async Task<IConnection> GetConnection()
     {
-        if (_connection == null)
+        try
         {
-            var _factory = new ConnectionFactory
+            if (_connection == null)
             {
-                HostName = _config["RabbitMQ:Host"] ?? "rabbitmq",
-                Port = int.Parse(_config["RabbitMQ:Port"] ?? "5672"),
-                UserName = _config["RabbitMQ:Username"] ?? "guest",
-                Password = _config["RabbitMQ:Password"] ?? "guest",
-            };
-            _connection = await _factory.CreateConnectionAsync();
+                var _factory = new ConnectionFactory
+                {
+                    HostName = _config["RabbitMQ:Host"] ?? "rabbitmq",
+                    Port = int.Parse(_config["RabbitMQ:Port"] ?? "5672"),
+                    UserName = _config["RabbitMQ:Username"] ?? "guest",
+                    Password = _config["RabbitMQ:Password"] ?? "guest",
+                };
+                _connection = await _factory.CreateConnectionAsync();
+            }
+            return _connection;
         }
-        return _connection;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating RabbitMQ connection: {ex.Message}");
+        }
     }
 
     public void Dispose()
