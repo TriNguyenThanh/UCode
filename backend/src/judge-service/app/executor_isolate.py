@@ -145,8 +145,9 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             compile_cmd = [
                 "isolate", "--box-id", str(box_id),
                 "--time=10", "--wall-time=15", "--mem=512000", "--processes", "--full-env",
+                "--stderr=compile_err.txt",
                 "--run", "--",
-                "/usr/bin/g++", "-std=c++17", "-O2", "-o", "main", "main.cpp", ">", compile_error_file
+                "/usr/bin/g++", "-std=c++17", "-O2", "-o", "main", "main.cpp"
             ]
             compile_result = subprocess.run(compile_cmd, capture_output=True, text=True, timeout=20)
 
