@@ -124,7 +124,7 @@ export default function Home() {
                     <Chip label={classItem.semester} size='small' />
                   </CardContent>
                 </CardActionArea>
-              </Card>
+              </Card> 
             ))}
           </Box>
         </Box>
