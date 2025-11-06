@@ -9,8 +9,8 @@ export interface CreateDatasetRequest {
   name: string
   kind: DatasetKind
   testCases: {
-    input: string
-    expectedOutput: string
+    inputRef: string
+    outputRef: string
     orderIndex: number
   }[]
 }
@@ -23,8 +23,8 @@ export interface UpdateDatasetRequest {
   testCases?: {
     testCaseId?: string
     datasetId?: string
-    input: string
-    expectedOutput: string
+    inputRef: string
+    outputRef: string
     orderIndex: number
   }[]
 }

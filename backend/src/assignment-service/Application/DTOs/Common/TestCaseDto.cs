@@ -19,7 +19,7 @@ public class TestCaseDto
     public int IndexNo { get; set; } = 1;
 
     [Range(0, 100)]
-    public decimal Weight { get; set; } = 1.0m;
+    public decimal Score { get; set; } = 1.0m;
     
     [StringLength(100)]
     public string? InputChecksum { get; set; }
