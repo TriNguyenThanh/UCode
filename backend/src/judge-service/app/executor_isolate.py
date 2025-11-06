@@ -78,8 +78,8 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
     box_id = int(uuid.uuid4().hex[:3], 16) % 1000
     box_path = f"/var/local/lib/isolate/{box_id}/box"
     meta_file = f"{box_path}/meta.txt"
-    compile_error_file = f"{box_path}/compile_err.txt"
 
+    compile_error_file = f"{box_path}/compile_err.txt"
     # Biến lưu trạng thái compile (chỉ compile 1 lần)
     compile_success = False
     run_cmd = None
