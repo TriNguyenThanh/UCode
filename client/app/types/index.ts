@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T> {
   success: boolean
   data?: T
@@ -375,37 +374,58 @@ export interface AssignmentUser {
   startedAt?: string
   score?: number
   maxScore?: number
+  // Extended fields (may need to fetch separately from user service)
+  user?: {
+    userId: string
+    fullName: string
+    studentCode?: string
+    email: string
+  }
 }
 
 // ============================================
 // SUBMISSION
 // ============================================
 
-export type SubmissionStatus = 
-  | 'Pending' 
-  | 'Judging' 
-  | 'Accepted' 
-  | 'WrongAnswer' 
-  | 'TimeLimitExceeded' 
-  | 'MemoryLimitExceeded' 
-  | 'RuntimeError' 
-  | 'CompilationError' 
-  | 'SystemError'
+export type SubmissionStatus =
+  | 'Pending'
+  | 'Running'
+  | 'Passed'
+  | 'Failed'
+  | 'CompilationError'
+  | 'RuntimeError'
+  | 'TimeLimitExceeded'
+  | 'MemoryLimitExceeded'
+
+export interface SubmissionRequest {
+  problemId: string
+  assignmentUserId?: string
+  sourceCode: string
+  language: string
+}
+
+export interface CreateSubmissionResponse {
+  submissionId: string
+  status: SubmissionStatus
+}
 
 export interface Submission {
   submissionId: string
-  problemId: string
   userId: string
+  problemId: string
+  assignmentUserId?: string
   sourceCodeRef: string
   language: string
   status: SubmissionStatus
   compareResult?: string
   errorCode?: string
   errorMessage?: string
+  totalTestcase: number
+  passedTestcase: number
   totalTime: number
   totalMemory: number
-  resultFileRef?: string
   submittedAt: string
+  resultFileRef?: string
 }
 
 export interface BestSubmission {

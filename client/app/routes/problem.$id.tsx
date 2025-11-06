@@ -237,6 +237,7 @@ export default function ProblemDetail() {
     } finally {
       setIsRunning(false)
     }
+    }
   }
 
   // Handle submit code

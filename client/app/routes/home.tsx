@@ -22,8 +22,9 @@ import AssignmentIcon from '@mui/icons-material/Assignment'
 import CodeIcon from '@mui/icons-material/Code'
 import ClassIcon from '@mui/icons-material/Class'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import { mockAssignments, mockPracticeCategories } from '~/data/mock'
-import type { ApiResponse, PagedResponse, Class } from '~/types'
+import { mockPracticeCategories } from '~/data/mock'
+import type { ApiResponse, PagedResponse, Class, Assignment } from '~/types'
+import { getStudentAssignments, getMyAssignments } from '~/services/assignmentService'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Trang chủ | UCode' },
@@ -48,12 +49,28 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
       studentCount: cls.studentCount,
     }))
     
-    // TODO: Thay thế bằng API khi backend có endpoint
-    // Filter assignments due within 7 days (tạm thời dùng mock)
+    // Lấy assignments từ API dựa vào role
+    let allAssignments: Assignment[] = []
+    try {
+      if (user.role === 'student') {
+        allAssignments = await getStudentAssignments()
+      } else if (user.role === 'teacher') {
+        allAssignments = await getMyAssignments()
+      }
+    } catch (error) {
+      console.error('Error loading assignments:', error)
+      allAssignments = []
+    }
+    
+    // Filter assignments due within 7 days
     const now = new Date()
     const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const upcomingAssignments = (mockAssignments as any[]).filter(
-      (assignment: any) => new Date(assignment.dueDate) <= sevenDaysLater && new Date(assignment.dueDate) > now
+    const upcomingAssignments = allAssignments.filter(
+      (assignment: Assignment) => {
+        if (!assignment.endTime) return false
+        const dueDate = new Date(assignment.endTime)
+        return dueDate <= sevenDaysLater && dueDate > now
+      }
     )
     
     return {
@@ -77,8 +94,10 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
 export default function Home() {
   const { user, classes, upcomingAssignments, practiceCategories } = useLoaderData<typeof clientLoader>()
 
-  const getDaysUntilDue = (dueDate: Date) => {
+  const getDaysUntilDue = (endTime?: string) => {
+    if (!endTime) return null
     const now = new Date()
+    const dueDate = new Date(endTime)
     const diff = dueDate.getTime() - now.getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
@@ -176,11 +195,13 @@ export default function Home() {
             </Paper>
           ) : (
             <Stack spacing={2}>
-              {upcomingAssignments.map((assignment: any) => {
-                const daysLeft = getDaysUntilDue(new Date(assignment.dueDate))
+              {upcomingAssignments.map((assignment: Assignment) => {
+                const daysLeft = getDaysUntilDue(assignment.endTime)
+                if (daysLeft === null) return null
+                
                 return (
-                  <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }} key={assignment.id}>
-                    <CardActionArea component={Link} to={`/assignment/${assignment.id}`}>
+                  <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }} key={assignment.assignmentId}>
+                    <CardActionArea component={Link} to={`/assignment/${assignment.assignmentId}`}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                           <Box
@@ -202,7 +223,7 @@ export default function Home() {
                               {assignment.title}
                             </Typography>
                             <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                              {assignment.className}
+                              {assignment.assignmentType}
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                               <Chip
@@ -211,8 +232,10 @@ export default function Home() {
                                 size='small'
                                 color={daysLeft <= 2 ? 'error' : 'warning'}
                               />
-                              <Chip label={`${assignment.problems?.length || 0} bài`} size='small' variant='outlined' />
-                              <Chip label={`${assignment.totalPoints} điểm`} size='small' variant='outlined' />
+                              <Chip label={`${assignment.totalProblems || 0} bài`} size='small' variant='outlined' />
+                              {assignment.totalPoints && (
+                                <Chip label={`${assignment.totalPoints} điểm`} size='small' variant='outlined' />
+                              )}
                             </Box>
                           </Box>
                         </Box>
