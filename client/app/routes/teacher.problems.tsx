@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link } from 'react-router'
+import { useLoaderData, redirect, Link, useNavigate, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.problems'
 import { auth } from '~/auth'
 import { Navigation } from '~/components/Navigation'
@@ -9,7 +9,6 @@ import {
   Box,
   Card,
   CardContent,
-  CardActionArea,
   Chip,
   Button,
   TextField,
@@ -24,66 +23,202 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Snackbar,
+  CircularProgress,
+  Pagination,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Divider,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
-import FilterListIcon from '@mui/icons-material/FilterList'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import CodeIcon from '@mui/icons-material/Code'
-import { mockProblems } from '~/data/mock'
+import LanguageIcon from '@mui/icons-material/Language'
+import DatasetIcon from '@mui/icons-material/Dataset'
+import CloseIcon from '@mui/icons-material/Close'
+import { getMyProblems, deleteProblem, getAvailableLanguagesForProblem, addOrUpdateProblemLanguages, deleteProblemLanguage } from '~/services/problemService'
+import { getDatasetsByProblem, createDataset, updateDataset, deleteDataset } from '~/services/datasetService'
+import { getAllLanguages } from '~/services/languageService'
+import type { Problem, Language, Dataset, ProblemLanguage, Difficulty } from '~/types'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Ngân hàng bài | UCode' },
   { name: 'description', content: 'Quản lý ngân hàng bài tập.' },
 ]
 
-export async function clientLoader({ }: Route.ClientLoaderArgs) {
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
-  if (user.role !== 'teacher') throw redirect('/home')
+  if (user.role !== 'teacher' && user.role !== 'admin') throw redirect('/home')
 
-  return { user, problems: mockProblems }
+  const url = new URL(request.url)
+  const page = parseInt(url.searchParams.get('page') || '1')
+  const pageSize = parseInt(url.searchParams.get('pageSize') || '20')
+
+  try {
+    const problemsData = await getMyProblems(page, pageSize)
+    const languages = await getAllLanguages(false)
+    
+    return { 
+      user, 
+      problemsData,
+      languages,
+      currentPage: page,
+      pageSize
+    }
+  } catch (error: any) {
+    console.error('Failed to load problems:', error)
+    return { 
+      user, 
+      problemsData: { data: [], totalCount: 0, page: 1, pageSize: 20, totalPages: 0, hasPrevious: false, hasNext: false },
+      languages: [],
+      currentPage: 1,
+      pageSize: 20
+    }
+  }
 }
 
 export default function TeacherProblems() {
-  const { problems } = useLoaderData<typeof clientLoader>()
+  const { problemsData, languages, currentPage, pageSize } = useLoaderData<typeof clientLoader>()
+  const navigate = useNavigate()
+  const revalidator = useRevalidator()
+  
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filterDifficulty, setFilterDifficulty] = React.useState<string>('all')
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const [selectedProblem, setSelectedProblem] = React.useState<string | null>(null)
+  const [selectedProblem, setSelectedProblem] = React.useState<Problem | null>(null)
+  
+  // Delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+  const [deleting, setDeleting] = React.useState(false)
+  
+  // Language dialog
+  const [languageDialogOpen, setLanguageDialogOpen] = React.useState(false)
+  const [problemLanguages, setProblemLanguages] = React.useState<ProblemLanguage[]>([])
+  const [loadingLanguages, setLoadingLanguages] = React.useState(false)
+  
+  // Dataset dialog
+  const [datasetDialogOpen, setDatasetDialogOpen] = React.useState(false)
+  const [datasets, setDatasets] = React.useState<Dataset[]>([])
+  const [loadingDatasets, setLoadingDatasets] = React.useState(false)
+  
+  // Snackbar
+  const [snackbar, setSnackbar] = React.useState<{open: boolean, message: string, severity: 'success' | 'error'}>({
+    open: false,
+    message: '',
+    severity: 'success'
+  })
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, problemId: string) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, problem: Problem) => {
     setAnchorEl(event.currentTarget)
-    setSelectedProblem(problemId)
+    setSelectedProblem(problem)
   }
 
   const handleMenuClose = () => {
     setAnchorEl(null)
-    setSelectedProblem(null)
   }
 
-  const getDifficultyColor = (difficulty: string) => {
+  const handleDelete = async () => {
+    if (!selectedProblem) return
+    
+    setDeleting(true)
+    try {
+      await deleteProblem(selectedProblem.problemId)
+      setSnackbar({ open: true, message: 'Đã xóa bài tập thành công', severity: 'success' })
+      setDeleteDialogOpen(false)
+      handleMenuClose()
+      revalidator.revalidate()
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.message || 'Không thể xóa bài tập', severity: 'error' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleOpenLanguages = async () => {
+    if (!selectedProblem) return
+    
+    setLoadingLanguages(true)
+    setLanguageDialogOpen(true)
+    handleMenuClose()
+    
+    try {
+      const langs = await getAvailableLanguagesForProblem(selectedProblem.problemId)
+      setProblemLanguages(langs)
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.message || 'Không thể tải languages', severity: 'error' })
+    } finally {
+      setLoadingLanguages(false)
+    }
+  }
+
+  const handleOpenDatasets = async () => {
+    if (!selectedProblem) return
+    
+    setLoadingDatasets(true)
+    setDatasetDialogOpen(true)
+    handleMenuClose()
+    
+    try {
+      const ds = await getDatasetsByProblem(selectedProblem.problemId)
+      setDatasets(ds)
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.message || 'Không thể tải datasets', severity: 'error' })
+    } finally {
+      setLoadingDatasets(false)
+    }
+  }
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    navigate(`?page=${page}&pageSize=${pageSize}`)
+  }
+
+  const getDifficultyColor = (difficulty: Difficulty) => {
     switch (difficulty) {
-      case 'Easy':
+      case 'EASY':
         return '#34C759'
-      case 'Medium':
+      case 'MEDIUM':
         return '#FF9500'
-      case 'Hard':
+      case 'HARD':
         return '#FF3B30'
       default:
         return '#86868b'
     }
   }
 
-  const filteredProblems = problems.filter((problem) => {
+  const getDifficultyLabel = (difficulty: Difficulty) => {
+    switch (difficulty) {
+      case 'EASY': return 'Dễ'
+      case 'MEDIUM': return 'Trung bình'
+      case 'HARD': return 'Khó'
+      default: return difficulty
+    }
+  }
+
+  const filteredProblems = (problemsData.data || []).filter((problem: Problem) => {
     const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      problem.description.toLowerCase().includes(searchQuery.toLowerCase())
+      (problem.statement && problem.statement.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesDifficulty = filterDifficulty === 'all' || problem.difficulty === filterDifficulty
     return matchesSearch && matchesDifficulty
   })
+
+  const stats = {
+    total: problemsData.totalCount || 0,
+    easy: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'EASY').length,
+    medium: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'MEDIUM').length,
+    hard: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'HARD').length,
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
@@ -134,7 +269,7 @@ export default function TeacherProblems() {
                 Tổng số bài
               </Typography>
               <Typography variant='h4' sx={{ fontWeight: 700, color: '#1d1d1f' }}>
-                {problems.length}
+                {stats.total}
               </Typography>
             </CardContent>
           </Card>
@@ -145,7 +280,7 @@ export default function TeacherProblems() {
                 Dễ
               </Typography>
               <Typography variant='h4' sx={{ fontWeight: 700, color: '#34C759' }}>
-                {problems.filter(p => p.difficulty === 'Easy').length}
+                {stats.easy}
               </Typography>
             </CardContent>
           </Card>
@@ -156,7 +291,7 @@ export default function TeacherProblems() {
                 Trung bình
               </Typography>
               <Typography variant='h4' sx={{ fontWeight: 700, color: '#FF9500' }}>
-                {problems.filter(p => p.difficulty === 'Medium').length}
+                {stats.medium}
               </Typography>
             </CardContent>
           </Card>
@@ -167,7 +302,7 @@ export default function TeacherProblems() {
                 Khó
               </Typography>
               <Typography variant='h4' sx={{ fontWeight: 700, color: '#FF3B30' }}>
-                {problems.filter(p => p.difficulty === 'Hard').length}
+                {stats.hard}
               </Typography>
             </CardContent>
           </Card>
@@ -212,10 +347,10 @@ export default function TeacherProblems() {
               />
               <Chip
                 label='Dễ'
-                onClick={() => setFilterDifficulty('Easy')}
+                onClick={() => setFilterDifficulty('EASY')}
                 sx={{
-                  bgcolor: filterDifficulty === 'Easy' ? '#34C759' : '#ffffff',
-                  color: filterDifficulty === 'Easy' ? '#ffffff' : '#1d1d1f',
+                  bgcolor: filterDifficulty === 'EASY' ? '#34C759' : '#ffffff',
+                  color: filterDifficulty === 'EASY' ? '#ffffff' : '#1d1d1f',
                   border: '1px solid #d2d2d7',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -223,10 +358,10 @@ export default function TeacherProblems() {
               />
               <Chip
                 label='Trung bình'
-                onClick={() => setFilterDifficulty('Medium')}
+                onClick={() => setFilterDifficulty('MEDIUM')}
                 sx={{
-                  bgcolor: filterDifficulty === 'Medium' ? '#FF9500' : '#ffffff',
-                  color: filterDifficulty === 'Medium' ? '#ffffff' : '#1d1d1f',
+                  bgcolor: filterDifficulty === 'MEDIUM' ? '#FF9500' : '#ffffff',
+                  color: filterDifficulty === 'MEDIUM' ? '#ffffff' : '#1d1d1f',
                   border: '1px solid #d2d2d7',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -234,10 +369,10 @@ export default function TeacherProblems() {
               />
               <Chip
                 label='Khó'
-                onClick={() => setFilterDifficulty('Hard')}
+                onClick={() => setFilterDifficulty('HARD')}
                 sx={{
-                  bgcolor: filterDifficulty === 'Hard' ? '#FF3B30' : '#ffffff',
-                  color: filterDifficulty === 'Hard' ? '#ffffff' : '#1d1d1f',
+                  bgcolor: filterDifficulty === 'HARD' ? '#FF3B30' : '#ffffff',
+                  color: filterDifficulty === 'HARD' ? '#ffffff' : '#1d1d1f',
                   border: '1px solid #d2d2d7',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -260,9 +395,9 @@ export default function TeacherProblems() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Tiêu đề</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Mã / Tiêu đề</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Độ khó</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Thể loại</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Visibility</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Tags</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }}>Giới hạn</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#1d1d1f' }} align='right'>
@@ -273,7 +408,7 @@ export default function TeacherProblems() {
             <TableBody>
               {filteredProblems.map((problem) => (
                 <TableRow
-                  key={problem.id}
+                  key={problem.problemId}
                   sx={{
                     '&:hover': {
                       bgcolor: '#f5f5f7',
@@ -282,17 +417,22 @@ export default function TeacherProblems() {
                 >
                   <TableCell>
                     <Box>
+                      <Typography variant='body2' sx={{ color: '#86868b', fontSize: '0.75rem' }}>
+                        #{problem.code}
+                      </Typography>
                       <Typography variant='body1' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
                         {problem.title}
                       </Typography>
-                      <Typography variant='body2' sx={{ color: '#86868b', mt: 0.5 }}>
-                        {problem.description.substring(0, 60)}...
-                      </Typography>
+                      {problem.statement && (
+                        <Typography variant='body2' sx={{ color: '#86868b', mt: 0.5 }}>
+                          {problem.statement.substring(0, 60)}...
+                        </Typography>
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={problem.difficulty}
+                      label={getDifficultyLabel(problem.difficulty)}
                       size='small'
                       sx={{
                         bgcolor: getDifficultyColor(problem.difficulty),
@@ -303,15 +443,16 @@ export default function TeacherProblems() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={problem.category}
+                      label={problem.visibility}
                       size='small'
                       variant='outlined'
-                      sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
+                      color={problem.visibility === 'PUBLIC' ? 'success' : 'default'}
+                      sx={{ borderColor: '#d2d2d7' }}
                     />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                      {problem.tags.slice(0, 2).map((tag) => (
+                      {problem.tagNames && problem.tagNames.slice(0, 2).map((tag) => (
                         <Chip
                           key={tag}
                           label={tag}
@@ -324,9 +465,9 @@ export default function TeacherProblems() {
                           }}
                         />
                       ))}
-                      {problem.tags.length > 2 && (
+                      {problem.tagNames && problem.tagNames.length > 2 && (
                         <Chip
-                          label={`+${problem.tags.length - 2}`}
+                          label={`+${problem.tagNames.length - 2}`}
                           size='small'
                           sx={{ bgcolor: '#f5f5f7', color: '#86868b' }}
                         />
@@ -335,13 +476,13 @@ export default function TeacherProblems() {
                   </TableCell>
                   <TableCell>
                     <Typography variant='body2' sx={{ color: '#1d1d1f', fontWeight: 600 }}>
-                      {problem.timeLimit}s / {problem.memoryLimit}MB
+                      {problem.timeLimitMs}ms / {problem.memoryLimitKb}KB
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
                     <IconButton
                       size='small'
-                      onClick={(e) => handleMenuClick(e, problem.id)}
+                      onClick={(e) => handleMenuClick(e, problem)}
                       sx={{ color: '#86868b' }}
                     >
                       <MoreVertIcon />
@@ -353,13 +494,26 @@ export default function TeacherProblems() {
           </Table>
         </TableContainer>
 
+        {/* Pagination */}
+        {problemsData.totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination 
+              count={problemsData.totalPages} 
+              page={currentPage} 
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+            />
+          </Box>
+        )}
+
         {/* Action Menu */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
           PaperProps={{
-            sx: {
+            sx:{
               border: '1px solid #d2d2d7',
               borderRadius: 2,
             },
@@ -367,7 +521,7 @@ export default function TeacherProblems() {
         >
           <MenuItem
             component={Link}
-            to={`/problem/${selectedProblem}`}
+            to={`/problem/${selectedProblem?.problemId}`}
             onClick={handleMenuClose}
           >
             <VisibilityIcon sx={{ mr: 1, fontSize: 20, color: '#007AFF' }} />
@@ -375,17 +529,186 @@ export default function TeacherProblems() {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/teacher/problem/${selectedProblem}/edit`}
+            to={`/teacher/problem/${selectedProblem?.problemId}/edit`}
             onClick={handleMenuClose}
           >
             <EditIcon sx={{ mr: 1, fontSize: 20, color: '#FF9500' }} />
             Chỉnh sửa
           </MenuItem>
-          <MenuItem onClick={handleMenuClose}>
+          <Divider />
+          <MenuItem onClick={() => { setDeleteDialogOpen(true); handleMenuClose(); }}>
             <DeleteIcon sx={{ mr: 1, fontSize: 20, color: '#FF3B30' }} />
             Xóa
           </MenuItem>
         </Menu>
+
+        {/* Delete Dialog */}
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+          <DialogTitle>Xác nhận xóa</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Bạn có chắc chắn muốn xóa bài tập <strong>{selectedProblem?.title}</strong>? 
+              Hành động này không thể hoàn tác.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+              Hủy
+            </Button>
+            <Button 
+              onClick={handleDelete} 
+              color="error" 
+              variant="contained"
+              disabled={deleting}
+              startIcon={deleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+            >
+              {deleting ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Language Dialog */}
+        <Dialog 
+          open={languageDialogOpen} 
+          onClose={() => setLanguageDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LanguageIcon />
+                Quản lý Languages - {selectedProblem?.title}
+              </Box>
+              <IconButton onClick={() => setLanguageDialogOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {loadingLanguages ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Danh sách các ngôn ngữ được phép sử dụng cho bài tập này. 
+                  Bạn có thể điều chỉnh time/memory factor cho từng ngôn ngữ.
+                </Alert>
+                <List>
+                  {problemLanguages.map((pl) => (
+                    <ListItem key={pl.languageId}>
+                      <ListItemText
+                        primary={pl.languageDisplayName || pl.languageCode}
+                        secondary={`Time Factor: ${pl.timeFactor || 1.0}x | Memory: ${pl.memoryKb || 'Default'} KB | Allowed: ${pl.isAllowed ? 'Yes' : 'No'}`}
+                      />
+                      <ListItemSecondaryAction>
+                        <Chip 
+                          label={pl.isAllowed ? 'Enabled' : 'Disabled'}
+                          color={pl.isAllowed ? 'success' : 'default'}
+                          size="small"
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+                {problemLanguages.length === 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                    Chưa có ngôn ngữ nào được cấu hình
+                  </Typography>
+                )}
+              </>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setLanguageDialogOpen(false)}>Đóng</Button>
+            <Button 
+              variant="contained" 
+              component={Link}
+              to={`/teacher/problem/${selectedProblem?.problemId}/languages`}
+            >
+              Chỉnh sửa
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dataset Dialog */}
+        <Dialog 
+          open={datasetDialogOpen} 
+          onClose={() => setDatasetDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DatasetIcon />
+                Quản lý Test Cases - {selectedProblem?.title}
+              </Box>
+              <IconButton onClick={() => setDatasetDialogOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {loadingDatasets ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Datasets chứa các test case để chấm điểm bài làm của sinh viên.
+                </Alert>
+                <List>
+                  {datasets.map((ds) => (
+                    <ListItem key={ds.datasetId}>
+                      <ListItemText
+                        primary={ds.name}
+                        secondary={`Type: ${ds.kind} | Test cases: ${ds.testCases?.length || 0}`}
+                      />
+                      <ListItemSecondaryAction>
+                        <Chip 
+                          label={ds.kind}
+                          color={ds.kind === 'SAMPLE' ? 'info' : ds.kind === 'HIDDEN' ? 'warning' : 'default'}
+                          size="small"
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+                {datasets.length === 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                    Chưa có test case nào
+                  </Typography>
+                )}
+              </>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDatasetDialogOpen(false)}>Đóng</Button>
+            <Button 
+              variant="contained" 
+              component={Link}
+              to={`/teacher/problem/${selectedProblem?.problemId}/datasets`}
+            >
+              Chỉnh sửa
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
 
         {/* Empty State */}
         {filteredProblems.length === 0 && (

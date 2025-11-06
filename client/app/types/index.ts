@@ -8,13 +8,13 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  items: T[] // Backend trả về items[], không phải data[]
-  totalCount: number
-  pageNumber: number // Backend dùng pageNumber
+  data: T[] // Backend trả về data[], không phải items[]
+  page: number // Backend dùng page, không phải pageNumber
   pageSize: number
+  totalCount: number
   totalPages: number
-  hasPreviousPage: boolean
-  hasNextPage: boolean
+  hasPrevious: boolean // Backend dùng hasPrevious, không phải hasPreviousPage
+  hasNext: boolean // Backend dùng hasNext, không phải hasNextPage
 }
 
 export interface ErrorResponse {
@@ -296,14 +296,15 @@ export type TestcaseStatus =
 // DATASET & TEST CASE
 // ============================================
 
-export type DatasetKind = 'SAMPLE' | 'HIDDEN' | 'CUSTOM'
+export type DatasetKind = 'SAMPLE' | 'PUBLIC' | 'PRIVATE' | 'OFFICIAL'
 
 export interface TestCase {
   testCaseId?: string
   datasetId?: string
-  input: string
-  expectedOutput: string
-  orderIndex: number
+  inputRef: string
+  outputRef: string
+  indexNo: number
+  score?: number
 }
 
 export interface Dataset {
