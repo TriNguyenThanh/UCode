@@ -8,11 +8,13 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  data: T[]
-  page: number
-  pageSize: number
+  items: T[] // Backend trả về items[], không phải data[]
   totalCount: number
+  pageNumber: number // Backend dùng pageNumber
+  pageSize: number
   totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 export interface ErrorResponse {
