@@ -18,7 +18,9 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CodeIcon from '@mui/icons-material/Code'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import { mockAssignments, mockProblems } from '~/data/mock'
+import { getMyAssignmentDetail, getAssignment } from '~/services/assignmentService'
+import { getProblemForStudent } from '~/services/problemService'
+import type { Assignment, AssignmentUser, Problem } from '~/types'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Bài tập | UCode' },
@@ -29,28 +31,62 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
 
-  const assignment = mockAssignments.find((a) => a.id === params.id)
-  if (!assignment) throw new Response('Not Found', { status: 404 })
+  if (!params.id) throw new Response('Assignment ID is required', { status: 400 })
 
-  return { user, assignment }
+  try {
+    // Get assignment details based on user role
+    let assignment: Assignment
+    let assignmentUser: AssignmentUser | undefined
+
+    if (user.role === 'student') {
+      // For students, get their specific assignment details
+      assignmentUser = await getMyAssignmentDetail(params.id)
+      // Get the full assignment details
+      assignment = await getAssignment(assignmentUser.assignmentId)
+    } else {
+      // For teachers/admins, get the assignment directly
+      assignment = await getAssignment(params.id)
+    }
+
+    // Fetch full problem details for each problem in the assignment
+    const problems: Problem[] = []
+    if (assignment.problems && assignment.problems.length > 0) {
+      for (const problemDetail of assignment.problems) {
+        try {
+          const problem = await getProblemForStudent(problemDetail.problemId)
+          problems.push(problem)
+        } catch (error) {
+          console.error(`Failed to load problem ${problemDetail.problemId}:`, error)
+          // Continue loading other problems even if one fails
+        }
+      }
+    }
+
+    return { user, assignment, assignmentUser, problems }
+  } catch (error) {
+    console.error('Error loading assignment:', error)
+    throw new Response('Failed to load assignment', { status: 500 })
+  }
 }
 
 export default function AssignmentDetail() {
-  const { assignment } = useLoaderData<typeof clientLoader>()
+  const { assignment, assignmentUser, problems } = useLoaderData<typeof clientLoader>()
 
-  // Get actual problem objects from problem IDs
-  const problems = assignment.problems
-    .map((problemId) => mockProblems.find((p) => p.id === problemId))
-    .filter((p): p is NonNullable<typeof p> => p !== undefined)
-
-  const getDaysUntilDue = (dueDate: Date) => {
+  const getDaysUntilDue = (endTime?: string) => {
+    if (!endTime) return null
     const now = new Date()
+    const dueDate = new Date(endTime)
     const diff = dueDate.getTime() - now.getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
 
-  const daysLeft = getDaysUntilDue(assignment.dueDate)
-  const progress = 0 // TODO: Calculate from submissions
+  const daysLeft = getDaysUntilDue(assignment.endTime)
+  
+  // Calculate progress from assignmentUser data
+  const totalProblems = assignment.totalProblems || problems.length
+  const progress = assignmentUser?.score && assignment.totalPoints 
+    ? Math.round((assignmentUser.score / assignment.totalPoints) * 100)
+    : 0
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -86,7 +122,7 @@ export default function AssignmentDetail() {
         >
           <Box sx={{ p: 4 }}>
             <Chip
-              label={assignment.className}
+              label={assignment.assignmentType}
               sx={{
                 mb: 2,
                 bgcolor: '#007AFF',
@@ -97,35 +133,43 @@ export default function AssignmentDetail() {
             <Typography variant='h3' sx={{ fontWeight: 700, color: '#1d1d1f', mb: 2 }}>
               {assignment.title}
             </Typography>
-            <Typography variant='body1' sx={{ color: '#86868b', mb: 3 }}>
-              {assignment.description}
-            </Typography>
+            {assignment.description && (
+              <Typography variant='body1' sx={{ color: '#86868b', mb: 3 }}>
+                {assignment.description}
+              </Typography>
+            )}
 
             {/* Stats Row */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+              {daysLeft !== null && (
+                <Chip
+                  icon={<AccessTimeIcon />}
+                  label={daysLeft > 0 ? `Còn ${daysLeft} ngày` : 'Quá hạn'}
+                  sx={{ 
+                    bgcolor: daysLeft > 2 ? '#007AFF' : '#FF3B30',
+                    color: '#ffffff'
+                  }}
+                />
+              )}
               <Chip
-                icon={<AccessTimeIcon />}
-                label={daysLeft > 0 ? `Còn ${daysLeft} ngày` : 'Quá hạn'}
-                sx={{ 
-                  bgcolor: daysLeft > 2 ? '#007AFF' : '#FF3B30',
-                  color: '#ffffff'
-                }}
-              />
-              <Chip
-                label={`${problems.length} câu hỏi`}
+                label={`${totalProblems} câu hỏi`}
                 variant='outlined'
                 sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
               />
-              <Chip
-                label={`${assignment.totalPoints} điểm`}
-                variant='outlined'
-                sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
-              />
-              <Chip
-                label={`Hạn: ${new Date(assignment.dueDate).toLocaleString('vi-VN')}`}
-                variant='outlined'
-                sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
-              />
+              {assignment.totalPoints && (
+                <Chip
+                  label={`${assignment.totalPoints} điểm`}
+                  variant='outlined'
+                  sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
+                />
+              )}
+              {assignment.endTime && (
+                <Chip
+                  label={`Hạn: ${new Date(assignment.endTime).toLocaleString('vi-VN')}`}
+                  variant='outlined'
+                  sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
+                />
+              )}
             </Box>
 
             {/* Progress */}
@@ -135,7 +179,7 @@ export default function AssignmentDetail() {
                   Tiến độ
                 </Typography>
                 <Typography variant='body2' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
-                  {progress}% ({Math.floor((progress / 100) * problems.length)}/{problems.length})
+                  {progress}% ({Math.floor((progress / 100) * totalProblems)}/{totalProblems})
                 </Typography>
               </Box>
               <LinearProgress
@@ -164,7 +208,7 @@ export default function AssignmentDetail() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {problems.map((problem, index) => (
               <Card
-                key={problem.id}
+                key={problem.problemId}
                 elevation={0}
                 sx={{
                   bgcolor: '#ffffff',
@@ -178,7 +222,7 @@ export default function AssignmentDetail() {
                   },
                 }}
               >
-                <CardActionArea component={Link} to={`/problem/${problem.id}`}>
+                <CardActionArea component={Link} to={`/problem/${problem.problemId}`}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', gap: 3 }}>
                       {/* Number Badge */}
@@ -212,14 +256,17 @@ export default function AssignmentDetail() {
                           />
                         </Box>
 
-                        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                          {problem.description}
-                        </Typography>
+                        {/* Statement preview */}
+                        {problem.statement && (
+                          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                            {problem.statement.substring(0, 150)}
+                            {problem.statement.length > 150 ? '...' : ''}
+                          </Typography>
+                        )}
 
                         {/* Tags */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                          <Chip label={problem.category} size='small' variant='outlined' />
-                          {problem.tags.map((tag: string) => (
+                          {problem.tagNames?.map((tag: string) => (
                             <Chip
                               key={tag}
                               label={tag}
@@ -229,7 +276,7 @@ export default function AssignmentDetail() {
                             />
                           ))}
                           <Chip
-                            label={`${problem.timeLimit}s / ${problem.memoryLimit}MB`}
+                            label={`${Math.round(problem.timeLimitMs / 1000)}s / ${Math.round(problem.memoryLimitKb / 1024)}MB`}
                             size='small'
                             icon={<AccessTimeIcon />}
                           />

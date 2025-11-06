@@ -373,6 +373,13 @@ export interface AssignmentUser {
   startedAt?: string
   score?: number
   maxScore?: number
+  // Extended fields (may need to fetch separately from user service)
+  user?: {
+    userId: string
+    fullName: string
+    studentCode?: string
+    email: string
+  }
 }
 
 // ============================================

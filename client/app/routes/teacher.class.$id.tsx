@@ -1,8 +1,11 @@
-import { redirect, useLoaderData, Link } from 'react-router'
+import { useState } from 'react'
+import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.class.$id'
 import { auth } from '~/auth'
-import { mockClasses, mockAssignments } from '~/data/mock'
+import type { Class, Assignment } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
+import { getClass } from '~/services/classService'
+import { getAssignmentsByClass, deleteAssignment } from '~/services/assignmentService'
 import {
   Box,
   Container,
@@ -17,6 +20,10 @@ import {
   TableRow,
   Chip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
@@ -29,18 +36,44 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw redirect('/home')
   }
 
-  const classData = mockClasses.find((c) => c.id === params.id)
-  if (!classData) {
-    throw new Response('Lớp học không tồn tại', { status: 404 })
+  try {
+    // Fetch class data
+    const classData = await getClass(params.id)
+    
+    // Fetch assignments for this class
+    const assignments = await getAssignmentsByClass(params.id)
+
+    return { user, classData, assignments }
+  } catch (error) {
+    console.error('Failed to load class data:', error)
+    throw new Response('Không thể tải thông tin lớp học', { status: 500 })
   }
-
-  const assignments = mockAssignments.filter((a) => a.classId === params.id)
-
-  return { user, classData, assignments }
 }
 
 export default function TeacherClassDetail() {
   const { classData, assignments } = useLoaderData<typeof clientLoader>()
+  const revalidator = useRevalidator()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null)
+
+  const handleDeleteAssignment = async () => {
+    if (!assignmentToDelete) return
+    
+    try {
+      await deleteAssignment(assignmentToDelete)
+      setDeleteDialogOpen(false)
+      setAssignmentToDelete(null)
+      revalidator.revalidate()
+    } catch (error) {
+      console.error('Failed to delete assignment:', error)
+      alert('Không thể xóa bài tập')
+    }
+  }
+
+  const openDeleteDialog = (assignmentId: string) => {
+    setAssignmentToDelete(assignmentId)
+    setDeleteDialogOpen(true)
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -61,22 +94,22 @@ export default function TeacherClassDetail() {
             }}
           >
             <Typography variant="h4" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-              {classData.code.charAt(0)}
+              {classData.classCode.charAt(0)}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 0.5 }}>
-              {classData.name}
+              {classData.className}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Mã lớp: {classData.code} • Học kỳ: {classData.semester}
+              Mã lớp: {classData.classCode} • Học kỳ: {classData.semester}
             </Typography>
           </Box>
           <Button
             variant="outlined"
             startIcon={<PeopleIcon />}
             component={Link}
-            to={`/teacher/class/${classData.id}/students`}
+            to={`/teacher/class/${classData.classId}/students`}
             sx={{
               borderColor: 'secondary.main',
               color: 'secondary.main',
@@ -104,7 +137,7 @@ export default function TeacherClassDetail() {
           variant="contained"
           startIcon={<AddIcon />}
           component={Link}
-          to={`/teacher/class/${classData.id}/create-assignment`}
+          to={`/teacher/class/${classData.classId}/create-assignment`}
           sx={{
             bgcolor: 'secondary.main',
             color: 'primary.main',
@@ -135,39 +168,47 @@ export default function TeacherClassDetail() {
           <TableBody>
             {assignments.map((assignment) => {
               const submittedCount = Math.floor(Math.random() * classData.studentCount)
-              const daysUntilDue = Math.ceil(
-                (new Date(assignment.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-              )
-              const isOverdue = daysUntilDue < 0
+              const endTime = assignment.endTime ? new Date(assignment.endTime) : null
+              const daysUntilDue = endTime
+                ? Math.ceil((endTime.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                : null
+              const isOverdue = daysUntilDue !== null && daysUntilDue < 0
+              const isActive = assignment.status === 'ACTIVE'
 
               return (
-                <TableRow key={assignment.id} hover>
+                <TableRow key={assignment.assignmentId} hover>
                   <TableCell>
                     <Link
-                      to={`/teacher/assignment/${assignment.id}`}
+                      to={`/teacher/assignment/${assignment.assignmentId}`}
                       style={{ textDecoration: 'none', color: 'inherit', fontWeight: 500 }}
                     >
                       {assignment.title}
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      <Typography variant="body2">
-                        {new Date(assignment.dueDate).toLocaleDateString('vi-VN')}
+                    {endTime ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="body2">
+                          {endTime.toLocaleDateString('vi-VN')}
+                        </Typography>
+                        {isOverdue ? (
+                          <Typography variant="caption" color="error">
+                            Quá hạn {Math.abs(daysUntilDue!)} ngày
+                          </Typography>
+                        ) : daysUntilDue !== null ? (
+                          <Typography variant="caption" color="text.secondary">
+                            Còn {daysUntilDue} ngày
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Không giới hạn
                       </Typography>
-                      {isOverdue ? (
-                        <Typography variant="caption" color="error">
-                          Quá hạn {Math.abs(daysUntilDue)} ngày
-                        </Typography>
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          Còn {daysUntilDue} ngày
-                        </Typography>
-                      )}
-                    </Box>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Chip label={`${assignment.problems.length} bài`} size="small" />
+                    <Chip label={`${assignment.problems?.length || 0} bài`} size="small" />
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
@@ -178,23 +219,30 @@ export default function TeacherClassDetail() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    {isOverdue ? (
-                      <Chip label="Đã đóng" color="error" size="small" />
-                    ) : (
+                    {assignment.status === 'ACTIVE' ? (
                       <Chip label="Đang mở" color="success" size="small" />
+                    ) : assignment.status === 'ENDED' ? (
+                      <Chip label="Đã đóng" color="error" size="small" />
+                    ) : assignment.status === 'DRAFT' ? (
+                      <Chip label="Nháp" color="default" size="small" />
+                    ) : assignment.status === 'SCHEDULED' ? (
+                      <Chip label="Đã lên lịch" color="info" size="small" />
+                    ) : (
+                      <Chip label="Đã chấm" color="primary" size="small" />
                     )}
                   </TableCell>
                   <TableCell align="right">
                     <IconButton
                       size="small"
                       component={Link}
-                      to={`/teacher/assignment/${assignment.id}`}
+                      to={`/teacher/assignment/${assignment.assignmentId}`}
                       sx={{ color: 'secondary.main' }}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
+                      onClick={() => openDeleteDialog(assignment.assignmentId)}
                       sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
                     >
                       <DeleteIcon fontSize="small" />
@@ -219,7 +267,7 @@ export default function TeacherClassDetail() {
             variant="contained"
             startIcon={<AddIcon />}
             component={Link}
-            to={`/teacher/class/${classData.id}/create-assignment`}
+            to={`/teacher/class/${classData.classId}/create-assignment`}
             sx={{
               bgcolor: 'secondary.main',
               color: 'primary.main',
@@ -233,6 +281,29 @@ export default function TeacherClassDetail() {
           </Button>
         </Paper>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle sx={{ bgcolor: 'error.main', color: 'white' }}>
+          Xác nhận xóa bài tập
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography>
+            Bạn có chắc chắn muốn xóa bài tập này? 
+            Tất cả dữ liệu liên quan sẽ bị xóa và không thể khôi phục.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteAssignment}
+          >
+            Xóa bài tập
+          </Button>
+        </DialogActions>
+      </Dialog>
       </Container>
     </Box>
   )

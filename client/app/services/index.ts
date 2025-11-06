@@ -1,5 +1,6 @@
 // Export all services
 export * from './assignmentService'
+export * from './classService'
 export * from './datasetService'
 export * from './languageService'
 export * from './submissionService'
