@@ -99,12 +99,23 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             
             # ✅ CHECK SYNTAX trước khi chạy testcases
             try:
-                py_compile.compile(code_file, doraise=True)
+                # Compile để check syntax, sau đó XÓA file .pyc để tránh cache
+                compiled_file = py_compile.compile(code_file, doraise=True)
+                # Xóa file bytecode để tránh cache giữa các lần chạy
+                if compiled_file and os.path.exists(compiled_file):
+                    os.remove(compiled_file)
+                # Xóa thư mục __pycache__ nếu có
+                pycache_dir = f"{box_path}/__pycache__"
+                if os.path.exists(pycache_dir):
+                    import shutil
+                    shutil.rmtree(pycache_dir)
                 print(f"[DEBUG] Python syntax check passed")
             except py_compile.PyCompileError as e:
                 # Parse error message để lấy thông tin chi tiết
                 error_msg = str(e)
                 print(f"[ERROR] Python syntax error: {error_msg}")
+                # ⚠️ CLEANUP trước khi return!
+                subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
                 return _error_result(
                     testcases, 
                     error_code=TESTCASE_STATUS.CompilationError, 
@@ -114,6 +125,8 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
                 # Direct syntax error
                 error_msg = f"Line {e.lineno}: {e.msg}\n{e.text}" if e.text else f"Line {e.lineno}: {e.msg}"
                 print(f"[ERROR] Python syntax error: {error_msg}")
+                # ⚠️ CLEANUP trước khi return!
+                subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
                 return _error_result(
                     testcases,
                     error_code=TESTCASE_STATUS.CompilationError,
@@ -138,6 +151,8 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
                 with open(code_file, "w") as f:
                     f.write(code)
             except Exception as e:
+                # ⚠️ CLEANUP trước khi return!
+                subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
                 return _error_result(testcases, error_code=TESTCASE_STATUS.InternalError, error_msg=f"Failed to write C++ source: {e}")
 
             # Compile
@@ -154,6 +169,8 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             if compile_result.returncode != 0:
                 stderr = _read_file(compile_error_file) or compile_result.stderr
                 print(f"[ERROR] C++ compilation failed:\n{stderr}")
+                # ⚠️ CLEANUP trước khi return!
+                subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
                 return _error_result(
                     testcases, 
                     error_code=TESTCASE_STATUS.CompilationError, 
@@ -165,6 +182,8 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             print(f"[DEBUG] Compilation successful")
 
         else:
+            # ⚠️ CLEANUP trước khi return!
+            subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
             return _error_result(testcases, error_code=TESTCASE_STATUS.InternalError, error_msg=f"Unsupported language: {language}")
 
         # Nếu compile thất bại → tất cả testcase đều lỗi compile
@@ -185,6 +204,11 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
             input_file = f"{box_path}/input.txt"
             output_file = f"{box_path}/output.txt"
             error_file = f"{box_path}/error.txt"
+
+            # ⚠️ XÓA các file cũ từ testcase trước để tránh cache/contamination
+            for cleanup_file in [input_file, output_file, error_file, meta_file]:
+                if os.path.exists(cleanup_file):
+                    os.remove(cleanup_file)
 
             # Tạo file input
             with open(input_file, "w", encoding="utf-8") as f:
@@ -285,6 +309,12 @@ def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=No
 
     except Exception as e:
         print(f"[ERROR] Critical error: {e}")
+        # ⚠️ CLEANUP ngay lập tức khi có critical error
+        try:
+            subprocess.run(["isolate", "--box-id", str(box_id), "--cleanup"], check=False, timeout=5, capture_output=True)
+            print(f"[DEBUG] Emergency cleanup box {box_id} after critical error")
+        except:
+            pass
         return _error_result(testcases, error_code=TESTCASE_STATUS.InternalError, error_msg=f"Critical error: {e}")
     finally:
         # Cleanup
