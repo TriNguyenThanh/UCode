@@ -251,7 +251,7 @@ export default function ProblemDetail() {
                 Mô tả
               </Typography>
               <Typography variant='body1' sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-                {problem.description}
+                {problem.statement}
               </Typography>
 
               {/* Constraints */}
@@ -262,13 +262,13 @@ export default function ProblemDetail() {
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   <Chip
                     icon={<AccessTimeIcon />}
-                    label={`Time Limit: ${problem.timeLimit}s`}
+                    label={`Time Limit: ${problem.timeLimitMs}s`}
                     variant='outlined'
                     color='primary'
                   />
                   <Chip
                     icon={<MemoryIcon />}
-                    label={`Memory: ${problem.memoryLimit}MB`}
+                    label={`Memory: ${problem.memoryLimitKb}MB`}
                     variant='outlined'
                     color='primary'
                   />
