@@ -4,7 +4,7 @@ Xử lý các message từ RabbitMQ queue
 """
 import json
 import os
-from app.executor_isolate import execute_in_sandbox, TESTCASE_STATUS
+from executor_isolate import execute_in_sandbox, TESTCASE_STATUS
 
 MAX_RETRY_COUNT = int(os.getenv("MAX_RETRY_COUNT", "3"))  # Số lần retry tối đa
 

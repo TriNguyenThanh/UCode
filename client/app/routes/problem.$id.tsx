@@ -169,7 +169,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function ProblemDetail() {
-  const { problem, languages, submissions } = useLoaderData<typeof clientLoader>()
+  const { problem, languages, submissions: initialSubmissions } = useLoaderData<typeof clientLoader>()
   const [tabValue, setTabValue] = React.useState(0)
 
   // Find first available language or default to cpp
@@ -179,6 +179,9 @@ export default function ProblemDetail() {
   const [output, setOutput] = React.useState('')
   const [isRunning, setIsRunning] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [submissions, setSubmissions] = React.useState<Submission[]>(initialSubmissions)
+  const [hasRunSuccessfully, setHasRunSuccessfully] = React.useState(false)
+  const [lastRunCode, setLastRunCode] = React.useState('')
 
   // Initialize code template when language or problem changes
   React.useEffect(() => {
@@ -194,6 +197,8 @@ export default function ProblemDetail() {
       setSelectedLanguage(lang)
       setCode(getCodeTemplate(lang.code, problem.problemLanguages))
       setOutput('')
+      setHasRunSuccessfully(false) // Reset khi đổi ngôn ngữ
+      setLastRunCode('')
     }
   }
 
@@ -202,7 +207,91 @@ export default function ProblemDetail() {
     if (selectedLanguage) {
       setCode(getCodeTemplate(selectedLanguage.code, problem.problemLanguages))
       setOutput('')
+      setHasRunSuccessfully(false) // Reset khi reset code
+      setLastRunCode('')
     }
+  }
+
+  // Function to refresh submissions list
+  const refreshSubmissions = async () => {
+    try {
+      const newSubmissions = await getSubmissionsByProblem(problem.problemId, 1, 10)
+      setSubmissions(newSubmissions)
+      // Chuyển sang tab "Nộp bài" để xem kết quả
+      setTabValue(2)
+    } catch (error) {
+      console.error('Failed to refresh submissions:', error)
+    }
+  }
+
+  // Polling function to get submission result
+  const pollSubmissionResult = async (submissionId: string, sourceCode: string, isSubmit: boolean = false) => {
+    const maxAttempts = 30 // Max 30 attempts (30 seconds with 1s interval)
+    let attempts = 0
+    
+    const poll = async (): Promise<void> => {
+      try {
+        const submission = await import('~/services/submissionService').then(m => m.getSubmission(submissionId))
+        
+        // Check if submission is still processing
+        const processingStatuses: string[] = ['Pending', 'Running']
+        if (processingStatuses.includes(submission.status)) {
+          attempts++
+          
+          if (attempts >= maxAttempts) {
+            setOutput(prev => prev + '\n\n⏱️ Timeout: Quá trình chấm điểm mất nhiều thời gian. Vui lòng kiểm tra lại sau.')
+            return
+          }
+          
+          // Update status
+          setOutput(prev => {
+            const lines = prev.split('\n')
+            return lines.slice(0, -1).join('\n') + `\nĐang xử lý... (${attempts}s)`
+          })
+          
+          // Continue polling after 1 second
+          setTimeout(() => poll(), 2000)
+        } else {
+          // Submission completed
+          let resultText = isSubmit ? '🎉 Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
+          resultText += `Submission ID: ${submission.submissionId}\n`
+          resultText += `Status: ${submission.status}\n`
+          resultText += `Thời gian: ${submission.totalTime}ms\n`
+          resultText += `Bộ nhớ: ${submission.totalMemory}KB\n`
+          
+          if (submission.status === 'Passed') {
+            resultText += `\n✅ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
+            // Đánh dấu run thành công nếu không phải submit
+            if (!isSubmit) {
+              setHasRunSuccessfully(true)
+              setLastRunCode(sourceCode)
+            }
+          } else {
+            resultText += `\n❌ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
+            if (submission.errorMessage) {
+              resultText += `\n\nLỗi: ${submission.errorMessage}`
+            }
+            // Reset flag nếu run thất bại
+            if (!isSubmit) {
+              setHasRunSuccessfully(false)
+              setLastRunCode('')
+            }
+          }
+          
+          setOutput(resultText)
+          
+          // Reload submissions if it's a submit
+          if (isSubmit) {
+            await refreshSubmissions()
+          }
+        }
+      } catch (error: any) {
+        setOutput(prev => prev + `\n\n❌ Lỗi khi lấy kết quả: ${error.message}`)
+      }
+    }
+    
+    // Start polling
+    await poll()
   }
 
   // Handle run code (test without submitting)
@@ -217,24 +306,31 @@ export default function ProblemDetail() {
       return
     }
 
+    // Reset flag khi chạy code mới (code khác với lần run trước)
+    if (code !== lastRunCode) {
+      setHasRunSuccessfully(false)
+    }
+
     setIsRunning(true)
     setOutput('⏳ Đang biên dịch và chạy code...\n')
 
     try {
       const result = await runCode({
         problemId: problem.problemId,
-        languageId: selectedLanguage.languageId,
-        sourceCode: code
+        language: selectedLanguage.code,
+        sourceCode: code,
       })
 
-      setOutput(
-        `✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý...`
-      )
-
-      // Có thể polling để lấy kết quả
-      // TODO: Implement polling getSubmission(result.submissionId) để lấy kết quả chi tiết
+      setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý... (0s)`)
+      
+      // Start polling for result
+      await pollSubmissionResult(result.submissionId, code, false)
+      
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể chạy code'}`)
+      // Reset flag khi có lỗi
+      setHasRunSuccessfully(false)
+      setLastRunCode('')
     } finally {
       setIsRunning(false)
     }
@@ -252,22 +348,33 @@ export default function ProblemDetail() {
       return
     }
 
+    // Kiểm tra xem đã run code thành công chưa
+    if (!hasRunSuccessfully) {
+      setOutput('❌ Vui lòng chạy thử code thành công trước khi nộp bài!')
+      return
+    }
+
+    // Kiểm tra xem code có thay đổi sau lần run thành công cuối không
+    if (code !== lastRunCode) {
+      setOutput('⚠️ Code đã thay đổi sau lần chạy thử cuối!\n\nVui lòng chạy thử lại trước khi nộp bài.')
+      return
+    }
+
     setIsSubmitting(true)
     setOutput('📤 Đang nộp bài...\n')
 
     try {
       const result = await submitCode({
         problemId: problem.problemId,
-        languageId: selectedLanguage.languageId,
-        sourceCode: code
+        language: selectedLanguage.code,
+        sourceCode: code,
       })
 
-      setOutput(
-        `🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm...`
-      )
-
-      // Reload submissions
-      window.location.reload()
+      setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm... (0s)`)
+      
+      // Start polling for result
+      await pollSubmissionResult(result.submissionId, code, true)
+      
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể nộp bài'}`)
     } finally {
@@ -448,11 +555,11 @@ export default function ProblemDetail() {
                           <TableCell>{new Date(sub.submittedAt).toLocaleString('vi-VN')}</TableCell>
                           <TableCell>{sub.language}</TableCell>
                           <TableCell>
-                            <Chip
-                              label={sub.status}
-                              size='small'
-                              color={sub.status === 'Accepted' ? 'success' : 'error'}
-                              icon={sub.status === 'Accepted' ? <CheckCircleIcon /> : <CancelIcon />}
+                            <Chip 
+                              label={sub.status} 
+                              size="small"
+                              color={sub.status === 'Passed' ? 'success' : 'error'}
+                              icon={sub.status === 'Passed' ? <CheckCircleIcon /> : <CancelIcon />}
                             />
                           </TableCell>
                           <TableCell align='right'>{sub.totalTime}</TableCell>

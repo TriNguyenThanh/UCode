@@ -116,7 +116,7 @@ public class SubmissionRepository : ISubmissionRepository
         Console.WriteLine($"[x] Retrieving best submissions for problem {problemId}, page {pageNumber}, size {pageSize}");
         return await _context.BestSubmissions
             .AsNoTracking()
-            .Where(s => s.ProblemId == problemId && s.AssignmentUserId == assignmentId)
+            .Where(s => s.ProblemId == problemId && s.AssignmentId == assignmentId)
             .OrderByDescending(s => s.Score)
             .ThenBy(s => s.UpdatedAt)
             .Skip((pageNumber - 1) * pageSize)
@@ -136,7 +136,7 @@ public class SubmissionRepository : ISubmissionRepository
     {
         return _context.Submissions
             .AsNoTracking()
-            .Where(s => s.AssignmentUserId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
             .CountAsync();
     }
 

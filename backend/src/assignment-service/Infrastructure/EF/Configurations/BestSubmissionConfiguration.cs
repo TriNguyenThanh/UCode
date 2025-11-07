@@ -16,7 +16,8 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         
         // Map tên cột từ PascalCase trong entity sang PascalCase trong database
         builder.Property(bs => bs.BestSubmissionId).HasColumnName("BestSubmissionId");
-        builder.Property(bs => bs.AssignmentUserId).HasColumnName("AssignmentUserId");
+        builder.Property(bs => bs.AssignmentId).HasColumnName("AssignmentId");
+        builder.Property(bs => bs.UserId).HasColumnName("UserId");
         builder.Property(bs => bs.ProblemId).HasColumnName("ProblemId");
         builder.Property(bs => bs.SubmissionId).HasColumnName("SubmissionId");
         builder.Property(bs => bs.Score).HasColumnName("Score");
