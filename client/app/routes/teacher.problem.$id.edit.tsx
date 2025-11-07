@@ -860,373 +860,385 @@ export default function EditProblem() {
 
           {/* Tab 1: Thông tin cơ bản */}
           <TabPanel value={tabValue} index={0}>
-            <Box sx={{ px: 3 }}>
-              <TextField
-                fullWidth
-                required
-                label="Tên bài toán"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="VD: Two Sum, Binary Search, Merge Sort..."
-                sx={{ mb: 3 }}
-              />
+            {tabValue === 0 && (
+              <Box sx={{ px: 3 }}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Tên bài toán"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="VD: Two Sum, Binary Search, Merge Sort..."
+                  sx={{ mb: 3 }}
+                />
 
-              <TextField
-                fullWidth
-                label="Code (Mã bài toán)"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="VD: two-sum, binary-search..."
-                helperText="Code dùng để định danh bài toán, nếu để trống sẽ tự động tạo từ title"
-                sx={{ mb: 3 }}
-              />
+                <TextField
+                  fullWidth
+                  label="Code (Mã bài toán)"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="VD: two-sum, binary-search..."
+                  helperText="Code dùng để định danh bài toán, nếu để trống sẽ tự động tạo từ title"
+                  sx={{ mb: 3 }}
+                />
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 3 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Độ khó</InputLabel>
-                  <Select
-                    value={difficulty}
-                    onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                    label="Độ khó"
-                  >
-                    <MenuItem value="EASY">Easy</MenuItem>
-                    <MenuItem value="MEDIUM">Medium</MenuItem>
-                    <MenuItem value="HARD">Hard</MenuItem>
-                  </Select>
-                </FormControl>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Độ khó</InputLabel>
+                    <Select
+                      value={difficulty}
+                      onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+                      label="Độ khó"
+                    >
+                      <MenuItem value="EASY">Easy</MenuItem>
+                      <MenuItem value="MEDIUM">Medium</MenuItem>
+                      <MenuItem value="HARD">Hard</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                <FormControl fullWidth>
-                  <InputLabel>Trạng thái</InputLabel>
-                  <Select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as ProblemStatus)}
-                    label="Trạng thái"
-                  >
-                    <MenuItem value="DRAFT">Draft</MenuItem>
-                    <MenuItem value="PUBLISHED">Published</MenuItem>
-                    <MenuItem value="ARCHIVED">Archived</MenuItem>
-                  </Select>
-                </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Trạng thái</InputLabel>
+                    <Select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as ProblemStatus)}
+                      label="Trạng thái"
+                    >
+                      <MenuItem value="DRAFT">Draft</MenuItem>
+                      <MenuItem value="PUBLISHED">Published</MenuItem>
+                      <MenuItem value="ARCHIVED">Archived</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                <FormControl fullWidth>
-                  <InputLabel>Hiển thị</InputLabel>
-                  <Select
-                    value={visibility}
-                    onChange={(e) => setVisibility(e.target.value as Visibility)}
-                    label="Hiển thị"
-                  >
-                    <MenuItem value="PRIVATE">Private</MenuItem>
-                    <MenuItem value="PUBLIC">Public</MenuItem>
-                  </Select>
-                </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Hiển thị</InputLabel>
+                    <Select
+                      value={visibility}
+                      onChange={(e) => setVisibility(e.target.value as Visibility)}
+                      label="Hiển thị"
+                    >
+                      <MenuItem value="PRIVATE">Private</MenuItem>
+                      <MenuItem value="PUBLIC">Public</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
-            </Box>
+            )}
           </TabPanel>
 
           {/* Tab 2: Nội dung bài toán */}
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ px: 3 }}>
-              <MarkdownEditor
-                label="Đề bài"
-                value={statement}
-                onChange={setStatement}
-                placeholder="Mô tả chi tiết về bài toán..."
-                rows={10}
-                helperText="Hỗ trợ Markdown. Sử dụng toolbar để định dạng văn bản, thêm hình ảnh, code, v.v."
-              />
+            {tabValue === 1 && (
+              <Box sx={{ px: 3 }}>
+                <MarkdownEditor
+                  label="Đề bài"
+                  value={statement}
+                  onChange={setStatement}
+                  placeholder="Mô tả chi tiết về bài toán..."
+                  rows={10}
+                  helperText="Hỗ trợ Markdown. Sử dụng toolbar để định dạng văn bản, thêm hình ảnh, code, v.v."
+                />
 
-              <Divider sx={{ my: 4 }} />
+                <Divider sx={{ my: 4 }} />
 
-              <MarkdownEditor
-                label="Input Format"
-                value={inputFormat}
-                onChange={setInputFormat}
-                placeholder="Mô tả định dạng input..."
-                rows={4}
-                helperText="Mô tả cách thức dữ liệu đầu vào được cung cấp"
-              />
+                <MarkdownEditor
+                  label="Input Format"
+                  value={inputFormat}
+                  onChange={setInputFormat}
+                  placeholder="Mô tả định dạng input..."
+                  rows={4}
+                  helperText="Mô tả cách thức dữ liệu đầu vào được cung cấp"
+                />
 
-              <Divider sx={{ my: 4 }} />
+                <Divider sx={{ my: 4 }} />
 
-              <MarkdownEditor
-                label="Output Format"
-                value={outputFormat}
-                onChange={setOutputFormat}
-                placeholder="Mô tả định dạng output..."
-                rows={4}
-                helperText="Mô tả cách thức dữ liệu đầu ra cần được trình bày"
-              />
+                <MarkdownEditor
+                  label="Output Format"
+                  value={outputFormat}
+                  onChange={setOutputFormat}
+                  placeholder="Mô tả định dạng output..."
+                  rows={4}
+                  helperText="Mô tả cách thức dữ liệu đầu ra cần được trình bày"
+                />
 
-              <Divider sx={{ my: 4 }} />
+                <Divider sx={{ my: 4 }} />
 
-              <MarkdownEditor
-                label="Constraints (Ràng buộc)"
-                value={constraints}
-                onChange={setConstraints}
-                placeholder="VD: 1 ≤ n ≤ 10^5..."
-                rows={6}
-                helperText="Các ràng buộc về giới hạn dữ liệu đầu vào"
-              />
+                <MarkdownEditor
+                  label="Constraints (Ràng buộc)"
+                  value={constraints}
+                  onChange={setConstraints}
+                  placeholder="VD: 1 ≤ n ≤ 10^5..."
+                  rows={6}
+                  helperText="Các ràng buộc về giới hạn dữ liệu đầu vào"
+                />
 
-              <Divider sx={{ my: 4 }} />
+                <Divider sx={{ my: 4 }} />
 
-              <MarkdownEditor
-                label="Solution (Lời giải)"
-                value={solution}
-                onChange={setSolution}
-                placeholder="Hướng dẫn giải chi tiết..."
-                rows={8}
-                helperText="Lời giải chi tiết, thuật toán, và cách tiếp cận để giải bài toán"
-              />
-            </Box>
+                <MarkdownEditor
+                  label="Solution (Lời giải)"
+                  value={solution}
+                  onChange={setSolution}
+                  placeholder="Hướng dẫn giải chi tiết..."
+                  rows={8}
+                  helperText="Lời giải chi tiết, thuật toán, và cách tiếp cận để giải bài toán"
+                />
+              </Box>
+            )}
           </TabPanel>
 
           {/* Tab 3: Giới hạn & Cấu hình */}
           <TabPanel value={tabValue} index={2}>
-            <Box sx={{ px: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
-                Giới hạn tài nguyên
-              </Typography>
-              
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Time Limit (ms)"
-                  value={timeLimitMs}
-                  onChange={(e) => setTimeLimitMs(Number(e.target.value))}
-                  InputProps={{
-                    inputProps: { min: 100, max: 10000, step: 100 },
-                    endAdornment: <InputAdornment position="end">ms</InputAdornment>,
-                  }}
-                />
+            {tabValue === 2 && (
+              <Box sx={{ px: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1d1d1f' }}>
+                  Giới hạn tài nguyên
+                </Typography>
                 
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Memory Limit (KB)"
-                  value={memoryLimitKb}
-                  onChange={(e) => setMemoryLimitKb(Number(e.target.value))}
-                  InputProps={{
-                    inputProps: { min: 65536, max: 524288, step: 65536 },
-                    endAdornment: <InputAdornment position="end">KB</InputAdornment>,
-                  }}
-                />
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Time Limit (ms)"
+                    value={timeLimitMs}
+                    onChange={(e) => setTimeLimitMs(Number(e.target.value))}
+                    InputProps={{
+                      inputProps: { min: 100, max: 10000, step: 100 },
+                      endAdornment: <InputAdornment position="end">ms</InputAdornment>,
+                    }}
+                  />
+                  
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Memory Limit (KB)"
+                    value={memoryLimitKb}
+                    onChange={(e) => setMemoryLimitKb(Number(e.target.value))}
+                    InputProps={{
+                      inputProps: { min: 65536, max: 524288, step: 65536 },
+                      endAdornment: <InputAdornment position="end">KB</InputAdornment>,
+                    }}
+                  />
+                </Box>
+
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <InputLabel>I/O Mode</InputLabel>
+                  <Select
+                    value={ioMode}
+                    onChange={(e) => setIoMode(e.target.value as IoMode)}
+                    label="I/O Mode"
+                  >
+                    <MenuItem value="STDIO">Standard I/O</MenuItem>
+                    <MenuItem value="FILE">File I/O</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <Alert severity="info">
+                  Time limit áp dụng cho mỗi test case. Memory limit áp dụng cho toàn bộ quá trình chạy.
+                </Alert>
               </Box>
-
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>I/O Mode</InputLabel>
-                <Select
-                  value={ioMode}
-                  onChange={(e) => setIoMode(e.target.value as IoMode)}
-                  label="I/O Mode"
-                >
-                  <MenuItem value="STDIO">Standard I/O</MenuItem>
-                  <MenuItem value="FILE">File I/O</MenuItem>
-                </Select>
-              </FormControl>
-
-              <Alert severity="info">
-                Time limit áp dụng cho mỗi test case. Memory limit áp dụng cho toàn bộ quá trình chạy.
-              </Alert>
-            </Box>
+            )}
           </TabPanel>
 
           {/* Tab 4: Ngôn ngữ */}
           <TabPanel value={tabValue} index={3}>
-            <Box sx={{ px: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
-                  Ngôn ngữ lập trình được phép
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<CodeIcon />}
-                  onClick={() => handleOpenLanguageDialog()}
-                  sx={{
-                    bgcolor: '#0071e3',
-                    '&:hover': { bgcolor: '#0077ed' },
-                  }}
-                >
-                  Quản lý ngôn ngữ
-                </Button>
-              </Box>
+            {tabValue === 3 && (
+              <Box sx={{ px: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                    Ngôn ngữ lập trình được phép
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<CodeIcon />}
+                    onClick={() => handleOpenLanguageDialog()}
+                    sx={{
+                      bgcolor: '#0071e3',
+                      '&:hover': { bgcolor: '#0077ed' },
+                    }}
+                  >
+                    Quản lý ngôn ngữ
+                  </Button>
+                </Box>
 
-              {problemLanguages.length === 0 ? (
-                <Alert severity="warning">
-                  Chưa có ngôn ngữ nào được kích hoạt. Nhấn "Quản lý ngôn ngữ" để thêm.
-                </Alert>
-              ) : (
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Ngôn ngữ</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Time Factor</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Memory (KB)</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }} align="right">Thao tác</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {problemLanguages.map((pl) => (
-                        <TableRow key={pl.languageId} hover>
-                          <TableCell>{pl.languageDisplayName}</TableCell>
-                          <TableCell>
-                            <Chip label={pl.languageCode} size="small" />
-                          </TableCell>
-                          <TableCell>{pl.timeFactor?.toFixed(2) || '1.00'}x</TableCell>
-                          <TableCell>{pl.memoryKb?.toLocaleString() || 'Default'}</TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => handleOpenLanguageDetailDialog(pl.languageId)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </TableCell>
+                {problemLanguages.length === 0 ? (
+                  <Alert severity="warning">
+                    Chưa có ngôn ngữ nào được kích hoạt. Nhấn "Quản lý ngôn ngữ" để thêm.
+                  </Alert>
+                ) : (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Ngôn ngữ</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Time Factor</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Memory (KB)</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }} align="right">Thao tác</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </Box>
+                      </TableHead>
+                      <TableBody>
+                        {problemLanguages.map((pl) => (
+                          <TableRow key={pl.languageId} hover>
+                            <TableCell>{pl.languageDisplayName}</TableCell>
+                            <TableCell>
+                              <Chip label={pl.languageCode} size="small" />
+                            </TableCell>
+                            <TableCell>{pl.timeFactor?.toFixed(2) || '1.00'}x</TableCell>
+                            <TableCell>{pl.memoryKb?.toLocaleString() || 'Default'}</TableCell>
+                            <TableCell align="right">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleOpenLanguageDetailDialog(pl.languageId)}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Box>
+            )}
           </TabPanel>
 
           {/* Tab 5: Test Cases */}
           <TabPanel value={tabValue} index={4}>
-            <Box sx={{ px: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
-                  Datasets & Test Cases
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenDatasetDialog()}
-                  sx={{
-                    bgcolor: '#0071e3',
-                    '&:hover': { bgcolor: '#0077ed' },
-                  }}
-                >
-                  Thêm Dataset
-                </Button>
-              </Box>
-
-              {datasets.length === 0 ? (
-                <Alert severity="warning">
-                  Chưa có dataset nào. Nhấn "Thêm Dataset" để tạo test cases.
-                </Alert>
-              ) : (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-                  {datasets.map((dataset) => (
-                    <Card
-                      key={dataset.datasetId}
-                      variant="outlined"
-                      sx={{
-                        borderColor: '#d2d2d7',
-                        '&:hover': {
-                          borderColor: '#0071e3',
-                          boxShadow: '0 2px 8px rgba(0,113,227,0.1)',
-                        },
-                      }}
-                    >
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                          <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                              {dataset.name}
-                            </Typography>
-                            <Chip 
-                              label={getDatasetKindLabel(dataset.kind)} 
-                              size="small"
-                              color={getDatasetKindColor(dataset.kind) as any}
-                            />
-                          </Box>
-                        </Box>
-                        
-                        <Typography variant="body2" color="text.secondary">
-                          <PlaylistAddCheckIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
-                          {dataset.testCases.length} test case(s)
-                        </Typography>
-                      </CardContent>
-                      <CardActions>
-                        <Button 
-                          size="small" 
-                          startIcon={<EditIcon />}
-                          onClick={() => handleOpenDatasetDialog(dataset)}
-                        >
-                          Sửa
-                        </Button>
-                        <Button 
-                          size="small" 
-                          color="error"
-                          startIcon={<DeleteIcon />}
-                          onClick={() => handleDeleteDataset(dataset.datasetId!)}
-                        >
-                          Xóa
-                        </Button>
-                      </CardActions>
-                    </Card>
-                  ))}
+            {tabValue === 4 && (
+              <Box sx={{ px: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                    Datasets & Test Cases
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenDatasetDialog()}
+                    sx={{
+                      bgcolor: '#0071e3',
+                      '&:hover': { bgcolor: '#0077ed' },
+                    }}
+                  >
+                    Thêm Dataset
+                  </Button>
                 </Box>
-              )}
-            </Box>
+
+                {datasets.length === 0 ? (
+                  <Alert severity="warning">
+                    Chưa có dataset nào. Nhấn "Thêm Dataset" để tạo test cases.
+                  </Alert>
+                ) : (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
+                    {datasets.map((dataset) => (
+                      <Card
+                        key={dataset.datasetId}
+                        variant="outlined"
+                        sx={{
+                          borderColor: '#d2d2d7',
+                          '&:hover': {
+                            borderColor: '#0071e3',
+                            boxShadow: '0 2px 8px rgba(0,113,227,0.1)',
+                          },
+                        }}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                            <Box>
+                              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                {dataset.name}
+                              </Typography>
+                              <Chip 
+                                label={getDatasetKindLabel(dataset.kind)} 
+                                size="small"
+                                color={getDatasetKindColor(dataset.kind) as any}
+                              />
+                            </Box>
+                          </Box>
+                          
+                          <Typography variant="body2" color="text.secondary">
+                            <PlaylistAddCheckIcon sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
+                            {dataset.testCases.length} test case(s)
+                          </Typography>
+                        </CardContent>
+                        <CardActions>
+                          <Button 
+                            size="small" 
+                            startIcon={<EditIcon />}
+                            onClick={() => handleOpenDatasetDialog(dataset)}
+                          >
+                            Sửa
+                          </Button>
+                          <Button 
+                            size="small" 
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteDataset(dataset.datasetId!)}
+                          >
+                            Xóa
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
           </TabPanel>
 
           {/* Tab 6: Tags */}
           <TabPanel value={tabValue} index={5}>
-            <Box sx={{ px: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
-                  Tags ({currentTags.length})
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => setTagDialogOpen(true)}
-                  sx={{
-                    bgcolor: '#007AFF',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': {
-                      bgcolor: '#0051D5',
-                    },
-                  }}
-                >
-                  Quản lý Tags
-                </Button>
-              </Box>
-
-              {currentTags.length === 0 ? (
-                <Alert severity="info">
-                  Chưa có tag nào được gán cho bài toán này. Nhấn "Quản lý Tags" để thêm tags.
-                </Alert>
-              ) : (
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {currentTags.map((tagName) => (
-                    <Chip
-                      key={tagName}
-                      label={tagName}
-                      onDelete={() => handleRemoveTagFromChip(tagName)}
-                      sx={{
-                        bgcolor: '#007AFF',
-                        color: '#ffffff',
-                        fontWeight: 600,
-                        '& .MuiChip-deleteIcon': {
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          '&:hover': {
-                            color: '#ffffff',
-                          },
-                        },
-                      }}
-                    />
-                  ))}
+            {tabValue === 5 && (
+              <Box sx={{ px: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                    Tags ({currentTags.length})
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setTagDialogOpen(true)}
+                    sx={{
+                      bgcolor: '#007AFF',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: '#0051D5',
+                      },
+                    }}
+                  >
+                    Quản lý Tags
+                  </Button>
                 </Box>
-              )}
-            </Box>
+
+                {currentTags.length === 0 ? (
+                  <Alert severity="info">
+                    Chưa có tag nào được gán cho bài toán này. Nhấn "Quản lý Tags" để thêm tags.
+                  </Alert>
+                ) : (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {currentTags.map((tagName) => (
+                      <Chip
+                        key={tagName}
+                        label={tagName}
+                        onDelete={() => handleRemoveTagFromChip(tagName)}
+                        sx={{
+                          bgcolor: '#007AFF',
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          '& .MuiChip-deleteIcon': {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            '&:hover': {
+                              color: '#ffffff',
+                            },
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
           </TabPanel>
         </Paper>
 

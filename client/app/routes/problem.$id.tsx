@@ -22,7 +22,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
+  TableRow
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
@@ -41,15 +41,15 @@ import type { Problem, Language, Submission } from '~/types'
 // Function to get code template based on language code
 function getCodeTemplate(languageCode: string, problemLanguages?: Problem['problemLanguages']): string {
   // Kiểm tra xem problem có template riêng cho ngôn ngữ này không
-  const problemLanguage = problemLanguages?.find(pl => pl.languageCode === languageCode)
-  
+  const problemLanguage = problemLanguages?.find((pl) => pl.languageCode === languageCode)
+
   if (problemLanguage) {
     // Nối head + body + tail nếu có
     const parts = []
     if (problemLanguage.head) parts.push(problemLanguage.head)
     if (problemLanguage.body) parts.push(problemLanguage.body)
     if (problemLanguage.tail) parts.push(problemLanguage.tail)
-    
+
     if (parts.length > 0) {
       return parts.join('\n\n')
     }
@@ -109,14 +109,14 @@ func main() {
 }`,
     rust: `fn main() {
     // Your code here
-}`,
+}`
   }
   return templates[languageCode] || '// Your code here'
 }
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giải bài tập | UCode' },
-  { name: 'description', content: 'Coding interface để giải bài tập.' },
+  { name: 'description', content: 'Coding interface để giải bài tập.' }
 ]
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -171,7 +171,7 @@ function TabPanel(props: TabPanelProps) {
 export default function ProblemDetail() {
   const { problem, languages, submissions } = useLoaderData<typeof clientLoader>()
   const [tabValue, setTabValue] = React.useState(0)
-  
+
   // Find first available language or default to cpp
   const defaultLanguage = languages.length > 0 ? languages[0] : null
   const [selectedLanguage, setSelectedLanguage] = React.useState<Language | null>(defaultLanguage)
@@ -189,7 +189,7 @@ export default function ProblemDetail() {
 
   // Handle language change
   const handleLanguageChange = (languageId: string) => {
-    const lang = languages.find(l => l.languageId === languageId)
+    const lang = languages.find((l) => l.languageId === languageId)
     if (lang) {
       setSelectedLanguage(lang)
       setCode(getCodeTemplate(lang.code, problem.problemLanguages))
@@ -219,24 +219,24 @@ export default function ProblemDetail() {
 
     setIsRunning(true)
     setOutput('⏳ Đang biên dịch và chạy code...\n')
-    
+
     try {
       const result = await runCode({
         problemId: problem.problemId,
         languageId: selectedLanguage.languageId,
-        sourceCode: code,
+        sourceCode: code
       })
 
-      setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý...`)
-      
+      setOutput(
+        `✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý...`
+      )
+
       // Có thể polling để lấy kết quả
       // TODO: Implement polling getSubmission(result.submissionId) để lấy kết quả chi tiết
-      
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể chạy code'}`)
     } finally {
       setIsRunning(false)
-    }
     }
   }
 
@@ -254,19 +254,20 @@ export default function ProblemDetail() {
 
     setIsSubmitting(true)
     setOutput('📤 Đang nộp bài...\n')
-    
+
     try {
       const result = await submitCode({
         problemId: problem.problemId,
         languageId: selectedLanguage.languageId,
-        sourceCode: code,
+        sourceCode: code
       })
 
-      setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm...`)
-      
+      setOutput(
+        `🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm...`
+      )
+
       // Reload submissions
       window.location.reload()
-      
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể nộp bài'}`)
     } finally {
@@ -300,7 +301,7 @@ export default function ProblemDetail() {
           borderBottom: '2px solid',
           borderColor: 'primary.main',
           bgcolor: 'secondary.main',
-          color: 'white',
+          color: 'white'
         }}
       >
         <Box sx={{ px: 3, py: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -324,7 +325,7 @@ export default function ProblemDetail() {
             borderColor: 'divider',
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: 'white',
+            bgcolor: 'white'
           }}
         >
           <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -430,15 +431,15 @@ export default function ProblemDetail() {
                 Lịch sử nộp bài
               </Typography>
               {submissions.length > 0 ? (
-                <TableContainer component={Paper} variant="outlined">
-                  <Table size="small">
+                <TableContainer component={Paper} variant='outlined'>
+                  <Table size='small'>
                     <TableHead>
                       <TableRow>
                         <TableCell>Thời gian</TableCell>
                         <TableCell>Ngôn ngữ</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell align="right">Time (ms)</TableCell>
-                        <TableCell align="right">Memory (KB)</TableCell>
+                        <TableCell align='right'>Time (ms)</TableCell>
+                        <TableCell align='right'>Memory (KB)</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -447,15 +448,15 @@ export default function ProblemDetail() {
                           <TableCell>{new Date(sub.submittedAt).toLocaleString('vi-VN')}</TableCell>
                           <TableCell>{sub.language}</TableCell>
                           <TableCell>
-                            <Chip 
-                              label={sub.status} 
-                              size="small"
+                            <Chip
+                              label={sub.status}
+                              size='small'
                               color={sub.status === 'Accepted' ? 'success' : 'error'}
                               icon={sub.status === 'Accepted' ? <CheckCircleIcon /> : <CancelIcon />}
                             />
                           </TableCell>
-                          <TableCell align="right">{sub.totalTime}</TableCell>
-                          <TableCell align="right">{sub.totalMemory}</TableCell>
+                          <TableCell align='right'>{sub.totalTime}</TableCell>
+                          <TableCell align='right'>{sub.totalMemory}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -481,7 +482,7 @@ export default function ProblemDetail() {
               alignItems: 'center',
               gap: 2,
               bgcolor: '#2d2d2d',
-              borderBottom: '1px solid #3d3d3d',
+              borderBottom: '1px solid #3d3d3d'
             }}
           >
             <FormControl size='small' sx={{ minWidth: 180 }}>
@@ -492,7 +493,7 @@ export default function ProblemDetail() {
                   color: 'white',
                   '.MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-                  '& .MuiSvgIcon-root': { color: 'primary.main' },
+                  '& .MuiSvgIcon-root': { color: 'primary.main' }
                 }}
               >
                 {languages.map((lang) => (
@@ -503,12 +504,7 @@ export default function ProblemDetail() {
               </Select>
             </FormControl>
 
-            <Button
-              startIcon={<RestartAltIcon />}
-              size='small'
-              onClick={handleResetCode}
-              sx={{ color: '#86868b' }}
-            >
+            <Button startIcon={<RestartAltIcon />} size='small' onClick={handleResetCode} sx={{ color: '#86868b' }}>
               Reset Code
             </Button>
 
@@ -536,10 +532,10 @@ export default function ProblemDetail() {
 
           {/* Code Editor Area */}
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <CodeEditor 
-              value={code} 
-              onChange={(value) => setCode(value || '')} 
-              language={selectedLanguage?.code || 'cpp'} 
+            <CodeEditor
+              value={code}
+              onChange={(value) => setCode(value || '')}
+              language={selectedLanguage?.code || 'cpp'}
             />
           </Box>
 
@@ -551,7 +547,7 @@ export default function ProblemDetail() {
               borderColor: 'primary.main',
               bgcolor: '#252526',
               borderRadius: 0,
-              overflow: 'auto',
+              overflow: 'auto'
             }}
           >
             <Box sx={{ p: 2 }}>
@@ -561,7 +557,7 @@ export default function ProblemDetail() {
                   fontFamily: 'monospace',
                   color: '#d4d4d4',
                   whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
+                  wordBreak: 'break-word'
                 }}
               >
                 {output || 'Nhấn "Chạy thử" để kiểm tra code hoặc "Nộp bài" để submit...'}

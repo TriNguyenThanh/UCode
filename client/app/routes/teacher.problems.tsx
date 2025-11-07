@@ -14,8 +14,6 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-  Menu,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -39,7 +37,6 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -96,7 +93,6 @@ export default function TeacherProblems() {
   
   const [searchQuery, setSearchQuery] = React.useState('')
   const [filterDifficulty, setFilterDifficulty] = React.useState<string>('all')
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [selectedProblem, setSelectedProblem] = React.useState<Problem | null>(null)
   
   // Delete dialog
@@ -120,15 +116,6 @@ export default function TeacherProblems() {
     severity: 'success'
   })
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, problem: Problem) => {
-    setAnchorEl(event.currentTarget)
-    setSelectedProblem(problem)
-  }
-
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
-
   const handleDelete = async () => {
     if (!selectedProblem) return
     
@@ -137,7 +124,7 @@ export default function TeacherProblems() {
       await deleteProblem(selectedProblem.problemId)
       setSnackbar({ open: true, message: 'Đã xóa bài tập thành công', severity: 'success' })
       setDeleteDialogOpen(false)
-      handleMenuClose()
+      setSelectedProblem(null)
       revalidator.revalidate()
     } catch (error: any) {
       setSnackbar({ open: true, message: error.message || 'Không thể xóa bài tập', severity: 'error' })
@@ -146,15 +133,13 @@ export default function TeacherProblems() {
     }
   }
 
-  const handleOpenLanguages = async () => {
-    if (!selectedProblem) return
-    
+  const handleOpenLanguages = async (problem: Problem) => {
     setLoadingLanguages(true)
     setLanguageDialogOpen(true)
-    handleMenuClose()
+    setSelectedProblem(problem)
     
     try {
-      const langs = await getAvailableLanguagesForProblem(selectedProblem.problemId)
+      const langs = await getAvailableLanguagesForProblem(problem.problemId)
       setProblemLanguages(langs)
     } catch (error: any) {
       setSnackbar({ open: true, message: error.message || 'Không thể tải languages', severity: 'error' })
@@ -163,15 +148,13 @@ export default function TeacherProblems() {
     }
   }
 
-  const handleOpenDatasets = async () => {
-    if (!selectedProblem) return
-    
+  const handleOpenDatasets = async (problem: Problem) => {
     setLoadingDatasets(true)
     setDatasetDialogOpen(true)
-    handleMenuClose()
+    setSelectedProblem(problem)
     
     try {
-      const ds = await getDatasetsByProblem(selectedProblem.problemId)
+      const ds = await getDatasetsByProblem(problem.problemId)
       setDatasets(ds)
     } catch (error: any) {
       setSnackbar({ open: true, message: error.message || 'Không thể tải datasets', severity: 'error' })
@@ -420,7 +403,20 @@ export default function TeacherProblems() {
                       <Typography variant='body2' sx={{ color: '#86868b', fontSize: '0.75rem' }}>
                         #{problem.code}
                       </Typography>
-                      <Typography variant='body1' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                      <Typography 
+                        variant='body1' 
+                        component={Link}
+                        to={`/problem/${problem.problemId}`}
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: '#007AFF',
+                          textDecoration: 'none',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            textDecoration: 'underline',
+                          }
+                        }}
+                      >
                         {problem.title}
                       </Typography>
                       {problem.statement && (
@@ -480,13 +476,39 @@ export default function TeacherProblems() {
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
-                    <IconButton
-                      size='small'
-                      onClick={(e) => handleMenuClick(e, problem)}
-                      sx={{ color: '#86868b' }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <IconButton
+                        size='small'
+                        component={Link}
+                        to={`/teacher/problem/${problem.problemId}/edit`}
+                        sx={{ 
+                          color: '#007AFF',
+                          '&:hover': {
+                            bgcolor: 'rgba(0, 122, 255, 0.1)',
+                          }
+                        }}
+                        title="Chỉnh sửa"
+                      >
+                        <EditIcon fontSize='small' />
+                      </IconButton>
+                      <IconButton
+                        size='small'
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedProblem(problem)
+                          setDeleteDialogOpen(true)
+                        }}
+                        sx={{ 
+                          color: '#FF3B30',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 59, 48, 0.1)',
+                          }
+                        }}
+                        title="Xóa"
+                      >
+                        <DeleteIcon fontSize='small' />
+                      </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -508,39 +530,7 @@ export default function TeacherProblems() {
         )}
 
         {/* Action Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          PaperProps={{
-            sx:{
-              border: '1px solid #d2d2d7',
-              borderRadius: 2,
-            },
-          }}
-        >
-          <MenuItem
-            component={Link}
-            to={`/problem/${selectedProblem?.problemId}`}
-            onClick={handleMenuClose}
-          >
-            <VisibilityIcon sx={{ mr: 1, fontSize: 20, color: '#007AFF' }} />
-            Xem chi tiết
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`/teacher/problem/${selectedProblem?.problemId}/edit`}
-            onClick={handleMenuClose}
-          >
-            <EditIcon sx={{ mr: 1, fontSize: 20, color: '#FF9500' }} />
-            Chỉnh sửa
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => { setDeleteDialogOpen(true); handleMenuClose(); }}>
-            <DeleteIcon sx={{ mr: 1, fontSize: 20, color: '#FF3B30' }} />
-            Xóa
-          </MenuItem>
-        </Menu>
+        {/* Menu removed - actions now visible as buttons in table */}
 
         {/* Delete Dialog */}
         <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

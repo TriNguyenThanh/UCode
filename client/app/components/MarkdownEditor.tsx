@@ -82,6 +82,17 @@ export function MarkdownEditor({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const [previewDialogOpen, setPreviewDialogOpen] = React.useState(false)
   
+  // Local state for smooth typing
+  const [localValue, setLocalValue] = React.useState(value)
+  
+  // Sync local value when prop changes externally
+  React.useEffect(() => {
+    setLocalValue(value)
+  }, [value])
+  
+  // Debounce timer ref
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null)
+  
   const [imageDialog, setImageDialog] = React.useState<ImageDialogState>({
     open: false,
     url: '',
@@ -118,16 +129,17 @@ export function MarkdownEditor({
 
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
-    const selectedText = value.substring(start, end)
+    const selectedText = localValue.substring(start, end)
     const textToInsert = selectedText || placeholder
 
     const newText =
-      value.substring(0, start) +
+      localValue.substring(0, start) +
       before +
       textToInsert +
       after +
-      value.substring(end)
+      localValue.substring(end)
 
+    setLocalValue(newText)
     onChange(newText)
 
     // Set cursor position and select the inserted text
@@ -138,6 +150,8 @@ export function MarkdownEditor({
       textarea.setSelectionRange(textStart, textEnd)
     }, 0)
   }
+
+  // No longer need handleTextChange callback since we inline it
 
   const handleBold = () => {
     insertText('**', '**', 'bold text')
@@ -153,17 +167,18 @@ export function MarkdownEditor({
 
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
-    const selectedText = value.substring(start, end)
+    const selectedText = localValue.substring(start, end)
 
     if (selectedText) {
       const lines = selectedText.split('\n')
       const bulletedLines = lines.map((line) => (line.trim() ? `- ${line}` : line)).join('\n')
       
       const newText =
-        value.substring(0, start) +
+        localValue.substring(0, start) +
         bulletedLines +
-        value.substring(end)
+        localValue.substring(end)
       
+      setLocalValue(newText)
       onChange(newText)
     } else {
       insertText('- ', '', 'List item')
@@ -176,7 +191,7 @@ export function MarkdownEditor({
 
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
-    const selectedText = value.substring(start, end)
+    const selectedText = localValue.substring(start, end)
 
     if (selectedText) {
       const lines = selectedText.split('\n')
@@ -185,10 +200,11 @@ export function MarkdownEditor({
         .join('\n')
       
       const newText =
-        value.substring(0, start) +
+        localValue.substring(0, start) +
         numberedLines +
-        value.substring(end)
+        localValue.substring(end)
       
+      setLocalValue(newText)
       onChange(newText)
     } else {
       insertText('1. ', '', 'List item')
@@ -397,41 +413,72 @@ export function MarkdownEditor({
       </Paper>
 
       {/* Editor */}
-      <TextField
-        fullWidth
-        multiline
-        rows={rows}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        inputRef={textareaRef}
-        helperText={helperText}
+      <Box
         sx={{
-          '& .MuiOutlinedInput-root': {
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
+          border: '1px solid #d2d2d7',
+          borderTop: 'none',
+          borderBottomLeftRadius: 1,
+          borderBottomRightRadius: 1,
+        }}
+      >
+        <textarea
+          ref={textareaRef}
+          rows={rows}
+          value={localValue}
+          onChange={(e) => {
+            const newValue = e.target.value
+            setLocalValue(newValue)
+            
+            if (debounceTimerRef.current) {
+              clearTimeout(debounceTimerRef.current)
+            }
+            
+            debounceTimerRef.current = setTimeout(() => {
+              onChange(newValue)
+            }, 300)
+          }}
+          placeholder={placeholder}
+          onKeyDown={(e) => {
+            if (e.ctrlKey || e.metaKey) {
+              if (e.key === 'b') {
+                e.preventDefault()
+                handleBold()
+              } else if (e.key === 'i') {
+                e.preventDefault()
+                handleItalic()
+              } else if (e.key === 'k') {
+                e.preventDefault()
+                setLinkDialog({ ...linkDialog, open: true })
+              }
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '16.5px 14px',
             fontFamily: 'monospace',
             fontSize: '0.875rem',
-            '& fieldset': {
-              borderTop: 'none',
-            },
-          },
-        }}
-        onKeyDown={(e) => {
-          if (e.ctrlKey || e.metaKey) {
-            if (e.key === 'b') {
-              e.preventDefault()
-              handleBold()
-            } else if (e.key === 'i') {
-              e.preventDefault()
-              handleItalic()
-            } else if (e.key === 'k') {
-              e.preventDefault()
-              setLinkDialog({ ...linkDialog, open: true })
-            }
-          }
-        }}
-      />
+            lineHeight: '1.5',
+            border: 'none',
+            outline: 'none',
+            resize: 'vertical',
+            backgroundColor: '#ffffff',
+            color: '#1d1d1f',
+          }}
+        />
+        {helperText && (
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              px: 1.75, 
+              pb: 0.5, 
+              display: 'block',
+              color: 'text.secondary' 
+            }}
+          >
+            {helperText}
+          </Typography>
+        )}
+      </Box>
 
       {/* Image Dialog */}
       <Dialog
@@ -838,7 +885,7 @@ export function MarkdownEditor({
                 },
               }}
             >
-              {value || '*No content to preview*'}
+              {localValue || '*No content to preview*'}
             </ReactMarkdown>
           </Paper>
         </DialogContent>
