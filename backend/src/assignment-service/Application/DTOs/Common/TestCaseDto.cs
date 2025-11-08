@@ -15,7 +15,7 @@ public class TestCaseDto
     public string OutputRef { get; set; } = string.Empty;
 
     [Required]
-    [Range(1, 200)]
+    [Range(1, 400)]
     public int IndexNo { get; set; } = 1;
 
     [Range(0, 100)]

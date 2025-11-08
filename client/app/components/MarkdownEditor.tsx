@@ -1,36 +1,22 @@
 import React from 'react'
 import {
   Box,
-  TextField,
-  IconButton,
-  Tooltip,
+  Typography,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   Stack,
+  TextField,
   Tabs,
   Tab,
-  Paper,
-  Typography,
   CircularProgress,
 } from '@mui/material'
-import FormatBoldIcon from '@mui/icons-material/FormatBold'
-import FormatItalicIcon from '@mui/icons-material/FormatItalic'
-import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
-import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
-import ImageIcon from '@mui/icons-material/Image'
-import LinkIcon from '@mui/icons-material/Link'
-import CodeIcon from '@mui/icons-material/Code'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import DescriptionIcon from '@mui/icons-material/Description'
-import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import SimpleMdeReact from 'react-simplemde-editor'
+import 'easymde/dist/easymde.min.css'
 import { uploadFile } from '~/services/fileService'
+import type { Options } from 'easymde'
 
 interface MarkdownEditorProps {
   value: string
@@ -39,6 +25,8 @@ interface MarkdownEditorProps {
   rows?: number
   label?: string
   helperText?: string
+  minHeight?: string
+  maxHeight?: string
 }
 
 interface ImageDialogState {
@@ -46,20 +34,7 @@ interface ImageDialogState {
   url: string
   alt: string
   uploading: boolean
-  uploadProgress: number
-  tabValue: number // 0 for URL, 1 for Upload
-}
-
-interface LinkDialogState {
-  open: boolean
-  url: string
-  text: string
-}
-
-interface CodeDialogState {
-  open: boolean
-  code: string
-  language: string
+  tabValue: number
 }
 
 interface PdfDialogState {
@@ -67,8 +42,7 @@ interface PdfDialogState {
   url: string
   text: string
   uploading: boolean
-  uploadProgress: number
-  tabValue: number // 0 for URL, 1 for Upload
+  tabValue: number
 }
 
 export function MarkdownEditor({
@@ -78,209 +52,55 @@ export function MarkdownEditor({
   rows = 10,
   label,
   helperText,
+  minHeight,
+  maxHeight,
 }: MarkdownEditorProps) {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
-  const [previewDialogOpen, setPreviewDialogOpen] = React.useState(false)
-  
-  // Local state for smooth typing
-  const [localValue, setLocalValue] = React.useState(value)
-  
-  // Sync local value when prop changes externally
-  React.useEffect(() => {
-    setLocalValue(value)
-  }, [value])
-  
-  // Debounce timer ref
-  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null)
-  
   const [imageDialog, setImageDialog] = React.useState<ImageDialogState>({
     open: false,
     url: '',
     alt: '',
     uploading: false,
-    uploadProgress: 0,
     tabValue: 0,
   })
   
-  const [linkDialog, setLinkDialog] = React.useState<LinkDialogState>({
-    open: false,
-    url: '',
-    text: '',
-  })
-  
-  const [codeDialog, setCodeDialog] = React.useState<CodeDialogState>({
-    open: false,
-    code: '',
-    language: 'javascript',
-  })
-
   const [pdfDialog, setPdfDialog] = React.useState<PdfDialogState>({
     open: false,
     url: '',
     text: '',
     uploading: false,
-    uploadProgress: 0,
     tabValue: 0,
   })
 
-  const insertText = (before: string, after: string = '', placeholder: string = '') => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = localValue.substring(start, end)
-    const textToInsert = selectedText || placeholder
-
-    const newText =
-      localValue.substring(0, start) +
-      before +
-      textToInsert +
-      after +
-      localValue.substring(end)
-
-    setLocalValue(newText)
-    onChange(newText)
-
-    // Set cursor position and select the inserted text
-    setTimeout(() => {
-      textarea.focus()
-      const textStart = start + before.length
-      const textEnd = textStart + textToInsert.length
-      textarea.setSelectionRange(textStart, textEnd)
-    }, 0)
-  }
-
-  // No longer need handleTextChange callback since we inline it
-
-  const handleBold = () => {
-    insertText('**', '**', 'bold text')
-  }
-
-  const handleItalic = () => {
-    insertText('*', '*', 'italic text')
-  }
-
-  const handleBulletList = () => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = localValue.substring(start, end)
-
-    if (selectedText) {
-      const lines = selectedText.split('\n')
-      const bulletedLines = lines.map((line) => (line.trim() ? `- ${line}` : line)).join('\n')
-      
-      const newText =
-        localValue.substring(0, start) +
-        bulletedLines +
-        localValue.substring(end)
-      
-      setLocalValue(newText)
-      onChange(newText)
-    } else {
-      insertText('- ', '', 'List item')
-    }
-  }
-
-  const handleNumberedList = () => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = localValue.substring(start, end)
-
-    if (selectedText) {
-      const lines = selectedText.split('\n')
-      const numberedLines = lines
-        .map((line, index) => (line.trim() ? `${index + 1}. ${line}` : line))
-        .join('\n')
-      
-      const newText =
-        localValue.substring(0, start) +
-        numberedLines +
-        localValue.substring(end)
-      
-      setLocalValue(newText)
-      onChange(newText)
-    } else {
-      insertText('1. ', '', 'List item')
-    }
-  }
-
-  const handleImageInsert = () => {
-    if (imageDialog.url) {
-      insertText(`![${imageDialog.alt || 'image'}](${imageDialog.url})`)
-      setImageDialog({ 
-        open: false, 
-        url: '', 
-        alt: '', 
-        uploading: false, 
-        uploadProgress: 0, 
-        tabValue: 0 
-      })
-    }
-  }
+  const editorRef = React.useRef<any>(null)
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
     try {
-      setImageDialog({ ...imageDialog, uploading: true, uploadProgress: 0 })
+      setImageDialog(prev => ({ ...prev, uploading: true }))
       
       const response = await uploadFile(file, 'Image')
       
-      setImageDialog({ 
-        ...imageDialog, 
+      setImageDialog(prev => ({ 
+        ...prev, 
         url: response.fileUrl,
         alt: file.name,
         uploading: false,
-        uploadProgress: 100,
-        tabValue: 0 // Switch to URL tab to show the uploaded URL
-      })
+        tabValue: 0,
+      }))
     } catch (error) {
       console.error('Failed to upload image:', error)
-      setImageDialog({ ...imageDialog, uploading: false, uploadProgress: 0 })
-      // You may want to show an error snackbar here
+      setImageDialog(prev => ({ ...prev, uploading: false }))
     }
   }
 
-  const handleLinkInsert = () => {
-    if (linkDialog.url) {
-      const linkText = linkDialog.text || linkDialog.url
-      insertText(`[${linkText}](${linkDialog.url})`)
-      setLinkDialog({ open: false, url: '', text: '' })
-    }
-  }
-
-  const handleCodeInsert = () => {
-    if (codeDialog.code) {
-      const codeBlock = `\`\`\`${codeDialog.language}\n${codeDialog.code}\n\`\`\``
-      insertText(codeBlock)
-      setCodeDialog({ open: false, code: '', language: 'javascript' })
-    }
-  }
-
-  const handleInlineCode = () => {
-    insertText('`', '`', 'code')
-  }
-
-  const handlePdfInsert = () => {
-    if (pdfDialog.url) {
-      const linkText = pdfDialog.text || 'Download PDF'
-      insertText(`[${linkText}](${pdfDialog.url})`)
-      setPdfDialog({ 
-        open: false, 
-        url: '', 
-        text: '',
-        uploading: false,
-        uploadProgress: 0,
-        tabValue: 0
-      })
+  const handleImageInsert = () => {
+    if (imageDialog.url) {
+      const markdown = `![${imageDialog.alt || 'image'}](${imageDialog.url})`
+      const currentValue = value || ''
+      onChange(currentValue + '\n' + markdown)
+      setImageDialog({ open: false, url: '', alt: '', uploading: false, tabValue: 0 })
     }
   }
 
@@ -289,23 +109,84 @@ export function MarkdownEditor({
     if (!file) return
 
     try {
-      setPdfDialog({ ...pdfDialog, uploading: true, uploadProgress: 0 })
+      setPdfDialog(prev => ({ ...prev, uploading: true }))
       
       const response = await uploadFile(file, 'Document')
       
-      setPdfDialog({ 
-        ...pdfDialog, 
+      setPdfDialog(prev => ({ 
+        ...prev, 
         url: response.fileUrl,
         text: file.name.replace('.pdf', ''),
         uploading: false,
-        uploadProgress: 100,
-        tabValue: 0 // Switch to URL tab to show the uploaded URL
-      })
+        tabValue: 0,
+      }))
     } catch (error) {
       console.error('Failed to upload PDF:', error)
-      setPdfDialog({ ...pdfDialog, uploading: false, uploadProgress: 0 })
+      setPdfDialog(prev => ({ ...prev, uploading: false }))
     }
   }
+
+  const handlePdfInsert = () => {
+    if (pdfDialog.url) {
+      const linkText = pdfDialog.text || 'Download PDF'
+      const markdown = `[${linkText}](${pdfDialog.url})`
+      const currentValue = value || ''
+      onChange(currentValue + '\n' + markdown)
+      setPdfDialog({ open: false, url: '', text: '', uploading: false, tabValue: 0 })
+    }
+  }
+
+  const options = React.useMemo<Options>(() => {
+    return {
+      spellChecker: false,
+      placeholder: placeholder || 'Nhập nội dung...',
+      status: false,
+      toolbar: [
+        'bold',
+        'italic',
+        'strikethrough',
+        '|',
+        'heading',
+        'heading-smaller',
+        'heading-bigger',
+        '|',
+        'code',
+        'quote',
+        'unordered-list',
+        'ordered-list',
+        '|',
+        {
+          name: 'upload-image',
+          action: () => {
+            setImageDialog(prev => ({ ...prev, open: true }))
+          },
+          className: 'fa fa-image',
+          title: 'Insert Image',
+        },
+        'link',
+        {
+          name: 'upload-pdf',
+          action: () => {
+            setPdfDialog(prev => ({ ...prev, open: true }))
+          },
+          className: 'fa fa-file-pdf',
+          title: 'Insert PDF',
+        },
+        '|',
+        'preview',
+        'side-by-side',
+        'fullscreen',
+        '|',
+        'guide',
+      ],
+      minHeight: minHeight || `${rows * 24}px`,
+      maxHeight: maxHeight || '600px',
+      autofocus: false,
+      lineWrapping: true,
+      indentWithTabs: false,
+      tabSize: 2,
+    }
+  }, [placeholder, rows])
 
   return (
     <Box>
@@ -315,170 +196,75 @@ export function MarkdownEditor({
         </Typography>
       )}
       
-      {/* Toolbar */}
-      <Paper
-        elevation={0}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          p: 1,
-          bgcolor: '#f5f5f7',
-          border: '1px solid #d2d2d7',
-          borderBottom: 'none',
-          borderTopLeftRadius: 1,
-          borderTopRightRadius: 1,
-        }}
-      >
-        <Tooltip title="Bold (Ctrl+B)">
-          <IconButton size="medium" onClick={handleBold} sx={{ color: '#1d1d1f' }}>
-            <FormatBoldIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Italic (Ctrl+I)">
-          <IconButton size="medium" onClick={handleItalic} sx={{ color: '#1d1d1f' }}>
-            <FormatItalicIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-
-        <Tooltip title="Bullet List">
-          <IconButton size="medium" onClick={handleBulletList} sx={{ color: '#1d1d1f' }}>
-            <FormatListBulletedIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Numbered List">
-          <IconButton size="medium" onClick={handleNumberedList} sx={{ color: '#1d1d1f' }}>
-            <FormatListNumberedIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-
-        <Tooltip title="Insert Image">
-          <IconButton
-            size="medium"
-            onClick={() => setImageDialog({ ...imageDialog, open: true })}
-            sx={{ color: '#1d1d1f' }}
-          >
-            <ImageIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Insert Link">
-          <IconButton
-            size="medium"
-            onClick={() => setLinkDialog({ ...linkDialog, open: true })}
-            sx={{ color: '#1d1d1f' }}
-          >
-            <LinkIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Code Snippet">
-          <IconButton
-            size="medium"
-            onClick={() => setCodeDialog({ ...codeDialog, open: true })}
-            sx={{ color: '#1d1d1f' }}
-          >
-            <CodeIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Insert PDF">
-          <IconButton
-            size="medium"
-            onClick={() => setPdfDialog({ ...pdfDialog, open: true })}
-            sx={{ color: '#1d1d1f' }}
-          >
-            <DescriptionIcon fontSize="medium" />
-          </IconButton>
-        </Tooltip>
-
-        <Box sx={{ flexGrow: 1 }} />
-
-        <Button
-          size="medium"
-          startIcon={<VisibilityIcon />}
-          onClick={() => setPreviewDialogOpen(true)}
-          sx={{
-            color: '#1d1d1f',
-            textTransform: 'none',
-            fontWeight: 400,
-          }}
-        >
-          Preview
-        </Button>
-      </Paper>
-
-      {/* Editor */}
       <Box
         sx={{
-          border: '1px solid #d2d2d7',
-          borderTop: 'none',
-          borderBottomLeftRadius: 1,
-          borderBottomRightRadius: 1,
+          '& .EasyMDEContainer': {
+            border: '1px solid #d2d2d7',
+            borderRadius: 1,
+          },
+          '& .EasyMDEContainer .CodeMirror': {
+            border: 'none',
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            lineHeight: '1.6',
+          },
+          '& .editor-toolbar': {
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            borderBottom: '1px solid #d2d2d7',
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            bgcolor: '#f5f5f7',
+          },
+          '& .editor-toolbar button': {
+            color: '#1d1d1f !important',
+            border: 'none !important',
+            '&:hover': {
+              bgcolor: 'rgba(0, 0, 0, 0.04)',
+              borderColor: 'transparent !important',
+            },
+            '&.active': {
+              bgcolor: 'rgba(0, 0, 0, 0.08)',
+            },
+          },
+          '& .editor-toolbar i.separator': {
+            borderLeft: '1px solid #d2d2d7',
+            borderRight: 'none',
+          },
+          '& .CodeMirror-cursor': {
+            borderLeft: '1px solid #1d1d1f',
+          },
+          '& .editor-preview-side, & .editor-preview': {
+            bgcolor: '#ffffff',
+            border: 'none',
+            padding: '16px',
+          },
         }}
       >
-        <textarea
-          ref={textareaRef}
-          rows={rows}
-          value={localValue}
-          onChange={(e) => {
-            const newValue = e.target.value
-            setLocalValue(newValue)
-            
-            if (debounceTimerRef.current) {
-              clearTimeout(debounceTimerRef.current)
-            }
-            
-            debounceTimerRef.current = setTimeout(() => {
-              onChange(newValue)
-            }, 300)
-          }}
-          placeholder={placeholder}
-          onKeyDown={(e) => {
-            if (e.ctrlKey || e.metaKey) {
-              if (e.key === 'b') {
-                e.preventDefault()
-                handleBold()
-              } else if (e.key === 'i') {
-                e.preventDefault()
-                handleItalic()
-              } else if (e.key === 'k') {
-                e.preventDefault()
-                setLinkDialog({ ...linkDialog, open: true })
-              }
-            }
-          }}
-          style={{
-            width: '100%',
-            padding: '16.5px 14px',
-            fontFamily: 'monospace',
-            fontSize: '0.875rem',
-            lineHeight: '1.5',
-            border: 'none',
-            outline: 'none',
-            resize: 'vertical',
-            backgroundColor: '#ffffff',
-            color: '#1d1d1f',
-          }}
+        <SimpleMdeReact
+          ref={editorRef}
+          value={value}
+          onChange={onChange}
+          options={options}
         />
-        {helperText && (
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              px: 1.75, 
-              pb: 0.5, 
-              display: 'block',
-              color: 'text.secondary' 
-            }}
-          >
-            {helperText}
-          </Typography>
-        )}
       </Box>
+
+      {helperText && (
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            px: 1.5, 
+            pt: 0.5, 
+            display: 'block',
+            color: 'text.secondary' 
+          }}
+        >
+          {helperText}
+        </Typography>
+      )}
 
       {/* Image Dialog */}
       <Dialog
@@ -488,7 +274,6 @@ export function MarkdownEditor({
           url: '', 
           alt: '', 
           uploading: false, 
-          uploadProgress: 0, 
           tabValue: 0 
         })}
         maxWidth="sm"
@@ -498,7 +283,7 @@ export function MarkdownEditor({
         <DialogContent>
           <Tabs
             value={imageDialog.tabValue}
-            onChange={(e, newValue) => setImageDialog({ ...imageDialog, tabValue: newValue })}
+            onChange={(e, newValue) => setImageDialog(prev => ({ ...prev, tabValue: newValue }))}
             sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
           >
             <Tab label="URL" />
@@ -511,7 +296,7 @@ export function MarkdownEditor({
                 fullWidth
                 label="Image URL"
                 value={imageDialog.url}
-                onChange={(e) => setImageDialog({ ...imageDialog, url: e.target.value })}
+                onChange={(e) => setImageDialog(prev => ({ ...prev, url: e.target.value }))}
                 placeholder="https://example.com/image.png"
                 autoFocus
               />
@@ -519,7 +304,7 @@ export function MarkdownEditor({
                 fullWidth
                 label="Alt Text (Optional)"
                 value={imageDialog.alt}
-                onChange={(e) => setImageDialog({ ...imageDialog, alt: e.target.value })}
+                onChange={(e) => setImageDialog(prev => ({ ...prev, alt: e.target.value }))}
                 placeholder="Image description"
               />
             </Stack>
@@ -528,7 +313,6 @@ export function MarkdownEditor({
               <Button
                 variant="outlined"
                 component="label"
-                startIcon={<CloudUploadIcon />}
                 disabled={imageDialog.uploading}
                 fullWidth
               >
@@ -559,7 +343,7 @@ export function MarkdownEditor({
                     fullWidth
                     label="Alt Text (Optional)"
                     value={imageDialog.alt}
-                    onChange={(e) => setImageDialog({ ...imageDialog, alt: e.target.value })}
+                    onChange={(e) => setImageDialog(prev => ({ ...prev, alt: e.target.value }))}
                     placeholder="Image description"
                   />
                 </Stack>
@@ -573,7 +357,6 @@ export function MarkdownEditor({
             url: '', 
             alt: '', 
             uploading: false, 
-            uploadProgress: 0, 
             tabValue: 0 
           })}>
             Cancel
@@ -588,106 +371,6 @@ export function MarkdownEditor({
         </DialogActions>
       </Dialog>
 
-      {/* Link Dialog */}
-      <Dialog
-        open={linkDialog.open}
-        onClose={() => setLinkDialog({ open: false, url: '', text: '' })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Insert Link</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label="URL"
-              value={linkDialog.url}
-              onChange={(e) => setLinkDialog({ ...linkDialog, url: e.target.value })}
-              placeholder="https://example.com"
-              autoFocus
-            />
-            <TextField
-              fullWidth
-              label="Link Text (Optional)"
-              value={linkDialog.text}
-              onChange={(e) => setLinkDialog({ ...linkDialog, text: e.target.value })}
-              placeholder="Click here"
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLinkDialog({ open: false, url: '', text: '' })}>Cancel</Button>
-          <Button onClick={handleLinkInsert} variant="contained" disabled={!linkDialog.url}>
-            Insert
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Code Dialog */}
-      <Dialog
-        open={codeDialog.open}
-        onClose={() => setCodeDialog({ open: false, code: '', language: 'javascript' })}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Insert Code Snippet</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              select
-              fullWidth
-              label="Language"
-              value={codeDialog.language}
-              onChange={(e) => setCodeDialog({ ...codeDialog, language: e.target.value })}
-              SelectProps={{ native: true }}
-            >
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="cpp">C++</option>
-              <option value="c">C</option>
-              <option value="csharp">C#</option>
-              <option value="go">Go</option>
-              <option value="rust">Rust</option>
-              <option value="php">PHP</option>
-              <option value="ruby">Ruby</option>
-              <option value="sql">SQL</option>
-              <option value="bash">Bash</option>
-              <option value="json">JSON</option>
-              <option value="html">HTML</option>
-              <option value="css">CSS</option>
-            </TextField>
-            <TextField
-              fullWidth
-              multiline
-              rows={10}
-              label="Code"
-              value={codeDialog.code}
-              onChange={(e) => setCodeDialog({ ...codeDialog, code: e.target.value })}
-              placeholder="Enter your code here..."
-              autoFocus
-              sx={{
-                '& .MuiInputBase-input': {
-                  fontFamily: 'monospace',
-                  fontSize: '0.875rem',
-                },
-              }}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setCodeDialog({ open: false, code: '', language: 'javascript' })}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleCodeInsert} variant="contained" disabled={!codeDialog.code}>
-            Insert
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* PDF Dialog */}
       <Dialog
         open={pdfDialog.open}
@@ -696,7 +379,6 @@ export function MarkdownEditor({
           url: '', 
           text: '',
           uploading: false,
-          uploadProgress: 0,
           tabValue: 0
         })}
         maxWidth="sm"
@@ -706,7 +388,7 @@ export function MarkdownEditor({
         <DialogContent>
           <Tabs
             value={pdfDialog.tabValue}
-            onChange={(e, newValue) => setPdfDialog({ ...pdfDialog, tabValue: newValue })}
+            onChange={(e, newValue) => setPdfDialog(prev => ({ ...prev, tabValue: newValue }))}
             sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
           >
             <Tab label="URL" />
@@ -719,7 +401,7 @@ export function MarkdownEditor({
                 fullWidth
                 label="PDF URL"
                 value={pdfDialog.url}
-                onChange={(e) => setPdfDialog({ ...pdfDialog, url: e.target.value })}
+                onChange={(e) => setPdfDialog(prev => ({ ...prev, url: e.target.value }))}
                 placeholder="https://example.com/document.pdf"
                 autoFocus
               />
@@ -727,7 +409,7 @@ export function MarkdownEditor({
                 fullWidth
                 label="Link Text (Optional)"
                 value={pdfDialog.text}
-                onChange={(e) => setPdfDialog({ ...pdfDialog, text: e.target.value })}
+                onChange={(e) => setPdfDialog(prev => ({ ...prev, text: e.target.value }))}
                 placeholder="Download PDF"
               />
             </Stack>
@@ -736,7 +418,6 @@ export function MarkdownEditor({
               <Button
                 variant="outlined"
                 component="label"
-                startIcon={<CloudUploadIcon />}
                 disabled={pdfDialog.uploading}
                 fullWidth
               >
@@ -767,7 +448,7 @@ export function MarkdownEditor({
                     fullWidth
                     label="Link Text (Optional)"
                     value={pdfDialog.text}
-                    onChange={(e) => setPdfDialog({ ...pdfDialog, text: e.target.value })}
+                    onChange={(e) => setPdfDialog(prev => ({ ...prev, text: e.target.value }))}
                     placeholder="Download PDF"
                   />
                 </Stack>
@@ -781,7 +462,6 @@ export function MarkdownEditor({
             url: '', 
             text: '',
             uploading: false,
-            uploadProgress: 0,
             tabValue: 0
           })}>
             Cancel
@@ -795,105 +475,6 @@ export function MarkdownEditor({
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Preview Dialog */}
-      <Dialog
-        open={previewDialogOpen}
-        onClose={() => setPreviewDialogOpen(false)}
-        maxWidth="lg"
-        fullWidth
-      >
-        <DialogTitle>
-          Preview
-        </DialogTitle>
-        <DialogContent>
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              minHeight: 400,
-              maxHeight: '70vh',
-              overflow: 'auto',
-              bgcolor: '#ffffff',
-            }}
-          >
-            <ReactMarkdown
-              components={{
-                code({ className, children }) {
-                  const match = /language-(\w+)/.exec(className || '')
-                  const isInline = !match
-                  
-                  return !isInline && match ? (
-                    <SyntaxHighlighter
-                      style={prism as any}
-                      language={match[1]}
-                      PreTag="div"
-                      customStyle={{
-                        backgroundColor: '#f5f5f7',
-                        border: '1px solid #d2d2d7',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      {String(children).replace(/\n$/, '')}
-                    </SyntaxHighlighter>
-                  ) : (
-                    <code
-                      style={{
-                        background: '#f5f5f7',
-                        padding: '2px 6px',
-                        borderRadius: '3px',
-                        fontSize: '0.875em',
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      {children}
-                    </code>
-                  )
-                },
-                p({ children }) {
-                  return <p style={{ marginBottom: '16px', lineHeight: '1.6' }}>{children}</p>
-                },
-                h1({ children }) {
-                  return <h1 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h1>
-                },
-                h2({ children }) {
-                  return <h2 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h2>
-                },
-                h3({ children }) {
-                  return <h3 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h3>
-                },
-                h4({ children }) {
-                  return <h4 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h4>
-                },
-                h5({ children }) {
-                  return <h5 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h5>
-                },
-                h6({ children }) {
-                  return <h6 style={{ fontWeight: 600, marginBottom: '16px', marginTop: '24px' }}>{children}</h6>
-                },
-                ul({ children }) {
-                  return <ul style={{ marginBottom: '16px', paddingLeft: '32px', listStyleType: 'disc' }}>{children}</ul>
-                },
-                ol({ children }) {
-                  return <ol style={{ marginBottom: '16px', paddingLeft: '32px', listStyleType: 'decimal' }}>{children}</ol>
-                },
-                li({ children }) {
-                  return <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>{children}</li>
-                },
-                img({ src, alt }) {
-                  return <img src={src} alt={alt} style={{ maxWidth: '100%', height: 'auto' }} />
-                },
-              }}
-            >
-              {localValue || '*No content to preview*'}
-            </ReactMarkdown>
-          </Paper>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   )
 }
-

@@ -157,6 +157,8 @@ public class ProblemResponse
     /// </summary>
     public List<ProblemLanguageDto> ProblemLanguages { get; set; } = new List<ProblemLanguageDto>();
 
+    public DatasetDto datasetSample { get; set; } = new DatasetDto();
+
     /// <summary>
     /// List of problem assets (statements, solutions, tutorials, etc.)
     /// </summary>

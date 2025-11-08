@@ -34,11 +34,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { CodeEditor } from '~/components/CodeEditor'
 import { getProblem, getProblemForStudent } from '~/services/problemService'
-import { runCode, submitCode, getSubmissionsByProblem } from '~/services/submissionService'
-import { getAllLanguages } from '~/services/languageService'
-import type { Problem, Language, Submission } from '~/types'
+import { runCode, submitCode, getSubmissionsByProblem, getSubmission } from '~/services/submissionService'
+import type { Problem, Submission } from '~/types'
 
-// Function to get code template based on language code
 function getCodeTemplate(languageCode: string, problemLanguages?: Problem['problemLanguages']): string {
   // Kiểm tra xem problem có template riêng cho ngôn ngữ này không
   const problemLanguage = problemLanguages?.find((pl) => pl.languageCode === languageCode)
@@ -54,64 +52,7 @@ function getCodeTemplate(languageCode: string, problemLanguages?: Problem['probl
       return parts.join('\n\n')
     }
   }
-
-  // Default templates nếu không có template từ problem
-  const templates: Record<string, string> = {
-    cpp: `#include <iostream>
-using namespace std;
-
-int main() {
-    // Your code here
-    return 0;
-}`,
-    java: `public class Solution {
-    public static void main(String[] args) {
-        // Your code here
-    }
-}`,
-    python: `# Your code here
-def solution():
-    pass
-
-if __name__ == "__main__":
-    solution()`,
-    javascript: `// Your code here
-function solution() {
-    
-}
-
-solution();`,
-    typescript: `// Your code here
-function solution(): void {
-    
-}
-
-solution();`,
-    c: `#include <stdio.h>
-
-int main() {
-    // Your code here
-    return 0;
-}`,
-    csharp: `using System;
-
-class Program {
-    static void Main() {
-        // Your code here
-    }
-}`,
-    go: `package main
-
-import "fmt"
-
-func main() {
-    // Your code here
-}`,
-    rust: `fn main() {
-    // Your code here
-}`
-  }
-  return templates[languageCode] || '// Your code here'
+  return '// Your code here'
 }
 
 export const meta: Route.MetaFunction = () => [
@@ -134,9 +75,6 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       problem = await getProblem(params.id)
     }
 
-    // Fetch available languages
-    const languages = await getAllLanguages(false) // Only enabled languages
-
     // Fetch user's submission history for this problem
     let submissions: Submission[] = []
     try {
@@ -146,7 +84,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       // Continue even if submissions fail
     }
 
-    return { user, problem, languages, submissions }
+    return { user, problem, submissions }
   } catch (error: any) {
     console.error('Failed to load problem:', error)
     throw new Response(error.message || 'Problem not found', { status: 404 })
@@ -169,12 +107,18 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function ProblemDetail() {
-  const { problem, languages, submissions: initialSubmissions } = useLoaderData<typeof clientLoader>()
+  const { problem, submissions: initialSubmissions } = useLoaderData<typeof clientLoader>()
   const [tabValue, setTabValue] = React.useState(0)
+  
+  // Panel resizing
+  const [leftPanelWidth, setLeftPanelWidth] = React.useState(50) // Percentage
+  const [isDragging, setIsDragging] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
 
-  // Find first available language or default to cpp
-  const defaultLanguage = languages.length > 0 ? languages[0] : null
-  const [selectedLanguage, setSelectedLanguage] = React.useState<Language | null>(defaultLanguage)
+  const availableLanguages = problem.problemLanguages || []
+  
+  const defaultLanguage = availableLanguages.length > 0 ? availableLanguages[0] : null
+  const [selectedLanguage, setSelectedLanguage] = React.useState<typeof defaultLanguage>(defaultLanguage)
   const [code, setCode] = React.useState('')
   const [output, setOutput] = React.useState('')
   const [isRunning, setIsRunning] = React.useState(false)
@@ -183,31 +127,64 @@ export default function ProblemDetail() {
   const [hasRunSuccessfully, setHasRunSuccessfully] = React.useState(false)
   const [lastRunCode, setLastRunCode] = React.useState('')
 
+  // Handle panel resizing
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  React.useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return
+      
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
+      
+      // Clamp between 20% and 80%
+      const clampedWidth = Math.min(Math.max(newLeftWidth, 20), 80)
+      setLeftPanelWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging])
+
   // Initialize code template when language or problem changes
   React.useEffect(() => {
-    if (selectedLanguage) {
-      setCode(getCodeTemplate(selectedLanguage.code, problem.problemLanguages))
+    if (selectedLanguage && selectedLanguage.languageCode) {
+      setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
     }
   }, [selectedLanguage, problem])
 
   // Handle language change
   const handleLanguageChange = (languageId: string) => {
-    const lang = languages.find((l) => l.languageId === languageId)
-    if (lang) {
+    const lang = availableLanguages.find((l) => l.languageId === languageId)
+    if (lang && lang.languageCode) {
       setSelectedLanguage(lang)
-      setCode(getCodeTemplate(lang.code, problem.problemLanguages))
+      setCode(getCodeTemplate(lang.languageCode, problem.problemLanguages))
       setOutput('')
-      setHasRunSuccessfully(false) // Reset khi đổi ngôn ngữ
+      setHasRunSuccessfully(false) 
       setLastRunCode('')
     }
   }
 
   // Handle reset code
   const handleResetCode = () => {
-    if (selectedLanguage) {
-      setCode(getCodeTemplate(selectedLanguage.code, problem.problemLanguages))
+    if (selectedLanguage && selectedLanguage.languageCode) {
+      setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
       setOutput('')
-      setHasRunSuccessfully(false) // Reset khi reset code
+      setHasRunSuccessfully(false) 
       setLastRunCode('')
     }
   }
@@ -224,6 +201,37 @@ export default function ProblemDetail() {
     }
   }
 
+  // Function to get status text from status code
+  const getStatusText = (statusCode: string): { text: string; emoji: string } => {
+    switch (statusCode) {
+      case '0': return { text: 'Passed', emoji: '✅' }
+      case '1': return { text: 'Time Limit Exceeded', emoji: '⏰' }
+      case '2': return { text: 'Memory Limit Exceeded', emoji: '💾' }
+      case '3': return { text: 'Runtime Error', emoji: '💥' }
+      case '4': return { text: 'Internal Error', emoji: '⚠️' }
+      case '5': return { text: 'Wrong Answer', emoji: '❌' }
+      case '6': return { text: 'Compilation Error', emoji: '🔧' }
+      case '7': return { text: 'Skipped', emoji: '⏭️' }
+      default: return { text: 'Unknown', emoji: '❓' }
+    }
+  }
+
+  // Function to parse compareResult and generate test case details
+  const parseTestCaseResults = (compareResult: string): string => {
+    if (!compareResult) return ''
+    
+    let testCaseDetails = '\n\n📋 Chi tiết từng test case:\n'
+    testCaseDetails += '─'.repeat(40) + '\n'
+    
+    for (let i = 0; i < compareResult.length; i++) {
+      const statusCode = compareResult[i]
+      const { text, emoji } = getStatusText(statusCode)
+      testCaseDetails += `Test case #${i + 1}: ${emoji} ${text}\n`
+    }
+    
+    return testCaseDetails
+  }
+
   // Polling function to get submission result
   const pollSubmissionResult = async (submissionId: string, sourceCode: string, isSubmit: boolean = false) => {
     const maxAttempts = 30 // Max 30 attempts (30 seconds with 1s interval)
@@ -231,7 +239,7 @@ export default function ProblemDetail() {
     
     const poll = async (): Promise<void> => {
       try {
-        const submission = await import('~/services/submissionService').then(m => m.getSubmission(submissionId))
+        const submission = await getSubmission(submissionId)
         
         // Check if submission is still processing
         const processingStatuses: string[] = ['Pending', 'Running']
@@ -278,6 +286,11 @@ export default function ProblemDetail() {
             }
           }
           
+          // Add detailed test case results if compareResult is available
+          if (submission.compareResult) {
+            resultText += parseTestCaseResults(submission.compareResult)
+          }
+          
           setOutput(resultText)
           
           // Reload submissions if it's a submit
@@ -317,7 +330,7 @@ export default function ProblemDetail() {
     try {
       const result = await runCode({
         problemId: problem.problemId,
-        language: selectedLanguage.code,
+        language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
       })
 
@@ -366,7 +379,7 @@ export default function ProblemDetail() {
     try {
       const result = await submitCode({
         problemId: problem.problemId,
-        language: selectedLanguage.code,
+        language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
       })
 
@@ -423,16 +436,26 @@ export default function ProblemDetail() {
       </Paper>
 
       {/* Main Content */}
-      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+      <Box 
+        ref={containerRef}
+        sx={{ 
+          display: 'flex', 
+          flexGrow: 1, 
+          overflow: 'hidden',
+          cursor: isDragging ? 'col-resize' : 'default',
+          userSelect: isDragging ? 'none' : 'auto'
+        }}
+      >
         {/* Left Panel - Problem Description */}
         <Box
           sx={{
-            width: '40%',
+            width: `${leftPanelWidth}%`,
             borderRight: '1px solid',
             borderColor: 'divider',
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: 'white'
+            bgcolor: 'white',
+            minWidth: '300px'
           }}
         >
           <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -448,7 +471,7 @@ export default function ProblemDetail() {
                 Mô tả
               </Typography>
               <Typography variant='body1' sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-                {problem.statement || 'Chưa có mô tả'}
+                {problem.statement || 'Chưa có đề bài chi tiết'}
               </Typography>
 
               {/* Input/Output Format */}
@@ -502,6 +525,65 @@ export default function ProblemDetail() {
                   </Typography>
                 )}
               </Box>
+
+              {/* Sample Test Cases */}
+              {problem.datasetSample && problem.datasetSample.testCases && problem.datasetSample.testCases.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
+                    Test case mẫu
+                  </Typography>
+                  <TableContainer component={Paper} variant='outlined'>
+                    <Table size='small'>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Test case</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Input</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Output</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {problem.datasetSample.testCases.map((testCase: any, index: number) => (
+                          <TableRow key={testCase.testCaseId || index}>
+                            <TableCell>#{testCase.indexNo || index + 1}</TableCell>
+                            <TableCell>
+                              <Typography 
+                                variant='body2' 
+                                component='pre' 
+                                sx={{ 
+                                  fontFamily: 'monospace', 
+                                  whiteSpace: 'pre-wrap',
+                                  m: 0,
+                                  p: 1,
+                                  bgcolor: '#f5f5f5',
+                                  borderRadius: 1
+                                }}
+                              >
+                                {testCase.inputRef}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography 
+                                variant='body2' 
+                                component='pre' 
+                                sx={{ 
+                                  fontFamily: 'monospace', 
+                                  whiteSpace: 'pre-wrap',
+                                  m: 0,
+                                  p: 1,
+                                  bgcolor: '#f5f5f5',
+                                  borderRadius: 1
+                                }}
+                              >
+                                {testCase.outputRef}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
 
               {/* Tags */}
               {problem.tagNames && problem.tagNames.length > 0 && (
@@ -578,8 +660,45 @@ export default function ProblemDetail() {
           </Box>
         </Box>
 
+        {/* Resize Handle */}
+        <Box
+          sx={{
+            width: '6px',
+            cursor: 'col-resize',
+            bgcolor: isDragging ? 'primary.main' : 'divider',
+            '&:hover': {
+              bgcolor: 'primary.main'
+            },
+            transition: 'background-color 0.2s ease',
+            flexShrink: 0,
+            position: 'relative'
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* Visual indicator */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '2px',
+              height: '20px',
+              bgcolor: 'background.paper',
+              borderRadius: '1px',
+              opacity: 0.7
+            }}
+          />
+        </Box>
+
         {/* Right Panel - Code Editor */}
-        <Box sx={{ width: '60%', display: 'flex', flexDirection: 'column', bgcolor: '#1e1e1e' }}>
+        <Box sx={{ 
+          width: `${100 - leftPanelWidth}%`, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          bgcolor: '#1e1e1e',
+          minWidth: '300px'
+        }}>
           {/* Editor Toolbar */}
           <Box
             sx={{
@@ -603,9 +722,9 @@ export default function ProblemDetail() {
                   '& .MuiSvgIcon-root': { color: 'primary.main' }
                 }}
               >
-                {languages.map((lang) => (
+                {availableLanguages.map((lang) => (
                   <MenuItem key={lang.languageId} value={lang.languageId}>
-                    {lang.displayName}
+                    {lang.languageDisplayName}
                   </MenuItem>
                 ))}
               </Select>
@@ -642,7 +761,7 @@ export default function ProblemDetail() {
             <CodeEditor
               value={code}
               onChange={(value) => setCode(value || '')}
-              language={selectedLanguage?.code || 'cpp'}
+              language={selectedLanguage?.languageCode || 'cpp'}
             />
           </Box>
 

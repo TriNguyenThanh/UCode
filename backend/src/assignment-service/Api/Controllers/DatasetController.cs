@@ -114,6 +114,10 @@ public class DatasetController : ControllerBase
         await VerifyProblemOwnershipLightweightAsync(datasetDto.ProblemId.Value, userId);
 
         var dataset = _mapper.Map<Dataset>(datasetDto);
+
+        if (dataset.TestCases.Count > 400)
+            throw new ApiException("A dataset cannot contain more than 400 test cases");
+
         var createdDataset = await _datasetService.CreateDatasetAsync(dataset);
         var createdDatasetDto = _mapper.Map<DatasetDto>(createdDataset);
         return Ok(ApiResponse<DatasetDto>.SuccessResponse(createdDatasetDto, "Dataset created successfully"));
@@ -148,6 +152,10 @@ public class DatasetController : ControllerBase
         await GetDatasetProblemIdAndVerifyOwnershipAsync(updateDatasetDto.DatasetId.Value, userId);
 
         var dataset = _mapper.Map<Dataset>(updateDatasetDto);
+
+        if (dataset.TestCases.Count > 400)
+            throw new ApiException("A dataset cannot contain more than 400 test cases");
+            
         var updatedDataset = await _datasetService.UpdateDatasetAsync(dataset);
         var updatedUpdateDatasetDto = _mapper.Map<DatasetDto>(updatedDataset);
         return Ok(ApiResponse<DatasetDto>.SuccessResponse(updatedUpdateDatasetDto, "Dataset updated successfully"));

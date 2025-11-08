@@ -11,7 +11,7 @@ export interface CreateDatasetRequest {
   testCases: {
     inputRef: string
     outputRef: string
-    orderIndex: number
+    indexNo: number
   }[]
 }
 
@@ -25,7 +25,7 @@ export interface UpdateDatasetRequest {
     datasetId?: string
     inputRef: string
     outputRef: string
-    orderIndex: number
+    indexNo: number
   }[]
 }
 

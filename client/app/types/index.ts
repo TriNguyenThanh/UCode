@@ -246,6 +246,7 @@ export interface Problem {
   tagNames: string[]
   problemLanguages: ProblemLanguage[]
   problemAssets: ProblemAsset[]
+  datasetSample?: Dataset
 }
 
 export interface ProblemLanguage {
