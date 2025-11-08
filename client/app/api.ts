@@ -5,7 +5,7 @@ const getToken = () => localStorage.getItem("token");
 
 export const API = axios.create({
   baseURL: import.meta.env.VITE_APP_SERVER_URL, // Base URL
-  withCredentials: true, // Giữ cookies (nếu backend cần)
+  // withCredentials: true, // Tắt vì sử dụng JWT qua Authorization header
 });
 
 // Thêm token vào mọi request

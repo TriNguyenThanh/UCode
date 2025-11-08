@@ -9,6 +9,9 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
     if (user.role === 'teacher') {
       throw redirect('/teacher/home')
     }
+    if (user.role === 'admin') {
+      throw redirect('/admin/home')
+    }
     throw redirect('/home')
   }
   throw redirect('/login')

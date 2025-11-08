@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/home'
 import { auth } from '~/auth'
+import { API } from '~/api'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -21,7 +22,8 @@ import AssignmentIcon from '@mui/icons-material/Assignment'
 import CodeIcon from '@mui/icons-material/Code'
 import ClassIcon from '@mui/icons-material/Class'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import { mockClasses, mockAssignments, mockPracticeCategories } from '~/data/mock'
+import { mockAssignments, mockPracticeCategories } from '~/data/mock'
+import type { ApiResponse, PagedResponse, Class } from '~/types'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Trang chủ | UCode' },
@@ -32,18 +34,43 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
   
-  // Filter assignments due within 7 days
-  const now = new Date()
-  const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-  const upcomingAssignments = mockAssignments.filter(
-    (assignment) => assignment.dueDate <= sevenDaysLater && assignment.dueDate > now
-  )
-  
-  return {
-    user,
-    classes: mockClasses,
-    upcomingAssignments,
-    practiceCategories: mockPracticeCategories,
+  try {
+    // Lấy classes từ API
+    const classesResponse = await API.get<ApiResponse<PagedResponse<Class>>>('/api/v1/classes')
+    const classesData = classesResponse.data.data?.items || []
+    const classes = classesData.map((cls: Class) => ({
+      id: cls.classId,
+      name: cls.className,
+      code: cls.classCode,
+      teacherName: cls.teacherName,
+      semester: cls.semester,
+      description: cls.description,
+      studentCount: cls.studentCount,
+    }))
+    
+    // TODO: Thay thế bằng API khi backend có endpoint
+    // Filter assignments due within 7 days (tạm thời dùng mock)
+    const now = new Date()
+    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    const upcomingAssignments = (mockAssignments as any[]).filter(
+      (assignment: any) => new Date(assignment.dueDate) <= sevenDaysLater && new Date(assignment.dueDate) > now
+    )
+    
+    return {
+      user,
+      classes,
+      upcomingAssignments,
+      practiceCategories: mockPracticeCategories,
+    }
+  } catch (error) {
+    console.error('Error loading home data:', error)
+    // Fallback to empty data nếu API fail
+    return {
+      user,
+      classes: [],
+      upcomingAssignments: [],
+      practiceCategories: mockPracticeCategories,
+    }
   }
 }
 
@@ -97,7 +124,7 @@ export default function Home() {
           </Box>
           
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
-            {classes.map((classItem) => (
+            {classes.map((classItem: any) => (
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }} key={classItem.id}>
                 <CardActionArea component={Link} to={`/class/${classItem.id}`}>
                   <Box
@@ -124,7 +151,7 @@ export default function Home() {
                     <Chip label={classItem.semester} size='small' />
                   </CardContent>
                 </CardActionArea>
-              </Card>
+              </Card> 
             ))}
           </Box>
         </Box>
@@ -149,8 +176,8 @@ export default function Home() {
             </Paper>
           ) : (
             <Stack spacing={2}>
-              {upcomingAssignments.map((assignment) => {
-                const daysLeft = getDaysUntilDue(assignment.dueDate)
+              {upcomingAssignments.map((assignment: any) => {
+                const daysLeft = getDaysUntilDue(new Date(assignment.dueDate))
                 return (
                   <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }} key={assignment.id}>
                     <CardActionArea component={Link} to={`/assignment/${assignment.id}`}>
@@ -184,7 +211,7 @@ export default function Home() {
                                 size='small'
                                 color={daysLeft <= 2 ? 'error' : 'warning'}
                               />
-                              <Chip label={`${assignment.problems.length} bài`} size='small' variant='outlined' />
+                              <Chip label={`${assignment.problems?.length || 0} bài`} size='small' variant='outlined' />
                               <Chip label={`${assignment.totalPoints} điểm`} size='small' variant='outlined' />
                             </Box>
                           </Box>
@@ -213,7 +240,7 @@ export default function Home() {
           </Box>
           
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
-            {practiceCategories.map((category) => (
+            {practiceCategories.map((category: any) => (
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }} key={category.id}>
                 <CardActionArea component={Link} to={`/practice/${category.id}`}>
                   <CardContent>
