@@ -185,11 +185,13 @@ export default function Login() {
           </Button>
 
           <Typography variant='body2' sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
-            Demo Admin: <code>admin@example.com</code> / <code>123456</code>
+            <strong>Tài khoản demo:</strong>
             <br />
-            Demo Student: <code>student@example.com</code> / <code>123456</code>
+            Admin: <code>admin</code> / <code>123</code>
             <br />
-            Demo Teacher: <code>teacher@example.com</code> / <code>123456</code>
+            Teacher: <code>teacher01</code> / <code>123</code>
+            <br />
+            Student: <code>student01</code> / <code>123</code>
           </Typography>
         </Box>
       </Paper>

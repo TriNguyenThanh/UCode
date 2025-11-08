@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using AssignmentService.Application.DTOs.Common;
 using System.Data.Common;
+using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Infrastructure.Services;
 /// <summary>
@@ -88,7 +89,7 @@ public class DatasetService : IDatasetService
         }
     }
 
-    public async Task<List<Dataset>> GetDatasetsByProblemIdAsync(Guid problemId)
+    public async Task<List<Dataset>> GetDatasetsByProblemIdAsync(Guid problemId, DatasetKind? datasetKind)
     {
         try
         {

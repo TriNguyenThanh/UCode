@@ -3,7 +3,7 @@ import pika
 import json
 import os
 import time
-from app.message_handler import MessageHandler
+from message_handler import MessageHandler
 
 
 # =============================================================================

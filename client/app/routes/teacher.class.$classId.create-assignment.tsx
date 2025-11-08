@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { redirect, useLoaderData, useNavigate, Form } from 'react-router'
+import { redirect, useLoaderData, useNavigate } from 'react-router'
 import type { Route } from './+types/teacher.class.$classId.create-assignment'
 import { auth } from '~/auth'
-import { mockClasses } from '~/data/mock'
+import { API } from '~/api'
 import { Navigation } from '~/components/Navigation'
 import {
   Box,
@@ -14,6 +14,9 @@ import {
   Checkbox,
   FormControlLabel,
   Alert,
+  MenuItem,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
@@ -21,6 +24,8 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { vi } from 'date-fns/locale/vi'
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
+import { createAssignment } from '~/services/assignmentService'
+import type { ApiResponse, Class } from '~/types'
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
@@ -28,32 +33,20 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw redirect('/home')
   }
 
-  const classData = mockClasses.find((c) => c.id === params.classId)
-  if (!classData) {
-    throw new Response('Lớp học không tồn tại', { status: 404 })
+  try {
+    // Fetch class data from API
+    const response = await API.get<ApiResponse<Class>>(`/api/v1/classes/${params.classId}`)
+    const classData = response.data.data
+    
+    if (!classData) {
+      throw new Response('Lớp học không tồn tại', { status: 404 })
+    }
+
+    return { user, classData }
+  } catch (error) {
+    console.error('Error loading class:', error)
+    throw new Response('Không thể tải thông tin lớp học', { status: 500 })
   }
-
-  return { user, classData }
-}
-
-export async function clientAction({ request, params }: Route.ClientActionArgs) {
-  const formData = await request.formData()
-  const title = formData.get('title') as string
-  const description = formData.get('description') as string
-  const startDate = formData.get('startDate') as string
-  const endDate = formData.get('endDate') as string
-  const noEndDate = formData.get('noEndDate') === 'true'
-
-  // Validate
-  if (!title || !startDate) {
-    return { error: 'Vui lòng điền đầy đủ thông tin bắt buộc' }
-  }
-
-  // Create assignment (mock - in real app, this would call API)
-  const newAssignmentId = `assignment-${Date.now()}`
-  
-  // Redirect to assignment detail page
-  return redirect(`/teacher/assignment/${newAssignmentId}`)
 }
 
 export default function CreateAssignment() {
@@ -62,6 +55,61 @@ export default function CreateAssignment() {
   const [startDate, setStartDate] = useState<Date | null>(new Date())
   const [endDate, setEndDate] = useState<Date | null>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
   const [noEndDate, setNoEndDate] = useState(false)
+  const [allowLateSubmission, setAllowLateSubmission] = useState(true)
+  const [assignmentType, setAssignmentType] = useState<'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'>('HOMEWORK')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validate
+    if (!title.trim()) {
+      setError('Vui lòng nhập tên bài tập')
+      return
+    }
+    
+    if (!startDate) {
+      setError('Vui lòng chọn thời gian bắt đầu')
+      return
+    }
+    
+    if (!noEndDate && !endDate) {
+      setError('Vui lòng chọn thời gian kết thúc hoặc đánh dấu "Không có thời gian kết thúc"')
+      return
+    }
+    
+    if (!noEndDate && endDate && startDate && endDate <= startDate) {
+      setError('Thời gian kết thúc phải sau thời gian bắt đầu')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const newAssignment = await createAssignment({
+        assignmentType,
+        classId: classData.classId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        startTime: startDate.toISOString(),
+        endTime: noEndDate ? undefined : endDate?.toISOString(),
+        allowLateSubmission,
+        status: 'DRAFT',
+        problems: [], // Will be added later
+      })
+
+      // Redirect to assignment detail page to add problems
+      navigate(`/teacher/assignment/${newAssignment.assignmentId}`)
+    } catch (err: any) {
+      console.error('Error creating assignment:', err)
+      setError(err.message || 'Có lỗi xảy ra khi tạo bài tập. Vui lòng thử lại.')
+      setLoading(false)
+    }
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -74,30 +122,48 @@ export default function CreateAssignment() {
             Tạo bài tập mới
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Lớp: {classData.name} ({classData.code})
+            Lớp: {classData.className} ({classData.classCode})
           </Typography>
         </Box>
 
         <Paper sx={{ p: 4 }}>
-          <Form method="post">
+          <form onSubmit={handleSubmit}>
+            {/* Assignment Type */}
+            <TextField
+              fullWidth
+              select
+              required
+              label="Loại bài tập"
+              value={assignmentType}
+              onChange={(e) => setAssignmentType(e.target.value as any)}
+              sx={{ mb: 3 }}
+            >
+              <MenuItem value="HOMEWORK">Bài tập về nhà</MenuItem>
+              <MenuItem value="EXAM">Kiểm tra</MenuItem>
+              <MenuItem value="PRACTICE">Luyện tập</MenuItem>
+              <MenuItem value="CONTEST">Thi đấu</MenuItem>
+            </TextField>
+
             {/* Title */}
             <TextField
               fullWidth
               required
-              name="title"
               label="Tên bài tập"
               placeholder="VD: Bài tập tuần 3 - Mảng và Chuỗi"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               sx={{ mb: 3 }}
             />
 
             {/* Description */}
             <TextField
               fullWidth
-              name="description"
               label="Mô tả"
               placeholder="Mô tả ngắn gọn về bài tập..."
               multiline
               rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               sx={{ mb: 3 }}
             />
 
@@ -112,7 +178,6 @@ export default function CreateAssignment() {
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    name: 'startDate',
                     sx: { mb: 3 },
                   },
                 }}
@@ -124,8 +189,6 @@ export default function CreateAssignment() {
                   <Checkbox
                     checked={noEndDate}
                     onChange={(e) => setNoEndDate(e.target.checked)}
-                    name="noEndDate"
-                    value="true"
                   />
                 }
                 label="Không có thời gian kết thúc"
@@ -144,13 +207,30 @@ export default function CreateAssignment() {
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      name: 'endDate',
                       sx: { mb: 3 },
                     },
                   }}
                 />
               )}
             </LocalizationProvider>
+
+            {/* Allow Late Submission */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={allowLateSubmission}
+                  onChange={(e) => setAllowLateSubmission(e.target.checked)}
+                />
+              }
+              label="Cho phép nộp bài muộn"
+              sx={{ mb: 3, display: 'block' }}
+            />
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
 
             <Alert severity="info" sx={{ mb: 3 }}>
               Sau khi tạo bài tập, bạn sẽ được chuyển đến trang quản lý bài tập để thêm các bài toán.
@@ -161,7 +241,8 @@ export default function CreateAssignment() {
               <Button
                 variant="outlined"
                 startIcon={<CancelIcon />}
-                onClick={() => navigate(`/teacher/class/${classData.id}`)}
+                onClick={() => navigate(`/teacher/class/${classData.classId}`)}
+                disabled={loading}
                 sx={{
                   borderColor: 'text.secondary',
                   color: 'text.secondary',
@@ -172,7 +253,8 @@ export default function CreateAssignment() {
               <Button
                 type="submit"
                 variant="contained"
-                startIcon={<SaveIcon />}
+                startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                disabled={loading}
                 sx={{
                   bgcolor: 'secondary.main',
                   color: 'primary.main',
@@ -182,12 +264,20 @@ export default function CreateAssignment() {
                   },
                 }}
               >
-                Tạo bài tập
+                {loading ? 'Đang tạo...' : 'Tạo bài tập'}
               </Button>
             </Box>
-          </Form>
+          </form>
         </Paper>
       </Container>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        message={error}
+      />
     </Box>
   )
 }

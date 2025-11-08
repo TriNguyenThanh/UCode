@@ -15,6 +15,14 @@ import {
   Select,
   MenuItem,
   FormControl,
+  CircularProgress,
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
@@ -22,23 +30,65 @@ import SendIcon from '@mui/icons-material/Send'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import { mockProblems } from '~/data/mock'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CancelIcon from '@mui/icons-material/Cancel'
 import { CodeEditor } from '~/components/CodeEditor'
-import { getCodeTemplate } from '~/utils/codeTemplates'
+import { getProblem, getProblemForStudent } from '~/services/problemService'
+import { runCode, submitCode, getSubmissionsByProblem, getSubmission } from '~/services/submissionService'
+import type { Problem, Submission } from '~/types'
+
+function getCodeTemplate(languageCode: string, problemLanguages?: Problem['problemLanguages']): string {
+  // Kiểm tra xem problem có template riêng cho ngôn ngữ này không
+  const problemLanguage = problemLanguages?.find((pl) => pl.languageCode === languageCode)
+
+  if (problemLanguage) {
+    // Nối head + body + tail nếu có
+    const parts = []
+    if (problemLanguage.head) parts.push(problemLanguage.head)
+    if (problemLanguage.body) parts.push(problemLanguage.body)
+    if (problemLanguage.tail) parts.push(problemLanguage.tail)
+
+    if (parts.length > 0) {
+      return parts.join('\n\n')
+    }
+  }
+  return '// Your code here'
+}
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giải bài tập | UCode' },
-  { name: 'description', content: 'Coding interface để giải bài tập.' },
+  { name: 'description', content: 'Coding interface để giải bài tập.' }
 ]
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
 
-  const problem = mockProblems.find((p) => p.id === params.id)
-  if (!problem) throw new Response('Not Found', { status: 404 })
+  if (!params.id) throw new Response('Not Found', { status: 404 })
 
-  return { user, problem }
+  try {
+    // Fetch problem based on user role
+    let problem: Problem
+    if (user.role === 'student') {
+      problem = await getProblemForStudent(params.id)
+    } else {
+      problem = await getProblem(params.id)
+    }
+
+    // Fetch user's submission history for this problem
+    let submissions: Submission[] = []
+    try {
+      submissions = await getSubmissionsByProblem(params.id, 1, 10)
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error)
+      // Continue even if submissions fail
+    }
+
+    return { user, problem, submissions }
+  } catch (error: any) {
+    console.error('Failed to load problem:', error)
+    throw new Response(error.message || 'Problem not found', { status: 404 })
+  }
 }
 
 interface TabPanelProps {
@@ -57,48 +107,292 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function ProblemDetail() {
-  const { problem } = useLoaderData<typeof clientLoader>()
+  const { problem, submissions: initialSubmissions } = useLoaderData<typeof clientLoader>()
   const [tabValue, setTabValue] = React.useState(0)
-  const [language, setLanguage] = React.useState('cpp')
-  const [code, setCode] = React.useState(getCodeTemplate('cpp'))
+  
+  // Panel resizing
+  const [leftPanelWidth, setLeftPanelWidth] = React.useState(50) // Percentage
+  const [isDragging, setIsDragging] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  const availableLanguages = problem.problemLanguages || []
+  
+  const defaultLanguage = availableLanguages.length > 0 ? availableLanguages[0] : null
+  const [selectedLanguage, setSelectedLanguage] = React.useState<typeof defaultLanguage>(defaultLanguage)
+  const [code, setCode] = React.useState('')
   const [output, setOutput] = React.useState('')
   const [isRunning, setIsRunning] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [submissions, setSubmissions] = React.useState<Submission[]>(initialSubmissions)
+  const [hasRunSuccessfully, setHasRunSuccessfully] = React.useState(false)
+  const [lastRunCode, setLastRunCode] = React.useState('')
+
+  // Handle panel resizing
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  React.useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return
+      
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
+      
+      // Clamp between 20% and 80%
+      const clampedWidth = Math.min(Math.max(newLeftWidth, 20), 80)
+      setLeftPanelWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging])
+
+  // Initialize code template when language or problem changes
+  React.useEffect(() => {
+    if (selectedLanguage && selectedLanguage.languageCode) {
+      setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
+    }
+  }, [selectedLanguage, problem])
 
   // Handle language change
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage)
-    setCode(getCodeTemplate(newLanguage))
-    setOutput('')
+  const handleLanguageChange = (languageId: string) => {
+    const lang = availableLanguages.find((l) => l.languageId === languageId)
+    if (lang && lang.languageCode) {
+      setSelectedLanguage(lang)
+      setCode(getCodeTemplate(lang.languageCode, problem.problemLanguages))
+      setOutput('')
+      setHasRunSuccessfully(false) 
+      setLastRunCode('')
+    }
   }
 
   // Handle reset code
   const handleResetCode = () => {
-    setCode(getCodeTemplate(language))
-    setOutput('')
+    if (selectedLanguage && selectedLanguage.languageCode) {
+      setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
+      setOutput('')
+      setHasRunSuccessfully(false) 
+      setLastRunCode('')
+    }
   }
 
-  // Handle run code
-  const handleRunCode = () => {
-    setIsRunning(true)
-    setOutput('⏳ Compiling and running code...\n')
+  // Function to refresh submissions list
+  const refreshSubmissions = async () => {
+    try {
+      const newSubmissions = await getSubmissionsByProblem(problem.problemId, 1, 10)
+      setSubmissions(newSubmissions)
+      // Chuyển sang tab "Nộp bài" để xem kết quả
+      setTabValue(2)
+    } catch (error) {
+      console.error('Failed to refresh submissions:', error)
+    }
+  }
+
+  // Function to get status text from status code
+  const getStatusText = (statusCode: string): { text: string; emoji: string } => {
+    switch (statusCode) {
+      case '0': return { text: 'Passed', emoji: '✅' }
+      case '1': return { text: 'Time Limit Exceeded', emoji: '⏰' }
+      case '2': return { text: 'Memory Limit Exceeded', emoji: '💾' }
+      case '3': return { text: 'Runtime Error', emoji: '💥' }
+      case '4': return { text: 'Internal Error', emoji: '⚠️' }
+      case '5': return { text: 'Wrong Answer', emoji: '❌' }
+      case '6': return { text: 'Compilation Error', emoji: '🔧' }
+      case '7': return { text: 'Skipped', emoji: '⏭️' }
+      default: return { text: 'Unknown', emoji: '❓' }
+    }
+  }
+
+  // Function to parse compareResult and generate test case details
+  const parseTestCaseResults = (compareResult: string): string => {
+    if (!compareResult) return ''
     
-    // Simulate code execution
-    setTimeout(() => {
-      setOutput(`✅ Compiled successfully!\n\n📋 Running test cases:\n\nTest case 1: ✓ Passed\nTest case 2: ✓ Passed\nTest case 3: ✓ Passed\n\n⏱️  Execution Time: 0.45s\n💾 Memory Used: 2.3 MB`)
+    let testCaseDetails = '\n\n📋 Chi tiết từng test case:\n'
+    testCaseDetails += '─'.repeat(40) + '\n'
+    
+    for (let i = 0; i < compareResult.length; i++) {
+      const statusCode = compareResult[i]
+      const { text, emoji } = getStatusText(statusCode)
+      testCaseDetails += `Test case #${i + 1}: ${emoji} ${text}\n`
+    }
+    
+    return testCaseDetails
+  }
+
+  // Polling function to get submission result
+  const pollSubmissionResult = async (submissionId: string, sourceCode: string, isSubmit: boolean = false) => {
+    const maxAttempts = 30 // Max 30 attempts (30 seconds with 1s interval)
+    let attempts = 0
+    
+    const poll = async (): Promise<void> => {
+      try {
+        const submission = await getSubmission(submissionId)
+        
+        // Check if submission is still processing
+        const processingStatuses: string[] = ['Pending', 'Running']
+        if (processingStatuses.includes(submission.status)) {
+          attempts++
+          
+          if (attempts >= maxAttempts) {
+            setOutput(prev => prev + '\n\n⏱️ Timeout: Quá trình chấm điểm mất nhiều thời gian. Vui lòng kiểm tra lại sau.')
+            return
+          }
+          
+          // Update status
+          setOutput(prev => {
+            const lines = prev.split('\n')
+            return lines.slice(0, -1).join('\n') + `\nĐang xử lý... (${attempts}s)`
+          })
+          
+          // Continue polling after 1 second
+          setTimeout(() => poll(), 2000)
+        } else {
+          // Submission completed
+          let resultText = isSubmit ? '🎉 Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
+          resultText += `Submission ID: ${submission.submissionId}\n`
+          resultText += `Status: ${submission.status}\n`
+          resultText += `Thời gian: ${submission.totalTime}ms\n`
+          resultText += `Bộ nhớ: ${submission.totalMemory}KB\n`
+          
+          if (submission.status === 'Passed') {
+            resultText += `\n✅ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
+            // Đánh dấu run thành công nếu không phải submit
+            if (!isSubmit) {
+              setHasRunSuccessfully(true)
+              setLastRunCode(sourceCode)
+            }
+          } else {
+            resultText += `\n❌ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
+            if (submission.errorMessage) {
+              resultText += `\n\nLỗi: ${submission.errorMessage}`
+            }
+            // Reset flag nếu run thất bại
+            if (!isSubmit) {
+              setHasRunSuccessfully(false)
+              setLastRunCode('')
+            }
+          }
+          
+          // Add detailed test case results if compareResult is available
+          if (submission.compareResult) {
+            resultText += parseTestCaseResults(submission.compareResult)
+          }
+          
+          setOutput(resultText)
+          
+          // Reload submissions if it's a submit
+          if (isSubmit) {
+            await refreshSubmissions()
+          }
+        }
+      } catch (error: any) {
+        setOutput(prev => prev + `\n\n❌ Lỗi khi lấy kết quả: ${error.message}`)
+      }
+    }
+    
+    // Start polling
+    await poll()
+  }
+
+  // Handle run code (test without submitting)
+  const handleRunCode = async () => {
+    if (!selectedLanguage) {
+      setOutput('❌ Vui lòng chọn ngôn ngữ lập trình')
+      return
+    }
+
+    if (!code.trim()) {
+      setOutput('❌ Vui lòng nhập code')
+      return
+    }
+
+    // Reset flag khi chạy code mới (code khác với lần run trước)
+    if (code !== lastRunCode) {
+      setHasRunSuccessfully(false)
+    }
+
+    setIsRunning(true)
+    setOutput('⏳ Đang biên dịch và chạy code...\n')
+
+    try {
+      const result = await runCode({
+        problemId: problem.problemId,
+        language: selectedLanguage.languageCode || 'cpp',
+        sourceCode: code,
+      })
+
+      setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý... (0s)`)
+      
+      // Start polling for result
+      await pollSubmissionResult(result.submissionId, code, false)
+      
+    } catch (error: any) {
+      setOutput(`❌ Lỗi: ${error.message || 'Không thể chạy code'}`)
+      // Reset flag khi có lỗi
+      setHasRunSuccessfully(false)
+      setLastRunCode('')
+    } finally {
       setIsRunning(false)
-    }, 1500)
+    }
   }
 
   // Handle submit code
-  const handleSubmitCode = () => {
-    setIsRunning(true)
-    setOutput('📤 Submitting code to judge...\n')
-    
-    // Simulate submission
-    setTimeout(() => {
-      setOutput(`🎉 Submission successful!\n\n✅ Status: Accepted\n📊 Test cases passed: 10/10\n⏱️  Execution Time: 0.52s\n💾 Memory Used: 2.8 MB\n\n🏆 Score: 100/100\n\nCongratulations! Your solution is correct!`)
-      setIsRunning(false)
-    }, 2000)
+  const handleSubmitCode = async () => {
+    if (!selectedLanguage) {
+      setOutput('❌ Vui lòng chọn ngôn ngữ lập trình')
+      return
+    }
+
+    if (!code.trim()) {
+      setOutput('❌ Vui lòng nhập code')
+      return
+    }
+
+    // Kiểm tra xem đã run code thành công chưa
+    if (!hasRunSuccessfully) {
+      setOutput('❌ Vui lòng chạy thử code thành công trước khi nộp bài!')
+      return
+    }
+
+    // Kiểm tra xem code có thay đổi sau lần run thành công cuối không
+    if (code !== lastRunCode) {
+      setOutput('⚠️ Code đã thay đổi sau lần chạy thử cuối!\n\nVui lòng chạy thử lại trước khi nộp bài.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setOutput('📤 Đang nộp bài...\n')
+
+    try {
+      const result = await submitCode({
+        problemId: problem.problemId,
+        language: selectedLanguage.languageCode || 'cpp',
+        sourceCode: code,
+      })
+
+      setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm... (0s)`)
+      
+      // Start polling for result
+      await pollSubmissionResult(result.submissionId, code, true)
+      
+    } catch (error: any) {
+      setOutput(`❌ Lỗi: ${error.message || 'Không thể nộp bài'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const getDifficultyColor = (difficulty: string) => {
@@ -127,7 +421,7 @@ export default function ProblemDetail() {
           borderBottom: '2px solid',
           borderColor: 'primary.main',
           bgcolor: 'secondary.main',
-          color: 'white',
+          color: 'white'
         }}
       >
         <Box sx={{ px: 3, py: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -142,16 +436,26 @@ export default function ProblemDetail() {
       </Paper>
 
       {/* Main Content */}
-      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+      <Box 
+        ref={containerRef}
+        sx={{ 
+          display: 'flex', 
+          flexGrow: 1, 
+          overflow: 'hidden',
+          cursor: isDragging ? 'col-resize' : 'default',
+          userSelect: isDragging ? 'none' : 'auto'
+        }}
+      >
         {/* Left Panel - Problem Description */}
         <Box
           sx={{
-            width: '40%',
+            width: `${leftPanelWidth}%`,
             borderRight: '1px solid',
             borderColor: 'divider',
             display: 'flex',
             flexDirection: 'column',
             bgcolor: 'white',
+            minWidth: '300px'
           }}
         >
           <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -167,93 +471,234 @@ export default function ProblemDetail() {
                 Mô tả
               </Typography>
               <Typography variant='body1' sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-                {problem.description}
+                {problem.statement || 'Chưa có đề bài chi tiết'}
               </Typography>
+
+              {/* Input/Output Format */}
+              {(problem.inputFormat || problem.outputFormat) && (
+                <Box sx={{ mb: 3 }}>
+                  {problem.inputFormat && (
+                    <>
+                      <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
+                        Định dạng Input
+                      </Typography>
+                      <Typography variant='body2' sx={{ mb: 2, whiteSpace: 'pre-line' }}>
+                        {problem.inputFormat}
+                      </Typography>
+                    </>
+                  )}
+                  {problem.outputFormat && (
+                    <>
+                      <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
+                        Định dạng Output
+                      </Typography>
+                      <Typography variant='body2' sx={{ mb: 2, whiteSpace: 'pre-line' }}>
+                        {problem.outputFormat}
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              )}
 
               {/* Constraints */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                   Ràng buộc
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                   <Chip
                     icon={<AccessTimeIcon />}
-                    label={`Time Limit: ${problem.timeLimit}s`}
+                    label={`Time Limit: ${problem.timeLimitMs}ms`}
                     variant='outlined'
                     color='primary'
                   />
                   <Chip
                     icon={<MemoryIcon />}
-                    label={`Memory: ${problem.memoryLimit}MB`}
+                    label={`Memory: ${problem.memoryLimitKb}KB`}
                     variant='outlined'
                     color='primary'
                   />
                 </Box>
+                {problem.constraints && (
+                  <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
+                    {problem.constraints}
+                  </Typography>
+                )}
               </Box>
 
-              {/* Sample Input/Output */}
-              {problem.sampleInput && (
+              {/* Sample Test Cases */}
+              {problem.datasetSample && problem.datasetSample.testCases && problem.datasetSample.testCases.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
-                    Ví dụ
+                    Test case mẫu
                   </Typography>
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 2 }}>
-                    <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
-                      Input:
-                    </Typography>
-                    <Typography variant='body2' component='pre' sx={{ fontFamily: 'monospace' }}>
-                      {problem.sampleInput}
-                    </Typography>
-                  </Paper>
-                  {problem.sampleOutput && (
-                    <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
-                      <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
-                        Output:
-                      </Typography>
-                      <Typography variant='body2' component='pre' sx={{ fontFamily: 'monospace' }}>
-                        {problem.sampleOutput}
-                      </Typography>
-                    </Paper>
-                  )}
+                  <TableContainer component={Paper} variant='outlined'>
+                    <Table size='small'>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Test case</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Input</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Output</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {problem.datasetSample.testCases.map((testCase: any, index: number) => (
+                          <TableRow key={testCase.testCaseId || index}>
+                            <TableCell>#{testCase.indexNo || index + 1}</TableCell>
+                            <TableCell>
+                              <Typography 
+                                variant='body2' 
+                                component='pre' 
+                                sx={{ 
+                                  fontFamily: 'monospace', 
+                                  whiteSpace: 'pre-wrap',
+                                  m: 0,
+                                  p: 1,
+                                  bgcolor: '#f5f5f5',
+                                  borderRadius: 1
+                                }}
+                              >
+                                {testCase.inputRef}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography 
+                                variant='body2' 
+                                component='pre' 
+                                sx={{ 
+                                  fontFamily: 'monospace', 
+                                  whiteSpace: 'pre-wrap',
+                                  m: 0,
+                                  p: 1,
+                                  bgcolor: '#f5f5f5',
+                                  borderRadius: 1
+                                }}
+                              >
+                                {testCase.outputRef}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Box>
               )}
 
               {/* Tags */}
-              <Box>
-                <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
-                  Tags
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  <Chip label={problem.category} size='small' color='primary' />
-                  {problem.tags.map((tag) => (
-                    <Chip key={tag} label={tag} size='small' variant='outlined' />
-                  ))}
+              {problem.tagNames && problem.tagNames.length > 0 && (
+                <Box>
+                  <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
+                    Tags
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {problem.tagNames.map((tag) => (
+                      <Chip key={tag} label={tag} size='small' variant='outlined' />
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
+              )}
             </TabPanel>
 
             <TabPanel value={tabValue} index={1}>
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Hướng dẫn giải
               </Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Nội dung hướng dẫn sẽ được cập nhật sau...
-              </Typography>
+              {problem.solution ? (
+                <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
+                  {problem.solution}
+                </Typography>
+              ) : (
+                <Typography variant='body2' color='text.secondary'>
+                  Nội dung hướng dẫn sẽ được cập nhật sau...
+                </Typography>
+              )}
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Lịch sử nộp bài
               </Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Chưa có lần nộp bài nào.
-              </Typography>
+              {submissions.length > 0 ? (
+                <TableContainer component={Paper} variant='outlined'>
+                  <Table size='small'>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Thời gian</TableCell>
+                        <TableCell>Ngôn ngữ</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell align='right'>Time (ms)</TableCell>
+                        <TableCell align='right'>Memory (KB)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {submissions.map((sub) => (
+                        <TableRow key={sub.submissionId}>
+                          <TableCell>{new Date(sub.submittedAt).toLocaleString('vi-VN')}</TableCell>
+                          <TableCell>{sub.language}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={sub.status} 
+                              size="small"
+                              color={sub.status === 'Passed' ? 'success' : 'error'}
+                              icon={sub.status === 'Passed' ? <CheckCircleIcon /> : <CancelIcon />}
+                            />
+                          </TableCell>
+                          <TableCell align='right'>{sub.totalTime}</TableCell>
+                          <TableCell align='right'>{sub.totalMemory}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant='body2' color='text.secondary'>
+                  Chưa có lần nộp bài nào.
+                </Typography>
+              )}
             </TabPanel>
           </Box>
         </Box>
 
+        {/* Resize Handle */}
+        <Box
+          sx={{
+            width: '6px',
+            cursor: 'col-resize',
+            bgcolor: isDragging ? 'primary.main' : 'divider',
+            '&:hover': {
+              bgcolor: 'primary.main'
+            },
+            transition: 'background-color 0.2s ease',
+            flexShrink: 0,
+            position: 'relative'
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* Visual indicator */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '2px',
+              height: '20px',
+              bgcolor: 'background.paper',
+              borderRadius: '1px',
+              opacity: 0.7
+            }}
+          />
+        </Box>
+
         {/* Right Panel - Code Editor */}
-        <Box sx={{ width: '60%', display: 'flex', flexDirection: 'column', bgcolor: '#1e1e1e' }}>
+        <Box sx={{ 
+          width: `${100 - leftPanelWidth}%`, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          bgcolor: '#1e1e1e',
+          minWidth: '300px'
+        }}>
           {/* Editor Toolbar */}
           <Box
             sx={{
@@ -263,38 +708,29 @@ export default function ProblemDetail() {
               alignItems: 'center',
               gap: 2,
               bgcolor: '#2d2d2d',
-              borderBottom: '1px solid #3d3d3d',
+              borderBottom: '1px solid #3d3d3d'
             }}
           >
-            <FormControl size='small' sx={{ minWidth: 150 }}>
+            <FormControl size='small' sx={{ minWidth: 180 }}>
               <Select
-                value={language}
+                value={selectedLanguage?.languageId || ''}
                 onChange={(e) => handleLanguageChange(e.target.value)}
                 sx={{
                   color: 'white',
                   '.MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-                  '& .MuiSvgIcon-root': { color: 'primary.main' },
+                  '& .MuiSvgIcon-root': { color: 'primary.main' }
                 }}
               >
-                <MenuItem value='cpp'>C++</MenuItem>
-                <MenuItem value='java'>Java</MenuItem>
-                <MenuItem value='python'>Python</MenuItem>
-                <MenuItem value='javascript'>JavaScript</MenuItem>
-                <MenuItem value='typescript'>TypeScript</MenuItem>
-                <MenuItem value='c'>C</MenuItem>
-                <MenuItem value='csharp'>C#</MenuItem>
-                <MenuItem value='go'>Go</MenuItem>
-                <MenuItem value='rust'>Rust</MenuItem>
+                {availableLanguages.map((lang) => (
+                  <MenuItem key={lang.languageId} value={lang.languageId}>
+                    {lang.languageDisplayName}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
-            <Button
-              startIcon={<RestartAltIcon />}
-              size='small'
-              onClick={handleResetCode}
-              sx={{ color: '#86868b' }}
-            >
+            <Button startIcon={<RestartAltIcon />} size='small' onClick={handleResetCode} sx={{ color: '#86868b' }}>
               Reset Code
             </Button>
 
@@ -305,7 +741,7 @@ export default function ProblemDetail() {
               variant='outlined'
               sx={{ color: 'primary.main', borderColor: 'primary.main' }}
               onClick={handleRunCode}
-              disabled={isRunning}
+              disabled={isRunning || isSubmitting}
             >
               {isRunning ? 'Đang chạy...' : 'Chạy thử'}
             </Button>
@@ -314,15 +750,19 @@ export default function ProblemDetail() {
               variant='contained'
               sx={{ bgcolor: 'primary.main', color: 'secondary.main', fontWeight: 600 }}
               onClick={handleSubmitCode}
-              disabled={isRunning}
+              disabled={isRunning || isSubmitting}
             >
-              Nộp bài
+              {isSubmitting ? 'Đang nộp...' : 'Nộp bài'}
             </Button>
           </Box>
 
           {/* Code Editor Area */}
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <CodeEditor value={code} onChange={(value) => setCode(value || '')} language={language} />
+            <CodeEditor
+              value={code}
+              onChange={(value) => setCode(value || '')}
+              language={selectedLanguage?.languageCode || 'cpp'}
+            />
           </Box>
 
           {/* Output Console */}
@@ -333,7 +773,7 @@ export default function ProblemDetail() {
               borderColor: 'primary.main',
               bgcolor: '#252526',
               borderRadius: 0,
-              overflow: 'auto',
+              overflow: 'auto'
             }}
           >
             <Box sx={{ p: 2 }}>
@@ -343,10 +783,10 @@ export default function ProblemDetail() {
                   fontFamily: 'monospace',
                   color: '#d4d4d4',
                   whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
+                  wordBreak: 'break-word'
                 }}
               >
-                {output || 'Output console...\n\nNhấn "Chạy thử" để test code hoặc "Nộp bài" để submit.'}
+                {output || 'Nhấn "Chạy thử" để kiểm tra code hoặc "Nộp bài" để submit...'}
               </Typography>
             </Box>
           </Paper>
