@@ -47,7 +47,6 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       assignments = await getAssignmentsByClass(params.id)
     } catch (assignmentError) {
       console.warn('Assignment service unavailable:', assignmentError)
-      // Continue without assignments
     }
 
     return { user, classData, assignments }
