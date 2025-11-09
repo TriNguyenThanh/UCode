@@ -122,6 +122,12 @@ public class ClassAppService : IClassService
         return _mapper.Map<List<ClassResponse>>(classes);
     }
 
+    public async Task<List<ClassResponse>> GetClassesByStudentIdAsync(string studentId)
+    {
+        var classes = await _classRepository.GetClassesByStudentIdAsync(Guid.Parse(studentId));
+        return _mapper.Map<List<ClassResponse>>(classes);
+    }
+
     public async Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request)
     {
         var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));

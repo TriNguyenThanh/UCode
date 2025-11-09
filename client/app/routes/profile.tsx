@@ -2,6 +2,8 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/profile'
 import { auth } from '~/auth'
+import * as StudentService from '~/services/studentService'
+import * as TeacherService from '~/services/teacherService'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -34,26 +36,64 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
 
-  // Mock statistics
-  const stats = {
-    totalClasses: mockClasses.length,
-    completedAssignments: 5,
-    totalAssignments: mockAssignments.length,
-    problemsSolved: 23,
-    totalProblems: 50,
-    currentStreak: 7,
-    rank: 'Silver',
-    points: 1250,
-  }
+  try {
+    let profile = null
+    
+    // Lấy profile dựa vào role
+    if (user.role === 'student') {
+      profile = await StudentService.getMyProfile()
+    } else if (user.role === 'teacher' || user.role === 'admin') {
+      profile = await TeacherService.getMyProfile()
+    }
+    
+    // Mock statistics (TODO: Thay bằng real API khi backend có endpoint)
+    const stats = {
+      totalClasses: mockClasses.length,
+      completedAssignments: 5,
+      totalAssignments: mockAssignments.length,
+      problemsSolved: 23,
+      totalProblems: 50,
+      currentStreak: 7,
+      rank: 'Silver',
+      points: 1250,
+    }
 
-  return { user, stats }
+    return { user, profile, stats }
+  } catch (error) {
+    console.error('Error loading profile:', error)
+    
+    // Fallback nếu API fail
+    const stats = {
+      totalClasses: mockClasses.length,
+      completedAssignments: 5,
+      totalAssignments: mockAssignments.length,
+      problemsSolved: 23,
+      totalProblems: 50,
+      currentStreak: 7,
+      rank: 'Silver',
+      points: 1250,
+    }
+    
+    return { user, profile: null, stats }
+  }
 }
 
 export default function Profile() {
-  const { user, stats } = useLoaderData<typeof clientLoader>()
+  const { user, profile, stats } = useLoaderData<typeof clientLoader>()
 
   const completionRate = Math.round((stats.completedAssignments / stats.totalAssignments) * 100)
   const problemSolvedRate = Math.round((stats.problemsSolved / stats.totalProblems) * 100)
+  
+  // Display name từ profile hoặc fallback to email
+  const displayName = profile?.fullName || user.email.split('@')[0]
+  const email = profile?.email || user.email
+  
+  // Hiển thị mã tùy theo role
+  const isStudent = user.role === 'student'
+  const code = isStudent 
+    ? (profile as any)?.studentCode || 'N/A' 
+    : (profile as any)?.teacherCode || 'N/A'
+  const codeLabel = isStudent ? 'MSSV' : 'MSGV'
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -83,14 +123,14 @@ export default function Profile() {
                   borderColor: 'primary.main',
                 }}
               >
-                {user.email.charAt(0).toUpperCase()}
+                {displayName.charAt(0).toUpperCase()}
               </Avatar>
 
               {/* User Info */}
               <Box sx={{ flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
                   <Typography variant='h4' sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    {user.email.split('@')[0]}
+                    {displayName}
                   </Typography>
                   <Chip
                     label={stats.rank}
@@ -110,13 +150,13 @@ export default function Profile() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <EmailIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                     <Typography variant='body1' sx={{ color: 'primary.main' }}>
-                      {user.email}
+                      {email}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <SchoolIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                     <Typography variant='body1' sx={{ color: 'primary.main' }}>
-                      Sinh viên UTC2
+                      {codeLabel}: {code}
                     </Typography>
                   </Box>
                 </Box>

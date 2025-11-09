@@ -33,6 +33,15 @@ public class ClassRepository : Repository<Class>, IClassRepository
             .ToListAsync();
     }
 
+    public async Task<List<Class>> GetClassesByStudentIdAsync(Guid studentId)
+    {
+        return await _dbSet
+            .Include(c => c.Teacher)
+            .Include(c => c.UserClasses)
+            .Where(c => c.UserClasses.Any(uc => uc.StudentId == studentId && uc.IsActive))
+            .ToListAsync();
+    }
+
     public async Task<Class?> GetClassWithStudentsAsync(Guid classId)
     {
         return await _dbSet

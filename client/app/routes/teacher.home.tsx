@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/teacher.home'
 import { auth } from '~/auth'
+import * as TeacherService from '~/services/teacherService'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -22,7 +23,7 @@ import GradingIcon from '@mui/icons-material/Grading'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import { mockClasses, mockAssignments } from '~/data/mock'
+import { mockAssignments } from '~/data/mock'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giáo viên | UCode' },
@@ -34,19 +35,49 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   if (!user) throw redirect('/login')
   if (user.role !== 'teacher') throw redirect('/home')
 
-  // Mock teacher stats
-  const stats = {
-    totalClasses: 3,
-    totalStudents: 85,
-    activeAssignments: 5,
-    pendingGrading: 12,
-  }
+  try {
+    // Lấy profile và classes từ API
+    const [teacherProfile, myClasses] = await Promise.all([
+      TeacherService.getMyProfile(),
+      TeacherService.getMyClasses(),
+    ])
+    
+    // Tính stats từ data thật
+    const totalStudents = myClasses.reduce((sum, cls) => sum + (cls.studentCount || 0), 0)
+    
+    const stats = {
+      totalClasses: myClasses.length,
+      totalStudents,
+      activeAssignments: 5, // TODO: Lấy từ assignment service
+      pendingGrading: 12, // TODO: Lấy từ assignment service
+    }
 
-  return { user, classes: mockClasses, assignments: mockAssignments, stats }
+    return { 
+      user, 
+      teacherProfile,
+      classes: myClasses, 
+      assignments: mockAssignments, // TODO: Replace with real API
+      stats 
+    }
+  } catch (error) {
+    console.error('Error loading teacher home:', error)
+    
+    // Fallback to mock data
+    const stats = {
+      totalClasses: 0,
+      totalStudents: 0,
+      activeAssignments: 0,
+      pendingGrading: 0,
+    }
+
+    return { user, teacherProfile: null, classes: [], assignments: [], stats }
+  }
 }
 
 export default function TeacherHome() {
-  const { classes, assignments, stats } = useLoaderData<typeof clientLoader>()
+  const { teacherProfile, classes, assignments, stats } = useLoaderData<typeof clientLoader>()
+  
+  const teacherName = teacherProfile?.fullName || 'Giáo viên'
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -56,7 +87,7 @@ export default function TeacherHome() {
         {/* Welcome Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-            Dashboard Giáo viên 👨‍🏫
+            Xin chào, {teacherName}! 👨‍🏫
           </Typography>
           <Typography variant='body1' color='text.secondary'>
             Quản lý lớp học, bài tập và đánh giá sinh viên
@@ -171,9 +202,9 @@ export default function TeacherHome() {
                     boxShadow: 4,
                   },
                 }}
-                key={classItem.id}
+                key={classItem.classId}
               >
-                <CardActionArea component={Link} to={`/teacher/class/${classItem.id}`}>
+                <CardActionArea component={Link} to={`/teacher/class/${classItem.classId}`}>
                   <Box
                     sx={{
                       height: 120,
@@ -185,12 +216,12 @@ export default function TeacherHome() {
                     }}
                   >
                     <Typography variant='h6' sx={{ color: 'primary.main', fontWeight: 700, px: 2, textAlign: 'center' }}>
-                      {classItem.code}
+                      {classItem.classCode}
                     </Typography>
                   </Box>
                   <CardContent>
                     <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
-                      {classItem.name}
+                      {classItem.className}
                     </Typography>
                     <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
                       {classItem.semester}
@@ -219,7 +250,7 @@ export default function TeacherHome() {
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {assignments.slice(0, 3).map((assignment) => (
+            {assignments.slice(0, 3).map((assignment: any) => (
               <Card
                 key={assignment.id}
                 elevation={0}
@@ -257,11 +288,11 @@ export default function TeacherHome() {
                           {assignment.title}
                         </Typography>
                         <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                          {assignment.className}
+                          {assignment.className || 'N/A'}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                          <Chip label={`${assignment.problems.length} câu hỏi`} size='small' variant='outlined' />
-                          <Chip label={`Hạn: ${new Date(assignment.dueDate).toLocaleDateString('vi-VN')}`} size='small' />
+                          <Chip label={`${assignment.problems?.length || 0} câu hỏi`} size='small' variant='outlined' />
+                          <Chip label={`Hạn: ${new Date(assignment.dueDate || Date.now()).toLocaleDateString('vi-VN')}`} size='small' />
                           <Chip label='8/28 đã nộp' size='small' color='warning' />
                         </Box>
                       </Box>

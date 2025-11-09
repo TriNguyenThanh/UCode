@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { redirect, useLoaderData, Link } from 'react-router'
 import type { Route } from './+types/teacher.class.$classId.students'
 import { auth } from '~/auth'
-import { mockClasses } from '~/data/mock'
+import * as ClassService from '~/services/classService'
 import { Navigation } from '~/components/Navigation'
 import {
   Box,
@@ -31,50 +31,78 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EmailIcon from '@mui/icons-material/Email'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
-interface Student {
-  id: string
-  studentId: string
-  name: string
-  email: string
-  enrolledDate: string
-  status: 'active' | 'inactive'
-}
-
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user || user.role !== 'teacher') {
     throw redirect('/home')
   }
 
-  const classData = mockClasses.find((c) => c.id === params.classId)
-  if (!classData) {
+  try {
+    // Get class detail and students from API
+    const [classData, students] = await Promise.all([
+      ClassService.getClassById(params.classId),
+      ClassService.getClassStudents(params.classId),
+    ])
+
+    return { user, classData, students }
+  } catch (error) {
+    console.error('Error loading class students:', error)
     throw new Response('Lớp học không tồn tại', { status: 404 })
   }
-
-  // Mock students data
-  const students: Student[] = Array.from({ length: classData.studentCount }, (_, i) => ({
-    id: `student-${i + 1}`,
-    studentId: `2021${(600000 + i).toString().padStart(6, '0')}`,
-    name: `Sinh viên ${i + 1}`,
-    email: `student${i + 1}@utc2.edu.vn`,
-    enrolledDate: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Math.random() > 0.1 ? 'active' : 'inactive',
-  }))
-
-  return { user, classData, students }
 }
 
 export default function ManageStudents() {
   const { classData, students } = useLoaderData<typeof clientLoader>()
   const [searchQuery, setSearchQuery] = useState('')
   const [openDialog, setOpenDialog] = useState(false)
+  const [studentIds, setStudentIds] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const filteredStudents = students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.studentId.includes(searchQuery) ||
+      student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.studentCode && student.studentCode.includes(searchQuery)) ||
       student.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const handleAddStudents = async () => {
+    if (!studentIds.trim()) return
+
+    setLoading(true)
+    try {
+      const ids = studentIds
+        .split('\n')
+        .map(id => id.trim())
+        .filter(id => id.length > 0)
+
+      for (const studentId of ids) {
+        await ClassService.addStudentToClass(classData.classId, studentId)
+      }
+
+      alert(`Đã thêm ${ids.length} sinh viên vào lớp`)
+      setOpenDialog(false)
+      setStudentIds('')
+      window.location.reload()
+    } catch (error) {
+      console.error('Error adding students:', error)
+      alert('Không thể thêm sinh viên. Vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRemoveStudent = async (studentId: string) => {
+    if (!confirm('Bạn có chắc muốn xóa sinh viên này khỏi lớp?')) return
+
+    try {
+      await ClassService.removeStudentFromClass(classData.classId, studentId)
+      alert('Đã xóa sinh viên khỏi lớp')
+      window.location.reload()
+    } catch (error) {
+      console.error('Error removing student:', error)
+      alert('Không thể xóa sinh viên. Vui lòng thử lại.')
+    }
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -85,7 +113,7 @@ export default function ManageStudents() {
         <Box sx={{ mb: 4 }}>
           <Button
             component={Link}
-            to={`/teacher/class/${classData.id}`}
+            to={`/teacher/class/${classData.classId}`}
             startIcon={<ArrowBackIcon />}
             sx={{ mb: 2, color: 'text.secondary' }}
           >
@@ -95,7 +123,7 @@ export default function ManageStudents() {
             Quản lý sinh viên
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            {classData.name} ({classData.code}) • {students.length} sinh viên
+            {classData.className} ({classData.classCode}) • {students.length} sinh viên
           </Typography>
         </Box>
 
@@ -148,15 +176,15 @@ export default function ManageStudents() {
             </TableHead>
             <TableBody>
               {filteredStudents.map((student) => (
-                <TableRow key={student.id} hover>
+                <TableRow key={student.userId} hover>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
-                      {student.studentId}
+                      {student.studentCode || 'N/A'}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" fontWeight={500}>
-                      {student.name}
+                      {student.fullName}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -169,20 +197,22 @@ export default function ManageStudents() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">
-                      {new Date(student.enrolledDate).toLocaleDateString('vi-VN')}
+                      {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : 'N/A'}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={student.status === 'active' ? 'Đang học' : 'Nghỉ'}
+                      label={student.status === 'Active' ? 'Đang học' : student.status === 'Inactive' ? 'Nghỉ' : 'Bị cấm'}
                       size="small"
-                      color={student.status === 'active' ? 'success' : 'default'}
+                      color={student.status === 'Active' ? 'success' : 'default'}
                     />
                   </TableCell>
                   <TableCell align="right">
                     <IconButton
                       size="small"
                       sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                      onClick={() => handleRemoveStudent(student.userId)}
+                      title="Xóa sinh viên"
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -208,7 +238,7 @@ export default function ManageStudents() {
           </DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Nhập danh sách MSSV (mỗi MSSV một dòng) hoặc import từ file CSV
+              Nhập danh sách MSSV (mỗi MSSV một dòng)
             </Typography>
             <TextField
               fullWidth
@@ -216,17 +246,18 @@ export default function ManageStudents() {
               rows={8}
               placeholder="2021600001&#10;2021600002&#10;2021600003&#10;..."
               sx={{ mb: 2 }}
+              value={studentIds}
+              onChange={(e) => setStudentIds(e.target.value)}
             />
-            <Button variant="outlined" component="label" fullWidth>
-              Hoặc chọn file CSV
-              <input type="file" accept=".csv" hidden />
-            </Button>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
+            <Button onClick={() => setOpenDialog(false)} disabled={loading}>
+              Hủy
+            </Button>
             <Button
               variant="contained"
-              onClick={() => setOpenDialog(false)}
+              onClick={handleAddStudents}
+              disabled={loading || !studentIds.trim()}
               sx={{
                 bgcolor: 'secondary.main',
                 color: 'primary.main',
@@ -236,7 +267,7 @@ export default function ManageStudents() {
                 },
               }}
             >
-              Thêm sinh viên
+              {loading ? 'Đang thêm...' : 'Thêm sinh viên'}
             </Button>
           </DialogActions>
         </Dialog>

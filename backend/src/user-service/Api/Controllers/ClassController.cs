@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -143,6 +145,25 @@ public class ClassController : ControllerBase
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete class"));
 
         return Ok(ApiResponse<object>.SuccessResponse(null, "Class deleted successfully"));
+    }
+
+    /// <summary>
+    /// [STUDENT] Lấy danh sách lớp học đã đăng ký
+    /// </summary>
+    /// <returns>Danh sách lớp học đã đăng ký</returns>
+    /// <response code="200">Danh sách lớp học</response>
+    [HttpGet("enrolled")]
+    [Authorize(Roles = "Student")]
+    [SwaggerOperation(Summary = "[STUDENT] Lấy lớp học đã đăng ký", Description = "Student lấy danh sách các lớp đã enroll từ JWT token")]
+    [SwaggerResponse(200, "Danh sách lớp học đã đăng ký", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> GetEnrolledClasses()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+
+        var classes = await _classService.GetClassesByStudentIdAsync(userId);
+        return Ok(ApiResponse<object>.SuccessResponse(classes, "Enrolled classes retrieved successfully"));
     }
 
     /// <summary>

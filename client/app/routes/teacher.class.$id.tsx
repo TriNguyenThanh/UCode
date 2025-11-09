@@ -1,7 +1,7 @@
 import { redirect, useLoaderData, Link } from 'react-router'
 import type { Route } from './+types/teacher.class.$id'
 import { auth } from '~/auth'
-import { mockClasses, mockAssignments } from '~/data/mock'
+import * as ClassService from '~/services/classService'
 import { Navigation } from '~/components/Navigation'
 import {
   Box,
@@ -29,14 +29,18 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw redirect('/home')
   }
 
-  const classData = mockClasses.find((c) => c.id === params.id)
-  if (!classData) {
+  try {
+    // Get class detail from API
+    const classData = await ClassService.getClassDetail(params.id)
+    
+    // TODO: Get assignments from assignment-service when available
+    const assignments: any[] = []
+    
+    return { user, classData, assignments }
+  } catch (error) {
+    console.error('Error loading class:', error)
     throw new Response('Lớp học không tồn tại', { status: 404 })
   }
-
-  const assignments = mockAssignments.filter((a) => a.classId === params.id)
-
-  return { user, classData, assignments }
 }
 
 export default function TeacherClassDetail() {
@@ -61,22 +65,22 @@ export default function TeacherClassDetail() {
             }}
           >
             <Typography variant="h4" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-              {classData.code.charAt(0)}
+              {classData.classCode.charAt(0)}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 0.5 }}>
-              {classData.name}
+              {classData.className}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Mã lớp: {classData.code} • Học kỳ: {classData.semester}
+              Mã lớp: {classData.classCode} • Học kỳ: {classData.semester}
             </Typography>
           </Box>
           <Button
             variant="outlined"
             startIcon={<PeopleIcon />}
             component={Link}
-            to={`/teacher/class/${classData.id}/students`}
+            to={`/teacher/class/${classData.classId}/students`}
             sx={{
               borderColor: 'secondary.main',
               color: 'secondary.main',
@@ -91,7 +95,7 @@ export default function TeacherClassDetail() {
           </Button>
         </Box>
         <Typography variant="body1" color="text.secondary">
-          {classData.description}
+          {classData.description || 'Không có mô tả'}
         </Typography>
       </Box>
 
@@ -104,7 +108,7 @@ export default function TeacherClassDetail() {
           variant="contained"
           startIcon={<AddIcon />}
           component={Link}
-          to={`/teacher/class/${classData.id}/create-assignment`}
+          to={`/teacher/class/${classData.classId}/create-assignment`}
           sx={{
             bgcolor: 'secondary.main',
             color: 'primary.main',
@@ -133,8 +137,8 @@ export default function TeacherClassDetail() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {assignments.map((assignment) => {
-              const submittedCount = Math.floor(Math.random() * classData.studentCount)
+            {assignments.map((assignment: any) => {
+              const submittedCount = Math.floor(Math.random() * (classData.studentCount || 0))
               const daysUntilDue = Math.ceil(
                 (new Date(assignment.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
               )
@@ -167,14 +171,14 @@ export default function TeacherClassDetail() {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Chip label={`${assignment.problems.length} bài`} size="small" />
+                    <Chip label={`${assignment.problems?.length || 0} bài`} size="small" />
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
                       {submittedCount}/{classData.studentCount}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      ({Math.round((submittedCount / classData.studentCount) * 100)}%)
+                      ({Math.round((submittedCount / (classData.studentCount || 1)) * 100)}%)
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -219,7 +223,7 @@ export default function TeacherClassDetail() {
             variant="contained"
             startIcon={<AddIcon />}
             component={Link}
-            to={`/teacher/class/${classData.id}/create-assignment`}
+            to={`/teacher/class/${classData.classId}/create-assignment`}
             sx={{
               bgcolor: 'secondary.main',
               color: 'primary.main',
