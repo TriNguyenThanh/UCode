@@ -10,7 +10,7 @@ public class Submission
     
     public Guid UserId { get; set; }
     
-    public Guid? AssignmentUserId { get; set; }
+    public Guid? AssignmentId { get; set; }
     
     public Guid ProblemId { get; set; }
     
@@ -85,6 +85,6 @@ public class Submission
     public string? ResultFileRef { get; set; }
 
     // Navigation Properties
-    public AssignmentUser AssignmentUser { get; set; } = null!;
+    public Assignment Assignment { get; set; } = null!;
     public Problem Problem { get; set; } = null!;
 }

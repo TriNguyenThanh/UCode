@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using AssignmentService.Infrastructure.EF.MigrationBuilders;
+﻿using AssignmentService.Infrastructure.EF.MigrationBuilders;
+using Microsoft.EntityFrameworkCore.Migrations;
+
 #nullable disable
 
 namespace Infrastructure.Migrations
@@ -10,7 +11,7 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateBestSubmissionsView();
+migrationBuilder.CreateBestSubmissionsView();
         }
 
         /// <inheritdoc />

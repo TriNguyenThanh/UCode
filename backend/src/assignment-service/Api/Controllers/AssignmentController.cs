@@ -186,7 +186,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id:guid}")]
-    [RequireRole("teacher,admin")]
+    // [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]

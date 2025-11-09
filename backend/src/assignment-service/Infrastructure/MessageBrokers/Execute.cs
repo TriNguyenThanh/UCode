@@ -27,7 +27,7 @@ public class ExecuteService : IExecuteService
         var dataset = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
         var testcases = dataset?.TestCases;
 
-RabbitMqMessage message = null;
+        RabbitMqMessage message = null;
         try
         {
             message = new RabbitMqMessage

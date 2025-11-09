@@ -6,7 +6,7 @@ import { handleApiError, unwrapApiResponse, buildQueryString } from './utils'
 
 export interface SubmitCodeRequest {
   problemId: string
-  languageId: string
+  language: string
   sourceCode: string
 }
 

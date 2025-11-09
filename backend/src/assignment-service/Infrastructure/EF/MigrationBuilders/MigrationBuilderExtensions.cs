@@ -10,7 +10,8 @@ public static class MigrationBuilderExtensions
             CREATE VIEW BestSubmissions AS
             SELECT 
                 NEWID() AS BestSubmissionId,
-                au.assignment_user_id AS AssignmentUserId,
+                au.assignment_id AS AssignmentId,
+                au.user_id AS UserId,
                 ap.problem_id AS ProblemId,
                 s.SubmissionId,
                 s.Score,

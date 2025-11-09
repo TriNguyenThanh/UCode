@@ -2,7 +2,7 @@ import type { Class, Assignment, Problem, PracticeCategory } from '~/types/index
 
 export const mockClasses: Class[] = [
   {
-    id: '1',
+    id: '1B030943-F103-4693-8DE8-CB1C2D4D62F4',
     name: 'Cấu trúc dữ liệu và Giải thuật',
     code: 'CS201',
     teacherName: 'TS. Nguyễn Văn A',

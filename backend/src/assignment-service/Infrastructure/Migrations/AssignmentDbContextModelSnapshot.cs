@@ -201,9 +201,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.BestSubmission", b =>
                 {
-                    b.Property<Guid>("AssignmentUserId")
+                    b.Property<Guid>("AssignmentId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("AssignmentUserId");
+                        .HasColumnName("AssignmentId");
 
                     b.Property<Guid>("BestSubmissionId")
                         .HasColumnType("uniqueidentifier")
@@ -236,6 +236,10 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("UpdatedAt");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("UserId");
 
                     b.ToTable((string)null);
 
@@ -686,6 +690,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("submission_id");
 
+                    b.Property<Guid?>("AssignmentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("assignment_id");
+
                     b.Property<Guid?>("AssignmentUserId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_user_id");
@@ -770,6 +778,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("SubmissionId")
                         .HasName("pk_submission");
+
+                    b.HasIndex("AssignmentId")
+                        .HasDatabaseName("ix_submission_assignment_id");
 
                     b.HasIndex("AssignmentUserId")
                         .HasDatabaseName("ix_submission_assignment_user_id");
@@ -970,10 +981,15 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.Submission", b =>
                 {
-                    b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", "AssignmentUser")
+                    b.HasOne("AssignmentService.Domain.Entities.Assignment", "Assignment")
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_submission_assignment_assignment_id");
+
+                    b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", null)
                         .WithMany("Submissions")
                         .HasForeignKey("AssignmentUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_submission_assignment_user_assignment_user_id");
 
                     b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
@@ -983,7 +999,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_submission_problem_problem_id");
 
-                    b.Navigation("AssignmentUser");
+                    b.Navigation("Assignment");
 
                     b.Navigation("Problem");
                 });

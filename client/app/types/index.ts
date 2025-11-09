@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T> {
   success: boolean
   data?: T
@@ -8,13 +7,13 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  items: T[] // Backend trả về items[], không phải data[]
-  totalCount: number
-  pageNumber: number // Backend dùng pageNumber
+  data: T[] // Backend trả về data[], không phải items[]
+  page: number // Backend dùng page, không phải pageNumber
   pageSize: number
+  totalCount: number
   totalPages: number
-  hasPreviousPage: boolean
-  hasNextPage: boolean
+  hasPrevious: boolean // Backend dùng hasPrevious, không phải hasPreviousPage
+  hasNext: boolean // Backend dùng hasNext, không phải hasNextPage
 }
 
 export interface ErrorResponse {
@@ -255,6 +254,7 @@ export interface Problem {
   tagNames: string[]
   problemLanguages: ProblemLanguage[]
   problemAssets: ProblemAsset[]
+  datasetSample?: Dataset
 }
 
 export interface ProblemLanguage {
@@ -304,14 +304,15 @@ export type TestcaseStatus =
 // DATASET & TEST CASE
 // ============================================
 
-export type DatasetKind = 'SAMPLE' | 'HIDDEN' | 'CUSTOM'
+export type DatasetKind = 'SAMPLE' | 'PUBLIC' | 'PRIVATE' | 'OFFICIAL'
 
 export interface TestCase {
   testCaseId?: string
   datasetId?: string
-  input: string
-  expectedOutput: string
-  orderIndex: number
+  inputRef: string
+  outputRef: string
+  indexNo: number
+  score?: number
 }
 
 export interface Dataset {
@@ -382,37 +383,58 @@ export interface AssignmentUser {
   startedAt?: string
   score?: number
   maxScore?: number
+  // Extended fields (may need to fetch separately from user service)
+  user?: {
+    userId: string
+    fullName: string
+    studentCode?: string
+    email: string
+  }
 }
 
 // ============================================
 // SUBMISSION
 // ============================================
 
-export type SubmissionStatus = 
-  | 'Pending' 
-  | 'Judging' 
-  | 'Accepted' 
-  | 'WrongAnswer' 
-  | 'TimeLimitExceeded' 
-  | 'MemoryLimitExceeded' 
-  | 'RuntimeError' 
-  | 'CompilationError' 
-  | 'SystemError'
+export type SubmissionStatus =
+  | 'Pending'
+  | 'Running'
+  | 'Passed'
+  | 'Failed'
+  | 'CompilationError'
+  | 'RuntimeError'
+  | 'TimeLimitExceeded'
+  | 'MemoryLimitExceeded'
+
+export interface SubmissionRequest {
+  problemId: string
+  assignmentUserId?: string
+  sourceCode: string
+  language: string
+}
+
+export interface CreateSubmissionResponse {
+  submissionId: string
+  status: SubmissionStatus
+}
 
 export interface Submission {
   submissionId: string
-  problemId: string
   userId: string
+  problemId: string
+  assignmentUserId?: string
   sourceCodeRef: string
   language: string
   status: SubmissionStatus
   compareResult?: string
   errorCode?: string
   errorMessage?: string
+  totalTestcase: number
+  passedTestcase: number
   totalTime: number
   totalMemory: number
-  resultFileRef?: string
   submittedAt: string
+  resultFileRef?: string
 }
 
 export interface BestSubmission {

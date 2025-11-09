@@ -2,6 +2,9 @@ import { API } from '../api'
 import type { ApiResponse, Language } from '../types'
 import { handleApiError, unwrapApiResponse, buildQueryString } from './utils'
 
+// Re-export Language type for convenience
+export type { Language } from '../types'
+
 // ==================== REQUEST TYPES ====================
 
 export interface CreateLanguageRequest {

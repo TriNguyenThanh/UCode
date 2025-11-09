@@ -64,7 +64,7 @@ def main():
     Entry point chính cho ExecutionService.
     Chạy AdaptiveConsumer để xử lý submissions từ RabbitMQ.
     """
-    from app.adaptive_consumer import AdaptiveConsumer
+    from adaptive_consumer import AdaptiveConsumer
     
     print("[*] Starting ExecutionService with Adaptive Consumer...")
     consumer = AdaptiveConsumer()

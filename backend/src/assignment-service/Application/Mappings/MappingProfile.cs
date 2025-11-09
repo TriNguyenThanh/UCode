@@ -103,7 +103,10 @@ public class MappingProfile : Profile
 
         // Submission mappings
         CreateMap<Submission, SubmissionResponse>();
-        CreateMap<SubmissionRequest, Submission>();
+        CreateMap<SubmissionRequest, Submission>()
+            .ForMember(dest => dest.ProblemId, opt => opt.MapFrom(src => Guid.Parse(src.ProblemId)))
+            .ForMember(dest => dest.AssignmentId, opt => opt.MapFrom(src => 
+                !string.IsNullOrEmpty(src.AssignmentId) ? Guid.Parse(src.AssignmentId) : (Guid?)null));
         CreateMap<Submission, CreateSubmissionResponse>();
 
         // BestSubmission mappings

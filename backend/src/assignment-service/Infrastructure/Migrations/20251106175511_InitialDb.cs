@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitalCreate : Migration
+    public partial class InitialDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -264,7 +264,7 @@ namespace Infrastructure.Migrations
                 {
                     submission_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    assignment_user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    assignment_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     problem_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     dataset_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     source_code = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
@@ -279,17 +279,23 @@ namespace Infrastructure.Migrations
                     total_time = table.Column<long>(type: "bigint", nullable: false),
                     total_memory = table.Column<long>(type: "bigint", nullable: false),
                     submitted_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSDATETIME()"),
-                    result_file_ref = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true)
+                    result_file_ref = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    assignment_user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_submission", x => x.submission_id);
                     table.ForeignKey(
+                        name: "fk_submission_assignment_assignment_id",
+                        column: x => x.assignment_id,
+                        principalTable: "assignment",
+                        principalColumn: "assignment_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "fk_submission_assignment_user_assignment_user_id",
                         column: x => x.assignment_user_id,
                         principalTable: "assignment_user",
-                        principalColumn: "assignment_user_id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "assignment_user_id");
                     table.ForeignKey(
                         name: "fk_submission_problem_problem_id",
                         column: x => x.problem_id,
@@ -442,6 +448,11 @@ namespace Infrastructure.Migrations
                 name: "ix_problem_tag_tag_id",
                 table: "problem_tag",
                 column: "tag_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_submission_assignment_id",
+                table: "submission",
+                column: "assignment_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_submission_assignment_user_id",
