@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.class.$id'
 import { auth } from '~/auth'
+import * as ClassService from '~/services/classService'
 import type { Class, Assignment } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
 import { getClass } from '~/services/classService'
@@ -38,7 +39,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
   try {
     // Fetch class data
-    const classData = await getClass(params.id)
+    const classData = await ClassService.getClassDetail(params.id)
     
     // Fetch assignments for this class
     const assignments = await getAssignmentsByClass(params.id)
@@ -124,7 +125,7 @@ export default function TeacherClassDetail() {
           </Button>
         </Box>
         <Typography variant="body1" color="text.secondary">
-          {classData.description}
+          {classData.description || 'Không có mô tả'}
         </Typography>
       </Box>
 
@@ -215,7 +216,7 @@ export default function TeacherClassDetail() {
                       {submittedCount}/{classData.studentCount}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      ({Math.round((submittedCount / classData.studentCount) * 100)}%)
+                      ({Math.round((submittedCount / (classData.studentCount || 1)) * 100)}%)
                     </Typography>
                   </TableCell>
                   <TableCell>

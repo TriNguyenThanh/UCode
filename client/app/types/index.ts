@@ -108,12 +108,10 @@ export interface Class {
 }
 
 export interface CreateClassRequest {
-  className: string
-  classCode: string
-  teacherId: string
-  semester: string
-  description?: string
-  coverImage?: string
+  name: string // Backend expects "Name"
+  classCode?: string // Backend expects "ClassCode" (optional)
+  teacherId: string // Backend expects "TeacherId"
+  description?: string // Backend expects "Description"
 }
 
 export interface UpdateClassRequest {
@@ -208,6 +206,16 @@ export interface CreateAdminRequest {
   password: string
   fullName: string
   phone?: string
+}
+
+export interface UpdateUserByAdminRequest {
+  email?: string
+  fullName?: string
+  phone?: string
+  major?: string
+  classYear?: number
+  department?: string
+  title?: string
 }
 
 // ============================================
