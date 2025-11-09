@@ -184,3 +184,59 @@ export async function addStudentsToClass(classId: string, studentIds: string[]):
     handleApiError(error)
   }
 }
+
+// ==================== NEW: SMART IMPORT FEATURES ====================
+
+export interface BulkEnrollResult {
+  classId: string
+  totalRequested: number
+  successCount: number
+  failedCount: number
+  successIds: string[]
+  errors: Array<{ studentId: string; errorMessage: string }>
+}
+
+/**
+ * Check for duplicate students in a class
+ */
+export async function checkDuplicates(
+  classId: string,
+  identifiers: string[],
+): Promise<{
+  classId: string
+  totalChecked: number
+  duplicateCount: number
+  duplicates: string[]
+}> {
+  try {
+    const response = await API.post<
+      ApiResponse<{
+        classId: string
+        totalChecked: number
+        duplicateCount: number
+        duplicates: string[]
+      }>
+    >(`api/v1/classes/${classId}/check-duplicates`, { identifiers })
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Bulk enroll students into a class
+ */
+export async function bulkEnrollStudents(
+  classId: string,
+  studentIds: string[],
+): Promise<BulkEnrollResult> {
+  try {
+    const response = await API.post<ApiResponse<BulkEnrollResult>>(
+      `api/v1/classes/${classId}/bulk-enroll`,
+      { studentIds },
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}

@@ -16,5 +16,5 @@ public interface IRepository<T> where T : class
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
     Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
     Task<List<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? filter = null);
+    IQueryable<T> AsQueryable();
 }
-

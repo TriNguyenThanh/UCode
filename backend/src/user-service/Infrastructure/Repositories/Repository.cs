@@ -82,5 +82,9 @@ public class Repository<T> : IRepository<T> where T : class
             .Take(pageSize)
             .ToListAsync();
     }
-}
 
+    public IQueryable<T> AsQueryable()
+    {
+        return _dbSet.AsQueryable();
+    }
+}

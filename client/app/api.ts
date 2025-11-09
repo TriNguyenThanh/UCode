@@ -3,8 +3,8 @@ import axios from "axios";
 // Lấy token từ localStorage
 const getToken = () => localStorage.getItem("token");
 
-// Base URL cho API - sử dụng absolute URL để tránh React Router intercept
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+// Base URL cho API Gateway - tất cả requests đi qua API Gateway
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export const API = axios.create({
   baseURL: API_BASE_URL,

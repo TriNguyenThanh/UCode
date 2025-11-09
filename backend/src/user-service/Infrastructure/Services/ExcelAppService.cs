@@ -2,11 +2,19 @@ using OfficeOpenXml;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using UserService.Application.DTOs.Common;
+using UserService.Application.Interfaces.Repositories;
 
 namespace UserService.Infrastructure.Services;
 
 public class ExcelAppService : IExcelService
 {
+    private readonly IStudentRepository _studentRepository;
+
+    public ExcelAppService(IStudentRepository studentRepository)
+    {
+        _studentRepository = studentRepository;
+    }
+
     public async Task<List<CreateStudentRequest>> ImportStudentsFromExcelAsync(Stream fileStream)
     {
         var students = new List<CreateStudentRequest>();
@@ -117,5 +125,66 @@ public class ExcelAppService : IExcelService
             throw new ApiException($"Failed to export Excel file: {ex.Message}", 500);
         }
     }
-}
 
+    public async Task<byte[]> GenerateImportTemplateAsync(string? classId = null)
+    {
+        try
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using var package = new ExcelPackage();
+            var worksheet = package.Workbook.Worksheets.Add("Students");
+
+            // Header row - Simplified for import (only need MSSV)
+            worksheet.Cells[1, 1].Value = "StudentCode (MSSV)";
+            worksheet.Cells[1, 2].Value = "Email (Optional)";
+
+            // Style header
+            using (var range = worksheet.Cells[1, 1, 1, 2])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                range.Style.Font.Color.SetColor(System.Drawing.Color.DarkBlue);
+            }
+
+            // If classId provided, get available students (not in this class)
+            if (!string.IsNullOrEmpty(classId))
+            {
+                var classGuid = Guid.Parse(classId);
+                var allStudents = await _studentRepository.GetAllAsync();
+                
+                // Filter out students already enrolled
+                var availableStudents = allStudents
+                    .Where(s => !s.UserClasses.Any(uc => uc.ClassId == classGuid && uc.IsActive))
+                    .OrderBy(s => s.StudentCode)
+                    .ToList();
+
+                // Pre-fill with available students
+                int row = 2;
+                foreach (var student in availableStudents)
+                {
+                    worksheet.Cells[row, 1].Value = student.StudentCode;
+                    worksheet.Cells[row, 2].Value = student.Email;
+                    row++;
+                }
+            }
+            else
+            {
+                // Empty template with example
+                worksheet.Cells[2, 1].Value = "2154001";
+                worksheet.Cells[2, 2].Value = "student1@example.com";
+                worksheet.Cells[3, 1].Value = "2154002";
+                worksheet.Cells[3, 2].Value = "student2@example.com";
+            }
+
+            worksheet.Cells.AutoFitColumns();
+
+            return await Task.FromResult(package.GetAsByteArray());
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Failed to generate template: {ex.Message}", 500);
+        }
+    }
+}

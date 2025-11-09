@@ -251,6 +251,102 @@ public class ClassAppService : IClassService
         return _mapper.Map<List<StudentResponse>>(students);
     }
 
+    public async Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers)
+    {
+        var classGuid = Guid.Parse(classId);
+        var duplicates = new List<string>();
+
+        foreach (var identifier in identifiers)
+        {
+            // Try find student by StudentCode or Email
+            var student = await _studentRepository.GetByStudentCodeAsync(identifier);
+            if (student == null)
+            {
+                student = await _studentRepository.GetByEmailAsync(identifier);
+            }
+
+            if (student != null)
+            {
+                // Check if already enrolled
+                var isEnrolled = await _userClassRepository.IsStudentEnrolledAsync(student.UserId, classGuid);
+                if (isEnrolled)
+                {
+                    duplicates.Add(identifier);
+                }
+            }
+        }
+
+        return duplicates;
+    }
+
+    public async Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds)
+    {
+        var result = new BulkEnrollResult();
+        var classGuid = Guid.Parse(classId);
+
+        // Verify class exists
+        var classEntity = await _classRepository.GetByIdAsync(classGuid);
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        foreach (var studentId in studentIds)
+        {
+            try
+            {
+                var studentGuid = Guid.Parse(studentId);
+                var student = await _studentRepository.GetByIdAsync(studentGuid);
+                
+                if (student == null)
+                {
+                    result.FailedCount++;
+                    result.Errors.Add(new BulkEnrollError
+                    {
+                        StudentId = studentId,
+                        ErrorMessage = "Student not found"
+                    });
+                    continue;
+                }
+
+                // Check if already enrolled
+                var isEnrolled = await _userClassRepository.IsStudentEnrolledAsync(studentGuid, classGuid);
+                if (isEnrolled)
+                {
+                    result.FailedCount++;
+                    result.Errors.Add(new BulkEnrollError
+                    {
+                        StudentId = studentId,
+                        ErrorMessage = "Student already enrolled"
+                    });
+                    continue;
+                }
+
+                // Enroll student
+                var userClass = new UserClass
+                {
+                    StudentId = studentGuid,
+                    ClassId = classGuid,
+                    IsActive = true,
+                    JoinedAt = DateTime.UtcNow
+                };
+
+                await _userClassRepository.AddAsync(userClass);
+                result.SuccessCount++;
+                result.SuccessIds.Add(studentId);
+            }
+            catch (Exception ex)
+            {
+                result.FailedCount++;
+                result.Errors.Add(new BulkEnrollError
+                {
+                    StudentId = studentId,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
+        return result;
+    }
+
     private async Task<string> GenerateUniqueClassCodeAsync()
     {
         string classCode;
@@ -272,4 +368,3 @@ public class ClassAppService : IClassService
         return classCode;
     }
 }
-

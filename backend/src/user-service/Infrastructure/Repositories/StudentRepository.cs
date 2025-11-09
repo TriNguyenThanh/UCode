@@ -28,6 +28,14 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
     }
 
+    public async Task<Student?> GetByEmailAsync(string email)
+    {
+        return await _dbSet
+            .Include(s => s.UserClasses)
+                .ThenInclude(uc => uc.Class)
+            .FirstOrDefaultAsync(s => s.Email == email);
+    }
+
     public async Task<List<Student>> GetStudentsByClassIdAsync(Guid classId)
     {
         return await _dbSet

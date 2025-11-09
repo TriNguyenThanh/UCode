@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { redirect, useLoaderData, Link } from 'react-router'
+import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.class.$classId.students'
 import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
 import { Navigation } from '~/components/Navigation'
+import AddStudentDialog from '~/components/AddStudentDialog'
 import {
   Box,
   Container,
@@ -19,17 +20,21 @@ import {
   IconButton,
   TextField,
   InputAdornment,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
-  Chip,
+  Snackbar,
+  Alert,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EmailIcon from '@mui/icons-material/Email'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
@@ -53,10 +58,13 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export default function ManageStudents() {
   const { classData, students } = useLoaderData<typeof clientLoader>()
+  const revalidator = useRevalidator()
   const [searchQuery, setSearchQuery] = useState('')
   const [openDialog, setOpenDialog] = useState(false)
-  const [studentIds, setStudentIds] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [studentToDelete, setStudentToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const filteredStudents = students.filter(
     (student) =>
@@ -65,43 +73,28 @@ export default function ManageStudents() {
       student.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleAddStudents = async () => {
-    if (!studentIds.trim()) return
-
-    setLoading(true)
-    try {
-      const ids = studentIds
-        .split('\n')
-        .map(id => id.trim())
-        .filter(id => id.length > 0)
-
-      for (const studentId of ids) {
-        await ClassService.addStudentToClass(classData.classId, studentId)
-      }
-
-      alert(`Đã thêm ${ids.length} sinh viên vào lớp`)
-      setOpenDialog(false)
-      setStudentIds('')
-      window.location.reload()
-    } catch (error) {
-      console.error('Error adding students:', error)
-      alert('Không thể thêm sinh viên. Vui lòng thử lại.')
-    } finally {
-      setLoading(false)
-    }
+  const handleDialogSuccess = () => {
+    revalidator.revalidate() // Reload data
+    setOpenDialog(false)
   }
 
   const handleRemoveStudent = async (studentId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa sinh viên này khỏi lớp?')) return
+    setDeleteDialogOpen(false)
+    setStudentToDelete(null)
 
     try {
       await ClassService.removeStudentFromClass(classData.classId, studentId)
-      alert('Đã xóa sinh viên khỏi lớp')
-      window.location.reload()
+      setSuccessMessage('Đã xóa sinh viên khỏi lớp!')
+      revalidator.revalidate()
     } catch (error) {
       console.error('Error removing student:', error)
-      alert('Không thể xóa sinh viên. Vui lòng thử lại.')
+      setErrorMessage('Không thể xóa sinh viên. Vui lòng thử lại.')
     }
+  }
+
+  const openDeleteDialog = (studentId: string, studentName: string) => {
+    setStudentToDelete({ id: studentId, name: studentName })
+    setDeleteDialogOpen(true)
   }
 
   return (
@@ -211,7 +204,7 @@ export default function ManageStudents() {
                     <IconButton
                       size="small"
                       sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
-                      onClick={() => handleRemoveStudent(student.userId)}
+                      onClick={() => openDeleteDialog(student.userId, student.fullName)}
                       title="Xóa sinh viên"
                     >
                       <DeleteIcon fontSize="small" />
@@ -231,46 +224,66 @@ export default function ManageStudents() {
           </Paper>
         )}
 
-        {/* Add Student Dialog */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ bgcolor: 'secondary.main', color: 'primary.main' }}>
-            Thêm sinh viên vào lớp
-          </DialogTitle>
-          <DialogContent sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Nhập danh sách MSSV (mỗi MSSV một dòng)
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={8}
-              placeholder="2021600001&#10;2021600002&#10;2021600003&#10;..."
-              sx={{ mb: 2 }}
-              value={studentIds}
-              onChange={(e) => setStudentIds(e.target.value)}
-            />
+        {/* Add Student Dialog - New Smart Import System */}
+        <AddStudentDialog
+          open={openDialog}
+          classId={classData.classId}
+          onClose={() => setOpenDialog(false)}
+          onSuccess={handleDialogSuccess}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          maxWidth="xs"
+          fullWidth
+        >
+          <DialogTitle>Xác nhận xóa sinh viên</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Bạn có chắc muốn xóa sinh viên <strong>{studentToDelete?.name}</strong> khỏi lớp?
+            </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenDialog(false)} disabled={loading}>
-              Hủy
-            </Button>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Hủy</Button>
             <Button
+              onClick={() => studentToDelete && handleRemoveStudent(studentToDelete.id)}
+              color="error"
               variant="contained"
-              onClick={handleAddStudents}
-              disabled={loading || !studentIds.trim()}
-              sx={{
-                bgcolor: 'secondary.main',
-                color: 'primary.main',
-                '&:hover': {
-                  bgcolor: 'primary.main',
-                  color: 'secondary.main',
-                },
-              }}
             >
-              {loading ? 'Đang thêm...' : 'Thêm sinh viên'}
+              Xóa
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Success Snackbar */}
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={3000}
+          onClose={() => setSuccessMessage(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSuccessMessage(null)}
+            severity="success"
+            icon={<CheckCircleIcon />}
+          >
+            {successMessage}
+          </Alert>
+        </Snackbar>
+
+        {/* Error Snackbar */}
+        <Snackbar
+          open={!!errorMessage}
+          autoHideDuration={4000}
+          onClose={() => setErrorMessage(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert onClose={() => setErrorMessage(null)} severity="error">
+            {errorMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   )
