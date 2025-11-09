@@ -18,5 +18,28 @@ public interface IClassService
     Task<bool> AddStudentsToClassAsync(AddStudentsToClassRequest request);
     Task<bool> RemoveStudentFromClassAsync(string classId, string studentId);
     Task<List<StudentResponse>> GetStudentListByClassAsync(string classId);
+    
+    /// <summary>
+    /// Check duplicate students trong class
+    /// </summary>
+    Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers);
+    
+    /// <summary>
+    /// Bulk enroll students vào class
+    /// </summary>
+    Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds);
 }
 
+public class BulkEnrollResult
+{
+    public int SuccessCount { get; set; }
+    public int FailedCount { get; set; }
+    public List<string> SuccessIds { get; set; } = new();
+    public List<BulkEnrollError> Errors { get; set; } = new();
+}
+
+public class BulkEnrollError
+{
+    public string StudentId { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+}

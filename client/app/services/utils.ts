@@ -7,26 +7,36 @@ import type { ApiResponse, ErrorResponse } from '../types'
 export function handleApiError(error: any): never {
   // If error has response from server
   if (error.response) {
-    const data = error.response.data as ApiResponse<any> | ErrorResponse
+    const data = error.response.data
     
-    // Check if it's an ApiResponse with success=false
-    if ('success' in data && !data.success) {
-      const message = data.message || 'An error occurred'
-      const errors = data.errors?.join(', ') || ''
-      throw new Error(errors ? `${message}: ${errors}` : message)
+    // Handle non-JSON responses (HTML error pages, etc)
+    if (typeof data === 'string') {
+      const status = error.response.status
+      const statusText = error.response.statusText
+      throw new Error(`Request failed: ${status} ${statusText}`)
     }
     
-    // Check if it's an ErrorResponse
-    if ('error' in data) {
-      const errorData = data as ErrorResponse
-      if (errorData.errors) {
-        // Validation errors: { field: [messages] }
-        const validationMessages = Object.entries(errorData.errors)
-          .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-          .join('; ')
-        throw new Error(`${errorData.message || 'Validation failed'}: ${validationMessages}`)
+    // Handle JSON responses
+    if (typeof data === 'object' && data !== null) {
+      // Check if it's an ApiResponse with success=false
+      if ('success' in data && !data.success) {
+        const message = data.message || 'An error occurred'
+        const errors = data.errors?.join(', ') || ''
+        throw new Error(errors ? `${message}: ${errors}` : message)
       }
-      throw new Error(errorData.message || errorData.error)
+      
+      // Check if it's an ErrorResponse
+      if ('error' in data) {
+        const errorData = data as ErrorResponse
+        if (errorData.errors) {
+          // Validation errors: { field: [messages] }
+          const validationMessages = Object.entries(errorData.errors)
+            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+            .join('; ')
+          throw new Error(`${errorData.message || 'Validation failed'}: ${validationMessages}`)
+        }
+        throw new Error(errorData.message || errorData.error)
+      }
     }
     
     // Generic error response
@@ -46,12 +56,12 @@ export function handleApiError(error: any): never {
  * Unwrap ApiResponse data or throw error if unsuccessful
  */
 export function unwrapApiResponse<T>(response: ApiResponse<T>): T {
-  if (!response.success || response.data === undefined) {
+  if (!response.success) {
     const message = response.message || 'Request failed'
     const errors = response.errors?.join(', ') || ''
     throw new Error(errors ? `${message}: ${errors}` : message)
   }
-  return response.data
+  return response.data as T
 }
 
 /**

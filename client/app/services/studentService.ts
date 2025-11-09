@@ -2,6 +2,7 @@ import { API } from '../api'
 import type {
   ApiResponse,
   PagedResponse,
+  BackendPagedResponse,
   StudentResponse,
   CreateStudentRequest,
   UpdateStudentRequest,
@@ -55,10 +56,22 @@ export async function getAllStudents(
 ): Promise<PagedResponse<StudentResponse>> {
   try {
     const queryString = buildQueryString(params || {})
-    const response = await API.get<ApiResponse<PagedResponse<StudentResponse>>>(
+    const response = await API.get<ApiResponse<BackendPagedResponse<StudentResponse>>>(
       `api/v1/students${queryString}`,
     )
-    return unwrapApiResponse(response.data)
+    
+    // Backend wraps BackendPagedResponse inside ApiResponse
+    const result = unwrapApiResponse(response.data)
+    
+    return {
+      data: result.items || [],
+      page: result.pageNumber,
+      pageSize: result.pageSize,
+      totalCount: result.totalCount,
+      totalPages: result.totalPages,
+      hasPrevious: result.hasPreviousPage || false,
+      hasNext: result.hasNextPage || false,
+    }
   } catch (error) {
     handleApiError(error)
   }
@@ -165,6 +178,105 @@ export async function exportStudentsExcel(studentIds?: string[]): Promise<Blob> 
       responseType: 'blob',
     })
     return response.data
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+// ==================== NEW: SMART IMPORT FEATURES ====================
+
+export interface GetAvailableStudentsParams {
+  pageNumber?: number
+  pageSize?: number
+  search?: string
+  year?: number
+  major?: string
+  status?: string
+  excludeClassId?: string
+}
+
+export interface StudentValidationResult {
+  identifier: string
+  isValid: boolean
+  studentId?: string
+  studentCode?: string
+  fullName?: string
+  email?: string
+  errorMessage?: string
+  isDuplicate?: boolean
+}
+
+export interface ValidateBatchRequest {
+  identifiers: string[]
+  classId?: string
+}
+
+/**
+ * Get available students (not in a specific class) with filters
+ */
+export async function getAvailableStudents(
+  params: GetAvailableStudentsParams,
+): Promise<PagedResponse<StudentResponse>> {
+  try {
+    const queryString = buildQueryString(params)
+    const response = await API.get<ApiResponse<BackendPagedResponse<StudentResponse>>>(
+      `api/v1/students${queryString}`,
+    )
+    
+    // Backend wraps BackendPagedResponse inside ApiResponse
+    const result = unwrapApiResponse(response.data)
+    
+    return {
+      data: result.items || [],
+      page: result.pageNumber,
+      pageSize: result.pageSize,
+      totalCount: result.totalCount,
+      totalPages: result.totalPages,
+      hasPrevious: result.hasPreviousPage || false,
+      hasNext: result.hasNextPage || false,
+    }
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Download Excel template for importing students
+ */
+export async function downloadImportTemplate(classId?: string): Promise<Blob> {
+  try {
+    const params = classId ? { classId } : {}
+    const queryString = buildQueryString(params)
+    const response = await API.get(`api/v1/students/template${queryString}`, {
+      responseType: 'blob',
+    })
+    return response.data
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Validate batch of students before import
+ */
+export async function validateBatch(
+  request: ValidateBatchRequest,
+): Promise<{
+  totalCount: number
+  validCount: number
+  invalidCount: number
+  results: StudentValidationResult[]
+}> {
+  try {
+    const response = await API.post<
+      ApiResponse<{
+        totalCount: number
+        validCount: number
+        invalidCount: number
+        results: StudentValidationResult[]
+      }>
+    >('api/v1/students/validate-batch', request)
+    return unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)
   }

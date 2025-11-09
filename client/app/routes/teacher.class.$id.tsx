@@ -5,7 +5,7 @@ import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
 import type { Class, Assignment } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
-import { getClass } from '~/services/classService'
+// import { getClass } from '~/services/classService'
 import { getAssignmentsByClass, deleteAssignment } from '~/services/assignmentService'
 import {
   Box,
@@ -41,8 +41,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     // Fetch class data
     const classData = await ClassService.getClassDetail(params.id)
     
-    // Fetch assignments for this class
-    const assignments = await getAssignmentsByClass(params.id)
+    // Try to fetch assignments, but don't fail if assignment service is unavailable
+    let assignments: any[] = []
+    try {
+      assignments = await getAssignmentsByClass(params.id)
+    } catch (assignmentError) {
+      console.warn('Assignment service unavailable:', assignmentError)
+      // Continue without assignments
+    }
 
     return { user, classData, assignments }
   } catch (error) {

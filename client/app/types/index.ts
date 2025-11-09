@@ -7,13 +7,24 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  data: T[] // Backend trả về data[], không phải items[]
-  page: number // Backend dùng page, không phải pageNumber
+  data: T[] // Frontend standard format
+  page: number
   pageSize: number
   totalCount: number
   totalPages: number
-  hasPrevious: boolean // Backend dùng hasPrevious, không phải hasPreviousPage
-  hasNext: boolean // Backend dùng hasNext, không phải hasNextPage
+  hasPrevious: boolean
+  hasNext: boolean
+}
+
+// Backend actual response format (for students endpoint)
+export interface BackendPagedResponse<T> {
+  items: T[] // Backend uses 'items' not 'data'
+  pageNumber: number // Backend uses 'pageNumber' not 'page'
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 export interface ErrorResponse {
