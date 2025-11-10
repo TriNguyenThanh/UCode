@@ -33,7 +33,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!user) throw redirect('/login')
 
   try {
-    const classData = await ClassService.getClassDetail(params.id)
+    // Student chỉ cần thông tin cơ bản của class, không cần detail với danh sách sinh viên
+    const classData = await ClassService.getClassById(params.id)
     
     // TODO: assignments need to come from assignment-service
     // For now, assignments will be an empty array
