@@ -289,7 +289,7 @@ export default function AssignmentDetail() {
                       </Box>
                     )}
                     
-                    <CardActionArea component={Link} to={`/problem/${problem.problemId}`}>
+                    <CardActionArea component={Link} to={`/student/assignment/${assignment.assignmentId}/problem/${problem.problemId}`}>
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', gap: 3 }}>
                           <Box

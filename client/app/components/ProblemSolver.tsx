@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link } from 'react-router'
-import type { Route } from './+types/problem.$id'
-import { auth } from '~/auth'
+import { Link } from 'react-router'
 import {
   Box,
   Typography,
@@ -11,12 +9,9 @@ import {
   IconButton,
   Tabs,
   Tab,
-  Divider,
   Select,
   MenuItem,
   FormControl,
-  CircularProgress,
-  Alert,
   Table,
   TableBody,
   TableCell,
@@ -30,17 +25,38 @@ import SendIcon from '@mui/icons-material/Send'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import { ProblemSolver } from '~/components/ProblemSolver'
-import { getProblem, getProblemForStudent } from '~/services/problemService'
+import { CodeEditor } from './CodeEditor'
+import { SubmissionHistory } from './SubmissionHistory'
+import { Loading } from './Loading'
 import { runCode, submitCode, getSubmissionsByProblem, getSubmission } from '~/services/submissionService'
 import type { Problem, Submission } from '~/types'
 
+interface ProblemSolverProps {
+  problem: Problem
+  initialSubmissions?: Submission[]
+  backUrl: string
+  assignmentId?: string | null
+}
+
+interface TabPanelProps {
+  children?: React.ReactNode
+  index: number
+  value: number
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props
+  return (
+    <div role='tabpanel' hidden={value !== index} {...other}>
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  )
+}
+
 function getCodeTemplate(languageCode: string, problemLanguages?: Problem['problemLanguages']): string {
-  // Kiểm tra xem problem có template riêng cho ngôn ngữ này không
   const problemLanguage = problemLanguages?.find((pl) => pl.languageCode === languageCode)
 
   if (problemLanguage) {
-    // Nối head + body + tail nếu có
     const parts = []
     if (problemLanguage.head) parts.push(problemLanguage.head)
     if (problemLanguage.body) parts.push(problemLanguage.body)
@@ -53,39 +69,11 @@ function getCodeTemplate(languageCode: string, problemLanguages?: Problem['probl
   return '// Your code here'
 }
 
-export const meta: Route.MetaFunction = () => [
-  { title: 'Giải bài tập | UCode' },
-  { name: 'description', content: 'Coding interface để giải bài tập.' }
-]
-
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const user = auth.getUser()
-  if (!user) throw redirect('/login')
+export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assignmentId = null }: ProblemSolverProps) {
+  const [tabValue, setTabValue] = React.useState(0)
   
-  // Only teachers can access this page
-  if (user.role !== 'teacher') {
-    throw redirect('/home')
-  }
-
-  if (!params.id) throw new Response('Not Found', { status: 404 })
-
-  try {
-    // Fetch problem for teacher
-    const problem = await getProblem(params.id)
-
-    return { user, problem, submissions: [] }
-  } catch (error: any) {
-    console.error('Failed to load problem:', error)
-    throw new Response(error.message || 'Problem not found', { status: 404 })
-  }
-}
-
-export default function ProblemDetail() {
-  const { problem } = useLoaderData<typeof clientLoader>()
-
-  return <ProblemSolver problem={problem} backUrl="/home" />
-}
-  const [leftPanelWidth, setLeftPanelWidth] = React.useState(50) // Percentage
+  // Panel resizing
+  const [leftPanelWidth, setLeftPanelWidth] = React.useState(50)
   const [isDragging, setIsDragging] = React.useState(false)
   const containerRef = React.useRef<HTMLDivElement>(null)
 
@@ -115,7 +103,6 @@ export default function ProblemDetail() {
       const containerRect = containerRef.current.getBoundingClientRect()
       const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
       
-      // Clamp between 20% and 80%
       const clampedWidth = Math.min(Math.max(newLeftWidth, 20), 80)
       setLeftPanelWidth(clampedWidth)
     }
@@ -135,7 +122,7 @@ export default function ProblemDetail() {
     }
   }, [isDragging])
 
-  // Initialize code template when language or problem changes
+  // Initialize code template
   React.useEffect(() => {
     if (selectedLanguage && selectedLanguage.languageCode) {
       setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
@@ -164,19 +151,18 @@ export default function ProblemDetail() {
     }
   }
 
-  // Function to refresh submissions list
+  // Refresh submissions
   const refreshSubmissions = async () => {
     try {
       const newSubmissions = await getSubmissionsByProblem(problem.problemId, 1, 10)
       setSubmissions(newSubmissions)
-      // Chuyển sang tab "Nộp bài" để xem kết quả
       setTabValue(2)
     } catch (error) {
       console.error('Failed to refresh submissions:', error)
     }
   }
 
-  // Function to get status text from status code
+  // Get status text
   const getStatusText = (statusCode: string): { text: string; emoji: string } => {
     switch (statusCode) {
       case '0': return { text: 'Passed', emoji: '✅' }
@@ -191,7 +177,7 @@ export default function ProblemDetail() {
     }
   }
 
-  // Function to parse compareResult and generate test case details
+  // Parse test case results
   const parseTestCaseResults = (compareResult: string): string => {
     if (!compareResult) return ''
     
@@ -207,9 +193,9 @@ export default function ProblemDetail() {
     return testCaseDetails
   }
 
-  // Polling function to get submission result
+  // Polling for submission result
   const pollSubmissionResult = async (submissionId: string, sourceCode: string, isSubmit: boolean = false) => {
-    const maxAttempts = 30 // Max 30 attempts (30 seconds with 1s interval)
+    const maxAttempts = 30
     let attempts = 0
     
     setIsPolling(true)
@@ -218,7 +204,6 @@ export default function ProblemDetail() {
       try {
         const submission = await getSubmission(submissionId)
         
-        // Check if submission is still processing
         const processingStatuses: string[] = ['Pending', 'Running']
         if (processingStatuses.includes(submission.status)) {
           attempts++
@@ -228,16 +213,13 @@ export default function ProblemDetail() {
             return
           }
           
-          // Update status
           setOutput(prev => {
             const lines = prev.split('\n')
             return lines.slice(0, -1).join('\n') + `\nĐang xử lý... (${attempts}s)`
           })
           
-          // Continue polling after 1 second
           setTimeout(() => poll(), 2000)
         } else {
-          // Submission completed
           let resultText = isSubmit ? '🎉 Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
           resultText += `Submission ID: ${submission.submissionId}\n`
           resultText += `Status: ${submission.status}\n`
@@ -246,7 +228,6 @@ export default function ProblemDetail() {
           
           if (submission.status === 'Passed') {
             resultText += `\n✅ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
-            // Đánh dấu run thành công nếu không phải submit
             if (!isSubmit) {
               setHasRunSuccessfully(true)
               setLastRunCode(sourceCode)
@@ -256,21 +237,18 @@ export default function ProblemDetail() {
             if (submission.errorMessage) {
               resultText += `\n\nLỗi: ${submission.errorMessage}`
             }
-            // Reset flag nếu run thất bại
             if (!isSubmit) {
               setHasRunSuccessfully(false)
               setLastRunCode('')
             }
           }
           
-          // Add detailed test case results if compareResult is available
           if (submission.compareResult) {
             resultText += parseTestCaseResults(submission.compareResult)
           }
           
           setOutput(resultText)
           
-          // Reload submissions if it's a submit
           if (isSubmit) {
             await refreshSubmissions()
           }
@@ -283,11 +261,10 @@ export default function ProblemDetail() {
       }
     }
     
-    // Start polling
     await poll()
   }
 
-  // Handle run code (test without submitting)
+  // Handle run code
   const handleRunCode = async () => {
     if (!selectedLanguage) {
       setOutput('❌ Vui lòng chọn ngôn ngữ lập trình')
@@ -299,7 +276,6 @@ export default function ProblemDetail() {
       return
     }
 
-    // Reset flag khi chạy code mới (code khác với lần run trước)
     if (code !== lastRunCode) {
       setHasRunSuccessfully(false)
     }
@@ -312,17 +288,15 @@ export default function ProblemDetail() {
         problemId: problem.problemId,
         language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
-        assignmentId: null
+        assignmentId: assignmentId
       })
 
       setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý... (0s)`)
       
-      // Start polling for result
       await pollSubmissionResult(result.submissionId, code, false)
       
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể chạy code'}`)
-      // Reset flag khi có lỗi
       setHasRunSuccessfully(false)
       setLastRunCode('')
     } finally {
@@ -342,13 +316,11 @@ export default function ProblemDetail() {
       return
     }
 
-    // Kiểm tra xem đã run code thành công chưa
     if (!hasRunSuccessfully) {
       setOutput('❌ Vui lòng chạy thử code thành công trước khi nộp bài!')
       return
     }
 
-    // Kiểm tra xem code có thay đổi sau lần run thành công cuối không
     if (code !== lastRunCode) {
       setOutput('⚠️ Code đã thay đổi sau lần chạy thử cuối!\n\nVui lòng chạy thử lại trước khi nộp bài.')
       return
@@ -362,12 +334,11 @@ export default function ProblemDetail() {
         problemId: problem.problemId,
         language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
-        assignmentId: null
+        assignmentId: assignmentId
       })
 
       setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm... (0s)`)
       
-      // Start polling for result
       await pollSubmissionResult(result.submissionId, code, true)
       
     } catch (error: any) {
@@ -379,11 +350,11 @@ export default function ProblemDetail() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy':
+      case 'EASY':
         return 'success'
-      case 'Medium':
+      case 'MEDIUM':
         return 'warning'
-      case 'Hard':
+      case 'HARD':
         return 'error'
       default:
         return 'default'
@@ -407,7 +378,7 @@ export default function ProblemDetail() {
         }}
       >
         <Box sx={{ px: 3, py: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton component={Link} to='/home' sx={{ color: 'primary.main' }}>
+          <IconButton component={Link} to={backUrl} sx={{ color: 'primary.main' }}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant='h6' sx={{ fontWeight: 600, flexGrow: 1, color: 'primary.main' }}>
@@ -448,7 +419,6 @@ export default function ProblemDetail() {
 
           <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             <TabPanel value={tabValue} index={0}>
-              {/* Problem Description */}
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Mô tả
               </Typography>
@@ -456,7 +426,6 @@ export default function ProblemDetail() {
                 {problem.statement || 'Chưa có đề bài chi tiết'}
               </Typography>
 
-              {/* Input/Output Format */}
               {(problem.inputFormat || problem.outputFormat) && (
                 <Box sx={{ mb: 3 }}>
                   {problem.inputFormat && (
@@ -482,7 +451,6 @@ export default function ProblemDetail() {
                 </Box>
               )}
 
-              {/* Constraints */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                   Ràng buộc
@@ -508,7 +476,6 @@ export default function ProblemDetail() {
                 )}
               </Box>
 
-              {/* Sample Test Cases */}
               {problem.datasetSample && problem.datasetSample.testCases && problem.datasetSample.testCases.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
@@ -567,7 +534,6 @@ export default function ProblemDetail() {
                 </Box>
               )}
 
-              {/* Tags */}
               {problem.tagNames && problem.tagNames.length > 0 && (
                 <Box>
                   <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
@@ -624,7 +590,6 @@ export default function ProblemDetail() {
           }}
           onMouseDown={handleMouseDown}
         >
-          {/* Visual indicator */}
           <Box
             sx={{
               position: 'absolute',
