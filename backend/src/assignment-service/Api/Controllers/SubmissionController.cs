@@ -191,6 +191,28 @@ public class SubmissionController : ControllerBase
     }
 
     /// <summary>
+    /// Get best submissions (leaderboard) for a specific problem in an assignment
+    /// </summary>
+    /// <param name="assignmentUserId">The unique identifier of the assignment</param>
+    /// <param name="problemIds">List of problem IDs</param>
+    /// <returns>Returns a paginated list of best submissions</returns>
+    /// <response code="200">Best submissions retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("assignment/{assignmentUserId:guid}/problem/list-my-best")]
+    [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionResponse>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetMyBestSubmissions(Guid assignmentUserId, [FromBody] List<Guid> problemIds)
+    {
+        var userId = GetAuthenticatedUserId();
+        var bestSubmissions = await _submissionService.GetMyBestSubmissionByAssignment(assignmentUserId, problemIds, userId);
+        var response = _mapper.Map<List<BestSubmissionResponse>>(bestSubmissions);
+
+        return Ok(ApiResponse<List<BestSubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} best submissions"));
+    }
+
+    /// <summary>
     /// Get the total number of submissions for the authenticated user
     /// </summary>
     /// <returns>Returns the total count of user submissions</returns>

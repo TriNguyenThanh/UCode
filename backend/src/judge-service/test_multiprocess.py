@@ -15,7 +15,7 @@ API_URL = "http://localhost:5000/api/v1/submissions/submit-code"
 TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxMWQ5Nzc3OS1mZmYyLTQ4OTUtYWQ5NC03NzIzOTY4YzBkNTAiLCJ1bmlxdWVfbmFtZSI6InRlYWNoZXIwMSIsInJvbGUiOiJUZWFjaGVyIiwianRpIjoiNGUzMGNlZjgtMDBkZC00N2NjLTg1NTYtNzgwMjhiMDIxZTdjIiwiaWF0IjoxNzYyNjk5NjYyLCJ0ZWFjaGVyQ29kZSI6IkdWMDAxIiwibmJmIjoxNzYyNjk5NjYyLCJleHAiOjE3NjMzMDQ0NjIsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.cf3RcFyTLWH-rl8nTDeTsc9AhRtrOFh4kKyvp-9o_fo"
 
 # Test Configuration
-NUM_CONCURRENT_SUBMISSIONS = 5
+NUM_CONCURRENT_SUBMISSIONS = 20
 LANGUAGE_ID = "eac3cb6a-c218-4454-953f-138cfb22e60c"  # C++
 PROBLEM_ID = "6f6af8f8-da44-4eb2-9dd3-1e08abeb2f31"   # Fibonacci
 
@@ -266,7 +266,10 @@ def main():
 
 if __name__ == "__main__":
     try:
+        start_time = time.time()
         main()
+        end_time = time.time()
+        print(f"Total time: {end_time - start_time:.2f}s")
     except KeyboardInterrupt:
         print("\n\n⚠️  Test interrupted by user")
     except Exception as e:

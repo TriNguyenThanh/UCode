@@ -17,5 +17,6 @@ public interface ISubmissionRepository
     // public Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status);
     public Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId);
     public Task<int> GetNumberOfSubmission(Guid userId);
+    Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId);
     // public Task Detach(Submission submission);
 }

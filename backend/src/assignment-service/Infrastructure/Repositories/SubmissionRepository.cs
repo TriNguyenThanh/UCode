@@ -124,6 +124,16 @@ public class SubmissionRepository : ISubmissionRepository
             .ToListAsync();
     }
 
+    public Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId)
+    {
+        return _context.BestSubmissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && problemId.Contains(s.ProblemId) && s.UserId == userId)
+            .OrderByDescending(s => s.Score)
+            .ThenBy(s => s.UpdatedAt)
+            .ToListAsync();
+    }
+
     public Task<int> GetNumberOfSubmission(Guid userId)
     {
         return _context.Submissions
