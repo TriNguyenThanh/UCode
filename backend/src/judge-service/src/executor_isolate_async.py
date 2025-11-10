@@ -36,6 +36,36 @@ class TESTCASE_STATUS:
 # Thread pool for running subprocess commands
 executor = ThreadPoolExecutor(max_workers=MAX_PARALLEL_TESTCASES * 2)
 
+LOW_PRIORITY_NICE = int(os.getenv("ISOLATE_NICE", "10"))
+ISOLATE_CPU_AFFINITY = os.getenv("ISOLATE_CPU_AFFINITY", "").strip()  # ví dụ: "1-7" hoặc "2,3,4"
+
+def _parse_affinity(s: str):
+    cpus = set()
+    for part in s.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            a, b = part.split("-", 1)
+            cpus.update(range(int(a), int(b) + 1))
+        else:
+            cpus.add(int(part))
+    return sorted(cpus)
+
+def _set_low_priority():
+    try:
+        # Hạ ưu tiên CPU cho process con (giá trị nice lớn hơn = kém ưu tiên hơn)
+        os.nice(LOW_PRIORITY_NICE)
+    except Exception:
+        pass
+    if ISOLATE_CPU_AFFINITY:
+        try:
+            cpus = _parse_affinity(ISOLATE_CPU_AFFINITY)
+            if cpus:
+                os.sched_setaffinity(0, cpus)
+        except Exception:
+            pass
+
 def debug_log(msg):
     """Print debug message to stderr to avoid polluting stdout JSON output"""
     print(msg, file=sys.stderr, flush=True)
@@ -405,12 +435,22 @@ async def _run_command(cmd, timeout=None, capture_output=False):
     
     def _run():
         if capture_output:
-            return subprocess.run(cmd, capture_output=True, timeout=timeout)
+            return subprocess.run(
+                cmd,
+                capture_output=True,
+                timeout=timeout,
+                preexec_fn=_set_low_priority
+            )
         else:
-            return subprocess.run(cmd, timeout=timeout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return subprocess.run(
+                cmd,
+                timeout=timeout,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=_set_low_priority
+            )
     
     return await loop.run_in_executor(executor, _run)
-
 
 def _write_file(filepath, content):
     """Write content to file (sync)"""

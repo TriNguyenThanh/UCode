@@ -89,6 +89,9 @@ services:
       - MAX_WORKERS_PER_SUBMISSION=${MAX_WORKERS_PER_SUBMISSION}
       - MEMORY_THRESHOLD=${MEMORY_THRESHOLD}
       - CPU_THRESHOLD=${CPU_THRESHOLD}
+      - ISOLATE_NICE=12             # 10–19 = kém ưu tiên hơn
+      - EVENTLOOP_CPU=0             # pin event loop vào core 0 (tùy chọn)
+      - ISOLATE_CPU_AFFINITY=1-4    
     tty: true
     stdin_open: true
     volumes:

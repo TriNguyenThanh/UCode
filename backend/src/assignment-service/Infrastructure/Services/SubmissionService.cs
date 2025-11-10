@@ -129,6 +129,11 @@ public class SubmissionService : ISubmissionService
         return await _repository.UpdateSubmission(submission);
     }
 
+    public async Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId)
+    {
+        return await _repository.GetMyBestSubmissionByAssignment(assignmentId, problemId, userId);
+    }
+
     // public Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
     // {
     //     return _repository.UpdateSubmissionStatus(submissionId, status);
