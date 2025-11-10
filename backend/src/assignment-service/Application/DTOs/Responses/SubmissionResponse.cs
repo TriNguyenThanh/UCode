@@ -4,6 +4,8 @@ namespace AssignmentService.Application.DTOs.Responses;
 
 public class SubmissionResponse
 {
+    public Guid SubmissionId { get; set; }
+
     /// <summary>
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
     /// </summary>
