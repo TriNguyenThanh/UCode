@@ -1,0 +1,28 @@
+<Window x:Class="UCode.Desktop.Views.TestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UCode Test"
+        Height="300"
+        Width="400"
+        WindowStartupLocation="CenterScreen">
+    <Grid Background="White">
+        <StackPanel VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+            <TextBlock Text="🎉 WPF is working!"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="#007AFF"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+            <TextBlock Text="UCode Desktop Client"
+                       FontSize="16"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"/>
+            <Button Content="Close"
+                    Click="CloseButton_Click"
+                    Width="100"
+                    Height="35"
+                    Margin="0,30,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>
