@@ -25,7 +25,7 @@ public class AssignmentService : IAssignmentService
         {
             assignment.AssignmentId = Guid.NewGuid();
             assignment.AssignedAt = DateTime.UtcNow;
-            
+
             var createdAssignment = await _assignmentRepository.AddAsync(assignment);
 
             // Compute MaxScore from AssignmentProblems
@@ -132,7 +132,7 @@ public class AssignmentService : IAssignmentService
             var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);
             if (assignment == null)
                 return false;
-                
+
             await _assignmentRepository.RemoveAsync(assignment.AssignmentId);
             return true;
         }
@@ -170,7 +170,7 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    
+
     public async Task<List<Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId)
     {
         try
@@ -187,7 +187,8 @@ public class AssignmentService : IAssignmentService
     {
         try
         {
-            return await _assignmentRepository.GetByUserIdAsync(studentId);
+            var assignments = await _assignmentRepository.GetByUserIdAsync(studentId);
+            return assignments.Where(a => a.Status != AssignmentStatus.DRAFT).ToList();
         }
         catch (Exception ex)
         {
@@ -266,10 +267,10 @@ public class AssignmentService : IAssignmentService
             var assignment = await _assignmentRepository.GetWithStatisticsAsync(assignmentId);
             if (assignment == null)
                 throw new KeyNotFoundException("Assignment not found");
-            
+
             var details = assignment.AssignmentUsers.ToList();
             var total = details.Count;
-            
+
             if (total == 0)
             {
                 return new AssignmentStatistics
@@ -279,9 +280,9 @@ public class AssignmentService : IAssignmentService
                     AverageScore = 0
                 };
             }
-            
+
             var graded = details.Where(d => d.Score.HasValue).ToList();
-            
+
             return new AssignmentStatistics
             {
                 TotalStudents = total,
@@ -346,12 +347,12 @@ public class AssignmentService : IAssignmentService
 
     //     throw new NotSupportedException("Cái method này để dành cho Trí làm nhé");
     //     // var submissions = new List<BestSubmission>();
-        
+
     //     // // Lấy AssignmentUser để có AssignmentId
     //     // var assignmentUser = await _assignmentRepository.GetAssignmentUserByIdAsync(assignmentUserId);
     //     // if (assignmentUser == null)
     //     //     throw new KeyNotFoundException("AssignmentUser not found");
-        
+
     //     // foreach (var problemId in problemIds)
     //     // {
     //     //     var submission = new BestSubmission
@@ -362,10 +363,10 @@ public class AssignmentService : IAssignmentService
     //     //         Status = Domain.Enums.BestSubmissionStatus.NOT_STARTED,
     //     //         AttemptCount = 0
     //     //     };
-            
+
     //     //     submissions.Add(submission);
     //     // }
-        
+
     //     // return await _assignmentRepository.AddSubmissionsAsync(submissions);
     // }
 

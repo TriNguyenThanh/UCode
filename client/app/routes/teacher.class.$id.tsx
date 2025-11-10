@@ -179,7 +179,7 @@ export default function TeacherClassDetail() {
                 ? Math.ceil((endTime.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
                 : null
               const isOverdue = daysUntilDue !== null && daysUntilDue < 0
-              const isActive = assignment.status === 'ACTIVE'
+              const isActive = assignment.status === 'PUBLISHED'
 
               return (
                 <TableRow key={assignment.assignmentId} hover>
@@ -225,16 +225,12 @@ export default function TeacherClassDetail() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    {assignment.status === 'ACTIVE' ? (
-                      <Chip label="Đang mở" color="success" size="small" />
-                    ) : assignment.status === 'ENDED' ? (
+                    {assignment.status === 'PUBLISHED' ? (
+                      <Chip label="Đã giao" color="success" size="small" />
+                    ) : assignment.status === 'CLOSED' ? (
                       <Chip label="Đã đóng" color="error" size="small" />
-                    ) : assignment.status === 'DRAFT' ? (
-                      <Chip label="Nháp" color="default" size="small" />
-                    ) : assignment.status === 'SCHEDULED' ? (
-                      <Chip label="Đã lên lịch" color="info" size="small" />
                     ) : (
-                      <Chip label="Đã chấm" color="primary" size="small" />
+                      <Chip label="Nháp" color="default" size="small" />
                     )}
                   </TableCell>
                   <TableCell align="right">

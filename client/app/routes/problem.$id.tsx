@@ -30,9 +30,9 @@ import SendIcon from '@mui/icons-material/Send'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CancelIcon from '@mui/icons-material/Cancel'
 import { CodeEditor } from '~/components/CodeEditor'
+import { SubmissionHistory } from '~/components/SubmissionHistory'
+import { Loading } from '~/components/Loading'
 import { getProblem, getProblemForStudent } from '~/services/problemService'
 import { runCode, submitCode, getSubmissionsByProblem, getSubmission } from '~/services/submissionService'
 import type { Problem, Submission } from '~/types'
@@ -126,6 +126,7 @@ export default function ProblemDetail() {
   const [submissions, setSubmissions] = React.useState<Submission[]>(initialSubmissions)
   const [hasRunSuccessfully, setHasRunSuccessfully] = React.useState(false)
   const [lastRunCode, setLastRunCode] = React.useState('')
+  const [isPolling, setIsPolling] = React.useState(false)
 
   // Handle panel resizing
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -237,6 +238,8 @@ export default function ProblemDetail() {
     const maxAttempts = 30 // Max 30 attempts (30 seconds with 1s interval)
     let attempts = 0
     
+    setIsPolling(true)
+    
     const poll = async (): Promise<void> => {
       try {
         const submission = await getSubmission(submissionId)
@@ -297,9 +300,12 @@ export default function ProblemDetail() {
           if (isSubmit) {
             await refreshSubmissions()
           }
+          
+          setIsPolling(false)
         }
       } catch (error: any) {
         setOutput(prev => prev + `\n\n❌ Lỗi khi lấy kết quả: ${error.message}`)
+        setIsPolling(false)
       }
     }
     
@@ -332,6 +338,7 @@ export default function ProblemDetail() {
         problemId: problem.problemId,
         language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
+        assignmentId: null
       })
 
       setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý... (0s)`)
@@ -381,6 +388,7 @@ export default function ProblemDetail() {
         problemId: problem.problemId,
         language: selectedLanguage.languageCode || 'cpp',
         sourceCode: code,
+        assignmentId: null
       })
 
       setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm... (0s)`)
@@ -616,45 +624,12 @@ export default function ProblemDetail() {
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
-              <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
-                Lịch sử nộp bài
-              </Typography>
-              {submissions.length > 0 ? (
-                <TableContainer component={Paper} variant='outlined'>
-                  <Table size='small'>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Thời gian</TableCell>
-                        <TableCell>Ngôn ngữ</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell align='right'>Time (ms)</TableCell>
-                        <TableCell align='right'>Memory (KB)</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {submissions.map((sub) => (
-                        <TableRow key={sub.submissionId}>
-                          <TableCell>{new Date(sub.submittedAt).toLocaleString('vi-VN')}</TableCell>
-                          <TableCell>{sub.language}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={sub.status} 
-                              size="small"
-                              color={sub.status === 'Passed' ? 'success' : 'error'}
-                              icon={sub.status === 'Passed' ? <CheckCircleIcon /> : <CancelIcon />}
-                            />
-                          </TableCell>
-                          <TableCell align='right'>{sub.totalTime}</TableCell>
-                          <TableCell align='right'>{sub.totalMemory}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              {submissions.length === 0 && tabValue === 2 ? (
+                <Box sx={{ py: 8 }}>
+                  <Loading message="Đang tải lịch sử nộp bài..." size="medium" />
+                </Box>
               ) : (
-                <Typography variant='body2' color='text.secondary'>
-                  Chưa có lần nộp bài nào.
-                </Typography>
+                <SubmissionHistory submissions={submissions} />
               )}
             </TabPanel>
           </Box>
@@ -773,9 +748,37 @@ export default function ProblemDetail() {
               borderColor: 'primary.main',
               bgcolor: '#252526',
               borderRadius: 0,
-              overflow: 'auto'
+              overflow: 'auto',
+              position: 'relative'
             }}
           >
+            {(isRunning || isSubmitting || isPolling) ? (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'rgba(37, 37, 38, 0.95)',
+                  backdropFilter: 'blur(2px)',
+                  zIndex: 1,
+                }}
+              >
+                <Loading 
+                  message={
+                    isRunning ? 'Đang biên dịch và chạy code...' : 
+                    isSubmitting ? 'Đang nộp bài...' : 
+                    'Đang chấm điểm...'
+                  }
+                  size="medium"
+                />
+              </Box>
+            ) : null}
+            
             <Box sx={{ p: 2 }}>
               <Typography
                 variant='body2'

@@ -19,7 +19,7 @@ export interface CreateAssignmentRequest {
   startTime?: string
   endTime?: string
   allowLateSubmission?: boolean
-  status?: 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'GRADED'
+  status?: 'DRAFT' | 'PUBLISHED' | 'CLOSED'
   problems: {
     problemId: string
     points: number
