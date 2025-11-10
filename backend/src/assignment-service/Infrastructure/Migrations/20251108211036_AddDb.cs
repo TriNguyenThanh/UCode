@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDb : Migration
+    public partial class AddDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -269,7 +269,7 @@ namespace Infrastructure.Migrations
                     dataset_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     source_code = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     source_code_ref = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    language = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    language_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     compare_result = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     error_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
@@ -296,6 +296,18 @@ namespace Infrastructure.Migrations
                         column: x => x.assignment_user_id,
                         principalTable: "assignment_user",
                         principalColumn: "assignment_user_id");
+                    table.ForeignKey(
+                        name: "fk_submission_dataset_dataset_id",
+                        column: x => x.dataset_id,
+                        principalTable: "dataset",
+                        principalColumn: "dataset_id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_submission_language_language_id",
+                        column: x => x.language_id,
+                        principalTable: "language",
+                        principalColumn: "language_id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_submission_problem_problem_id",
                         column: x => x.problem_id,
@@ -465,6 +477,11 @@ namespace Infrastructure.Migrations
                 column: "dataset_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_submission_language_id",
+                table: "submission",
+                column: "language_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_submission_problem_id",
                 table: "submission",
                 column: "problem_id");
@@ -524,13 +541,13 @@ namespace Infrastructure.Migrations
                 name: "test_case");
 
             migrationBuilder.DropTable(
-                name: "language");
-
-            migrationBuilder.DropTable(
                 name: "tag");
 
             migrationBuilder.DropTable(
                 name: "assignment_user");
+
+            migrationBuilder.DropTable(
+                name: "language");
 
             migrationBuilder.DropTable(
                 name: "dataset");

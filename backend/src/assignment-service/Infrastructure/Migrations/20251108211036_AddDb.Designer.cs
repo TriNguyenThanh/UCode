@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251106175511_InitialDb")]
-    partial class InitialDb
+    [Migration("20251108211036_AddDb")]
+    partial class AddDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -720,11 +720,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("error_message");
 
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("language");
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("language_id");
 
                     b.Property<int>("PassedTestcase")
                         .HasColumnType("int")
@@ -790,6 +788,9 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("DatasetId")
                         .HasDatabaseName("ix_submission_dataset_id");
+
+                    b.HasIndex("LanguageId")
+                        .HasDatabaseName("ix_submission_language_id");
 
                     b.HasIndex("ProblemId")
                         .HasDatabaseName("ix_submission_problem_id");
@@ -995,6 +996,20 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("AssignmentUserId")
                         .HasConstraintName("fk_submission_assignment_user_assignment_user_id");
 
+                    b.HasOne("AssignmentService.Domain.Entities.Dataset", "Dataset")
+                        .WithMany()
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_dataset_dataset_id");
+
+                    b.HasOne("AssignmentService.Domain.Entities.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_language_language_id");
+
                     b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
                         .WithMany()
                         .HasForeignKey("ProblemId")
@@ -1003,6 +1018,10 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_submission_problem_problem_id");
 
                     b.Navigation("Assignment");
+
+                    b.Navigation("Dataset");
+
+                    b.Navigation("Language");
 
                     b.Navigation("Problem");
                 });

@@ -330,7 +330,7 @@ export default function ProblemDetail() {
     try {
       const result = await runCode({
         problemId: problem.problemId,
-        language: selectedLanguage.languageCode || 'cpp',
+        languageId: selectedLanguage.languageId || 'cpp',
         sourceCode: code,
       })
 
@@ -379,7 +379,7 @@ export default function ProblemDetail() {
     try {
       const result = await submitCode({
         problemId: problem.problemId,
-        language: selectedLanguage.languageCode || 'cpp',
+        languageId: selectedLanguage.languageId || 'cpp',
         sourceCode: code,
       })
 
