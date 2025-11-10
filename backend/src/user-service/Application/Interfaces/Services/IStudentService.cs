@@ -7,6 +7,12 @@ namespace UserService.Application.Interfaces.Services;
 public interface IStudentService
 {
     Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request);
+    
+    /// <summary>
+    /// Tạo nhiều sinh viên cùng lúc (bulk create - optimized)
+    /// </summary>
+    Task<BulkCreateResult> BulkCreateStudentsAsync(List<CreateStudentRequest> students);
+    
     Task<StudentResponse?> GetStudentByIdAsync(string studentId);
     Task<StudentResponse?> GetStudentByStudentCodeAsync(string studentCode);
     
@@ -26,6 +32,11 @@ public interface IStudentService
     Task<List<StudentResponse>> GetStudentsByClassIdAsync(string classId);
     Task<bool> UpdateStudentAsync(string userId, UpdateUserRequest request);
     Task<bool> DeleteStudentAsync(string userId);
+    
+    /// <summary>
+    /// Validate nhiều sinh viên cùng lúc theo mã sinh viên (optimized bulk validation)
+    /// </summary>
+    Task<List<BulkValidationResult>> ValidateBulkAsync(List<string> studentCodes);
     
     /// <summary>
     /// Validate batch students trước khi import

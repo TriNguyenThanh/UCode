@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
+using UserService.Application.DTOs.Responses;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
@@ -118,6 +119,39 @@ public class StudentController : ControllerBase
 
         var student = await _studentService.CreateStudentAsync(request);
         return Ok(ApiResponse<object>.SuccessResponse(student, "Student created successfully"));
+    }
+
+    /// <summary>
+    /// [ADMIN/TEACHER] Tạo nhiều sinh viên cùng lúc (bulk create - optimized)
+    /// </summary>
+    /// <param name="request">Danh sách sinh viên cần tạo</param>
+    /// <returns>Kết quả tạo từng sinh viên</returns>
+    /// <response code="200">Bulk create hoàn tất</response>
+    /// <response code="400">Dữ liệu không hợp lệ</response>
+    [HttpPost("bulk-create")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(
+        Summary = "[ADMIN/TEACHER] Bulk create students", 
+        Description = "Tạo nhiều sinh viên cùng lúc - optimized single API call")]
+    [SwaggerResponse(200, "Bulk create hoàn tất", typeof(ApiResponse<BulkCreateResult>))]
+    [SwaggerResponse(400, "Dữ liệu không hợp lệ", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> BulkCreateStudents([FromBody] BulkCreateStudentsRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
+
+        try
+        {
+            var result = await _studentService.BulkCreateStudentsAsync(request.Students);
+            
+            return Ok(ApiResponse<BulkCreateResult>.SuccessResponse(
+                result, 
+                $"Đã tạo {result.SuccessCount}/{request.Students.Count} sinh viên thành công"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to bulk create students: {ex.Message}"));
+        }
     }
 
     /// <summary>
@@ -347,6 +381,38 @@ public class StudentController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to generate template: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER/ADMIN] Kiểm tra danh sách mã sinh viên đã tồn tại hay chưa (bulk validation)
+    /// </summary>
+    /// <param name="request">Danh sách mã sinh viên cần kiểm tra</param>
+    /// <returns>Kết quả kiểm tra từng student code</returns>
+    /// <response code="200">Validation thành công</response>
+    /// <response code="400">Validation thất bại</response>
+    [HttpPost("validate-bulk")]
+    [Authorize(Roles = "Teacher,Admin")]
+    [SwaggerOperation(
+        Summary = "[TEACHER/ADMIN] Bulk validate student codes", 
+        Description = "Kiểm tra danh sách mã sinh viên đã tồn tại hay chưa (optimized - single API call)")]
+    [SwaggerResponse(200, "Validation thành công", typeof(ApiResponse<List<BulkValidationResult>>))]
+    [SwaggerResponse(400, "Validation thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> ValidateBulk([FromBody] ValidateBulkRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
+
+        try
+        {
+            var results = await _studentService.ValidateBulkAsync(request.StudentCodes);
+            return Ok(ApiResponse<List<BulkValidationResult>>.SuccessResponse(
+                results, 
+                $"Validated {results.Count} student codes"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to validate bulk: {ex.Message}"));
         }
     }
 

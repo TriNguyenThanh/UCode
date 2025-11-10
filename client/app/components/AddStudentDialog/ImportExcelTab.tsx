@@ -24,6 +24,7 @@ import * as XLSX from 'xlsx'
 import { API } from '../../api'
 import type { ApiResponse } from '../../types'
 import { bulkEnrollStudents } from '../../services/classService'
+import { validateStudentsBulk, bulkCreateStudents } from '../../services/studentService'
 
 interface ImportExcelTabProps {
   classId: string
@@ -139,39 +140,40 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
     setError(null)
 
     try {
-      const results: StudentValidation[] = []
+      // Extract all student codes
+      const studentCodes = data.map((s) => s.studentCode)
 
-      // Check each student exists or not
-      for (const student of data) {
-        try {
-          // Try to get student by code
-          const response = await API.get<ApiResponse<any>>(
-            `api/v1/students/by-student-code/${student.studentCode}`
-          )
+      // Single API call to validate all students at once (optimized!)
+      const bulkResults = await validateStudentsBulk(studentCodes)
 
-          if (response.data.success && response.data.data) {
-            results.push({
-              ...student,
-              status: 'exists',
-              existingUserId: response.data.data.userId,
-            })
-          }
-        } catch (err: any) {
-          // Student not found - will create new
-          if (err.response?.status === 404) {
-            results.push({
-              ...student,
-              status: 'new',
-            })
-          } else {
-            results.push({
-              ...student,
-              status: 'error',
-              errorMessage: 'Lỗi kiểm tra sinh viên',
-            })
+      // Create a map for quick lookup
+      const validationMap = new Map(bulkResults.map((r) => [r.studentCode, r]))
+
+      // Map results to UI format
+      const results: StudentValidation[] = data.map((student) => {
+        const validation = validationMap.get(student.studentCode)
+
+        if (!validation) {
+          return {
+            ...student,
+            status: 'error',
+            errorMessage: 'Không thể kiểm tra sinh viên',
           }
         }
-      }
+
+        if (validation.exists) {
+          return {
+            ...student,
+            status: 'exists',
+            existingUserId: validation.userId,
+          }
+        }
+
+        return {
+          ...student,
+          status: 'new',
+        }
+      })
 
       setValidationResults(results)
       setActiveStep(2)
@@ -189,59 +191,60 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
     try {
       const newStudents = validationResults.filter((r) => r.status === 'new')
       const existingStudents = validationResults.filter((r) => r.status === 'exists')
-      const createdUserIds: string[] = []
+      let createdUserIds: string[] = []
 
-      // Create new students
-      for (const student of newStudents) {
-        try {
-          const response = await API.post<ApiResponse<any>>('api/v1/students/create', {
-            studentCode: student.studentCode,
-            username: student.studentCode,
-            email: student.email,
-            password: student.password,
-            fullName: student.fullName,
-            major: student.major,
-            enrollmentYear: student.enrollmentYear,
-            classYear: student.classYear,
-          })
+      // 1. Bulk create new students (SINGLE API CALL instead of N calls!)
+      if (newStudents.length > 0) {
+        const studentsToCreate = newStudents.map((student) => ({
+          studentCode: student.studentCode,
+          username: student.studentCode,
+          email: student.email,
+          password: student.password || 'UCode@123',
+          fullName: student.fullName,
+          major: student.major || '',
+          enrollmentYear: student.enrollmentYear || new Date().getFullYear(),
+          classYear: student.classYear || 1,
+        }))
 
-          if (response.data.success && response.data.data) {
-            createdUserIds.push(response.data.data.userId)
-          }
-        } catch (err: any) {
-          console.error('Failed to create student:', student.studentCode)
-          console.error('Error response:', err.response?.data)
-          console.error('Validation errors:', err.response?.data?.errors)
-          console.error('Request data:', {
-            studentCode: student.studentCode,
-            username: student.studentCode,
-            email: student.email,
-            fullName: student.fullName,
-            major: student.major,
-            enrollmentYear: student.enrollmentYear,
-            classYear: student.classYear,
-          })
+        const createResult = await bulkCreateStudents(studentsToCreate)
+        
+        // Get successfully created student IDs
+        createdUserIds = createResult.results
+          .filter((r) => r.success && r.userId)
+          .map((r) => r.userId!)
+
+        console.log(`✓ Created ${createResult.successCount}/${newStudents.length} students`)
+        
+        if (createResult.failureCount > 0) {
+          console.warn('Failed students:', createResult.results.filter(r => !r.success))
         }
       }
 
-      // Collect all user IDs (existing + newly created)
+      // 2. Bulk enroll all students to class (SINGLE API CALL!)
       const allUserIds = [
-        ...existingStudents.map((s) => s.existingUserId!),
+        ...existingStudents.map((s) => s.existingUserId!).filter(Boolean),
         ...createdUserIds,
       ]
 
-      // Bulk enroll all students
+      let enrollResult
       if (allUserIds.length > 0) {
-        const result = await bulkEnrollStudents(classId, allUserIds)
-
-        setSuccessMessage(
-          `✓ Đã tạo ${createdUserIds.length} sinh viên mới và thêm ${result.successCount} sinh viên vào lớp!`
-        )
-
-        setTimeout(() => {
-          onSuccess()
-        }, 2000)
+        enrollResult = await bulkEnrollStudents(classId, allUserIds)
+        console.log(`✓ Enrolled ${enrollResult.successCount}/${allUserIds.length} students`)
       }
+
+      // Show success message
+      const totalCreated = createdUserIds.length
+      const totalEnrolled = enrollResult?.successCount || 0
+      const totalFailed = (enrollResult?.failureCount || 0)
+
+      setSuccessMessage(
+        `✓ Đã tạo ${totalCreated} sinh viên mới và thêm ${totalEnrolled} sinh viên vào lớp!` +
+        (totalFailed > 0 ? ` (${totalFailed} thất bại)` : '')
+      )
+
+      setTimeout(() => {
+        onSuccess()
+      }, 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể import sinh viên')
     } finally {
