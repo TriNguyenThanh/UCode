@@ -1,7 +1,9 @@
 import * as React from 'react'
-import { useLoaderData, redirect } from 'react-router'
+import { useLoaderData, redirect, useNavigate } from 'react-router'
 import type { Route } from './+types/settings'
 import { auth } from '~/auth'
+import * as StudentService from '~/services/studentService'
+import * as TeacherService from '~/services/teacherService'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -33,11 +35,32 @@ export const meta: Route.MetaFunction = () => [
 export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
-  return { user }
+  
+  try {
+    let profile = null
+    
+    // Lấy profile dựa vào role
+    if (user.role === 'student') {
+      profile = await StudentService.getMyProfile()
+    } else if (user.role === 'teacher' || user.role === 'admin') {
+      profile = await TeacherService.getMyProfile()
+    }
+    
+    return { user, profile }
+  } catch (error) {
+    console.error('Error loading profile:', error)
+    return { user, profile: null }
+  }
 }
 
 export default function Settings() {
-  const { user } = useLoaderData<typeof clientLoader>()
+  const { user, profile } = useLoaderData<typeof clientLoader>()
+  const navigate = useNavigate()
+  
+  // Profile states
+  const [fullName, setFullName] = React.useState(profile?.fullName || '')
+  const [email, setEmail] = React.useState(profile?.email || user.email)
+  const [phone, setPhone] = React.useState(profile?.phone || '')
   
   // States
   const [currentPassword, setCurrentPassword] = React.useState('')
@@ -49,13 +72,64 @@ export default function Settings() {
   const [language, setLanguage] = React.useState('vi')
   const [theme, setTheme] = React.useState('light')
   const [saveSuccess, setSaveSuccess] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const [isSaving, setIsSaving] = React.useState(false)
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement password change logic
-    console.log('Password change:', { currentPassword, newPassword, confirmPassword })
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+    setIsSaving(true)
+    setError(null)
+    
+    try {
+      const updateData = {
+        fullName,
+        email,
+        phone,
+      }
+      
+      if (user.role === 'student') {
+        await StudentService.updateMyProfile(updateData)
+      } else if (user.role === 'teacher' || user.role === 'admin') {
+        await TeacherService.updateMyProfile(updateData)
+      }
+      
+      setSaveSuccess(true)
+      setTimeout(() => {
+        setSaveSuccess(false)
+        navigate('/profile') // Redirect về profile sau khi lưu thành công
+      }, 2000)
+    } catch (err) {
+      setError('Không thể cập nhật thông tin. Vui lòng thử lại.')
+      console.error('Error updating profile:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp')
+      return
+    }
+    
+    setIsSaving(true)
+    setError(null)
+    
+    try {
+      await auth.changePassword(currentPassword, newPassword)
+      setSaveSuccess(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (err) {
+      setError('Không thể đổi mật khẩu. Vui lòng kiểm tra mật khẩu hiện tại.')
+      console.error('Error changing password:', err)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleNotificationSave = () => {
@@ -81,6 +155,104 @@ export default function Settings() {
             Đã lưu thay đổi thành công!
           </Alert>
         )}
+        
+        {/* Error Alert */}
+        {error && (
+          <Alert severity='error' sx={{ mb: 3 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Profile Info Section */}
+        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+            <LockIcon sx={{ color: 'primary.main' }} />
+            <Typography variant='h6' sx={{ fontWeight: 600 }}>
+              Thông tin cá nhân
+            </Typography>
+          </Box>
+
+          <Box component="form" onSubmit={handleProfileUpdate} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label='Họ và tên'
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              fullWidth
+              required
+            />
+            <TextField
+              label='Email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              type="email"
+              required
+            />
+            <TextField
+              label='Số điện thoại'
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              fullWidth
+            />
+            
+            <Button
+              type="submit"
+              variant='contained'
+              startIcon={<SaveIcon />}
+              disabled={isSaving}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </Box>
+        </Paper>
+
+        {/* Password Section */}
+        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+            <LockIcon sx={{ color: 'primary.main' }} />
+            <Typography variant='h6' sx={{ fontWeight: 600 }}>
+              Đổi mật khẩu
+            </Typography>
+          </Box>
+
+          <Box component="form" onSubmit={handlePasswordChange} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label='Mật khẩu hiện tại'
+              type='password'
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              fullWidth
+              required
+            />
+            <TextField
+              label='Mật khẩu mới'
+              type='password'
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              fullWidth
+              required
+            />
+            <TextField
+              label='Xác nhận mật khẩu mới'
+              type='password'
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              fullWidth
+              required
+            />
+            
+            <Button
+              type="submit"
+              variant='contained'
+              startIcon={<SaveIcon />}
+              disabled={isSaving}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {isSaving ? 'Đang lưu...' : 'Đổi mật khẩu'}
+            </Button>
+          </Box>
+        </Paper>
 
         {/* Account Info Section */}
         <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
@@ -93,11 +265,11 @@ export default function Settings() {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
-              label='Email'
+              label='Email đăng nhập'
               value={user.email}
               disabled
               fullWidth
-              helperText='Email không thể thay đổi'
+              helperText='Email đăng nhập không thể thay đổi'
             />
             <TextField
               label='Họ và tên'

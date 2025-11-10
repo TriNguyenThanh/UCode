@@ -7,13 +7,24 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  data: T[] // Backend trả về data[], không phải items[]
-  page: number // Backend dùng page, không phải pageNumber
+  data: T[] // Frontend standard format
+  page: number
   pageSize: number
   totalCount: number
   totalPages: number
-  hasPrevious: boolean // Backend dùng hasPrevious, không phải hasPreviousPage
-  hasNext: boolean // Backend dùng hasNext, không phải hasNextPage
+  hasPrevious: boolean
+  hasNext: boolean
+}
+
+// Backend actual response format (for students endpoint)
+export interface BackendPagedResponse<T> {
+  items: T[] // Backend uses 'items' not 'data'
+  pageNumber: number // Backend uses 'pageNumber' not 'page'
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 export interface ErrorResponse {
@@ -108,12 +119,10 @@ export interface Class {
 }
 
 export interface CreateClassRequest {
-  className: string
-  classCode: string
-  teacherId: string
-  semester: string
-  description?: string
-  coverImage?: string
+  name: string // Backend expects "Name"
+  classCode?: string // Backend expects "ClassCode" (optional)
+  teacherId: string // Backend expects "TeacherId"
+  description?: string // Backend expects "Description"
 }
 
 export interface UpdateClassRequest {
@@ -208,6 +217,16 @@ export interface CreateAdminRequest {
   password: string
   fullName: string
   phone?: string
+}
+
+export interface UpdateUserByAdminRequest {
+  email?: string
+  fullName?: string
+  phone?: string
+  major?: string
+  classYear?: number
+  department?: string
+  title?: string
 }
 
 // ============================================

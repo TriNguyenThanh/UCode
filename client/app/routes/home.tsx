@@ -36,9 +36,24 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   if (!user) throw redirect('/login')
   
   try {
-    // Lấy classes từ API
-    const classesResponse = await API.get<ApiResponse<PagedResponse<Class>>>('/api/v1/classes')
-    const classesData = classesResponse.data.data?.items || []
+    // Student: Get enrolled classes from new endpoint
+    // Teacher/Admin: Get all classes (fallback)
+    const endpoint = user.role === 'student' 
+      ? '/api/v1/classes/enrolled' 
+      : '/api/v1/classes'
+    
+    const classesResponse = await API.get<ApiResponse<any>>(endpoint)
+    
+    // Handle different response structures
+    let classesData: Class[]
+    if (user.role === 'student') {
+      // Enrolled endpoint returns List<ClassResponse> directly in data
+      classesData = classesResponse.data.data || []
+    } else {
+      // General endpoint returns PagedResponse
+      classesData = classesResponse.data.data?.items || []
+    }
+    
     const classes = classesData.map((cls: Class) => ({
       id: cls.classId,
       name: cls.className,

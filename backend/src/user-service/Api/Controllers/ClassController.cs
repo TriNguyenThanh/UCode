@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -146,6 +148,25 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
+    /// [STUDENT] Lấy danh sách lớp học đã đăng ký
+    /// </summary>
+    /// <returns>Danh sách lớp học đã đăng ký</returns>
+    /// <response code="200">Danh sách lớp học</response>
+    [HttpGet("enrolled")]
+    [Authorize(Roles = "Student")]
+    [SwaggerOperation(Summary = "[STUDENT] Lấy lớp học đã đăng ký", Description = "Student lấy danh sách các lớp đã enroll từ JWT token")]
+    [SwaggerResponse(200, "Danh sách lớp học đã đăng ký", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> GetEnrolledClasses()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+
+        var classes = await _classService.GetClassesByStudentIdAsync(userId);
+        return Ok(ApiResponse<object>.SuccessResponse(classes, "Enrolled classes retrieved successfully"));
+    }
+
+    /// <summary>
     /// Thêm sinh viên vào lớp học
     /// </summary>
     /// <param name="request">ID lớp học và sinh viên</param>
@@ -226,6 +247,74 @@ public class ClassController : ControllerBase
         var students = await _classService.GetStudentListByClassAsync(classId);
         return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
     }
+
+    /// <summary>
+    /// [TEACHER] Check duplicate students khi import
+    /// </summary>
+    /// <param name="classId">ID lớp học</param>
+    /// <param name="request">Danh sách MSSV hoặc Email cần check</param>
+    /// <returns>Danh sách student IDs đã tồn tại trong lớp</returns>
+    /// <response code="200">Check thành công</response>
+    [HttpPost("{classId}/check-duplicates")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Check duplicate students", Description = "Kiểm tra xem sinh viên đã enroll vào lớp chưa")]
+    [SwaggerResponse(200, "Check duplicates thành công", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> CheckDuplicates(string classId, [FromBody] CheckDuplicatesRequest request)
+    {
+        try
+        {
+            var duplicates = await _classService.CheckDuplicatesAsync(classId, request.Identifiers);
+            
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new {
+                    ClassId = classId,
+                    TotalChecked = request.Identifiers.Count,
+                    DuplicateCount = duplicates.Count,
+                    Duplicates = duplicates
+                },
+                "Duplicate check completed"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to check duplicates: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER] Bulk enroll sinh viên vào lớp
+    /// </summary>
+    /// <param name="classId">ID lớp học</param>
+    /// <param name="request">Danh sách student IDs cần enroll</param>
+    /// <returns>Kết quả enroll</returns>
+    /// <response code="200">Enroll thành công</response>
+    [HttpPost("{classId}/bulk-enroll")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Bulk enroll students", Description = "Enroll nhiều sinh viên vào lớp cùng lúc")]
+    [SwaggerResponse(200, "Bulk enroll thành công", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> BulkEnrollStudents(string classId, [FromBody] BulkEnrollRequest request)
+    {
+        try
+        {
+            var result = await _classService.BulkEnrollStudentsAsync(classId, request.StudentIds);
+            
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new {
+                    ClassId = classId,
+                    TotalRequested = request.StudentIds.Count,
+                    SuccessCount = result.SuccessCount,
+                    FailedCount = result.FailedCount,
+                    SuccessIds = result.SuccessIds,
+                    Errors = result.Errors
+                },
+                $"Enrolled {result.SuccessCount} out of {request.StudentIds.Count} students"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to bulk enroll: {ex.Message}"));
+        }
+    }
 }
 
 // Helper DTOs
@@ -235,3 +324,12 @@ public class AddStudentToClassRequest
     public string StudentId { get; set; } = string.Empty;
 }
 
+public class CheckDuplicatesRequest
+{
+    public List<string> Identifiers { get; set; } = new(); // MSSV or Email
+}
+
+public class BulkEnrollRequest
+{
+    public List<string> StudentIds { get; set; } = new();
+}

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/class.$id'
 import { auth } from '~/auth'
+import * as ClassService from '~/services/classService'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -21,7 +22,6 @@ import AssignmentIcon from '@mui/icons-material/Assignment'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingIcon from '@mui/icons-material/Pending'
-import { mockClasses, mockAssignments } from '~/data/mock'
 
 export const meta: Route.MetaFunction = ({ params }) => [
   { title: `Lớp học | UCode` },
@@ -32,16 +32,22 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
 
-  const classItem = mockClasses.find((c) => c.id === params.id)
-  if (!classItem) throw new Response('Not Found', { status: 404 })
+  try {
+    const classData = await ClassService.getClassDetail(params.id)
+    
+    // TODO: assignments need to come from assignment-service
+    // For now, assignments will be an empty array
+    const assignments: any[] = []
 
-  const classAssignments = mockAssignments.filter((a) => a.classId === params.id)
-
-  return { user, classItem, assignments: classAssignments }
+    return { user, classData, assignments }
+  } catch (error) {
+    console.error('Error loading class detail:', error)
+    throw new Response('Lớp học không tồn tại', { status: 404 })
+  }
 }
 
 export default function ClassDetail() {
-  const { classItem, assignments } = useLoaderData<typeof clientLoader>()
+  const { classData, assignments } = useLoaderData<typeof clientLoader>()
 
   const getDaysUntilDue = (dueDate: Date) => {
     const now = new Date()
@@ -77,7 +83,7 @@ export default function ClassDetail() {
         >
           <Box sx={{ p: 4 }}>
             <Chip
-              label={classItem.code}
+              label={classData.classCode}
               sx={{
                 mb: 2,
                 bgcolor: 'primary.main',
@@ -87,26 +93,26 @@ export default function ClassDetail() {
               }}
             />
             <Typography variant='h3' sx={{ fontWeight: 700, color: 'white', mb: 2 }}>
-              {classItem.name}
+              {classData.className}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                  {classItem.teacherName.charAt(0)}
+                  {classData.teacherName.charAt(0)}
                 </Avatar>
                 <Typography variant='body1' sx={{ color: 'primary.main', fontWeight: 500 }}>
-                  {classItem.teacherName}
+                  {classData.teacherName}
                 </Typography>
               </Box>
               <Chip
-                label={classItem.semester}
+                label={classData.semester}
                 sx={{ bgcolor: 'rgba(250, 203, 1, 0.1)', color: 'primary.main', borderColor: 'primary.main' }}
                 variant='outlined'
               />
             </Box>
-            {classItem.description && (
+            {classData.description && (
               <Typography variant='body1' sx={{ mt: 2, color: 'rgba(255,255,255,0.8)' }}>
-                {classItem.description}
+                {classData.description}
               </Typography>
             )}
           </Box>

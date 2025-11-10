@@ -1,24 +1,16 @@
 import { API } from '../api'
-import type { ApiResponse, Class, ClassWithStudents, User } from '../types'
-import { handleApiError, unwrapApiResponse } from './utils'
+import type {
+  ApiResponse,
+  PagedResponse,
+  Class,
+  CreateClassRequest,
+  UpdateClassRequest,
+  GetClassesRequest,
+  StudentResponse,
+} from '../types'
+import { handleApiError, unwrapApiResponse, buildQueryString } from './utils'
 
 // ==================== REQUEST TYPES ====================
-
-export interface CreateClassRequest {
-  className: string
-  classCode: string
-  teacherId: string
-  semester: string
-  description?: string
-  coverImage?: string
-}
-
-export interface UpdateClassRequest {
-  classId: string
-  className?: string
-  description?: string
-  coverImage?: string
-}
 
 export interface AddStudentToClassRequest {
   classId: string
@@ -33,11 +25,87 @@ export interface AddStudentsToClassRequest {
 // ==================== CLASS SERVICE ====================
 
 /**
- * Creates a new class (Teacher only)
+ * Get all classes with pagination and filters (Admin/Teacher)
+ * Backend: GET /api/v1/classes?pageNumber=1&pageSize=10&teacherId=xxx&isActive=true
+ */
+export async function getAllClasses(
+  params?: GetClassesRequest,
+): Promise<PagedResponse<Class>> {
+  try {
+    const queryString = buildQueryString(params || {})
+    const response = await API.get<ApiResponse<PagedResponse<Class>>>(
+      `api/v1/classes${queryString}`,
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get class by ID
+ * Backend: GET /api/v1/classes/{id}
+ */
+export async function getClassById(id: string): Promise<Class> {
+  try {
+    const response = await API.get<ApiResponse<Class>>(`api/v1/classes/${id}`)
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get class detail with students
+ * Backend: GET /api/v1/classes/{id}/detail
+ */
+export async function getClassDetail(id: string): Promise<Class> {
+  try {
+    const response = await API.get<ApiResponse<Class>>(`api/v1/classes/${id}/detail`)
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get enrolled classes (Student)
+ * TODO: Backend chưa có endpoint này
+ * Temporary: Use GET /api/v1/classes with current student filter
+ */
+export async function getEnrolledClasses(): Promise<Class[]> {
+  try {
+    // TODO: Backend cần implement GET /api/v1/classes/enrolled
+    // Tạm thời return empty array
+    console.warn('Backend endpoint /api/v1/classes/enrolled chưa được implement')
+    return []
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get students in a class
+ * Backend: GET /api/v1/classes/{classId}/students
+ */
+export async function getClassStudents(classId: string): Promise<StudentResponse[]> {
+  try {
+    const response = await API.get<ApiResponse<StudentResponse[]>>(
+      `api/v1/classes/${classId}/students`,
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Create a new class (Teacher/Admin)
+ * Backend: POST /api/v1/classes/create
  */
 export async function createClass(data: CreateClassRequest): Promise<Class> {
   try {
-    const response = await API.post<ApiResponse<Class>>('/api/v1/classes/create', data)
+    const response = await API.post<ApiResponse<Class>>('api/v1/classes/create', data)
     return unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)
@@ -45,62 +113,12 @@ export async function createClass(data: CreateClassRequest): Promise<Class> {
 }
 
 /**
- * Gets a class by ID
- */
-export async function getClass(classId: string): Promise<Class> {
-  try {
-    const response = await API.get<ApiResponse<Class>>(`/api/v1/classes/${classId}`)
-    return unwrapApiResponse(response.data)
-  } catch (error) {
-    handleApiError(error)
-  }
-}
-
-/**
- * Gets class detail including student list
- */
-export async function getClassDetail(classId: string): Promise<ClassWithStudents> {
-  try {
-    const response = await API.get<ApiResponse<ClassWithStudents>>(
-      `/api/v1/classes/${classId}/detail`
-    )
-    return unwrapApiResponse(response.data)
-  } catch (error) {
-    handleApiError(error)
-  }
-}
-
-/**
- * Gets a list of classes with pagination and filters
- */
-export async function getClasses(params?: {
-  pageNumber?: number
-  pageSize?: number
-  teacherId?: string
-  isActive?: boolean
-}): Promise<Class[]> {
-  try {
-    const queryParams = new URLSearchParams()
-    if (params?.pageNumber) queryParams.append('pageNumber', params.pageNumber.toString())
-    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
-    if (params?.teacherId) queryParams.append('teacherId', params.teacherId)
-    if (params?.isActive !== undefined) queryParams.append('isActive', params.isActive.toString())
-
-    const response = await API.get<ApiResponse<Class[]>>(
-      `/api/v1/classes?${queryParams.toString()}`
-    )
-    return unwrapApiResponse(response.data)
-  } catch (error) {
-    handleApiError(error)
-  }
-}
-
-/**
- * Updates a class (Teacher only)
+ * Update class
+ * Backend: PUT /api/v1/classes/update
  */
 export async function updateClass(data: UpdateClassRequest): Promise<void> {
   try {
-    const response = await API.put<ApiResponse<object>>('/api/v1/classes/update', data)
+    const response = await API.put<ApiResponse<void>>('api/v1/classes/update', data)
     unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)
@@ -108,11 +126,12 @@ export async function updateClass(data: UpdateClassRequest): Promise<void> {
 }
 
 /**
- * Deletes a class (Teacher only)
+ * Delete class by ID (Teacher/Admin)
+ * Backend: DELETE /api/v1/classes/delete?id={id}
  */
-export async function deleteClass(classId: string): Promise<void> {
+export async function deleteClass(id: string): Promise<void> {
   try {
-    const response = await API.delete<ApiResponse<object>>(`/api/v1/classes/delete?id=${classId}`)
+    const response = await API.delete<ApiResponse<void>>(`api/v1/classes/delete?id=${id}`)
     unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)
@@ -120,39 +139,14 @@ export async function deleteClass(classId: string): Promise<void> {
 }
 
 /**
- * Adds a student to a class
+ * Add a student to a class (Teacher/Admin)
+ * Backend: POST /api/v1/classes/add-student
  */
-export async function addStudentToClass(data: AddStudentToClassRequest): Promise<void> {
+export async function addStudentToClass(classId: string, studentId: string): Promise<void> {
   try {
-    const response = await API.post<ApiResponse<object>>('/api/v1/classes/add-student', data)
-    unwrapApiResponse(response.data)
-  } catch (error) {
-    handleApiError(error)
-  }
-}
-
-/**
- * Adds multiple students to a class
- */
-export async function addStudentsToClass(data: AddStudentsToClassRequest): Promise<void> {
-  try {
-    const response = await API.post<ApiResponse<object>>('/api/v1/classes/add-students', data)
-    unwrapApiResponse(response.data)
-  } catch (error) {
-    handleApiError(error)
-  }
-}
-
-/**
- * Removes a student from a class
- */
-export async function removeStudentFromClass(
-  classId: string,
-  studentId: string
-): Promise<void> {
-  try {
-    const response = await API.delete<ApiResponse<object>>(
-      `/api/v1/classes/remove-student?classId=${classId}&studentId=${studentId}`
+    const response = await API.post<ApiResponse<void>>(
+      'api/v1/classes/add-student',
+      { classId, studentId }
     )
     unwrapApiResponse(response.data)
   } catch (error) {
@@ -161,11 +155,86 @@ export async function removeStudentFromClass(
 }
 
 /**
- * Gets list of students in a class
+ * Remove a student from a class (Teacher/Admin)
+ * Backend: DELETE /api/v1/classes/remove-student?classId={classId}&studentId={studentId}
  */
-export async function getStudentsInClass(classId: string): Promise<User[]> {
+export async function removeStudentFromClass(classId: string, studentId: string): Promise<void> {
   try {
-    const response = await API.get<ApiResponse<User[]>>(`/api/v1/classes/${classId}/students`)
+    const response = await API.delete<ApiResponse<void>>(
+      `api/v1/classes/remove-student?classId=${classId}&studentId=${studentId}`,
+    )
+    unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Bulk add students to a class (Teacher/Admin)
+ * Backend: POST /api/v1/classes/add-students
+ */
+export async function addStudentsToClass(classId: string, studentIds: string[]): Promise<void> {
+  try {
+    const response = await API.post<ApiResponse<void>>(
+      'api/v1/classes/add-students',
+      { classId, studentIds }
+    )
+    unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+// ==================== NEW: SMART IMPORT FEATURES ====================
+
+export interface BulkEnrollResult {
+  classId: string
+  totalRequested: number
+  successCount: number
+  failedCount: number
+  successIds: string[]
+  errors: Array<{ studentId: string; errorMessage: string }>
+}
+
+/**
+ * Check for duplicate students in a class
+ */
+export async function checkDuplicates(
+  classId: string,
+  identifiers: string[],
+): Promise<{
+  classId: string
+  totalChecked: number
+  duplicateCount: number
+  duplicates: string[]
+}> {
+  try {
+    const response = await API.post<
+      ApiResponse<{
+        classId: string
+        totalChecked: number
+        duplicateCount: number
+        duplicates: string[]
+      }>
+    >(`api/v1/classes/${classId}/check-duplicates`, { identifiers })
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Bulk enroll students into a class
+ */
+export async function bulkEnrollStudents(
+  classId: string,
+  studentIds: string[],
+): Promise<BulkEnrollResult> {
+  try {
+    const response = await API.post<ApiResponse<BulkEnrollResult>>(
+      `api/v1/classes/${classId}/bulk-enroll`,
+      { studentIds },
+    )
     return unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)

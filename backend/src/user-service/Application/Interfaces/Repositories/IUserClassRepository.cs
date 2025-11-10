@@ -10,7 +10,7 @@ public interface IUserClassRepository
     Task<UserClass> AddAsync(UserClass userClass);
     Task<bool> RemoveAsync(Guid studentId, Guid classId);
     Task<bool> ExistsAsync(Guid studentId, Guid classId);
+    Task<bool> IsStudentEnrolledAsync(Guid studentId, Guid classId);
     Task<int> CountStudentsInClassAsync(Guid classId);
     Task<List<UserClass>> AddRangeAsync(List<UserClass> userClasses);
 }
-
