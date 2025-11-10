@@ -90,7 +90,7 @@ public class SubmissionService : ISubmissionService
                 return new Submission();
             }
 
-            submission.DatasetId = datasets.FirstOrDefault()?.DatasetId ?? Guid.Empty;
+            submission.DatasetId = datasets.FirstOrDefault(dt => dt.Kind == DatasetKind.SAMPLE && dt.ProblemId == submission.ProblemId)?.DatasetId ?? Guid.Empty;
 
             if (submission.DatasetId == Guid.Empty)
             {

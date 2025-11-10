@@ -14,17 +14,20 @@ public class ExecuteService : IExecuteService
     private readonly ISubmissionRepository _repo;
     private readonly IRabbitMqService _rabbitMqService;
     private readonly IDatasetService _datasetService;
+    private readonly ILanguageService _languageService;
 
-    public ExecuteService(ISubmissionRepository repo, IRabbitMqService rabbitMqService, IDatasetService datasetService)
+    public ExecuteService(ISubmissionRepository repo, IRabbitMqService rabbitMqService, IDatasetService datasetService, ILanguageService languageService)
     {
         _repo = repo;
         _rabbitMqService = rabbitMqService;
         _datasetService = datasetService;
+        _languageService = languageService;
     }
     public async Task ExecuteCode(Submission submission)
     {
         // lay du lieu data set tu Problem Service
         var dataset = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
+        var language = await _languageService.GetLanguageByIdAsync(submission.LanguageId);
         var testcases = dataset?.TestCases;
 
         RabbitMqMessage message = null;
@@ -34,9 +37,9 @@ public class ExecuteService : IExecuteService
             {
                 SubmissionId = submission.SubmissionId.ToString(),
                 Code = submission.SourceCode,
-                Language = submission.Language,
-                TimeLimit = 2,
-                MemoryLimit = 128,
+                Language = language!.Code,
+                TimeLimit = Convert.ToInt32(language!.DefaultTimeFactor * 1000), // chuyen sang ms
+                MemoryLimit = language!.DefaultMemoryKb,
                 Testcases = testcases!.Select(tc => new TestCaseDto
                 {
                     TestCaseId = tc.TestCaseId,

@@ -10,7 +10,13 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 3000
+    port: 3000,
+    allowedHosts: [
+      'tigerishly-farinose-shaunda.ngrok-free.dev',
+      'localhost',
+      '.ngrok-free.dev', // Allow all ngrok-free.dev subdomains
+      '.ngrok.io', // Allow all ngrok.io subdomains (if using paid ngrok)
+    ]
   },
   preview: {
     port: 3000
