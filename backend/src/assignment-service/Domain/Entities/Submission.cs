@@ -28,12 +28,12 @@ public class Submission
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
     /// </summary>
     public string SourceCodeRef { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Ngôn ngữ lập trình
     /// </summary>
-    public string Language { get; set; } = string.Empty;
-    
+    public Guid LanguageId { get; set; }
+
     /// <summary>
     /// Kết quả so sánh (compare result)
     /// </summary>
@@ -87,4 +87,6 @@ public class Submission
     // Navigation Properties
     public Assignment Assignment { get; set; } = null!;
     public Problem Problem { get; set; } = null!;
+    public Dataset Dataset { get; set; } = null!;
+    public Language Language { get; set; } = null!;
 }

@@ -69,7 +69,7 @@ public class StudentAppService : IStudentService
         return student != null ? _mapper.Map<StudentResponse>(student) : null;
     }
 
-    public async Task<PagedResultDto<StudentResponse>> GetStudentsAsync(
+    public async Task<PagedResultDto<StudentListResponse>> GetStudentsAsync(
         int pageNumber, 
         int pageSize, 
         string? classId = null,
@@ -134,8 +134,8 @@ public class StudentAppService : IStudentService
                 .ToListAsync();
         }
 
-        var studentResponses = _mapper.Map<List<StudentResponse>>(students);
-        return new PagedResultDto<StudentResponse>(studentResponses, totalCount, pageNumber, pageSize);
+        var studentResponses = _mapper.Map<List<StudentListResponse>>(students);
+        return new PagedResultDto<StudentListResponse>(studentResponses, totalCount, pageNumber, pageSize);
     }
 
     public async Task<List<StudentResponse>> GetStudentsByClassIdAsync(string classId)

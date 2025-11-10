@@ -16,6 +16,8 @@ services:
     depends_on:
       - user-service
       - assignment-service
+    networks:
+      - ucode_network
     restart: on-failure
 
   user-service:
@@ -36,6 +38,8 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+    networks:
+      - ucode_network
     restart: on-failure
     command: 
       bash -c "dotnet ef database update -s Api/UserService.Api.csproj -p Infrastructure/UserService.Infrastructure.csproj && dotnet run --project Api/UserService.Api.csproj --urls http://0.0.0.0:5001"
@@ -63,6 +67,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - ucode_network
     restart: on-failure
     command: 
       bash -c "dotnet ef database update -s Api/Api.csproj -p Infrastructure/Infrastructure.csproj && dotnet run --project Api/Api.csproj --urls http://0.0.0.0:5002"
@@ -72,23 +78,20 @@ services:
       context: ./backend/src/judge-service
       dockerfile: Dockerfile.dev
     container_name: judge-service
-    privileged: true  # Cần thiết để sử dụng isolate với các tính năng đầy đủ
+    privileged: true
     cap_add:
       - SYS_ADMIN
     environment:
-      # === RabbitMQ Connection ===
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS}
-      
-      # === Adaptive Consumer Config ===
       - MAX_CONCURRENT_SUBMISSIONS=${MAX_CONCURRENT_SUBMISSIONS}
       - MAX_WORKERS_PER_SUBMISSION=${MAX_WORKERS_PER_SUBMISSION}
-      
-      # === Health Check Thresholds ===
       - MEMORY_THRESHOLD=${MEMORY_THRESHOLD}
       - CPU_THRESHOLD=${CPU_THRESHOLD}
-    
+      - ISOLATE_NICE=12             # 10–19 = kém ưu tiên hơn
+      - EVENTLOOP_CPU=0             # pin event loop vào core 0 (tùy chọn)
+      - ISOLATE_CPU_AFFINITY=1-4    
     tty: true
     stdin_open: true
     volumes:
@@ -97,14 +100,16 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    networks:
+      - ucode_network
     restart: on-failure
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "${RABBITMQ_PORT_EXTERNAL}:5672"     # RabbitMQ message broker
-      - "${RABBITMQ_MANAGEMENT_PORT}:15672"   # Web UI
+      - "${RABBITMQ_PORT_EXTERNAL}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
@@ -112,25 +117,32 @@ services:
       test: rabbitmq-diagnostics -q ping
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 20s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ucode_network
 
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest # (khuyến nghị: ghim tag CU cụ thể)
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
     ports:
       - "${SQLSERVER_EXTERNAL_PORT}:1433"
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${SA_PASSWORD}   # dùng MSSQL_SA_PASSWORD thay cho SA_PASSWORD
-      # - MSSQL_PID=Developer               # bật dòng này nếu là môi trường dev/test
-      # - MSSQL_AGENT_ENABLED=true          # tùy chọn: bật SQL Agent nếu cần
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_PID=Developer
+      - MSSQL_AGENT_ENABLED=true
+    volumes:
+      - sqlserver-data:/var/opt/mssql
     healthcheck:
-      test: /bin/bash -c "</dev/tcp/localhost/1433" || exit 1
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -C -b || exit 1"]
       interval: 15s
-      timeout: 10s
+      timeout: 5s
       retries: 10
       start_period: 60s
+    networks:
+      - ucode_network
+    restart: unless-stopped
   
   file-service:
     build:
@@ -147,16 +159,15 @@ services:
       - AWS__SecretKey=${AWS_SECRET_ACCESS_KEY}
     volumes:
       - ./backend/src/file-service:/app
+    networks:
+      - ucode_network
     restart: on-failure
     command: dotnet watch run --project file-service.csproj --urls http://0.0.0.0:5073
 
-  # redis:
-  #   image: redis:latest
-  #   container_name: redis
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis-data:/data
-
 volumes:
   redis-data:
+  sqlserver-data:
+
+networks:
+  ucode_network:
+    driver: bridge

@@ -158,31 +158,31 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<AssignmentDbContext>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     try
+//     {
+//         var context = services.GetRequiredService<AssignmentDbContext>();
+//         var logger = services.GetRequiredService<ILogger<Program>>();
         
-        logger.LogInformation("🔄 Checking database connection...");
+//         logger.LogInformation("🔄 Checking database connection...");
         
-        // Tạo database nếu chưa tồn tại và chạy migrations
-        await context.Database.MigrateAsync();
-        logger.LogInformation("✅ Database migrated successfully!");
+//         // Tạo database nếu chưa tồn tại và chạy migrations
+//         await context.Database.MigrateAsync();
+//         logger.LogInformation("✅ Database migrated successfully!");
         
-        // Seed data nếu database trống
-        await AssignmentDbContextSeed.SeedAsync(context);
-        logger.LogInformation("✅ Database seeded successfully!");
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "❌ An error occurred while migrating or seeding the database.");
+//         // Seed data nếu database trống
+//         await AssignmentDbContextSeed.SeedAsync(context);
+//         logger.LogInformation("✅ Database seeded successfully!");
+//     }
+//     catch (Exception ex)
+//     {
+//         var logger = services.GetRequiredService<ILogger<Program>>();
+//         logger.LogError(ex, "❌ An error occurred while migrating or seeding the database.");
         
-    }
-}
+//     }
+// }
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

@@ -90,7 +90,7 @@ public class SubmissionService : ISubmissionService
                 return new Submission();
             }
 
-            submission.DatasetId = datasets.FirstOrDefault()?.DatasetId ?? Guid.Empty;
+            submission.DatasetId = datasets.FirstOrDefault(dt => dt.Kind == DatasetKind.SAMPLE && dt.ProblemId == submission.ProblemId)?.DatasetId ?? Guid.Empty;
 
             if (submission.DatasetId == Guid.Empty)
             {
@@ -127,6 +127,11 @@ public class SubmissionService : ISubmissionService
     public async Task<bool> UpdateSubmission(Submission submission)
     {
         return await _repository.UpdateSubmission(submission);
+    }
+
+    public async Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId)
+    {
+        return await _repository.GetMyBestSubmissionByAssignment(assignmentId, problemId, userId);
     }
 
     // public Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
