@@ -44,26 +44,28 @@ namespace ApiGateway.Middlewares
                 }
 
                 // Validate and decode JWT token
-                var (isValid, claims) = await ValidateJwtToken(token);
+                var (isValid, principal) = await ValidateJwtToken(token);
 
-                if (!isValid)
+                if (!isValid || principal == null)
                 {
                     _logger.LogWarning("Invalid JWT token for path: {Path}", context.Request.Path);
                     await ReturnUnauthorized(context, "Invalid authentication token");
                     return;
                 }
 
-                // Extract user information from claims
-                // Lấy claims từ JWT token
-                var userId = context.User.FindFirst("sub")?.Value
-                          ?? context.User.FindFirst("nameid")?.Value
-                          ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                // Set user principal to context
+                context.User = principal;
 
-                var userRole = context.User.FindFirst("role")?.Value
-                        ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                // Extract user information from claims (same as ClaimsToHeadersMiddleware)
+                var userId = principal.FindFirst("sub")?.Value
+                          ?? principal.FindFirst("nameid")?.Value
+                          ?? principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-                var userName = context.User.FindFirst("name")?.Value
-                            ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                var userRole = principal.FindFirst("role")?.Value
+                            ?? principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                var userName = principal.FindFirst("name")?.Value
+                            ?? principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -73,9 +75,9 @@ namespace ApiGateway.Middlewares
                 }
 
                 // Add secure headers for downstream services
-                context.Request.Headers.Append("X-User-Id", userId);
-                context.Request.Headers.Append("X-Role", userRole);
-                context.Request.Headers.Append("X-User-Name", userName);
+                context.Request.Headers["X-User-Id"] = userId;
+                context.Request.Headers["X-Role"] = userRole?.ToLower();
+                context.Request.Headers["X-User-Name"] = userName;
 
 
                 // Add user info to context for logging
@@ -109,7 +111,7 @@ namespace ApiGateway.Middlewares
             return null;
         }
 
-        private Task<(bool IsValid, IEnumerable<Claim> Claims)> ValidateJwtToken(string token)
+        private Task<(bool IsValid, ClaimsPrincipal? Principal)> ValidateJwtToken(string token)
         {
             try
             {
@@ -132,15 +134,15 @@ namespace ApiGateway.Middlewares
 
                 if (validatedToken is not JwtSecurityToken jwtToken)
                 {
-                    return Task.FromResult((false, Enumerable.Empty<Claim>()));
+                    return Task.FromResult<(bool, ClaimsPrincipal?)>((false, null));
                 }
 
-                return Task.FromResult((true, principal.Claims));
+                return Task.FromResult((true, (ClaimsPrincipal?)principal));
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "JWT token validation failed");
-                return Task.FromResult((false, Enumerable.Empty<Claim>()));
+                return Task.FromResult<(bool, ClaimsPrincipal?)>((false, null));
             }
         }
 
@@ -153,12 +155,10 @@ namespace ApiGateway.Middlewares
                 "/api/v1/auth/login",
                 "/api/v1/auth/register",
                 "/api/v1/auth/forgot-password",
-                "/api/v1/auth/reset-password",
+                "/api/v1/auth/request-reset-password",
                 "/api/v1/auth/verify-email",
                 "/api/v1/auth/refresh-token",
-                "/api/v1/auth/request-reset-password",
-                "/api/v1/auth/verify-otp",
-                "/api/v1/auth/logout"
+                "/api/v1/auth/verify-otp"
             };
 
             return publicPaths.Any(publicPath => path.StartsWithSegments(publicPath, StringComparison.OrdinalIgnoreCase));
