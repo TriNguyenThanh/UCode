@@ -4,11 +4,13 @@ import type { Route } from './+types/teacher.assignment.$id'
 import { auth } from '~/auth'
 import type { Assignment, AssignmentUser, AssignmentStatistics } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
+import { AddProblemDialog } from '~/components/AddProblemDialog'
 import { 
   getAssignment, 
   getAssignmentStudents, 
   getAssignmentStatistics,
-  deleteAssignment, 
+  deleteAssignment,
+  updateAssignment,
   getAssignmentsByClass
 } from '~/services/assignmentService'
 import {
@@ -91,6 +93,7 @@ export default function TeacherAssignmentDetail() {
   const [problemToDelete, setProblemToDelete] = useState<string | null>(null)
   const [deleteAssignmentDialogOpen, setDeleteAssignmentDialogOpen] = useState(false)
 
+
   // Calculate statistics from students data
   const submittedStudents = students.filter((s) => s.status === 'SUBMITTED' || s.status === 'GRADED')
   const gradedStudents = students.filter((s) => s.status === 'GRADED')
@@ -124,6 +127,30 @@ export default function TeacherAssignmentDetail() {
     } catch (error) {
       console.error('Failed to delete assignment:', error)
       alert('Không thể xóa assignment')
+    }
+  }
+
+
+  const handleSaveProblems = async (problems: { problemId: string; points: number; orderIndex: number }[]) => {
+    try {
+      // Update assignment with new problems
+      await updateAssignment(assignment.assignmentId, {
+        assignmentType: assignment.assignmentType,
+        classId: assignment.classId,
+        title: assignment.title,
+        description: assignment.description,
+        startTime: assignment.startTime,
+        endTime: assignment.endTime,
+        allowLateSubmission: assignment.allowLateSubmission,
+        status: assignment.status,
+        problems,
+      })
+      
+      // Revalidate to refresh data
+      revalidator.revalidate()
+    } catch (error) {
+      console.error('Failed to save problems:', error)
+      throw error
     }
   }
 
@@ -295,18 +322,12 @@ export default function TeacherAssignmentDetail() {
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        component={Link}
-                        to={`/teacher/problem/${problem.problemId}/edit`}
-                        sx={{ color: 'secondary.main' }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                      
                       <IconButton
                         size="small"
                         onClick={() => handleDeleteProblem(problem.problemId)}
                         sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                        title="Xóa bài khỏi assignment"
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -484,36 +505,12 @@ export default function TeacherAssignmentDetail() {
       </TabPanel>
 
       {/* Add Problem Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ bgcolor: 'secondary.main', color: 'primary.main' }}>
-          Thêm bài vào assignment
-        </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
-          <TextField
-            fullWidth
-            label="Tìm kiếm bài theo tên hoặc ID"
-            variant="outlined"
-            placeholder="VD: Two Sum, problem-1..."
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button
-            variant="contained"
-            onClick={() => setOpenDialog(false)}
-            sx={{
-              bgcolor: 'secondary.main',
-              color: 'primary.main',
-              '&:hover': {
-                bgcolor: 'primary.main',
-                color: 'secondary.main',
-              },
-            }}
-          >
-            Thêm bài
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddProblemDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        existingProblems={assignment.problems || []}
+        onSave={handleSaveProblems}
+      />
 
       {/* Delete Problem Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -560,6 +557,7 @@ export default function TeacherAssignmentDetail() {
           </Button>
         </DialogActions>
       </Dialog>
+      
       </Container>
     </Box>
   )

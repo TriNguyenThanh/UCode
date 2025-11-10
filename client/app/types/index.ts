@@ -339,7 +339,7 @@ export interface Dataset {
 // ============================================
 
 export type AssignmentType = 'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'
-export type AssignmentStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'GRADED'
+export type AssignmentStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED'
 
 export interface Assignment {
   assignmentId: string

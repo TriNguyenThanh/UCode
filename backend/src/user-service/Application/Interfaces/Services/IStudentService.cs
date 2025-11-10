@@ -11,9 +11,9 @@ public interface IStudentService
     Task<StudentResponse?> GetStudentByStudentCodeAsync(string studentCode);
     
     /// <summary>
-    /// Lấy danh sách sinh viên với các filter
+    /// Lấy danh sách sinh viên với các filter (không bao gồm classes)
     /// </summary>
-    Task<PagedResultDto<StudentResponse>> GetStudentsAsync(
+    Task<PagedResultDto<StudentListResponse>> GetStudentsAsync(
         int pageNumber, 
         int pageSize, 
         string? classId = null,

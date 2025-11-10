@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link } from 'react-router'
+import { useLoaderData, redirect, Link, useNavigation } from 'react-router'
 import type { Route } from './+types/assignment.$id'
 import { auth } from '~/auth'
 import { Navigation } from '~/components/Navigation'
@@ -22,8 +22,9 @@ import CodeIcon from '@mui/icons-material/Code'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { getMyAssignmentDetail, getAssignment } from '~/services/assignmentService'
-import { getProblemForStudent } from '~/services/problemService'
-import type { Assignment, AssignmentUser, Problem } from '~/types'
+import { getListBestSubmissions } from '~/services/submissionService'
+import type { Assignment, AssignmentUser, BestSubmission, Problem } from '~/types'
+import { Loading } from '~/components/Loading'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Bài tập | UCode' },
@@ -47,26 +48,39 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       assignment = await getAssignment(params.id)
     }
 
-    const problems: Problem[] = []
-    const problemStatuses = new Map<string, boolean>() // Track completion status
+    const problems = assignment.problems || []
+    const problemSubmissions = new Map<string, BestSubmission | null>()
 
-    if (assignment.problems && assignment.problems.length > 0) {
-      for (const problemDetail of assignment.problems) {
-        try {
-          const problem = await getProblemForStudent(problemDetail.problemId)
-          problems.push(problem)
-          
-          // Note: To check completion status, we would need to fetch submissions for each problem
-          // For now, we'll just mark all as not completed unless we have submission data
-          // TODO: Implement submission checking via API endpoint
-          problemStatuses.set(problem.problemId, false)
-        } catch (error) {
-          console.error(`Failed to load problem ${problemDetail.problemId}:`, error)
-        }
+    if (problems.length > 0) {
+      // Initialize submission map
+      problems.forEach((problem) => {
+        problemSubmissions.set(problem.problemId, null)
+      })
+
+      // Fetch best submissions for all problems in one API call
+      try {
+        const problemIds = problems.map(p => p.problemId)
+        const submissions = await getListBestSubmissions(
+          assignment.assignmentId,
+          problemIds
+        )
+        
+        // Map submissions to their corresponding problems
+        submissions.forEach((submission) => {
+          problemSubmissions.set(submission.problemId, submission)
+        })
+      } catch (error) {
+        console.error('Error loading submissions:', error)
       }
     }
 
-    return { user, assignment, assignmentUser, problems, problemStatuses: Object.fromEntries(problemStatuses) }
+    return { 
+      user, 
+      assignment,
+      assignmentUser,
+      problems, 
+      problemSubmissions: Object.fromEntries(problemSubmissions) 
+    }
   } catch (error) {
     console.error('Error loading assignment:', error)
     throw new Response('Failed to load assignment', { status: 500 })
@@ -74,7 +88,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function AssignmentDetail() {
-  const { assignment, assignmentUser, problems, problemStatuses } = useLoaderData<typeof clientLoader>()
+  const { assignment, assignmentUser, problems, problemSubmissions } = useLoaderData<typeof clientLoader>()
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
 
   const getDaysUntilDue = (endTime?: string) => {
     if (!endTime) return null
@@ -87,7 +103,10 @@ export default function AssignmentDetail() {
   const daysLeft = getDaysUntilDue(assignment.endTime)
   
   const totalProblems = assignment.totalProblems || problems.length
-  const completedProblems = Object.values(problemStatuses || {}).filter(Boolean).length
+  // Count problems that have been successfully submitted (Passed status)
+  const completedProblems = Object.values(problemSubmissions || {}).filter(
+    (submission) => submission?.status === 'Passed'
+  ).length
   const progress = totalProblems > 0 ? Math.round((completedProblems / totalProblems) * 100) : 0
 
   const getDifficultyColor = (difficulty: string) => {
@@ -104,6 +123,16 @@ export default function AssignmentDetail() {
   }
 
   const isOverdue = daysLeft !== null && daysLeft < 0
+
+  // Show loading screen while navigation is in progress
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
+        <Navigation />
+        <Loading fullScreen message="Đang tải thông tin bài tập..." />
+      </Box>
+    )
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
@@ -173,7 +202,7 @@ export default function AssignmentDetail() {
               )}
               {assignmentUser?.score !== undefined && (
                 <Chip
-                  label={`Điểm của bạn: ${assignmentUser.score}/${assignment.totalPoints}`}
+                  label={`Điểm của bạn: ${assignmentUser?.score}/${assignment.totalPoints}`}
                   sx={{ 
                     bgcolor: '#34C759',
                     color: '#ffffff',
@@ -226,7 +255,8 @@ export default function AssignmentDetail() {
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {problems.map((problem, index) => {
-                const isCompleted = problemStatuses?.[problem.problemId]
+                const submission = problemSubmissions?.[problem.problemId]
+                const isCompleted = submission?.status === 'Passed'
                 
                 return (
                   <Card
@@ -282,12 +312,17 @@ export default function AssignmentDetail() {
                           <Box sx={{ flexGrow: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexWrap: 'wrap' }}>
                               <Typography variant='h6' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
-                                {problem.title}
+                                {problem.code} - {problem.title}
                               </Typography>
                               <Chip
                                 label={problem.difficulty}
                                 size='small'
                                 color={getDifficultyColor(problem.difficulty) as any}
+                              />
+                              <Chip
+                                label={`${problem.points} điểm`}
+                                size='small'
+                                sx={{ bgcolor: '#FF9500', color: '#ffffff' }}
                               />
                               {isCompleted && (
                                 <Chip
@@ -298,29 +333,44 @@ export default function AssignmentDetail() {
                               )}
                             </Box>
 
-                            {problem.statement && (
-                              <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                                {problem.statement.substring(0, 150)}
-                                {problem.statement.length > 150 ? '...' : ''}
-                              </Typography>
+                            {/* Submission Status */}
+                            {submission && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                <Typography 
+                                  variant='body2' 
+                                  sx={{ 
+                                    color: submission.status === 'Passed' ? '#34C759' : '#FF3B30',
+                                    fontWeight: 500 
+                                  }}
+                                >
+                                  {submission.status === 'Passed' && '✓ Đã qua'}
+                                  {submission.status === 'Failed' && '✗ Chưa qua'}
+                                  {submission.status === 'CompilationError' && '⚠ Lỗi biên dịch'}
+                                  {submission.status === 'RuntimeError' && '⚠ Lỗi runtime'}
+                                  {submission.status === 'TimeLimitExceeded' && '⏱ Vượt quá thời gian'}
+                                  {submission.status === 'MemoryLimitExceeded' && '💾 Vượt quá bộ nhớ'}
+                                  {submission.status === 'Pending' && '⏳ Đang chờ'}
+                                  {submission.status === 'Running' && '▶ Đang chạy'}
+                                </Typography>
+                                {submission.passedTestCases !== undefined && submission.totalTestCases !== undefined && (
+                                  <Chip
+                                    label={`${submission.passedTestCases}/${submission.totalTestCases} testcases`}
+                                    size='small'
+                                    color={submission.passedTestCases === submission.totalTestCases ? 'success' : 'default'}
+                                  />
+                                )}
+                                {submission.score !== undefined && (
+                                  <Chip
+                                    label={`${submission.score}/${submission.maxScore} điểm`}
+                                    size='small'
+                                    sx={{ 
+                                      bgcolor: submission.score === submission.maxScore ? '#34C759' : '#FF9500',
+                                      color: '#ffffff' 
+                                    }}
+                                  />
+                                )}
+                              </Box>
                             )}
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                              {problem.tagNames?.map((tag: string) => (
-                                <Chip
-                                  key={tag}
-                                  label={tag}
-                                  size='small'
-                                  variant='outlined'
-                                  sx={{ borderStyle: 'dashed' }}
-                                />
-                              ))}
-                              <Chip
-                                label={`${Math.round(problem.timeLimitMs / 1000)}s / ${Math.round(problem.memoryLimitKb / 1024)}MB`}
-                                size='small'
-                                icon={<AccessTimeIcon />}
-                              />
-                            </Box>
                           </Box>
                         </Box>
                       </CardContent>

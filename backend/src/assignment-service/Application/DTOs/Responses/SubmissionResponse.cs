@@ -1,4 +1,4 @@
-﻿using AssignmentService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Application.DTOs.Responses;
 
