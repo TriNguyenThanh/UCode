@@ -57,6 +57,98 @@ public class StudentAppService : IStudentService
         return _mapper.Map<StudentResponse>(student);
     }
 
+    public async Task<BulkCreateResult> BulkCreateStudentsAsync(List<CreateStudentRequest> students)
+    {
+        var result = new BulkCreateResult();
+        var results = new List<BulkCreateStudentResult>();
+
+        foreach (var studentRequest in students)
+        {
+            try
+            {
+                // Check if student code already exists
+                var existingByCode = await _studentRepository.GetByStudentCodeAsync(studentRequest.StudentCode);
+                if (existingByCode != null)
+                {
+                    results.Add(new BulkCreateStudentResult
+                    {
+                        StudentCode = studentRequest.StudentCode,
+                        Success = false,
+                        ErrorMessage = "Mã sinh viên đã tồn tại",
+                        UserId = existingByCode.UserId.ToString()
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                // Check if username already exists
+                if (await _userRepository.UsernameExistsAsync(studentRequest.Username))
+                {
+                    results.Add(new BulkCreateStudentResult
+                    {
+                        StudentCode = studentRequest.StudentCode,
+                        Success = false,
+                        ErrorMessage = "Username đã tồn tại"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                // Check if email already exists
+                if (await _userRepository.EmailExistsAsync(studentRequest.Email))
+                {
+                    results.Add(new BulkCreateStudentResult
+                    {
+                        StudentCode = studentRequest.StudentCode,
+                        Success = false,
+                        ErrorMessage = "Email đã tồn tại"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                // Create student
+                var student = new Student
+                {
+                    UserId = Guid.NewGuid(),
+                    StudentCode = studentRequest.StudentCode,
+                    Username = studentRequest.Username,
+                    Email = studentRequest.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(studentRequest.Password),
+                    FullName = studentRequest.FullName,
+                    Major = studentRequest.Major,
+                    EnrollmentYear = studentRequest.EnrollmentYear,
+                    ClassYear = studentRequest.ClassYear,
+                    Status = UserStatus.Active,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _studentRepository.AddAsync(student);
+
+                results.Add(new BulkCreateStudentResult
+                {
+                    StudentCode = studentRequest.StudentCode,
+                    Success = true,
+                    UserId = student.UserId.ToString()
+                });
+                result.SuccessCount++;
+            }
+            catch (Exception ex)
+            {
+                results.Add(new BulkCreateStudentResult
+                {
+                    StudentCode = studentRequest.StudentCode,
+                    Success = false,
+                    ErrorMessage = ex.Message
+                });
+                result.FailureCount++;
+            }
+        }
+
+        result.Results = results;
+        return result;
+    }
+
     public async Task<StudentResponse?> GetStudentByIdAsync(string studentId)
     {
         var student = await _studentRepository.GetByIdAsync(Guid.Parse(studentId));
@@ -227,5 +319,25 @@ public class StudentAppService : IStudentService
         }
 
         return results;
+    }
+
+    public async Task<List<BulkValidationResult>> ValidateBulkAsync(List<string> studentCodes)
+    {
+        // Lấy tất cả students với studentCodes trong 1 query duy nhất
+        var existingStudents = await _studentRepository.GetByStudentCodesAsync(studentCodes);
+        
+        // Map sang dictionary để lookup nhanh O(1)
+        var studentDict = existingStudents.ToDictionary(
+            s => s.StudentCode, 
+            s => s.UserId.ToString()
+        );
+        
+        // Tạo result cho tất cả studentCodes
+        return studentCodes.Select(code => new BulkValidationResult
+        {
+            StudentCode = code,
+            Exists = studentDict.ContainsKey(code),
+            UserId = studentDict.GetValueOrDefault(code)
+        }).ToList();
     }
 }
