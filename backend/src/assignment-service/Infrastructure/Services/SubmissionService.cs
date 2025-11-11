@@ -51,20 +51,21 @@ public class SubmissionService : ISubmissionService
         {
             submission.SubmissionId = Guid.NewGuid();
             submission.SubmittedAt = DateTime.Now;
-            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId);
+            var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId, DatasetKind.PRIVATE | DatasetKind.PUBLIC | DatasetKind.OFFICIAL);
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
                 return new Submission();
             }
-            else
+
+            submission.DatasetId = datasets.FirstOrDefault()?.DatasetId ?? Guid.Empty;
+
+            if (submission.DatasetId == Guid.Empty)
             {
-                var dataset = datasets.FirstOrDefault(ds => ds.Kind == DatasetKind.PRIVATE || ds.Kind == DatasetKind.PUBLIC || ds.Kind == DatasetKind.OFFICIAL);
-                if (dataset != null)
-                {
-                    submission.DatasetId = dataset.DatasetId;
-                }
+                Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
+                return new Submission();
             }
+  
             new_submission = await _repository.AddSubmission(submission);
             await _exec.ExecuteCode(new_submission);
             Console.WriteLine($"Waiting for Judge submission");

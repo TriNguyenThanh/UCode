@@ -411,6 +411,19 @@ public class ProblemService : IProblemService
         }
     }
 
+    public async Task<ProblemLanguage?> GetProblemLanguageAsync(Guid problemId, Guid languageId)
+    {
+        try
+        {
+            // Returns single ProblemLanguage with Language navigation property loaded
+            return await _problemRepository.GetProblemLanguageAsync(problemId, languageId);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving language configuration: {ex.Message}", 500);
+        }
+    }
+
     public async Task<List<ProblemLanguage>> AddOrUpdateProblemLanguagesAsync(Guid problemId, List<ProblemLanguageDto> requests)
     {
         try
