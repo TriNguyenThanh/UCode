@@ -8,7 +8,7 @@
     "start": "react-router-serve ./build/server/index.js",
     "start:csr": "vite preview",
     "typecheck": "react-router typegen && tsc",
-    "prettier": "prettier --check .",
+    "prettier": "prettier --check ."  ,
     "prettier:fix": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

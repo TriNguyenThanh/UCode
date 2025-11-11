@@ -16,15 +16,22 @@ import {
   LinearProgress,
   Alert,
   Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import CodeIcon from '@mui/icons-material/Code'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { getMyAssignmentDetail, getAssignment } from '~/services/assignmentService'
+import { getMyAssignmentDetail, getAssignment, startAssignment } from '~/services/assignmentService'
 import { getListBestSubmissions } from '~/services/submissionService'
 import type { Assignment, AssignmentUser, BestSubmission, Problem } from '~/types'
 import { Loading } from '~/components/Loading'
+import { useNavigate } from 'react-router'
+import { formatDateTime, getDaysUntil } from '~/utils/dateUtils'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Bài tập | UCode' },
@@ -88,19 +95,47 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function AssignmentDetail() {
-  const { assignment, assignmentUser, problems, problemSubmissions } = useLoaderData<typeof clientLoader>()
+  const { user, assignment, assignmentUser, problems, problemSubmissions } = useLoaderData<typeof clientLoader>()
   const navigation = useNavigation()
+  const navigate = useNavigate()
   const isLoading = navigation.state === 'loading'
+  
+  const [startDialogOpen, setStartDialogOpen] = React.useState(false)
+  const [selectedProblemId, setSelectedProblemId] = React.useState<string | null>(null)
+  const [isStarting, setIsStarting] = React.useState(false)
 
-  const getDaysUntilDue = (endTime?: string) => {
-    if (!endTime) return null
-    const now = new Date()
-    const dueDate = new Date(endTime)
-    const diff = dueDate.getTime() - now.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  // Handle problem click - check if assignment is started
+  const handleProblemClick = (e: React.MouseEvent, problemId: string) => {
+    // Only check for students
+    if (user.role !== 'student') return
+    
+    // Check if assignment has been started
+    if (assignmentUser && assignmentUser.status === 'NOT_STARTED') {
+      e.preventDefault()
+      setSelectedProblemId(problemId)
+      setStartDialogOpen(true)
+    }
   }
 
-  const daysLeft = getDaysUntilDue(assignment.endTime)
+  // Handle start assignment
+  const handleStartAssignment = async () => {
+    if (!selectedProblemId) return
+    
+    setIsStarting(true)
+    try {
+      await startAssignment(assignment.assignmentId)
+      setStartDialogOpen(false)
+      // Navigate to problem after starting
+      navigate(`/student/assignment/${assignment.assignmentId}/problem/${selectedProblemId}`)
+    } catch (error) {
+      console.error('Failed to start assignment:', error)
+      alert('Không thể bắt đầu bài tập. Vui lòng thử lại!')
+    } finally {
+      setIsStarting(false)
+    }
+  }
+
+  const daysLeft = getDaysUntil(assignment.endTime)
   
   const totalProblems = assignment.totalProblems || problems.length
   // Count problems that have been successfully submitted (Passed status)
@@ -212,7 +247,7 @@ export default function AssignmentDetail() {
               )}
               {assignment.endTime && (
                 <Chip
-                  label={`Hạn: ${new Date(assignment.endTime).toLocaleString('vi-VN')}`}
+                  label={`Hạn: ${formatDateTime(assignment.endTime, 'long')}`}
                   variant='outlined'
                   sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
                 />
@@ -289,7 +324,11 @@ export default function AssignmentDetail() {
                       </Box>
                     )}
                     
-                    <CardActionArea component={Link} to={`/student/assignment/${assignment.assignmentId}/problem/${problem.problemId}`}>
+                    <CardActionArea 
+                      component={Link} 
+                      to={`/student/assignment/${assignment.assignmentId}/problem/${problem.problemId}`}
+                      onClick={(e) => handleProblemClick(e, problem.problemId)}
+                    >
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', gap: 3 }}>
                           <Box
@@ -382,6 +421,41 @@ export default function AssignmentDetail() {
           )}
         </Box>
       </Container>
+
+      {/* Start Assignment Dialog */}
+      <Dialog open={startDialogOpen} onClose={() => !isStarting && setStartDialogOpen(false)}>
+        <DialogTitle sx={{ bgcolor: 'secondary.main', color: 'primary.main' }}>
+          Bắt đầu bài tập
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography variant="body1" gutterBottom>
+            Bạn chưa bắt đầu bài tập này. Bạn có muốn bắt đầu làm bài tập ngay bây giờ không?
+          </Typography>
+          <Alert severity="info" sx={{ mt: 2 }}>
+            Sau khi bắt đầu, thời gian làm bài sẽ được tính từ thời điểm này.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStartDialogOpen(false)} disabled={isStarting}>
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleStartAssignment}
+            disabled={isStarting}
+            sx={{
+              bgcolor: 'secondary.main',
+              color: 'primary.main',
+              '&:hover': {
+                bgcolor: 'primary.main',
+                color: 'secondary.main',
+              },
+            }}
+          >
+            {isStarting ? 'Đang bắt đầu...' : 'Bắt đầu'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
