@@ -189,11 +189,15 @@ export async function addStudentsToClass(classId: string, studentIds: string[]):
 
 export interface BulkEnrollResult {
   classId: string
-  totalRequested: number
   successCount: number
-  failedCount: number
-  successIds: string[]
-  errors: Array<{ studentId: string; errorMessage: string }>
+  failureCount: number
+  results: BulkEnrollStudentResult[]
+}
+
+export interface BulkEnrollStudentResult {
+  studentId: string
+  success: boolean
+  errorMessage?: string
 }
 
 /**
