@@ -39,6 +39,10 @@ import { TestCaseResultDialog } from './TestCaseResultDialog'
 
 interface SubmissionHistoryProps {
   submissions: Submission[]
+  pageNumber?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (size: number) => void
 }
 
 interface SubmissionDetail extends Submission {
@@ -154,33 +158,28 @@ function getStatusLabel(status: TestcaseStatus): string {
   return labels[status] || status
 }
 
-export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
+export function SubmissionHistory({ 
+  submissions, 
+  pageNumber = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange 
+}: SubmissionHistoryProps) {
   const [detailDialogOpen, setDetailDialogOpen] = React.useState(false)
   const [selectedSubmission, setSelectedSubmission] = React.useState<SubmissionDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = React.useState(false)
   const [testCaseDialogOpen, setTestCaseDialogOpen] = React.useState(false)
   const [selectedSubmissionForTestCases, setSelectedSubmissionForTestCases] = React.useState<Submission | null>(null)
-  
-  // Pagination state
-  const [page, setPage] = React.useState(0)
-  const [rowsPerPage, setRowsPerPage] = React.useState(10)
 
-  // Handle pagination
+  // Handle pagination - gọi API
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
+    onPageChange?.(newPage + 1) // Convert 0-indexed to 1-indexed for API
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
+    const newSize = parseInt(event.target.value, 10)
+    onPageSizeChange?.(newSize)
   }
-
-  // Get paginated submissions
-  const paginatedSubmissions = React.useMemo(() => {
-    const startIndex = page * rowsPerPage
-    const endIndex = startIndex + rowsPerPage
-    return submissions.slice(startIndex, endIndex)
-  }, [submissions, page, rowsPerPage])
 
   const handleViewDetail = async (submission: Submission) => {
     setDetailDialogOpen(true)
@@ -242,8 +241,6 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
         Lịch sử nộp bài
       </Typography>
-      
-      {submissions.length > 0 ? (
         <Paper variant="outlined">
           <TableContainer>
             <Table size="small">
@@ -259,7 +256,7 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedSubmissions.map((sub) => (
+                {submissions.map((sub) => (
                 <TableRow key={sub.submissionId} hover>
                   <TableCell>
                     {new Date(sub.submittedAt).toLocaleString('vi-VN')}
@@ -312,20 +309,19 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
-          count={submissions.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          count={-1}
+          rowsPerPage={pageSize}
+          page={pageNumber - 1}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Số dòng mỗi trang:"
-          labelDisplayedRows={({ from, to, count }) => 
-            `${from}–${to} của ${count !== -1 ? count : `hơn ${to}`}`
+          labelDisplayedRows={({ from, to }) => 
+            `${from}–${to}`
           }
+          
         />
       </Paper>
-      ) : (
-        <Alert severity="info">Chưa có lần nộp bài nào.</Alert>
-      )}
+      
 
       {/* Detail Dialog */}
       <Dialog
@@ -513,7 +509,7 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
                             </Box>
                           )}
                           
-                          {tc.expectedOutput && (
+                          {tc.expectedOutput && ( 
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 Expected Output:

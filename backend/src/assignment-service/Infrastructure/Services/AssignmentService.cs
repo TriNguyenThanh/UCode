@@ -269,7 +269,7 @@ public class AssignmentService : IAssignmentService
                 throw new KeyNotFoundException("AssignmentUser not found");
 
             assignmentUser.Score = score;
-            assignmentUser.Status = AssignmentUserStatus.GRADED;
+            assignmentUser.Status = AssignmentUserStatus.IN_PROGRESS;
 
             return await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
         }

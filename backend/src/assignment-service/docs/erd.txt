@@ -12,7 +12,7 @@ erDiagram
 
 
     %% ================================
-    %% 2️⃣ CHẤM BÀI & TESTCASE
+    %% 2️⃣ CHẤM CODE & TESTCASE
     %% ================================
     Problem ||--o{ Dataset : "has_dataset"
     Dataset ||--o{ TestCaseFile : "stored_in_file"
@@ -163,7 +163,8 @@ erDiagram
 
     Submission {
         UUID id PK
-        UUID assignment_user_id FK
+        UUID assignment_id FK
+        UUID user_id FK
         UUID problem_id FK
         UUID dataset_id FK
         nvarchar_50_ source_code_ref
@@ -174,20 +175,10 @@ erDiagram
         nvarchar_1000_ error_message
         int total_testcase
         int passed_testcase
+        int score
         bigint total_time
         bigint total_memory
         datetime2 submitted_at
-        nvarchar_50_ result_file_ref
     }
 
-    BestSubmission {
-        UUID id PK
-        UUID assignment_user_id "stored only"
-        UUID problem_id "stored only"
-        UUID submission_id FK
-        int score
-        int max_score
-        bigint total_time
-        bigint total_memory
-        datetime2 updated_at
-    }
+   

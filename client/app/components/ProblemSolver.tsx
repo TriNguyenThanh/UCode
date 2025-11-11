@@ -77,6 +77,10 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
   const [isDragging, setIsDragging] = React.useState(false)
   const containerRef = React.useRef<HTMLDivElement>(null)
 
+  // Pagination state for submissions
+  const [submissionPage, setSubmissionPage] = React.useState(0)
+  const [submissionRowsPerPage, setSubmissionRowsPerPage] = React.useState(10)
+
   const availableLanguages = problem.problemLanguages || []
   
   const defaultLanguage = availableLanguages.length > 0 ? availableLanguages[0] : null
@@ -151,15 +155,27 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
     }
   }
 
-  // Refresh submissions
-  const refreshSubmissions = async () => {
+  // Refresh submissions with pagination
+  const refreshSubmissions = async (pageNum = 1, pageSize = 10) => {
     try {
-      const newSubmissions = await getSubmissionsByProblem(problem.problemId, 1, 10)
+      const newSubmissions = await getSubmissionsByProblem(problem.problemId, pageNum, pageSize)
       setSubmissions(newSubmissions)
+      setSubmissionPage(pageNum - 1) // Convert 1-indexed to 0-indexed
+      setSubmissionRowsPerPage(pageSize)
       setTabValue(2)
     } catch (error) {
       console.error('Failed to refresh submissions:', error)
     }
+  }
+
+  // Handle page change from SubmissionHistory
+  const handleSubmissionPageChange = (newPage: number) => {
+    refreshSubmissions(newPage, submissionRowsPerPage)
+  }
+
+  // Handle page size change from SubmissionHistory
+  const handleSubmissionPageSizeChange = (newSize: number) => {
+    refreshSubmissions(1, newSize)
   }
 
   // Get status text
@@ -564,13 +580,13 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
-              {submissions.length === 0 && tabValue === 2 ? (
-                <Box sx={{ py: 8 }}>
-                  <Loading message="Đang tải lịch sử nộp bài..." size="medium" />
-                </Box>
-              ) : (
-                <SubmissionHistory submissions={submissions} />
-              )}
+                <SubmissionHistory 
+                  submissions={submissions}
+                  pageNumber={submissionPage + 1}
+                  pageSize={submissionRowsPerPage}
+                  onPageChange={handleSubmissionPageChange}
+                  onPageSizeChange={handleSubmissionPageSizeChange}
+                />
             </TabPanel>
           </Box>
         </Box>
