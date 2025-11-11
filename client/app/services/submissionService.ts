@@ -129,8 +129,8 @@ export async function getListBestSubmissions(
 ): Promise<BestSubmission[]> {
   try {
     const response = await API.post<ApiResponse<BestSubmission[]>>(
-      `/api/v1/submissions/assignment/${assignmentId}/problem/list-my-best$`,
-      { problems }
+      `/api/v1/submissions/assignment/${assignmentId}/problem/list-my-best`,
+      { problemIds: problems }
     )
     return unwrapApiResponse(response.data)
   } catch (error) {

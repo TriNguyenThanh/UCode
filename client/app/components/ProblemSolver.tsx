@@ -286,7 +286,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
     try {
       const result = await runCode({
         problemId: problem.problemId,
-        language: selectedLanguage.languageCode || 'cpp',
+        languageId: selectedLanguage.languageId || 'cpp',
         sourceCode: code,
         assignmentId: assignmentId
       })
@@ -332,7 +332,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
     try {
       const result = await submitCode({
         problemId: problem.problemId,
-        language: selectedLanguage.languageCode || 'cpp',
+        languageId: selectedLanguage.languageId || 'cpp',
         sourceCode: code,
         assignmentId: assignmentId
       })
