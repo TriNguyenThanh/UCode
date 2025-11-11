@@ -22,7 +22,6 @@ erDiagram
     AssignmentUser ||--o{ Submission : "has_submissions"
     Problem ||--o{ Submission : "submitted_for"
     Dataset ||--o{ Submission : "tested_against"
-    Submission ||--o{ BestSubmission : "can_be_best"
 
     %% ================================
     %% 4️⃣ PROBLEM META
@@ -157,7 +156,7 @@ erDiagram
         nvarchar_max_ head_override "NULL = use Language.default_head"
         nvarchar_max_ body_override "NULL = use Language.default_body"
         nvarchar_max_ tail_override "NULL = use Language.default_tail"
-        bit is_allowed "Teacher can disable specific language for this problem"
+        bit is_allowed 
         datetime2 created_at
     }
 
