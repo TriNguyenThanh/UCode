@@ -38,11 +38,16 @@ public class Submission
     /// Kết quả so sánh (compare result)
     /// </summary>
     public string? CompareResult { get; set; }
-    
+
     /// <summary>
     /// Trạng thái submission
     /// </summary>
     public SubmissionStatus Status { get; set; } = SubmissionStatus.Pending;
+
+    /// <summary>
+    /// Trạng thái submission
+    /// </summary>
+    public bool isSubmitLate { get; set; } = false;
     
     /// <summary>
     /// Mã lỗi (nếu có)
@@ -58,12 +63,17 @@ public class Submission
     /// Tổng số test case
     /// </summary>
     public int TotalTestcase { get; set; } = 0;
-    
+
     /// <summary>
     /// Số test case passed
     /// </summary>
     public int PassedTestcase { get; set; } = 0;
     
+    /// <summary>
+    /// Số test case passed
+    /// </summary>
+    public int Score { get; set; } = 0;
+
     /// <summary>
     /// Tổng thời gian thực thi (ms)
     /// </summary>
