@@ -116,6 +116,36 @@ export async function createStudent(data: CreateStudentRequest): Promise<Student
 }
 
 /**
+ * Bulk create multiple students at once (Admin/Teacher - optimized)
+ */
+export interface BulkCreateResult {
+  successCount: number
+  failureCount: number
+  results: BulkCreateStudentResult[]
+}
+
+export interface BulkCreateStudentResult {
+  studentCode: string
+  success: boolean
+  errorMessage?: string
+  userId?: string
+}
+
+export async function bulkCreateStudents(
+  students: CreateStudentRequest[],
+): Promise<BulkCreateResult> {
+  try {
+    const response = await API.post<ApiResponse<BulkCreateResult>>(
+      'api/v1/students/bulk-create',
+      { students },
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
  * Update student by ID (Admin/Teacher)
  */
 export async function updateStudent(
@@ -178,6 +208,32 @@ export async function exportStudentsExcel(studentIds?: string[]): Promise<Blob> 
       responseType: 'blob',
     })
     return response.data
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+// ==================== BULK VALIDATION ====================
+
+export interface BulkValidationResult {
+  studentCode: string
+  exists: boolean
+  userId?: string
+}
+
+/**
+ * Validate multiple student codes at once (optimized - single API call)
+ * Used for Import Excel validation to replace N individual API calls
+ */
+export async function validateStudentsBulk(
+  studentCodes: string[],
+): Promise<BulkValidationResult[]> {
+  try {
+    const response = await API.post<ApiResponse<BulkValidationResult[]>>(
+      'api/v1/students/validate-bulk',
+      { studentCodes },
+    )
+    return unwrapApiResponse(response.data)
   } catch (error) {
     handleApiError(error)
   }

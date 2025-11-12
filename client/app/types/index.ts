@@ -450,7 +450,7 @@ export interface Submission {
 
 export interface BestSubmission {
   submissionId?: string
-  assignmentUserId?: string
+  assignmentId?: string
   problemId: string
   userId?: string
   status: SubmissionStatus

@@ -189,12 +189,13 @@ public class SubmissionController : ControllerBase
 
         return Ok(ApiResponse<List<BestSubmissionResponse>>.SuccessResponse(response, $"Retrieved {response.Count} best submissions"));
     }
-
+    
+    public record BestSubmissionRequest(List<Guid> ProblemIds);
     /// <summary>
     /// Get best submissions (leaderboard) for a specific problem in an assignment
     /// </summary>
     /// <param name="assignmentUserId">The unique identifier of the assignment</param>
-    /// <param name="problemIds">List of problem IDs</param>
+    /// <param name="request">List of problem IDs</param>
     /// <returns>Returns a paginated list of best submissions</returns>
     /// <response code="200">Best submissions retrieved successfully</response>
     /// <response code="401">Unauthorized</response>
@@ -203,8 +204,9 @@ public class SubmissionController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<List<BestSubmissionResponse>>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetMyBestSubmissions(Guid assignmentUserId, [FromBody] List<Guid> problemIds)
+    public async Task<IActionResult> GetMyBestSubmissions(Guid assignmentUserId, [FromBody] BestSubmissionRequest request)
     {
+        var problemIds = request.ProblemIds;
         var userId = GetAuthenticatedUserId();
         var bestSubmissions = await _submissionService.GetMyBestSubmissionByAssignment(assignmentUserId, problemIds, userId);
         var response = _mapper.Map<List<BestSubmissionResponse>>(bestSubmissions);

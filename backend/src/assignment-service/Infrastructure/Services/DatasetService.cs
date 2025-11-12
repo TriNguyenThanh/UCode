@@ -93,7 +93,7 @@ public class DatasetService : IDatasetService
     {
         try
         {
-            return await _datasetRepository.GetByProblemIdAsync(problemId);
+            return await _datasetRepository.GetByProblemIdAsync(problemId, datasetKind);
         }
         catch (Exception ex)
         {

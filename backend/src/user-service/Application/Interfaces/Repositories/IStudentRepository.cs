@@ -10,4 +10,5 @@ public interface IStudentRepository : IRepository<Student>
     Task<bool> StudentCodeExistsAsync(string studentCode);
     Task<List<Student>> GetStudentsByClassYearAsync(int classYear);
     Task<List<Student>> GetStudentsByMajorAsync(string major);
+    Task<List<Student>> GetByStudentCodesAsync(List<string> studentCodes);
 }

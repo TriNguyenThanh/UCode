@@ -260,6 +260,33 @@ public class AssignmentService : IAssignmentService
         }
     }
 
+    public async Task<AssignmentUser> UpdateAssignmentUserScoreAsync(Guid assignmentId, Guid userId, int score)
+    {
+        try
+        {
+            var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignmentId, userId);
+            if (assignmentUser == null)
+                throw new KeyNotFoundException("AssignmentUser not found");
+
+            assignmentUser.Score = score;
+            assignmentUser.Status = AssignmentUserStatus.IN_PROGRESS;
+
+            return await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
+        }
+        catch (KeyNotFoundException)
+        {
+            throw;
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while updating assignment user score: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error updating assignment user score: {ex.Message}", 500);
+        }
+    }
+
     public async Task<AssignmentStatistics> GetAssignmentStatisticsAsync(Guid assignmentId)
     {
         try

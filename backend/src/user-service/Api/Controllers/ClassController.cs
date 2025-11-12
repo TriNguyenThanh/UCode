@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
+using UserService.Application.DTOs.Responses;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
@@ -327,23 +328,16 @@ public class ClassController : ControllerBase
     [HttpPost("{classId}/bulk-enroll")]
     [Authorize(Roles = "Teacher")]
     [SwaggerOperation(Summary = "[TEACHER] Bulk enroll students", Description = "Enroll nhiều sinh viên vào lớp cùng lúc")]
-    [SwaggerResponse(200, "Bulk enroll thành công", typeof(ApiResponse<object>))]
+    [SwaggerResponse(200, "Bulk enroll thành công", typeof(ApiResponse<BulkEnrollResult>))]
     public async Task<IActionResult> BulkEnrollStudents(string classId, [FromBody] BulkEnrollRequest request)
     {
         try
         {
             var result = await _classService.BulkEnrollStudentsAsync(classId, request.StudentIds);
             
-            return Ok(ApiResponse<object>.SuccessResponse(
-                new {
-                    ClassId = classId,
-                    TotalRequested = request.StudentIds.Count,
-                    SuccessCount = result.SuccessCount,
-                    FailedCount = result.FailedCount,
-                    SuccessIds = result.SuccessIds,
-                    Errors = result.Errors
-                },
-                $"Enrolled {result.SuccessCount} out of {request.StudentIds.Count} students"
+            return Ok(ApiResponse<BulkEnrollResult>.SuccessResponse(
+                result,
+                $"Đã thêm {result.SuccessCount}/{request.StudentIds.Count} sinh viên vào lớp thành công"
             ));
         }
         catch (Exception ex)

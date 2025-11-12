@@ -63,5 +63,12 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .Where(s => s.Major.ToLower() == major.ToLower())
             .ToListAsync();
     }
+
+    public async Task<List<Student>> GetByStudentCodesAsync(List<string> studentCodes)
+    {
+        return await _dbSet
+            .Where(s => studentCodes.Contains(s.StudentCode))
+            .ToListAsync();
+    }
 }
 

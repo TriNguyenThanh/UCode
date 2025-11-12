@@ -22,6 +22,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TablePagination,
 } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -38,6 +39,10 @@ import { TestCaseResultDialog } from './TestCaseResultDialog'
 
 interface SubmissionHistoryProps {
   submissions: Submission[]
+  pageNumber?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (size: number) => void
 }
 
 interface SubmissionDetail extends Submission {
@@ -95,7 +100,9 @@ function parseCompareResult(compareResult?: string): TestCaseResult[] {
 }
 
 // Get language for syntax highlighting
-function getLanguageForHighlight(language: string): string {
+function getLanguageForHighlight(language?: string | null): string {
+  if (!language) return 'text'
+  
   const langMap: Record<string, string> = {
     'c': 'c',
     'cpp': 'cpp',
@@ -151,12 +158,28 @@ function getStatusLabel(status: TestcaseStatus): string {
   return labels[status] || status
 }
 
-export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
+export function SubmissionHistory({ 
+  submissions, 
+  pageNumber = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange 
+}: SubmissionHistoryProps) {
   const [detailDialogOpen, setDetailDialogOpen] = React.useState(false)
   const [selectedSubmission, setSelectedSubmission] = React.useState<SubmissionDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = React.useState(false)
   const [testCaseDialogOpen, setTestCaseDialogOpen] = React.useState(false)
   const [selectedSubmissionForTestCases, setSelectedSubmissionForTestCases] = React.useState<Submission | null>(null)
+
+  // Handle pagination - gọi API
+  const handleChangePage = (event: unknown, newPage: number) => {
+    onPageChange?.(newPage + 1) // Convert 0-indexed to 1-indexed for API
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = parseInt(event.target.value, 10)
+    onPageSizeChange?.(newSize)
+  }
 
   const handleViewDetail = async (submission: Submission) => {
     setDetailDialogOpen(true)
@@ -218,23 +241,22 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
         Lịch sử nộp bài
       </Typography>
-      
-      {submissions.length > 0 ? (
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Thời gian</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Ngôn ngữ</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="center">Điểm</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="right">Time (ms)</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="right">Memory (KB)</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="center">Chi tiết</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {submissions.map((sub) => (
+        <Paper variant="outlined">
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Thời gian</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Ngôn ngữ</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">Điểm</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">Time (ms)</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="right">Memory (KB)</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">Chi tiết</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {submissions.map((sub) => (
                 <TableRow key={sub.submissionId} hover>
                   <TableCell>
                     {new Date(sub.submittedAt).toLocaleString('vi-VN')}
@@ -283,9 +305,23 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
             </TableBody>
           </Table>
         </TableContainer>
-      ) : (
-        <Alert severity="info">Chưa có lần nộp bài nào.</Alert>
-      )}
+        
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          component="div"
+          count={-1}
+          rowsPerPage={pageSize}
+          page={pageNumber - 1}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Số dòng mỗi trang:"
+          labelDisplayedRows={({ from, to }) => 
+            `${from}–${to}`
+          }
+          
+        />
+      </Paper>
+      
 
       {/* Detail Dialog */}
       <Dialog
@@ -473,7 +509,7 @@ export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {
                             </Box>
                           )}
                           
-                          {tc.expectedOutput && (
+                          {tc.expectedOutput && ( 
                             <Box>
                               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                 Expected Output:

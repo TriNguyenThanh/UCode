@@ -24,6 +24,7 @@ public interface IAssignmentService
     Task<AssignmentUser?> GetAssignmentUserAsync(Guid assignmentId, Guid studentId);
     Task<List<AssignmentUser>> GetAssignmentUsersAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
+    Task<AssignmentUser> UpdateAssignmentUserScoreAsync(Guid assignmentId, Guid userId, int score);
     
     // // BestSubmission operations
     // Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);

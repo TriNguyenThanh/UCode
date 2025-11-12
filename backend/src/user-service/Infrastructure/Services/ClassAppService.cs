@@ -245,10 +245,10 @@ public class ClassAppService : IClassService
         return await _userClassRepository.RemoveAsync(studentGuid, classGuid);
     }
 
-    public async Task<List<StudentResponse>> GetStudentListByClassAsync(string classId)
+    public async Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId)
     {
         var students = await _studentRepository.GetStudentsByClassIdAsync(Guid.Parse(classId));
-        return _mapper.Map<List<StudentResponse>>(students);
+        return _mapper.Map<List<StudentListResponse>>(students);
     }
 
     public async Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers)
@@ -281,7 +281,11 @@ public class ClassAppService : IClassService
 
     public async Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds)
     {
-        var result = new BulkEnrollResult();
+        var result = new BulkEnrollResult
+        {
+            ClassId = classId,
+            Results = new List<BulkEnrollStudentResult>()
+        };
         var classGuid = Guid.Parse(classId);
 
         // Verify class exists
@@ -298,10 +302,11 @@ public class ClassAppService : IClassService
                 
                 if (student == null)
                 {
-                    result.FailedCount++;
-                    result.Errors.Add(new BulkEnrollError
+                    result.FailureCount++;
+                    result.Results.Add(new BulkEnrollStudentResult
                     {
                         StudentId = studentId,
+                        Success = false,
                         ErrorMessage = "Student not found"
                     });
                     continue;
@@ -311,10 +316,11 @@ public class ClassAppService : IClassService
                 var isEnrolled = await _userClassRepository.IsStudentEnrolledAsync(studentGuid, classGuid);
                 if (isEnrolled)
                 {
-                    result.FailedCount++;
-                    result.Errors.Add(new BulkEnrollError
+                    result.FailureCount++;
+                    result.Results.Add(new BulkEnrollStudentResult
                     {
                         StudentId = studentId,
+                        Success = false,
                         ErrorMessage = "Student already enrolled"
                     });
                     continue;
@@ -331,14 +337,19 @@ public class ClassAppService : IClassService
 
                 await _userClassRepository.AddAsync(userClass);
                 result.SuccessCount++;
-                result.SuccessIds.Add(studentId);
+                result.Results.Add(new BulkEnrollStudentResult
+                {
+                    StudentId = studentId,
+                    Success = true
+                });
             }
             catch (Exception ex)
             {
-                result.FailedCount++;
-                result.Errors.Add(new BulkEnrollError
+                result.FailureCount++;
+                result.Results.Add(new BulkEnrollStudentResult
                 {
                     StudentId = studentId,
+                    Success = false,
                     ErrorMessage = ex.Message
                 });
             }

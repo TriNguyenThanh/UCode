@@ -164,7 +164,6 @@ export default function TeacherClassDetail() {
               <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Tên bài tập</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Hạn nộp</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Số bài</TableCell>
-              <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Đã nộp</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Trạng thái</TableCell>
               <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="right">
                 Thao tác
@@ -215,14 +214,6 @@ export default function TeacherClassDetail() {
                   </TableCell>
                   <TableCell>
                     <Chip label={`${assignment.problems?.length || 0} bài`} size="small" />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {submittedCount}/{classData.studentCount}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      ({Math.round((submittedCount / (classData.studentCount || 1)) * 100)}%)
-                    </Typography>
                   </TableCell>
                   <TableCell>
                     {assignment.status === 'PUBLISHED' ? (
