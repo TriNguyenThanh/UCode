@@ -10,6 +10,7 @@ public interface ISubmissionService
     Task<List<Submission>> GetAllUserSubmission(Guid userId, int pageNumber = 1, int pageSize = 10);
     Task<List<Submission>> GetAllSubmissionProblem(Guid problemId, Guid userId, int pageNumber, int pageSize);
     Task<List<BestSubmission>> GetBestSubmissionByProblemId(Guid assignmentId, Guid problemId, int pageNumber, int pageSize);
+    Task<BestSubmission?> GetBestSubmission(Guid assignmentId, Guid problemId, Guid userId);
     Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId);
     Task<Submission> SubmitCode(Submission submission);
     Task<Submission> RunCode(Submission submission);

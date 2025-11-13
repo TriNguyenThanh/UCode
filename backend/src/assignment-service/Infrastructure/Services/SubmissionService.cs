@@ -215,4 +215,8 @@ public class SubmissionService : ISubmissionService
     // {
     //     return _repository.UpdateSubmissionStatus(submissionId, status);
     // }
+    public async Task<BestSubmission?> GetBestSubmission(Guid assignmentId, Guid problemId, Guid userId)
+    {
+        return await _repository.GetBestSubmission(assignmentId, problemId, userId);
+    }
 }
