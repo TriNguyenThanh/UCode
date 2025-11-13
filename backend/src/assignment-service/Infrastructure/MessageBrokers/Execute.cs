@@ -30,7 +30,7 @@ public class ExecuteService : IExecuteService
         var language = await _languageService.GetLanguageByIdAsync(submission.LanguageId);
         var testcases = dataset?.TestCases;
 
-        RabbitMqMessage message = null;
+        RabbitMqMessage message = null!;
         try
         {
             message = new RabbitMqMessage
@@ -66,7 +66,7 @@ public class ExecuteService : IExecuteService
             });
 
         submission.PassedTestcase = 0;
-        submission.TotalTestcase = testcases.Count;
+        submission.TotalTestcase = testcases!.Count;
         submission.Status = SubmissionStatus.Running;
         await _repo.UpdateSubmission(submission);
         Console.WriteLine($"[x] Sent submission {submission.SubmissionId} to execution service");

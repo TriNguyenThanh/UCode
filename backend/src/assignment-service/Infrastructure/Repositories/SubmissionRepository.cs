@@ -118,7 +118,9 @@ public class SubmissionRepository : ISubmissionRepository
             .AsNoTracking()
             .Where(s => s.ProblemId == problemId && s.AssignmentId == assignmentId)
             .OrderByDescending(s => s.Score)
-            .ThenBy(s => s.UpdatedAt)
+            .ThenBy(s => s.TotalTime)
+            .ThenBy(s => s.TotalMemory)
+            .ThenByDescending(s => s.SubmitAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -130,7 +132,9 @@ public class SubmissionRepository : ISubmissionRepository
             .AsNoTracking()
             .Where(s => s.AssignmentId == assignmentId && problemId.Contains(s.ProblemId) && s.UserId == userId)
             .OrderByDescending(s => s.Score)
-            .ThenBy(s => s.UpdatedAt)
+            .ThenBy(s => s.TotalTime)
+            .ThenBy(s => s.TotalMemory)
+            .ThenByDescending(s => s.SubmitAt)
             .ToListAsync();
     }
 

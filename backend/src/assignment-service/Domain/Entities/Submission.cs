@@ -68,12 +68,12 @@ public class Submission
     /// Số test case passed
     /// </summary>
     public int PassedTestcase { get; set; } = 0;
-    
+
     /// <summary>
     /// Số test case passed
     /// </summary>
     public int Score { get; set; } = 0;
-
+    
     /// <summary>
     /// Tổng thời gian thực thi (ms)
     /// </summary>
