@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  data: T[] // Frontend standard format
+  items: T[] // Frontend standard format
   page: number
   pageSize: number
   totalCount: number

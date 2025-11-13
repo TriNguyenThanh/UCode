@@ -142,7 +142,7 @@ namespace UCode.Desktop.ViewModels
                 {
                     foreach (var assignment in response.Data.Items)
                     {
-                        var daysLeft = (assignment.DueDate - DateTime.Now).Days;
+                        var daysLeft = (assignment.EndTime - DateTime.Now)?.Days ?? 0;
                         
                         UpcomingAssignments.Add(new AssignmentItem
                         {
@@ -150,7 +150,7 @@ namespace UCode.Desktop.ViewModels
                             Title = assignment.Title,
                             ClassName = assignment.ClassName ?? "Unknown Class",
                             DaysLeft = daysLeft > 0 ? daysLeft : 0,
-                            ProblemCount = assignment.ProblemCount,
+                            ProblemCount = assignment.TotalProblems ?? 0,
                             TotalPoints = assignment.TotalPoints
                         });
                     }
@@ -216,6 +216,9 @@ namespace UCode.Desktop.ViewModels
             if (result == MessageBoxResult.Yes)
             {
                 _authService.Logout();
+
+                // Change shutdown mode back to explicit before closing main window
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
                 // Close main window and show login window
                 var loginWindow = App.ServiceProvider.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;

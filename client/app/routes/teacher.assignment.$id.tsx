@@ -203,7 +203,7 @@ export default function TeacherAssignmentDetail() {
             >
               Chỉnh sửa
             </Button>
-            {pendingGrading > 0 && (
+            
               <Button
                 variant="contained"
                 component={Link}
@@ -219,7 +219,7 @@ export default function TeacherAssignmentDetail() {
               >
                 Chấm bài ({pendingGrading})
               </Button>
-            )}
+            
             <Button
               variant="outlined"
               color="error"

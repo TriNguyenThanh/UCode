@@ -1,0 +1,34 @@
+---
+config:
+  layout: elk
+---
+flowchart LR
+    GV["Giảng viên"] -- Tạo/Sửa/Xóa bài tập --> P31("3.1. Tạo/Sửa/Xóa bài tập")
+    P31 -- Cập nhật bài tập --> D_Assignment[("Thông tin bài tập")]
+    D_Assignment -- Dữ liệu bài tập --> P31 & P33("3.3. Thiết lập thời hạn<br>&amp; loại bài tập") & P34("3.4. Sao chép bài tập<br>sang lớp khác")
+    P31 -- Xác nhận --> GV
+    GV -- Gán cho lớp & thêm đề --> P32("3.2. Gán bài tập cho lớp<br>&amp; thêm đề bài")
+    P32 -- Cập nhật gán --> D_Assignment
+    P32 -- Truy vấn lớp --> D_Class[("Thông tin lớp học")]
+    D_Class -- Dữ liệu lớp --> P32 & P34
+    P32 -- Thêm đề bài --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Dữ liệu đề --> P32
+    P32 -- Xác nhận --> GV
+    GV -- Thiết lập thời hạn/loại --> P33
+    P33 -- Cập nhật thời hạn/loại --> D_Assignment
+    P33 -- Xác nhận --> GV
+    GV -- Sao chép bài tập --> P34
+    P34 -- Sao chép dữ liệu --> D_Assignment
+    P34 -- Gán lớp mới --> D_Class
+    P34 -- Xác nhận --> GV
+     GV:::lecturer
+     P31:::process
+     D_Assignment:::datastore
+     P33:::process
+     P34:::process
+     P32:::process
+     D_Class:::datastore
+     D_Problem:::datastore
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

@@ -9,7 +9,7 @@ public class PagedResponse<T>
     /// <summary>
     /// The actual data items
     /// </summary>
-    public List<T> Data { get; set; } = new();
+    public List<T> Items { get; set; } = new();
     
     /// <summary>
     /// Current page number

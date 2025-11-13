@@ -1,0 +1,372 @@
+<Window x:Class="UCode.Desktop.Views.AddProblemDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:local="clr-namespace:UCode.Desktop.Views"
+        Title="Thêm bài vào assignment" 
+        Height="700" Width="1200"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#003A70" Padding="20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock Text="Thêm bài vào assignment" Foreground="#FACB01" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Border Background="#FACB01" CornerRadius="12" Padding="10,5" Margin="15,0,0,0"
+                                Visibility="{Binding HasSelectedProblems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Foreground="#003A70" FontWeight="SemiBold" FontSize="12">
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                <Run Text=" bài được chọn"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Content="✕" 
+                            Foreground="#FACB01"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="20"
+                            Width="30" Height="30"
+                            Cursor="Hand"
+                            Click="Close_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#004A90"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid Margin="30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filters -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" 
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="🔍 Tìm kiếm theo tên, code, hoặc ID..."
+                                 FontSize="14"
+                                 Padding="10"/>
+
+                        <ComboBox Grid.Column="2" 
+                                  SelectedItem="{Binding DifficultyFilter, Mode=TwoWay}"
+                                  DisplayMemberPath="Label"
+                                  SelectedValuePath="Value"
+                                  FontSize="14">
+                            <ComboBox.ItemsSource>
+                                <x:Array Type="{x:Type local:FilterOption}">
+                                    <local:FilterOption Label="Tất cả" Value="all"/>
+                                    <local:FilterOption Label="Easy" Value="EASY"/>
+                                    <local:FilterOption Label="Medium" Value="MEDIUM"/>
+                                    <local:FilterOption Label="Hard" Value="HARD"/>
+                                </x:Array>
+                            </ComboBox.ItemsSource>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Info Alert -->
+                    <Border Grid.Row="1" Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
+                            CornerRadius="4" Padding="15" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Chọn các bài cần thêm vào assignment. Mặc định điểm tối đa là 100 điểm, bạn có thể chỉnh sửa sau." 
+                                       Foreground="#1976D2" FontSize="13" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Problems Table -->
+                    <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="0">
+                        <DataGrid ItemsSource="{Binding FilteredProblems}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserSortColumns="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  BorderThickness="0"
+                                  MaxHeight="400"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow">
+                            <DataGrid.Resources>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#E3F2FD"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#E3F2FD"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="Black"/>
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridRow">
+                                                <Border x:Name="DGR_Border"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        SnapsToDevicePixels="True">
+                                                    <SelectiveScrollingGrid>
+                                                        <SelectiveScrollingGrid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </SelectiveScrollingGrid.ColumnDefinitions>
+                                                        <SelectiveScrollingGrid.RowDefinitions>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </SelectiveScrollingGrid.RowDefinitions>
+                                                        <DataGridCellsPresenter Grid.Column="1"
+                                                                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                        <DataGridDetailsPresenter Grid.Column="1" Grid.Row="1"
+                                                                                  SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                                                  Visibility="{TemplateBinding DetailsVisibility}"/>
+                                                        <DataGridRowHeader Grid.RowSpan="2"
+                                                                           SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                                           Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                                    </SelectiveScrollingGrid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="DGR_Border" Property="Background" Value="#E3F2FD"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="DGR_Border" Property="Background" Value="#BBDEFB"/>
+                                                    </Trigger>
+                                                    <MultiTrigger>
+                                                        <MultiTrigger.Conditions>
+                                                            <Condition Property="IsMouseOver" Value="True"/>
+                                                            <Condition Property="IsSelected" Value="True"/>
+                                                        </MultiTrigger.Conditions>
+                                                        <Setter TargetName="DGR_Border" Property="Background" Value="#90CAF9"/>
+                                                    </MultiTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="Black"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="50">
+                                    <DataGridTemplateColumn.Header>
+                                        <CheckBox IsChecked="{Binding DataContext.AllSelected, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center"
+                                                      Margin="0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="100">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontFamily" Value="Consolas"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                
+                                <DataGridTextColumn Header="Tên bài" Binding="{Binding Title}" Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Medium"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                
+                                <DataGridTemplateColumn Header="Độ khó" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Difficulty}" Value="EASY">
+                                                                <Setter Property="Background" Value="#34C759"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Difficulty}" Value="MEDIUM">
+                                                                <Setter Property="Background" Value="#FF9500"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Difficulty}" Value="HARD">
+                                                                <Setter Property="Background" Value="#FF3B30"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Difficulty}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <DataGridTemplateColumn Header="Tags" Width="200">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ItemsControl ItemsSource="{Binding TagsPreview}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#D2D2D7" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,3,3">
+                                                            <TextBlock Text="{Binding}" FontSize="10" Foreground="#666"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <DataGridTemplateColumn Header="Điểm" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <!-- Edit Mode -->
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,5,0"
+                                                           Visibility="{Binding IsEditingPoints, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <TextBox Text="{Binding Points, UpdateSourceTrigger=PropertyChanged}" 
+                                                             Width="60" 
+                                                             FontSize="12"
+                                                             Padding="5,2"
+                                                             VerticalContentAlignment="Center"/>
+                                                    <Button Content="✓" 
+                                                            Foreground="#34C759"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            FontSize="16"
+                                                            Padding="5"
+                                                            Cursor="Hand"
+                                                            Command="{Binding DataContext.SavePointsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <Button Content="✕" 
+                                                            Foreground="#FF3B30"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            FontSize="16"
+                                                            Padding="5"
+                                                            Cursor="Hand"
+                                                            Command="{Binding DataContext.CancelEditPointsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+
+                                                <!-- View Mode -->
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,5,0"
+                                                           Visibility="{Binding IsEditingPoints, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                                    <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,5,0">
+                                                        <Run Text="{Binding Points, Mode=OneWay}"/>
+                                                        <Run Text=" điểm"/>
+                                                    </TextBlock>
+                                                    <Button Content="✏" 
+                                                            Foreground="#007bff"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            FontSize="14"
+                                                            Padding="5"
+                                                            Cursor="Hand"
+                                                            IsEnabled="{Binding IsSelected}"
+                                                            Command="{Binding DataContext.StartEditPointsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Actions -->
+            <Border Grid.Row="2" Background="White" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="30,20">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="HỦY" Style="{StaticResource SecondaryButtonStyle}"
+                            Click="Close_Click"
+                            Width="120" Margin="0,0,15,0"
+                            IsEnabled="{Binding !IsSaving}"/>
+                    <Button Content="LƯU THAY ĐỔI" 
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding SaveCommand}"
+                            IsEnabled="{Binding CanSave}"
+                            Width="150"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
+

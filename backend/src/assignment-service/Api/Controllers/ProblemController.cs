@@ -239,7 +239,7 @@ public class ProblemController : ControllerBase
         
         var pagedResponse = new PagedResponse<ProblemResponse>
         {
-            Data = problemDtos,
+            Items = problemDtos,
             Page = page,
             PageSize = pageSize,
             TotalCount = total,
@@ -591,7 +591,7 @@ public class ProblemController : ControllerBase
         
         var pagedResponse = new PagedResponse<ProblemResponse>
         {
-            Data = problemDtos,
+            Items = problemDtos,
             Page = page,
             PageSize = pageSize,
             TotalCount = total,
