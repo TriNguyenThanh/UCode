@@ -97,7 +97,7 @@ async def execute_in_sandbox(language, code, testcases, timelimit=None, memoryli
     # Sort testcases by IndexNo
     sorted_testcases = sorted(testcases, key=lambda tc: tc.get("IndexNo", 0))
     
-    # ✅ COMPILE/SYNTAX CHECK CHỈ 1 LẦN cho tất cả testcases
+    #  COMPILE/SYNTAX CHECK CHỈ 1 LẦN cho tất cả testcases
     debug_log(f"[DEBUG] Compiling/checking code once for all {len(sorted_testcases)} testcases...")
     try:
         run_cmd = await _compile_code_once(language, code, timelimit, memorylimit)
@@ -109,7 +109,7 @@ async def execute_in_sandbox(language, code, testcases, timelimit=None, memoryli
     
     debug_log(f"[DEBUG] Compilation successful, run command: {run_cmd}")
     
-    # ✅ BATCH EXECUTION: Trong batch chạy song song, giữa các batch chạy tuần tự
+    #  BATCH EXECUTION: Trong batch chạy song song, giữa các batch chạy tuần tự
     # Early stopping: Nếu TẤT CẢ testcases trong batch đều TLE → dừng các batch sau
     debug_log(f"[DEBUG] Running {len(sorted_testcases)} testcases in batches")
     debug_log(f"[DEBUG] Batch size: {MAX_PARALLEL_TESTCASES} (parallel within batch, sequential between batches)")
@@ -131,7 +131,7 @@ async def execute_in_sandbox(language, code, testcases, timelimit=None, memoryli
             # Nếu đã early stop, skip batch này
             if stop_execution:
                 for tc in batch:
-                    debug_log(f"[⏹️] Skipping testcase (IndexNo={tc.get('IndexNo')}) - Early stopped")
+                    debug_log(f"[PAUSE] Skipping testcase (IndexNo={tc.get('IndexNo')}) - Early stopped")
                     results.append({
                         "testcaseId": tc.get("TestCaseId") or tc.get("testcaseId", "unknown"),
                         "indexNo": tc.get("IndexNo", tc.get("indexNo", 0)),
@@ -145,7 +145,7 @@ async def execute_in_sandbox(language, code, testcases, timelimit=None, memoryli
             
             # Chạy batch hiện tại
             
-            debug_log(f"\n[🚀] Batch {batch_idx + 1}/{num_batches}: Running {len(batch)} testcases in PARALLEL")
+            debug_log(f"\n[#] Batch {batch_idx + 1}/{num_batches}: Running {len(batch)} testcases in PARALLEL")
             debug_log(f"    Testcases: {start_idx + 1}-{end_idx}")
             
             # Chạy SONG SONG tất cả testcases trong batch này
@@ -225,33 +225,57 @@ async def _compile_code_once(language, code, timelimit, memorylimit):
 
         elif language == "cpp":
             code_file = f"{temp_box_path}/main.cpp"
-            compile_error_file = f"{temp_box_path}/compile_err.txt"
+            compile_stdout_file = f"{temp_box_path}/compile_out.txt"
+            compile_stderr_file = f"{temp_box_path}/compile_err.txt"
             
             # Write code to file
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, _write_file, code_file, code)
             
-            # Compile CHỈ 1 LẦN
+            # Compile CHỈ 1 LẦN - Capture BOTH stdout và stderr
             debug_log(f"[DEBUG] Compiling C++ code...")
             compile_cmd = [
                 "isolate", "--box-id", str(temp_box_id),
                 "--time=10", "--wall-time=15", "--mem=512000", "--processes", "--full-env",
-                "--stderr=compile_err.txt",
+                "--stdout=compile_out.txt",  #  Capture stdout
+                "--stderr=compile_err.txt",  #  Capture stderr
                 "--run", "--",
-                "/usr/bin/g++", "-std=c++17", "-O2", "-o", "main", "main.cpp"
+                "/usr/bin/g++", "-std=c++17", "-O2", "-Wall", "-Wextra",  #  Thêm -Wall -Wextra để có nhiều warning
+                "-o", "main", "main.cpp"
             ]
             
             compile_result = await _run_command(compile_cmd, timeout=20, capture_output=True)
             
             if compile_result.returncode != 0:
-                stderr_from_file = await loop.run_in_executor(None, _read_file, compile_error_file)
-                stderr_from_proc = ""
-                try:
-                    stderr_from_proc = compile_result.stderr.decode() if compile_result.stderr else ""
-                except Exception:
-                    pass
-                stderr = stderr_from_file or stderr_from_proc
-                raise ValueError(f"C++ Compilation Error:\n{stderr}")
+                #  ĐỌC ĐẦY ĐỦ cả stdout và stderr từ file
+                stdout_content = await loop.run_in_executor(None, _read_file, compile_stdout_file)
+                stderr_content = await loop.run_in_executor(None, _read_file, compile_stderr_file)
+                
+                #  Kết hợp cả 2 outputs (một số compiler output vào stdout)
+                full_error = ""
+                if stderr_content:
+                    full_error += f"STDERR:\n{stderr_content}\n"
+                if stdout_content:
+                    full_error += f"STDOUT:\n{stdout_content}\n"
+                
+                #  Fallback: Nếu file rỗng, lấy từ process
+                if not full_error.strip():
+                    try:
+                        proc_stdout = compile_result.stdout.decode('utf-8', errors='replace') if compile_result.stdout else ""
+                        proc_stderr = compile_result.stderr.decode('utf-8', errors='replace') if compile_result.stderr else ""
+                        if proc_stderr:
+                            full_error += f"Process STDERR:\n{proc_stderr}\n"
+                        if proc_stdout:
+                            full_error += f"Process STDOUT:\n{proc_stdout}\n"
+                    except Exception as decode_err:
+                        full_error += f"\n[Error decoding compiler output: {decode_err}]"
+                
+                #  Nếu vẫn không có gì, thông báo generic
+                if not full_error.strip():
+                    full_error = f"Compilation failed with exit code {compile_result.returncode}\nNo error message available."
+                
+                debug_log(f"[ERROR] C++ Compilation Error:\n{full_error}")
+                raise ValueError(f"C++ Compilation Error:\n{full_error}")
 
             debug_log(f"[RESULT] C++ compilation successful")
             run_cmd = ["./main"]
@@ -316,21 +340,39 @@ async def _run_single_testcase_with_own_box(tc, language, code, run_cmd, timelim
             # C++ đã compile kiểm tra syntax rồi, nhưng mỗi box cần binary riêng
             # (Isolate không share files giữa các boxes)
             code_file = f"{box_path}/main.cpp"
-            compile_error_file = f"{box_path}/compile_err.txt"
+            compile_stdout_file = f"{box_path}/compile_out.txt"  #  Thêm stdout file
+            compile_stderr_file = f"{box_path}/compile_err.txt"
             await loop.run_in_executor(None, _write_file, code_file, code)
-            # Re-compile trong box này (C++ cần binary trong box để chạy)
+            
+            # Re-compile trong box này
             compile_cmd = [
                 "isolate", "--box-id", str(box_id),
                 "--time=10", "--wall-time=15", "--mem=512000", "--processes", "--full-env",
-                "--stderr=compile_err.txt",
+                "--stdout=compile_out.txt",  #  Capture stdout
+                "--stderr=compile_err.txt",  #  Capture stderr
                 "--run", "--",
-                "/usr/bin/g++", "-std=c++17", "-O2", "-o", "main", "main.cpp"
+                "/usr/bin/g++", "-std=c++17", "-O2", "-Wall", "-Wextra",
+                "-o", "main", "main.cpp"
             ]
             compile_result = await _run_command(compile_cmd, timeout=20, capture_output=True)
+            
             if compile_result.returncode != 0:
-                stderr = await loop.run_in_executor(None, _read_file, compile_error_file)
+                #  ĐỌC ĐẦY ĐỦ compile error
+                stdout_content = await loop.run_in_executor(None, _read_file, compile_stdout_file)
+                stderr_content = await loop.run_in_executor(None, _read_file, compile_stderr_file)
+                
+                full_error = ""
+                if stderr_content:
+                    full_error += stderr_content
+                if stdout_content:
+                    full_error += f"\n{stdout_content}"
+                
+                if not full_error.strip():
+                    full_error = f"Compilation failed with exit code {compile_result.returncode}"
+                
                 result["status"] = TESTCASE_STATUS.CompilationError
-                result["error"] = f"Compilation failed in box: {stderr}"
+                result["error"] = f"Compilation Error:\n{full_error}"
+                debug_log(f"[ERROR] Box {box_id} compilation error:\n{full_error}")
                 return result
 
         # Write input file
