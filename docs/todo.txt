@@ -1,4 +1,30 @@
- - Mô tả bài toán
- - Thiết kế hệ thống
- - Trình bày project
- - Code
+#TEACHER#
+- Giao diện home:
+    + bỏ số lượng sinh viên
+    + gọi Api của 2 cái con lại
+- Quản lý sinh viên: xong
+- Tạo bài tập: xong
+- Quản lý assignmen:
+    + thống kê: Chỉnh API
+    + thêm bài: OK
+    + chỉnh sửa: OK
+- Quản lý Problem:
+    + Tạo: OK
+    + Import hình ảnh, file: Chưa gọi API
+- Cài đặt: chưa có gì
+    + Bỏ thông tin tài khoảng & mật khẩu & ngôn ngữ
+    + Thêm đổi mât khẩu
+
+#STUDENT#
+- Assignment:
+    + submission
+    + logic chặn spam
+    + Điểm
+    + Châm điểm: chưa xong
+    + sửa submission: API best
+- Nộp bài:
+    + student: sửa lại trường ID
+- Home:
+    + Chưa có route lớp học
+
+#ADMIN#

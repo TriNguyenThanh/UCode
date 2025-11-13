@@ -50,9 +50,9 @@ public class BestSubmission
     /// Tổng bộ nhớ sử dụng (KB)
     /// </summary>
     public long TotalMemory { get; set; }
-    
+
     /// <summary>
-    /// Thời gian cập nhật lần cuối
+    /// Thời gian nộp bài
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime SubmitAt { get; set; }
 }

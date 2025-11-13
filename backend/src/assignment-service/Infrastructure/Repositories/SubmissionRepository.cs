@@ -3,6 +3,7 @@ using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Infrastructure.EF;
+using System.Threading.Tasks;
 
 namespace AssignmentService.Infrastructure.Repositories;
 
@@ -118,7 +119,9 @@ public class SubmissionRepository : ISubmissionRepository
             .AsNoTracking()
             .Where(s => s.ProblemId == problemId && s.AssignmentId == assignmentId)
             .OrderByDescending(s => s.Score)
-            .ThenBy(s => s.UpdatedAt)
+            .ThenBy(s => s.TotalTime)
+            .ThenBy(s => s.TotalMemory)
+            .ThenByDescending(s => s.SubmitAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -130,8 +133,22 @@ public class SubmissionRepository : ISubmissionRepository
             .AsNoTracking()
             .Where(s => s.AssignmentId == assignmentId && problemId.Contains(s.ProblemId) && s.UserId == userId)
             .OrderByDescending(s => s.Score)
-            .ThenBy(s => s.UpdatedAt)
+            .ThenBy(s => s.TotalTime)
+            .ThenBy(s => s.TotalMemory)
+            .ThenByDescending(s => s.SubmitAt)
             .ToListAsync();
+    }
+
+    public async Task<BestSubmission?> GetBestSubmission(Guid assignmentId, Guid problemId, Guid userId)
+    {
+        return await _context.BestSubmissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
+            .OrderByDescending(s => s.Score)
+            .ThenBy(s => s.TotalTime)
+            .ThenBy(s => s.TotalMemory)
+            .ThenByDescending(s => s.SubmitAt)
+            .FirstOrDefaultAsync();
     }
 
     public Task<int> GetNumberOfSubmission(Guid userId)
@@ -159,6 +176,21 @@ public class SubmissionRepository : ISubmissionRepository
             return submission;
         }
         Console.WriteLine($"[x] Submission {submissionId} not found in database");
+        return new Submission();
+    }
+
+    public async Task<Submission> GetRunningSubmissionByUserAndProblem(Guid userId, Guid problemId)
+    {
+        var submission =  await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.UserId == userId && s.ProblemId == problemId && s.Status == SubmissionStatus.Running)
+            .FirstOrDefaultAsync();
+        if (submission != null)
+        {
+            Console.WriteLine($"[x] Retrieved running submission for user {userId} and problem {problemId} from database");
+            return submission;
+        }
+        Console.WriteLine($"[x] No running submission found for user {userId} and problem {problemId} in database");
         return new Submission();
     }
 

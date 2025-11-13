@@ -253,4 +253,31 @@ public class SubmissionController : ControllerBase
         
         return Ok(ApiResponse<int>.SuccessResponse(count, "Problem submission count retrieved successfully"));
     }
+
+    /// <summary>
+    /// Get a specific best submission by submission ID
+    /// </summary>
+    /// <param name="assignmentUserId">The unique identifier of the assignment</param>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <param name="submissionId">The unique identifier of the submission</param>
+    /// <returns>Returns the best submission details if found</returns>
+    /// <response code="200">Best submission retrieved successfully</response>
+    /// <response code="404">Best submission not found</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentUserId:guid}/problem/{problemId:guid}/best/{submissionId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetBestSubmission(Guid assignmentUserId, Guid problemId, Guid submissionId)
+    {
+        var bestSubmission = await _submissionService.GetBestSubmission(assignmentUserId, problemId, submissionId);
+        
+        if (bestSubmission == null)
+            return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Best submission not found"));
+
+        var response = _mapper.Map<BestSubmissionResponse>(bestSubmission);
+        return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Best submission retrieved successfully"));
+    }
 }
