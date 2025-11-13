@@ -1,0 +1,33 @@
+---
+config:
+  layout: elk
+---
+flowchart RL
+    SV["Sinh viên"] -- Yêu cầu xem danh sách --> P51("5.1. Xem danh sách bài tập<br>&amp; trạng thái")
+    P51 -- Truy vấn bài tập --> D_Assignment[("Thông tin bài tập")]
+    D_Assignment -- Danh sách & trạng thái --> P51
+    P51 -- Danh sách bài tập --> SV
+    SV -- Yêu cầu xem chi tiết --> P52("5.2. Xem chi tiết đề bài<br>&amp; chạy thử test")
+    P52 -- Truy vấn đề bài --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Chi tiết & test mẫu --> P52
+    P52 -- Chi tiết đề bài --> SV
+    SV -- Nộp code --> P53("5.3Nộp code bài toán")
+    P53 -- Truy vấn test --> D_Problem
+    D_Problem -- Test cases --> P53
+    P53 -- Xác nhận nộp --> SV
+    P53 -- Chuyển nộp bài --> D_Submission[("Lịch sử nộp bài")]
+    SV -- Yêu cầu xem lịch sử --> P54("5.4Xem lịch sử nộp bài<br>&amp; kết quả")
+    P54 -- Truy vấn lịch sử --> D_Submission
+    D_Submission -- Dữ liệu nộp & kết quả --> P54
+    P54 -- Lịch sử & kết quả --> SV
+     SV:::student
+     P51:::process
+     D_Assignment:::datastore
+     P52:::process
+     D_Problem:::datastore
+     P53:::process
+     D_Submission:::datastore
+     P54:::process
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

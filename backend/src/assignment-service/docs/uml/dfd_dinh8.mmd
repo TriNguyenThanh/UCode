@@ -1,0 +1,46 @@
+graph LR
+    %% === Định nghĩa Style ===
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px;
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px;
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px;
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px; %% Màu fill trắng
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px; %% Màu fill trắng
+
+    %% === Thực thể bên ngoài ===
+    GV["Giảng viên"]
+    AD["Quản trị viên"]
+    SV["Sinh viên"]
+
+    %% === Sub-processes ===
+    P81("8.1Nhắc hạn nộp bài")
+    P82("8.2Tạo báo cáo thống kê<br>(kết quả, AI/copy)")
+
+    %% === Kho dữ liệu ===
+    D_Assignment[("Thông tin bài tập")]
+    D_Submission[("Lịch sử nộp bài")]
+    D_Attendance[("Thông tin điểm danh")]
+
+    %% === Gán Style ===
+    class GV lecturer;
+    class AD admin;
+    class SV student;
+    class P81,P82 process;
+    class D_Assignment,D_Submission,D_Attendance datastore;
+
+    %% === Luồng dữ liệu ===
+    GV -- "Yêu cầu nhắc hạn" --> P81
+    P81 -- "Truy vấn hạn nộp" --> D_Assignment
+    D_Assignment -- "Dữ liệu hạn" --> P81
+    P81 -- "Thông báo nhắc hạn" --> SV
+    P81 -- "Xác nhận gửi" --> GV
+    
+    GV -- "Yêu cầu báo cáo" --> P82
+    AD -- "Yêu cầu báo cáo hệ thống" --> P82
+    P82 -- "Truy vấn nộp bài" --> D_Submission
+    D_Submission -- "Dữ liệu kết quả" --> P82
+    P82 -- "Truy vấn điểm danh" --> D_Attendance
+    D_Attendance -- "Dữ liệu điểm danh" --> P82
+    P82 -- "Truy vấn bài tập" --> D_Assignment
+    D_Assignment -- "Dữ liệu bài tập" --> P82
+    P82 -- "Báo cáo thống kê" --> GV
+    P82 -- "Báo cáo hệ thống" --> AD

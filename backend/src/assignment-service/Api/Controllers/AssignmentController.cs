@@ -295,7 +295,12 @@ public class AssignmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetAssignmentsByClass(Guid classId)
     {
+        var userId = GetAuthenticatedUserId();
         var assignments = await _assignmentService.GetAssignmentsByClassIdAsync(classId);
+
+        assignments = assignments.Where(a =>
+            a.AssignedBy == userId).ToList();
+
         var response = _mapper.Map<List<AssignmentResponse>>(assignments);
         
         return Ok(ApiResponse<List<AssignmentResponse>>.SuccessResponse(response));

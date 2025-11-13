@@ -1,0 +1,70 @@
+---
+config:
+  layout: elk
+---
+flowchart RL
+    GV["Giảng viên"] -- Tạo/Sửa/Xóa bài tập --> P3("3.Quản lý bài tập<br>(Assignment)")
+    GV -- Gán bài tập cho lớp --> P3
+    P3 -- Cập nhật bài tập --> D_Assignment[("Thông tin bài tập")]
+    D_Assignment -- Dữ liệu bài tập --> P3 & P8("8.Báo cáo & thông báo")
+    D_Class[("Thông tin lớp học")] -- Thông tin lớp --> P3
+    P3 -- Xác nhận bài tập --> GV
+    GV -- Tạo/Sửa/Xóa bài toán --> P4("4.Quản lý bài toán<br>(Problem)")
+    GV -- Quản lý testcase & ngôn ngữ --> P4
+    P4 -- Cập nhật bài toán --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Dữ liệu bài toán --> P4
+    P4 -- Xác nhận bài toán --> GV
+    SV["Sinh viên"] -- Yêu cầu xem danh sách bài tập --> P5("5.Thực hiện bài tập<br>(Sinh viên)")
+    SV -- Nộp code --> P5
+    P5 -- Truy vấn bài tập --> D_Assignment
+    P5 -- Truy vấn chi tiết đề --> D_Problem
+    D_Assignment -- Danh sách bài tập --> P5
+    D_Problem -- Chi tiết đề bài --> P5
+    P5 -- Danh sách & chi tiết bài tập --> SV
+    P5 -- Kết quả nộp bài --> SV
+    P5 -- Nộp code & kết quả chấm --> P6("6.Quản lý nộp bài")
+    P6 -- Lưu lịch sử nộp --> D_Submission[("Lịch sử nộp bài")]
+    D_Submission -- Dữ liệu nộp bài --> P6 & P8
+    P6 -- Phản hồi kết quả --> SV
+    P6 -- Thống kê nộp bài --> GV
+    GV -- Yêu cầu báo cáo --> P8
+    AD["Quản trị viên"] -- Yêu cầu báo cáo hệ thống --> P8
+    P8 -- Truy vấn nộp bài --> D_Submission
+    P8 -- Truy vấn điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    P8 -- Truy vấn hạn nộp --> D_Assignment
+    D_Attendance -- Dữ liệu điểm danh --> P8
+    P8 -- Báo cáo thống kê --> GV
+    P8 -- Báo cáo hệ thống --> AD
+    P8 -- Thông báo nhắc hạn --> SV
+    AD -- Yêu cầu sao lưu/khôi phục --> P9("9.Bảo trì hệ thống")
+    P9 -- Sao lưu dữ liệu --> D_Backup[("Dữ liệu sao lưu")]
+    D_Backup -- Dữ liệu khôi phục --> P9
+    P9 -- Kết quả bảo trì --> AD
+    P9 -- Sao lưu người dùng --> D_User[("Thông tin người dùng")]
+    P9 -- Sao lưu lớp học --> D_Class
+    P9 -- Sao lưu bài tập --> D_Assignment
+    P9 -- Sao lưu bài toán --> D_Problem
+    P9 -- Sao lưu nộp bài --> D_Submission
+    P9 -- Sao lưu điểm danh --> D_Attendance
+     GV:::lecturer
+     P3:::process
+     D_Assignment:::datastore
+     P8:::process
+     D_Class:::datastore_ext
+     P4:::process
+     D_Problem:::datastore
+     SV:::student
+     P5:::process
+     P6:::process
+     D_Submission:::datastore
+     AD:::admin
+     D_Attendance:::datastore_ext
+     P9:::process
+     D_Backup:::datastore
+     D_User:::datastore_ext
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef process fill:#FEF9E7,stroke:#333,stroke-width:2px
+    classDef datastore fill:#D6EAF8,stroke:#333,stroke-width:2px
+    classDef datastore_ext fill:#ECECEC,stroke:#888,stroke-width:2px

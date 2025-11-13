@@ -189,7 +189,7 @@ export default function TeacherProblems() {
     }
   }
 
-  const filteredProblems = (problemsData.data || []).filter((problem: Problem) => {
+  const filteredProblems = (problemsData.items || []).filter((problem: Problem) => {
     const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (problem.statement && problem.statement.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesDifficulty = filterDifficulty === 'all' || problem.difficulty === filterDifficulty
@@ -198,9 +198,9 @@ export default function TeacherProblems() {
 
   const stats = {
     total: problemsData.totalCount || 0,
-    easy: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'EASY').length,
-    medium: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'MEDIUM').length,
-    hard: (problemsData.data || []).filter((p: Problem) => p.difficulty === 'HARD').length,
+    easy: (problemsData.items || []).filter((p: Problem) => p.difficulty === 'EASY').length,
+    medium: (problemsData.items || []).filter((p: Problem) => p.difficulty === 'MEDIUM').length,
+    hard: (problemsData.items || []).filter((p: Problem) => p.difficulty === 'HARD').length,
   }
 
   return (

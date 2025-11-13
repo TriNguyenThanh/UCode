@@ -119,6 +119,14 @@
                         </PasswordBox.InputBindings>
                     </PasswordBox>
 
+                    <!-- Remember Me -->
+                    <CheckBox Content="Ghi nhớ đăng nhập"
+                              IsChecked="{Binding RememberMe}"
+                              FontSize="14"
+                              FontFamily="Be Vietnam Pro, Segoe UI"
+                              Foreground="#00275E"
+                              Margin="0,0,0,20"/>
+
                     <!-- Error Message -->
                     <Border Background="#FFEBEE"
                             BorderBrush="#F44336"
