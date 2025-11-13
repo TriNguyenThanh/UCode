@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDb : Migration
+    public partial class BestSubmission : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -272,10 +272,12 @@ namespace Infrastructure.Migrations
                     language_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     compare_result = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    is_submit_late = table.Column<bool>(type: "bit", nullable: false),
                     error_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     error_message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     total_testcase = table.Column<int>(type: "int", nullable: false),
                     passed_testcase = table.Column<int>(type: "int", nullable: false),
+                    score = table.Column<int>(type: "int", nullable: false),
                     total_time = table.Column<long>(type: "bigint", nullable: false),
                     total_memory = table.Column<long>(type: "bigint", nullable: false),
                     submitted_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSDATETIME()"),

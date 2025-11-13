@@ -60,7 +60,7 @@ class MessageHandler:
             "new_headers": None
         }
 
-        # 1️⃣ Retry limit
+        # Retry limit
         if retry_count >= MAX_RETRY_COUNT:
             logger.error(f"Message exceeded max retry count ({MAX_RETRY_COUNT})")
             try:
@@ -75,7 +75,7 @@ class MessageHandler:
             )
             return result
 
-        # 2️⃣ Parse JSON
+        # Parse JSON
         try:
             data = json.loads(body)
         except json.JSONDecodeError as e:
@@ -90,7 +90,7 @@ class MessageHandler:
         submission_id = data.get("SubmissionId", "N/A")
         logger.info(f"Processing submission {submission_id}, retry_count={retry_count}")
 
-        # 3️⃣ Validate
+        # Validate
         language = data.get("Language")
         code = data.get("Code")
         # TimeLimit: milliseconds → convert to seconds
@@ -131,7 +131,7 @@ class MessageHandler:
             )
             return result
 
-        # 4️⃣ Xử lý bằng subprocess (đảm bảo quyền isolate)
+        # Xử lý bằng subprocess (đảm bảo quyền isolate)
         try:
             success, results, error_code, error_msg, compile_result = await MessageHandler._process_submission(
                 data=data,

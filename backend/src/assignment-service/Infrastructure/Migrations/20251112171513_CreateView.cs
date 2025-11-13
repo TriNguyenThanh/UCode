@@ -11,13 +11,13 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-migrationBuilder.CreateBestSubmissionsView();
+            migrationBuilder.CreateBestSubmissionsView();   
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-migrationBuilder.DropBestSubmissionsView();
+            migrationBuilder.DropBestSubmissionsView();
         }
     }
 }

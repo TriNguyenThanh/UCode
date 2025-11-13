@@ -8,43 +8,43 @@ public static class MigrationBuilderExtensions
     {
         migrationBuilder.Sql(@"
             CREATE VIEW BestSubmissions AS
+            WITH RankedSubmissions AS (
+                SELECT 
+                    submission_id,
+                    assignment_id,
+                    user_id,
+                    problem_id,
+                    score,
+                    total_time,
+                    total_memory,
+                    submitted_at,   
+                    ROW_NUMBER() OVER (
+                        PARTITION BY assignment_id, user_id, problem_id
+                        ORDER BY 
+                            -- Điểm cao nhất
+                            score DESC,
+                            -- Thời gian nhanh nhất
+                            total_time ASC,
+                            -- Bộ nhớ ít nhất
+                            total_memory ASC,
+                            -- Submission mới nhất
+                            submitted_at DESC
+                    ) AS RowNum
+                FROM submission
+                WHERE status IN (4, 5) -- 4: Passed, 5: Failed
+            )
             SELECT 
                 NEWID() AS BestSubmissionId,
-                au.assignment_id AS AssignmentId,
-                au.user_id AS UserId,
-                ap.problem_id AS ProblemId,
-                s.SubmissionId,
-                s.Score,
-                ap.points AS MaxScore,
-                s.TotalTime,
-                s.TotalMemory,
-                s.SubmittedAt AS UpdatedAt
-            FROM assignment_user au
-            INNER JOIN assignment_problem ap 
-                ON ap.assignment_id = au.assignment_id
-            CROSS APPLY (
-                SELECT TOP 1
-                    sub.submission_id AS SubmissionId,
-                    CASE 
-                        WHEN sub.total_testcase = 0 THEN 0
-                        ELSE (sub.passed_testcase * 100) / sub.total_testcase
-                    END AS Score,
-                    sub.total_time AS TotalTime,
-                    sub.total_memory AS TotalMemory,
-                    sub.submitted_at AS SubmittedAt
-                FROM submission sub
-                WHERE sub.assignment_user_id = au.assignment_user_id
-                    AND sub.problem_id = ap.problem_id
-                    AND (sub.status = 'Passed' OR sub.status = 'Failed')
-                ORDER BY 
-                    CASE 
-                        WHEN sub.total_testcase = 0 THEN 0
-                        ELSE (sub.passed_testcase * 100) / sub.total_testcase
-                    END DESC,
-                    sub.total_time ASC,
-                    sub.total_memory ASC,
-                    sub.submitted_at ASC
-            ) s;
+                assignment_id AS AssignmentId,
+                user_id AS UserId,
+                problem_id AS ProblemId,
+                submission_id AS SubmissionId,
+                score AS Score,
+                total_time AS TotalTime,
+                total_memory AS TotalMemory,
+                submitted_at AS SubmitAt
+            FROM RankedSubmissions
+            WHERE RowNum = 1;
         ");
     }
 

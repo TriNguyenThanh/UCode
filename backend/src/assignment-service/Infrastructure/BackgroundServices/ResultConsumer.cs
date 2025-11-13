@@ -9,6 +9,7 @@ using AssignmentService.Domain.Entities;
 using AssignmentService.Application.Interfaces.MessageBrokers;
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Application.DTOs.Responses;
+using AssignmentService.Application.Interfaces.Services;
 
 namespace AssignmentService.Infrastructure.BackgroundServices;
 
@@ -95,7 +96,7 @@ public class ResultConsumer : BackgroundService
 
         using (var scope = _serviceScopeFactory.CreateAsyncScope())
         {
-            var submissionRepo = scope.ServiceProvider.GetRequiredService<ISubmissionRepository>();
+            var submissionService = scope.ServiceProvider.GetRequiredService<ISubmissionService>();
 
             if (results_message != null)
             {
@@ -108,8 +109,8 @@ public class ResultConsumer : BackgroundService
                         testcasePassed++;
                     }
                 }
-                var submission = await submissionRepo.GetSubmission(results_message.SubmissionId);
-
+                var submission = await submissionService.GetSubmission(results_message.SubmissionId);
+                submission.Score = await submissionService.Getscore(submission);
                 submission.PassedTestcase = testcasePassed;
                 submission.TotalTime = results_message.TotalTime;
                 submission.TotalMemory = results_message.TotalMemory;
@@ -118,7 +119,7 @@ public class ResultConsumer : BackgroundService
                 submission.ErrorMessage = results_message.ErrorMessage;
                 submission.CompareResult = results_message.CompileResult;
 
-                if (await submissionRepo.UpdateSubmission(submission))
+                if (await submissionService.UpdateSubmission(submission))
                 {
                     Console.WriteLine($"[x] Updated submission {submission.SubmissionId} with status {submission.Status}");
                 }
