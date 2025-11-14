@@ -48,6 +48,10 @@ public class UpdateUserByAdminRequest
     [MaxLength(15)]
     [Phone(ErrorMessage = "Invalid phone number format")]
     public string? Phone { get; set; }
+    
+    public string? Role { get; set; } // Admin, Teacher, Student
+    
+    public bool? IsActive { get; set; }
 
     // For Student
     [MaxLength(100)]

@@ -21,6 +21,7 @@ import {
   TableRow,
   Tabs,
   Tab,
+  Alert,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import BugReportIcon from '@mui/icons-material/BugReport'
@@ -29,6 +30,7 @@ import WarningIcon from '@mui/icons-material/Warning'
 import ErrorIcon from '@mui/icons-material/Error'
 import DownloadIcon from '@mui/icons-material/Download'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import ConstructionIcon from '@mui/icons-material/Construction'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Logs & Báo cáo | Admin | UCode' },
@@ -114,6 +116,7 @@ export default function AdminLogs() {
             </Box>
 
             <Button
+              disabled
               variant='contained'
               startIcon={<DownloadIcon />}
               sx={{
@@ -135,9 +138,32 @@ export default function AdminLogs() {
             </Button>
           </Box>
 
+          {/* Coming Soon Notice */}
+          <Alert
+            severity='info'
+            icon={<ConstructionIcon />}
+            sx={{
+              borderRadius: 3,
+              mt: 3,
+              border: '1px solid #007AFF',
+              bgcolor: '#E3F2FD',
+              '& .MuiAlert-icon': {
+                color: '#007AFF',
+              },
+            }}
+          >
+            <Typography variant='h6' sx={{ fontWeight: 600, mb: 0.5, color: '#1d1d1f' }}>
+              Tính năng đang phát triển
+            </Typography>
+            <Typography variant='body2' sx={{ color: '#6e6e73' }}>
+              Tính năng logs và báo cáo hệ thống sẽ được triển khai trong phiên bản tiếp theo. Vui lòng quay lại sau!
+            </Typography>
+          </Alert>
+
           {/* Search and Filter */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 3, opacity: 0.6, pointerEvents: 'none' }}>
             <TextField
+              disabled
               placeholder='Tìm kiếm logs...'
               variant='outlined'
               fullWidth
@@ -156,6 +182,7 @@ export default function AdminLogs() {
               }}
             />
             <Button
+              disabled
               variant='outlined'
               startIcon={<FilterListIcon />}
               sx={{
@@ -178,7 +205,7 @@ export default function AdminLogs() {
         </Box>
 
         {/* Stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 3, opacity: 0.6, pointerEvents: 'none' }}>
           {[
             { label: 'Tổng logs', value: logs.length, color: '#86868b', icon: BugReportIcon },
             { label: 'Errors', value: logs.filter((l) => l.level === 'error').length, color: '#FF3B30', icon: ErrorIcon },
@@ -216,6 +243,8 @@ export default function AdminLogs() {
             borderRadius: 3,
             bgcolor: 'white',
             border: '1px solid #d2d2d7',
+            opacity: 0.6,
+            pointerEvents: 'none',
           }}
         >
           <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>

@@ -29,8 +29,21 @@ public class Class
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
     
+    [Column("updated_at")]
+    public DateTime UpdatedAt { get; set; }
+    
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
+    
+    [Column("is_archived")]
+    public bool IsArchived { get; set; } = false;
+    
+    [Column("archived_at")]
+    public DateTime? ArchivedAt { get; set; }
+    
+    [MaxLength(500)]
+    [Column("archive_reason")]
+    public string? ArchiveReason { get; set; }
     
     // Navigation properties
     public virtual Teacher Teacher { get; set; } = null!;

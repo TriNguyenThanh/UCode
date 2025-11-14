@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.class.$id'
 import { auth } from '~/auth'
@@ -61,6 +61,14 @@ export default function TeacherClassDetail() {
   const revalidator = useRevalidator()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null)
+  const [archivedDialogOpen, setArchivedDialogOpen] = useState(false)
+
+  // Hiển thị dialog nếu lớp bị archive
+  useEffect(() => {
+    if (classData.isArchived) {
+      setArchivedDialogOpen(true)
+    }
+  }, [classData.isArchived])
 
   const handleDeleteAssignment = async () => {
     if (!assignmentToDelete) return
@@ -104,9 +112,19 @@ export default function TeacherClassDetail() {
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 0.5 }}>
-              {classData.className}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                {classData.className}
+              </Typography>
+              {classData.isArchived && (
+                <Chip 
+                  label="Ngừng hoạt động" 
+                  color="warning" 
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+            </Box>
             <Typography variant="body1" color="text.secondary">
               Mã lớp: {classData.classCode} • Học kỳ: {classData.semester}
             </Typography>
@@ -116,6 +134,7 @@ export default function TeacherClassDetail() {
             startIcon={<PeopleIcon />}
             component={Link}
             to={`/teacher/class/${classData.classId}/students`}
+            disabled={classData.isArchived}
             sx={{
               borderColor: 'secondary.main',
               color: 'secondary.main',
@@ -123,6 +142,10 @@ export default function TeacherClassDetail() {
                 borderColor: 'primary.main',
                 bgcolor: 'primary.main',
                 color: 'white',
+              },
+              '&.Mui-disabled': {
+                borderColor: 'grey.400',
+                color: 'grey.400',
               },
             }}
           >
@@ -144,12 +167,17 @@ export default function TeacherClassDetail() {
           startIcon={<AddIcon />}
           component={Link}
           to={`/teacher/class/${classData.classId}/create-assignment`}
+          disabled={classData.isArchived}
           sx={{
             bgcolor: 'secondary.main',
             color: 'primary.main',
             '&:hover': {
               bgcolor: 'primary.main',
               color: 'secondary.main',
+            },
+            '&.Mui-disabled': {
+              bgcolor: 'grey.300',
+              color: 'grey.500',
             },
           }}
         >
@@ -229,14 +257,23 @@ export default function TeacherClassDetail() {
                       size="small"
                       component={Link}
                       to={`/teacher/assignment/${assignment.assignmentId}`}
-                      sx={{ color: 'secondary.main' }}
+                      disabled={classData.isArchived}
+                      sx={{ 
+                        color: 'secondary.main',
+                        '&.Mui-disabled': { color: 'grey.400' }
+                      }}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
                       onClick={() => openDeleteDialog(assignment.assignmentId)}
-                      sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                      disabled={classData.isArchived}
+                      sx={{ 
+                        color: 'text.secondary', 
+                        '&:hover': { color: 'error.main' },
+                        '&.Mui-disabled': { color: 'grey.400' }
+                      }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -261,12 +298,17 @@ export default function TeacherClassDetail() {
             startIcon={<AddIcon />}
             component={Link}
             to={`/teacher/class/${classData.classId}/create-assignment`}
+            disabled={classData.isArchived}
             sx={{
               bgcolor: 'secondary.main',
               color: 'primary.main',
               '&:hover': {
                 bgcolor: 'primary.main',
                 color: 'secondary.main',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'grey.300',
+                color: 'grey.500',
               },
             }}
           >
@@ -294,6 +336,56 @@ export default function TeacherClassDetail() {
             onClick={handleDeleteAssignment}
           >
             Xóa bài tập
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Archived Class Dialog */}
+      <Dialog 
+        open={archivedDialogOpen} 
+        onClose={() => setArchivedDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: 'warning.main', color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{ fontSize: 24 }}>⚠️</Box>
+          Lớp học đã ngừng hoạt động
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography variant="body1" sx={{ mb: 2, fontWeight: 600 }}>
+            Lớp học <strong>{classData.className}</strong> đã bị ngừng hoạt động.
+          </Typography>
+          {classData.archiveReason && (
+            <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 1, borderLeft: '4px solid', borderColor: 'warning.main' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
+                Lý do:
+              </Typography>
+              <Typography variant="body1">
+                {classData.archiveReason}
+              </Typography>
+            </Box>
+          )}
+          {classData.archivedAt && (
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Ngày ngừng: {new Date(classData.archivedAt).toLocaleDateString('vi-VN')}
+            </Typography>
+          )}
+          <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+            Bạn vẫn có thể xem thông tin lớp học nhưng không thể thực hiện các thao tác khác. 
+            Vui lòng liên hệ quản trị viên nếu cần hỗ trợ.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            variant="contained"
+            onClick={() => setArchivedDialogOpen(false)}
+            sx={{
+              bgcolor: 'secondary.main',
+              color: 'primary.main',
+              '&:hover': { bgcolor: 'primary.main', color: 'white' }
+            }}
+          >
+            Đã hiểu
           </Button>
         </DialogActions>
       </Dialog>

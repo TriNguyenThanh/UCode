@@ -15,6 +15,7 @@ import {
   Divider,
   FormControlLabel,
   Chip,
+  Alert,
 } from '@mui/material'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SecurityIcon from '@mui/icons-material/Security'
@@ -23,6 +24,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import EmailIcon from '@mui/icons-material/Email'
 import SaveIcon from '@mui/icons-material/Save'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import ConstructionIcon from '@mui/icons-material/Construction'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Cài đặt hệ thống | Admin | UCode' },
@@ -57,6 +59,28 @@ export default function AdminSettings() {
           </Typography>
         </Box>
 
+        {/* Coming Soon Notice */}
+        <Alert
+          severity='info'
+          icon={<ConstructionIcon />}
+          sx={{
+            borderRadius: 3,
+            mb: 3,
+            border: '1px solid #007AFF',
+            bgcolor: '#E3F2FD',
+            '& .MuiAlert-icon': {
+              color: '#007AFF',
+            },
+          }}
+        >
+          <Typography variant='h6' sx={{ fontWeight: 600, mb: 0.5, color: '#1d1d1f' }}>
+            Tính năng đang phát triển
+          </Typography>
+          <Typography variant='body2' sx={{ color: '#6e6e73' }}>
+            Tính năng cài đặt hệ thống sẽ được triển khai trong phiên bản tiếp theo. Vui lòng quay lại sau!
+          </Typography>
+        </Alert>
+
         {/* General Settings */}
         <Card
           elevation={0}
@@ -65,6 +89,8 @@ export default function AdminSettings() {
             borderRadius: 3,
             bgcolor: 'white',
             border: '1px solid #d2d2d7',
+            opacity: 0.6,
+            pointerEvents: 'none',
           }}
         >
           <CardContent sx={{ p: 3 }}>
@@ -81,6 +107,7 @@ export default function AdminSettings() {
                   label='Tên hệ thống'
                   defaultValue='UCode Learning Platform'
                   fullWidth
+                  disabled
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -94,6 +121,7 @@ export default function AdminSettings() {
                   label='Email hỗ trợ'
                   defaultValue='support@ucode.edu.vn'
                   fullWidth
+                  disabled
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -108,6 +136,7 @@ export default function AdminSettings() {
                   defaultValue='50'
                   type='number'
                   fullWidth
+                  disabled
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -120,7 +149,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -136,7 +165,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -161,6 +190,8 @@ export default function AdminSettings() {
             borderRadius: 3,
             bgcolor: 'white',
             border: '1px solid #d2d2d7',
+            opacity: 0.6,
+            pointerEvents: 'none',
           }}
         >
           <CardContent sx={{ p: 3 }}>
@@ -204,7 +235,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -220,7 +251,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -245,6 +276,8 @@ export default function AdminSettings() {
             borderRadius: 3,
             bgcolor: 'white',
             border: '1px solid #d2d2d7',
+            opacity: 0.6,
+            pointerEvents: 'none',
           }}
         >
           <CardContent sx={{ p: 3 }}>
@@ -258,7 +291,7 @@ export default function AdminSettings() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -274,7 +307,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch defaultChecked />}
+                  control={<Switch defaultChecked disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -290,7 +323,7 @@ export default function AdminSettings() {
 
               <Box>
                 <FormControlLabel
-                  control={<Switch />}
+                  control={<Switch disabled />}
                   label={
                     <Box>
                       <Typography variant='body1' sx={{ fontWeight: 600 }}>
@@ -315,6 +348,8 @@ export default function AdminSettings() {
             borderRadius: 3,
             bgcolor: 'white',
             border: '1px solid #d2d2d7',
+            opacity: 0.6,
+            pointerEvents: 'none',
           }}
         >
           <CardContent sx={{ p: 3 }}>
@@ -380,6 +415,7 @@ export default function AdminSettings() {
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
           <Button
+            disabled
             variant='outlined'
             sx={{
               borderRadius: 3,
@@ -392,6 +428,7 @@ export default function AdminSettings() {
             Hủy thay đổi
           </Button>
           <Button
+            disabled
             variant='contained'
             startIcon={<SaveIcon />}
             sx={{

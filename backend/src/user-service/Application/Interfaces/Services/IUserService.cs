@@ -1,6 +1,7 @@
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.DTOs.Responses;
+using UserService.Application.DTOs.Admin;
 using UserService.Domain.Enums;
 
 namespace UserService.Application.Interfaces.Services;
@@ -14,6 +15,17 @@ public interface IUserService
     Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request);
     Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
     Task<bool> UpdateUserStatusAsync(string userId, UserStatus status);
+    Task<bool> UpdateUserRoleAsync(string userId, UserRole role);
     Task<bool> DeleteUserAsync(string userId);
+    
+    // Admin User Management
+    Task<UserStatisticsResponse> GetUserStatisticsAsync();
+    Task<PagedResultDto<AdminUserResponse>> GetAllUsersForAdminAsync(int pageNumber, int pageSize, string? searchTerm = null, string? role = null, bool? isActive = null);
+    Task<AdminUserDetailResponse?> GetUserDetailForAdminAsync(string userId);
+    Task<bool> CreateUserByAdminAsync(CreateUserByAdminRequest request);
+    Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request);
+    Task<bool> DeleteUserByAdminAsync(string userId);
+    Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null);
 }
+
 
