@@ -22,7 +22,7 @@ export interface ActivityLogData {
  */
 export async function incrementTabSwitch(assignmentId: string): Promise<void> {
   try {
-    await API.post(`/assignments/${assignmentId}/student/increment-tab-switch`)
+    await API.post(`/api/v1/assignments/${assignmentId}/student/increment-tab-switch`)
   } catch (error) {
     console.error('Failed to increment tab switch count:', error)
     // Don't throw - we don't want to block the user
@@ -34,7 +34,7 @@ export async function incrementTabSwitch(assignmentId: string): Promise<void> {
  */
 export async function incrementAIDetection(assignmentId: string): Promise<void> {
   try {
-    await API.post(`/assignments/${assignmentId}/student/increment-ai-detection`)
+    await API.post(`/api/v1/assignments/${assignmentId}/student/increment-ai-detection`)
   } catch (error) {
     console.error('Failed to increment AI detection count:', error)
     // Don't throw - we don't want to block the user
@@ -46,7 +46,15 @@ export async function incrementAIDetection(assignmentId: string): Promise<void> 
  */
 export async function logActivity(assignmentId: string, activityData: ActivityLogData): Promise<void> {
   try {
-    await API.post(`/assignments/${assignmentId}/student/log-activity`, activityData)
+    // Convert metadata object to JSON string and use correct casing for backend
+    const payload = {
+      ActivityType: activityData.activityType,
+      Timestamp: activityData.timestamp,
+      Metadata: activityData.metadata ? JSON.stringify(activityData.metadata) : null,
+      SuspicionLevel: activityData.suspicionLevel || 0
+    }
+    
+    await API.post(`/api/v1/assignments/${assignmentId}/student/log-activity`, payload)
   } catch (error) {
     console.error('Failed to log activity:', error)
     // Don't throw - we don't want to block the user
@@ -58,7 +66,17 @@ export async function logActivity(assignmentId: string, activityData: ActivityLo
  */
 export async function logActivitiesBatch(assignmentId: string, activities: ActivityLogData[]): Promise<void> {
   try {
-    await API.post(`/assignments/${assignmentId}/student/log-activities-batch`, { activities })
+    // Convert metadata objects to JSON strings and use correct casing for backend
+    const payload = {
+      Activities: activities.map(activity => ({
+        ActivityType: activity.activityType,
+        Timestamp: activity.timestamp,
+        Metadata: activity.metadata ? JSON.stringify(activity.metadata) : null,
+        SuspicionLevel: activity.suspicionLevel || 0
+      }))
+    }
+    
+    await API.post(`/api/v1/assignments/${assignmentId}/student/log-activities-batch`, payload)
   } catch (error) {
     console.error('Failed to log activities batch:', error)
     // Don't throw - we don't want to block the user

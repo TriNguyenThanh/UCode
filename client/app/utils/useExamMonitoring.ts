@@ -26,7 +26,8 @@ export function useExamMonitoring({ assignmentId, isExamination, enabled }: UseE
   // Flush activity buffer to server
   const flushActivityBuffer = useCallback(() => {
     if (activityBufferRef.current.length > 0) {
-      logActivitiesBatch(assignmentId, activityBufferRef.current)
+      // DISABLED: Activity logging is too heavy for production
+      // logActivitiesBatch(assignmentId, activityBufferRef.current)
       activityBufferRef.current = []
     }
   }, [assignmentId])
