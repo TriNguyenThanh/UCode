@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="20">
@@ -31,33 +30,38 @@
                 <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" 
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     mah:TextBoxHelper.Watermark="🔍 Tên, MSSV, hoặc Email"
-                     Padding="8"/>
+            <Grid Grid.Column="0">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="30,8,8,8" FontSize="13" Height="36"
+                         x:Name="SearchTextBox"/>
+                <TextBlock IsHitTestVisible="False" Text="🔍 Tên, MSSV, hoặc Email" 
+                           Foreground="#999" Padding="10,10,0,0" FontSize="13"
+                           Visibility="{Binding ElementName=SearchTextBox, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </Grid>
 
             <ComboBox Grid.Column="2" 
-                      SelectedItem="{Binding YearFilter, Mode=TwoWay}"
+                      SelectedValue="{Binding YearFilter, Mode=TwoWay}"
                       ItemsSource="{Binding Years}"
                       DisplayMemberPath="Label"
-                      SelectedValuePath="Value">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Label}"/>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+                      SelectedValuePath="Value"
+                      FontSize="13" Height="36"/>
 
-            <TextBox Grid.Column="4" 
-                     Text="{Binding MajorFilter, UpdateSourceTrigger=PropertyChanged}"
-                     mah:TextBoxHelper.Watermark="Ngành"
-                     Padding="8"/>
+            <Grid Grid.Column="4">
+                <TextBox Text="{Binding MajorFilter, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="30,8,8,8" FontSize="13" Height="36"
+                         x:Name="MajorTextBox"/>
+                <TextBlock IsHitTestVisible="False" Text="Ngành học" 
+                           Foreground="#999" Padding="10,10,0,0" FontSize="13"
+                           Visibility="{Binding ElementName=MajorTextBox, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </Grid>
 
             <ComboBox Grid.Column="6" 
-                      SelectedItem="{Binding StatusFilter, Mode=TwoWay}">
-                <ComboBoxItem Content="Trạng thái" IsSelected="True"/>
-                <ComboBoxItem Content="Active"/>
-                <ComboBoxItem Content="Inactive"/>
+                      SelectedValue="{Binding StatusFilter, Mode=TwoWay}"
+                      SelectedValuePath="Tag"
+                      FontSize="13" Height="36">
+                <ComboBoxItem Content="Tất cả" Tag="" IsSelected="True"/>
+                <ComboBoxItem Content="✓ Active" Tag="Active"/>
+                <ComboBoxItem Content="○ Inactive" Tag="Inactive"/>
             </ComboBox>
         </Grid>
 
@@ -82,88 +86,112 @@
                 </StackPanel>
 
                 <!-- Empty State -->
-                <TextBlock Text="Không có sinh viên available" 
-                           Foreground="#999" FontSize="14" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding HasNoStudents, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding HasNoStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Không có sinh viên available" 
+                               Foreground="#999" FontSize="14" 
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
 
                 <!-- DataGrid -->
                 <DataGrid ItemsSource="{Binding FilteredStudents}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          RowBackground="White"
-                          AlternatingRowBackground="#F9F9F9"
-                          BorderThickness="0"
-                          Visibility="{Binding HasStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
+                          Style="{StaticResource ModernDataGrid}"
+                          RowStyle="{StaticResource ModernDataGridRow}"
+                          CellStyle="{StaticResource ModernDataGridCell}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                          Visibility="{Binding HasStudents, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Width="50" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <DataGridCheckBoxColumn.Header>
-                                <CheckBox IsChecked="{Binding DataContext.AllSelected, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"/>
-                            </DataGridCheckBoxColumn.Header>
-                        </DataGridCheckBoxColumn>
+                        <DataGridTemplateColumn Width="60">
+                            <DataGridTemplateColumn.Header>
+                                <CheckBox IsChecked="{Binding DataContext.AllSelected, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+                                          Style="{StaticResource SelectionCheckBox}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              Style="{StaticResource SelectionCheckBox}"
+                                              Click="CheckBox_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         
                         <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="Medium"/>
+                                    <Setter Property="Foreground" Value="#333"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100">
+                        <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="120">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="Foreground" Value="#666"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200">
+                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="220">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#666"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="150">
+                        <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="180">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#666"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="Năm vào học" Binding="{Binding EnrollmentYear}" Width="100">
+                        <DataGridTextColumn Header="Năm" Binding="{Binding EnrollmentYear}" Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="TextAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#666"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTemplateColumn Header="Trạng thái" Width="100">
+                        <DataGridTemplateColumn Header="Trạng thái" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
+                                    <Border CornerRadius="12" Padding="10,4" HorizontalAlignment="Center">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="Active">
-                                                        <Setter Property="Background" Value="#34C759"/>
+                                                        <Setter Property="Background" Value="#E8F5E9"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="Inactive">
-                                                        <Setter Property="Background" Value="#8E8E93"/>
+                                                        <Setter Property="Background" Value="#F5F5F5"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock Text="{Binding Status}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                        <TextBlock FontWeight="SemiBold" FontSize="11">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                            <Setter Property="Text" Value="✓ Active"/>
+                                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Inactive">
+                                                            <Setter Property="Text" Value="○ Inactive"/>
+                                                            <Setter Property="Foreground" Value="#9E9E9E"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -174,7 +202,7 @@
         </Border>
 
         <!-- Pagination + Action -->
-        <Grid Grid.Row="4" Margin="0,15,0,0">
+        <Grid Grid.Row="4" Margin="0,20,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -183,31 +211,41 @@
 
             <!-- Pagination Info -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Số dòng mỗi trang:" Foreground="#666" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <ComboBox SelectedItem="{Binding PageSize, Mode=TwoWay}" Width="80">
-                    <ComboBoxItem Content="10" IsSelected="True"/>
-                    <ComboBoxItem Content="25"/>
-                    <ComboBoxItem Content="50"/>
+                <TextBlock Text="Hiển thị:" Foreground="#666" FontSize="13" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox SelectedValue="{Binding PageSize, Mode=TwoWay}" 
+                          SelectedValuePath="Tag" Width="70" Height="36" FontSize="13">
+                    <ComboBoxItem Content="10" Tag="10" IsSelected="True"/>
+                    <ComboBoxItem Content="25" Tag="25"/>
+                    <ComboBoxItem Content="50" Tag="50"/>
                 </ComboBox>
-                <TextBlock VerticalAlignment="Center" Margin="15,0,0,0" Foreground="#666">
+                <TextBlock VerticalAlignment="Center" Margin="15,0,15,0" Foreground="#666" FontSize="13">
                     <Run Text="{Binding PaginationText, Mode=OneWay}"/>
                 </TextBlock>
-                <Button Content="◄" Command="{Binding PreviousPageCommand}" Width="30" Margin="15,0,5,0" IsEnabled="{Binding CanGoPrevious}"/>
-                <Button Content="►" Command="{Binding NextPageCommand}" Width="30" IsEnabled="{Binding CanGoNext}"/>
+                <Button Content="❮" 
+                        Command="{Binding PreviousPageCommand}" 
+                        Style="{StaticResource PaginationButton}"
+                        Margin="0,0,5,0"
+                        IsEnabled="{Binding CanGoPrevious}"/>
+                <Button Content="❯" 
+                        Command="{Binding NextPageCommand}" 
+                        Style="{StaticResource PaginationButton}"
+                        IsEnabled="{Binding CanGoNext}"/>
             </StackPanel>
 
             <!-- Action -->
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Foreground="#666" Margin="0,0,15,0">
-                    <Run Text="Đã chọn:"/>
-                    <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="Bold"/>
-                    <Run Text=" sinh viên"/>
-                </TextBlock>
+                <Border Background="#F0F7FF" CornerRadius="6" Padding="12,8" Margin="0,0,15,0">
+                    <TextBlock VerticalAlignment="Center" Foreground="#1976D2" FontSize="13">
+                        <Run Text="Đã chọn:"/>
+                        <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="Bold" FontSize="14"/>
+                        <Run Text=" sinh viên"/>
+                    </TextBlock>
+                </Border>
                 <Button Content="{Binding AddButtonText}" 
-                        Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding AddStudentsCommand}"
                         IsEnabled="{Binding CanAddStudents}"
-                        Width="150"/>
+                        Style="{StaticResource PrimaryButton}"
+                        Padding="24,0"/>
             </StackPanel>
         </Grid>
     </Grid>

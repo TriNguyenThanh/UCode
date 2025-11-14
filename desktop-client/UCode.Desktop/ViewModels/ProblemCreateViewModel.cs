@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Services;
 using UCode.Desktop.Models;
@@ -73,7 +75,7 @@ namespace UCode.Desktop.ViewModels
             // Validation
             if (string.IsNullOrWhiteSpace(Title))
             {
-                MessageBox.Show("Vui lòng nhập tên bài toán", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tên bài toán");
                 return;
             }
 
@@ -94,11 +96,9 @@ namespace UCode.Desktop.ViewModels
 
                 if (response?.Success == true && response.Data != null)
                 {
-                    MessageBox.Show(
-                        "Tạo bài tập thành công!\n\nBạn sẽ được chuyển đến trang chỉnh sửa để tiếp tục thêm chi tiết.",
+                    await GetMetroWindow()?.ShowMessageAsync(
                         "Thành công",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        "Tạo bài tập thành công!\n\nBạn sẽ được chuyển đến trang chỉnh sửa để tiếp tục thêm chi tiết.");
 
                     // Navigate to problem edit page
                     var editViewModel = App.ServiceProvider?.GetService(typeof(ProblemEditViewModel)) as ProblemEditViewModel;
@@ -111,13 +111,13 @@ namespace UCode.Desktop.ViewModels
                 else
                 {
                     Error = response?.Message ?? "Không thể tạo bài toán";
-                    MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
                 }
             }
             catch (Exception ex)
             {
                 Error = $"Lỗi: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {

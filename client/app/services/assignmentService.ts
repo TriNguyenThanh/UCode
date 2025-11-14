@@ -12,7 +12,7 @@ import { handleApiError, unwrapApiResponse } from './utils'
 // ==================== REQUEST TYPES ====================
 
 export interface CreateAssignmentRequest {
-  assignmentType: 'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'
+  assignmentType: 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE'
   classId: string
   title: string
   description?: string

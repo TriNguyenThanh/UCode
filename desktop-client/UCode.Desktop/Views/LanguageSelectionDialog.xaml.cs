@@ -1,11 +1,12 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
-    public partial class LanguageSelectionDialog : Window
+    public partial class LanguageSelectionDialog : MetroWindow
     {
         public LanguageSelectionDialog(LanguageSelectionViewModel viewModel)
         {

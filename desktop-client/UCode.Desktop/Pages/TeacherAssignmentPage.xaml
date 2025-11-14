@@ -175,53 +175,13 @@
                         </TextBlock>
                     </Grid>
 
-                    <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="0">
+                    <Border Grid.Row="1" Style="{StaticResource RoundedDataGridContainer}">
                         <DataGrid ItemsSource="{Binding Problems}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  SelectionMode="Single"
-                                  GridLinesVisibility="Horizontal"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="White"
+                                  Style="{StaticResource ModernDataGrid}"
+                                  RowStyle="{StaticResource ModernDataGridRow}"
+                                  CellStyle="{StaticResource ModernDataGridCell}"
+                                  ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
                                   RowHeight="60">
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#003A70"/>
-                                    <Setter Property="Foreground" Value="#FACB01"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="Padding" Value="15,12"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Height" Value="45"/>
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Background" Value="White"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#F8F9FA"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.CellStyle>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Padding" Value="15,8"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                                    <ContentPresenter VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.CellStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="STT" Binding="{Binding OrderIndex}" Width="80"/>
                                 <DataGridTextColumn Header="Tên bài" Binding="{Binding Title}" Width="*"/>
@@ -267,53 +227,13 @@
                 </Grid>
 
                 <!-- Submissions Tab Content -->
-                <Border x:Name="SubmissionsTabContent" Style="{StaticResource CardStyle}" Padding="0" Visibility="Collapsed">
+                <Border x:Name="SubmissionsTabContent" Style="{StaticResource RoundedDataGridContainer}" Visibility="Collapsed">
                     <DataGrid ItemsSource="{Binding Students}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              SelectionMode="Single"
-                              GridLinesVisibility="Horizontal"
-                              HeadersVisibility="Column"
-                              BorderThickness="0"
-                              Background="White"
+                              Style="{StaticResource ModernDataGrid}"
+                              RowStyle="{StaticResource ModernDataGridRow}"
+                              CellStyle="{StaticResource ModernDataGridCell}"
+                              ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
                               RowHeight="60">
-                        <DataGrid.ColumnHeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#003A70"/>
-                                <Setter Property="Foreground" Value="#FACB01"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Padding" Value="15,12"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Height" Value="45"/>
-                            </Style>
-                        </DataGrid.ColumnHeaderStyle>
-                        <DataGrid.RowStyle>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="Background" Value="White"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#F8F9FA"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.RowStyle>
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Padding" Value="15,8"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="DataGridCell">
-                                            <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                                <ContentPresenter VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </DataGrid.CellStyle>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100"/>
                             <DataGridTextColumn Header="Thông tin SV" Binding="{Binding FullName}" Width="*"/>

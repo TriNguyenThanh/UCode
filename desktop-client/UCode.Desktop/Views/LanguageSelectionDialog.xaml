@@ -1,10 +1,17 @@
-<Window x:Class="UCode.Desktop.Views.LanguageSelectionDialog"
+<mah:MetroWindow x:Class="UCode.Desktop.Views.LanguageSelectionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         Title="Quản lý ngôn ngữ lập trình" 
         Height="600" Width="800"
         WindowStartupLocation="CenterOwner"
-        Background="#F5F5F5">
+        Background="#F5F5F5"
+        ResizeMode="NoResize"
+        ShowMinButton="False"
+        ShowMaxRestoreButton="False"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
 
     <Grid>
         <!-- Loading Overlay -->
@@ -34,36 +41,15 @@
             <!-- Languages Table -->
             <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="0">
                 <DataGrid ItemsSource="{Binding AllLanguages}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          BorderThickness="0"
-                          SelectionMode="Single"
-                          SelectionUnit="FullRow">
+                          Style="{StaticResource ModernDataGrid}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                          CellStyle="{StaticResource ModernDataGridCell}">
                     
-                    <!-- Row Style with Hover Effect -->
+                    <!-- Row Style with Click Handler -->
                     <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRow}">
                             <EventSetter Event="MouseLeftButtonUp" Handler="DataGridRow_MouseLeftButtonUp"/>
-                            <Setter Property="Background" Value="White"/>
                             <Setter Property="Cursor" Value="Hand"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#E3F2FD"/>
-                                </Trigger>
-                                <Trigger Property="AlternationIndex" Value="1">
-                                    <Setter Property="Background" Value="#F9F9F9"/>
-                                </Trigger>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsMouseOver" Value="True"/>
-                                        <Condition Property="AlternationIndex" Value="1"/>
-                                    </MultiTrigger.Conditions>
-                                    <Setter Property="Background" Value="#E3F2FD"/>
-                                </MultiTrigger>
-                            </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
                     
@@ -91,7 +77,7 @@
                                     <Setter Property="FontFamily" Value="Consolas"/>
                                     <Setter Property="Background" Value="#F0F0F0"/>
                                     <Setter Property="Padding" Value="5,2"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -99,11 +85,6 @@
                             <DataGridTextColumn.Binding>
                                 <Binding Path="TimeFactor" StringFormat="{}{0}x"/>
                             </DataGridTextColumn.Binding>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
@@ -126,5 +107,5 @@
             </StackPanel>
         </Grid>
     </Grid>
-</Window>
+</mah:MetroWindow>
 

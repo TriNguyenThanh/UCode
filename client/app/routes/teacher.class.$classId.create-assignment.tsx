@@ -56,7 +56,7 @@ export default function CreateAssignment() {
   const [endDate, setEndDate] = useState<Date | null>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
   const [noEndDate, setNoEndDate] = useState(false)
   const [allowLateSubmission, setAllowLateSubmission] = useState(true)
-  const [assignmentType, setAssignmentType] = useState<'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'>('HOMEWORK')
+  const [assignmentType, setAssignmentType] = useState<'HOMEWORK' | 'EXAMINATION' | 'PRACTICE'>('HOMEWORK')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [title, setTitle] = useState('')
@@ -139,9 +139,8 @@ export default function CreateAssignment() {
               sx={{ mb: 3 }}
             >
               <MenuItem value="HOMEWORK">Bài tập về nhà</MenuItem>
-              <MenuItem value="EXAM">Kiểm tra</MenuItem>
+              <MenuItem value="EXAMINATION">Kiểm tra</MenuItem>
               <MenuItem value="PRACTICE">Luyện tập</MenuItem>
-              <MenuItem value="CONTEST">Thi đấu</MenuItem>
             </TextField>
 
             {/* Title */}

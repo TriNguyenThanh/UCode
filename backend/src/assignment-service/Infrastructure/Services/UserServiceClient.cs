@@ -36,7 +36,7 @@ public class UserServiceClient : IUserServiceClient
                 throw new ApiException("UserService BaseAddress is not configured. Please check UserService:BaseUrl in appsettings.json");
             }
 
-            var url = $"/api/v1/classes/{classId}/students";
+            var url = $"/api/v1/classes/{classId}/user-ids";
             
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();

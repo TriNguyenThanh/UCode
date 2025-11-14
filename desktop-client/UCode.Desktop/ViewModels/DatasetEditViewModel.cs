@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
@@ -176,11 +178,16 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void DeleteTestCase(TestCaseItemViewModel? testCase)
+        private async void DeleteTestCase(TestCaseItemViewModel? testCase)
         {
             if (testCase == null) return;
 
-            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa test case #{testCase.IndexNo}?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận",
+                $"Bạn có chắc chắn muốn xóa test case #{testCase.IndexNo}?",
+                MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result != MessageDialogResult.Affirmative)
             {
                 return;
             }
@@ -192,11 +199,16 @@ namespace UCode.Desktop.ViewModels
             OnPropertyChanged(nameof(HasTestCases));
         }
 
-        private void DeleteSelectedTestCases()
+        private async void DeleteSelectedTestCases()
         {
             if (!HasSelectedTestCases) return;
 
-            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa {SelectedTestCases.Count} test case(s) đã chọn?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận",
+                $"Bạn có chắc chắn muốn xóa {SelectedTestCases.Count} test case(s) đã chọn?",
+                MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result != MessageDialogResult.Affirmative)
             {
                 return;
             }
@@ -223,23 +235,21 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void DownloadTemplate()
+        private async void DownloadTemplate()
         {
             // TODO: Implement Excel template download using ClosedXML
             // See web implementation for reference (downloadExcelTemplate)
-            MessageBox.Show(
+            await GetMetroWindow()?.ShowMessageAsync(
+                "Feature Not Implemented",
                 "Excel Template Download\n\n" +
                 "TODO: Implement using ClosedXML NuGet package\n\n" +
                 "Template should have 2 columns:\n" +
                 "- Input\n" +
                 "- Output\n\n" +
-                "See: client/app/utils/excelImport.ts (downloadExcelTemplate)",
-                "Feature Not Implemented",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "See: client/app/utils/excelImport.ts (downloadExcelTemplate)");
         }
 
-        private void ImportExcel()
+        private async void ImportExcel()
         {
             // TODO: Implement Excel import using ClosedXML
             // See web implementation for reference (importExcelFile)
@@ -252,17 +262,15 @@ namespace UCode.Desktop.ViewModels
 
             if (openFileDialog.ShowDialog() == true)
             {
-                MessageBox.Show(
+                await GetMetroWindow()?.ShowMessageAsync(
+                    "Feature Not Implemented",
                     $"Excel Import\n\n" +
                     $"File: {openFileDialog.FileName}\n\n" +
                     "TODO: Implement using ClosedXML NuGet package\n\n" +
                     "Should parse Excel file and add test cases to TestCases collection\n" +
                     "Expected columns: Input, Output\n\n" +
                     "See: client/app/utils/excelImport.ts (importExcelFile)\n" +
-                    "and client/app/components/DatasetManagement.tsx (handleImportExcel)",
-                    "Feature Not Implemented",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    "and client/app/components/DatasetManagement.tsx (handleImportExcel)");
             }
         }
 
@@ -271,19 +279,19 @@ namespace UCode.Desktop.ViewModels
             // Validation
             if (string.IsNullOrWhiteSpace(DatasetName))
             {
-                MessageBox.Show("Vui lòng nhập tên dataset", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tên dataset");
                 return;
             }
 
             if (TestCases.Count == 0)
             {
-                MessageBox.Show("Vui lòng thêm ít nhất một test case", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng thêm ít nhất một test case");
                 return;
             }
 
             if (TestCases.Any(tc => string.IsNullOrWhiteSpace(tc.InputRef) || string.IsNullOrWhiteSpace(tc.OutputRef)))
             {
-                MessageBox.Show("Tất cả test cases phải có input và output", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Tất cả test cases phải có input và output");
                 return;
             }
 
@@ -312,7 +320,7 @@ namespace UCode.Desktop.ViewModels
                     var response = await _datasetService.UpdateDatasetAsync(request);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show("Cập nhật dataset thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Cập nhật dataset thành công!");
                         
                         // Close dialog with success
                         foreach (Window window in Application.Current.Windows)
@@ -327,7 +335,7 @@ namespace UCode.Desktop.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"Cập nhật thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Cập nhật thất bại: {response?.Message}");
                     }
                 }
                 else
@@ -343,7 +351,7 @@ namespace UCode.Desktop.ViewModels
                     var response = await _datasetService.CreateDatasetAsync(request);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show("Tạo dataset thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Tạo dataset thành công!");
                         
                         // Close dialog with success
                         foreach (Window window in Application.Current.Windows)
@@ -358,13 +366,13 @@ namespace UCode.Desktop.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"Tạo dataset thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Tạo dataset thất bại: {response?.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
             finally
             {
