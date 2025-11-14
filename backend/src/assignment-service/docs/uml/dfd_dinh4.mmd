@@ -1,0 +1,30 @@
+---
+config:
+  layout: elk
+---
+flowchart BT
+    GV["Giảng viên"] -- Tạo/Sửa/Xóa đề --> P41("4.1. Tạo/Sửa/Xóa đề bài")
+    P41 -- Cập nhật đề bài --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Dữ liệu đề --> P41
+    P41 -- Xác nhận --> GV
+    GV -- Quản lý chi tiết đề --> P42("4.2. Quản lý chi tiết đề<br>(mô tả, code mẫu)")
+    P42 -- Cập nhật mô tả/code --> D_Problem
+    D_Problem -- Dữ liệu chi tiết --> P42
+    P42 -- Xác nhận --> GV
+    GV -- Quản lý testcase --> P43("4.3. Quản lý bộ testcase<br>(chính thức, mẫu)")
+    P43 -- Cập nhật testcase --> D_Problem
+    D_Problem -- Dữ liệu testcase --> P43
+    P43 -- Xác nhận --> GV
+    GV -- Chọn ngôn ngữ/template --> P44("4.4. Chọn ngôn ngữ lập trình<br>(cho phép &amp; template)")
+    P44 -- Cập nhật ngôn ngữ --> D_Problem
+    D_Problem -- Dữ liệu ngôn ngữ --> P44
+    P44 -- Xác nhận --> GV
+     GV:::lecturer
+     P41:::process
+     D_Problem:::datastore
+     P42:::process
+     P43:::process
+     P44:::process
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px
