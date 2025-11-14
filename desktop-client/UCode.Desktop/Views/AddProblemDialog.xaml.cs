@@ -1,9 +1,9 @@
 using System.Windows;
 using UCode.Desktop.ViewModels;
-
+using MahApps.Metro.Controls;
 namespace UCode.Desktop.Views
 {
-    public partial class AddProblemDialog : Window
+    public partial class AddProblemDialog : MetroWindow
     {
         public AddProblemDialog(AddProblemDialogViewModel viewModel)
         {

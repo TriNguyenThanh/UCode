@@ -72,6 +72,7 @@ services:
       - JWT__KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
       - JWT__ISSUER=UserService
       - JWT__AUDIENCE=UserServiceClient
+      - ServiceUrls__AssignmentService=http://assignment-service:5002
     volumes:
       - ./backend/src/user-service:/app
     depends_on:

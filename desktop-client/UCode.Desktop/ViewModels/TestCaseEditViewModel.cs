@@ -1,6 +1,8 @@
 using System;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 
 namespace UCode.Desktop.ViewModels
@@ -45,17 +47,17 @@ namespace UCode.Desktop.ViewModels
             OutputText = output;
         }
 
-        private void ExecuteSave()
+        private async void ExecuteSave()
         {
             if (string.IsNullOrWhiteSpace(InputText))
             {
-                MessageBox.Show("Vui lòng nhập Input", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập Input");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(OutputText))
             {
-                MessageBox.Show("Vui lòng nhập Expected Output", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập Expected Output");
                 return;
             }
 

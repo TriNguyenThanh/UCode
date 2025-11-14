@@ -1,9 +1,9 @@
 using System.Windows;
 using UCode.Desktop.Services;
-
+using MahApps.Metro.Controls;
 namespace UCode.Desktop.Views
 {
-    public partial class TeacherHomeWindow : Window
+    public partial class TeacherHomeWindow : MetroWindow
     {
         private readonly NavigationService _navigationService;
 

@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using ClosedXML.Excel;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Services;
@@ -19,10 +24,9 @@ namespace UCode.Desktop.ViewModels
         public string Email { get; set; } = string.Empty;
         public string Major { get; set; } = string.Empty;
         public int EnrollmentYear { get; set; }
-        public int ClassYear { get; set; }
-        public string Status { get; set; } = "new"; // new, exists, error
-        public string? ExistingUserId { get; set; }
-        public string? ErrorMessage { get; set; }
+        public string Status { get; set; } = "new";
+        public string ExistingUserId { get; set; }
+        public string ErrorMessage { get; set; }
 
         public string StatusText => Status switch
         {
@@ -32,7 +36,7 @@ namespace UCode.Desktop.ViewModels
             _ => Status
         };
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     public class ImportExcelTabViewModel : ViewModelBase
@@ -42,7 +46,7 @@ namespace UCode.Desktop.ViewModels
         private string _classId = string.Empty;
         private int _activeStep = 0;
         private bool _isLoading;
-        private string? _errorMessage;
+        private string _errorMessage;
 
         public ObservableCollection<ValidationResultViewModel> ValidationResults { get; } = new();
 
@@ -66,7 +70,7 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public string? ErrorMessage
+        public string ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
@@ -96,10 +100,10 @@ namespace UCode.Desktop.ViewModels
         {
             _classService = classService;
 
-            DownloadTemplateCommand = new RelayCommand(_ => DownloadTemplate());
+            DownloadTemplateCommand = new RelayCommand(async _ => await DownloadTemplateAsync());
             UploadFileCommand = new RelayCommand(_ => UploadFile());
             ResetCommand = new RelayCommand(_ => Reset());
-            ImportCommand = new RelayCommand(async _ => await ImportAsync());
+            ImportCommand = new RelayCommand(async _ => await ImportAsync(), _ => CanImport);
         }
 
         public void Initialize(string classId)
@@ -107,24 +111,54 @@ namespace UCode.Desktop.ViewModels
             _classId = classId;
         }
 
-        private void DownloadTemplate()
+        private async Task DownloadTemplateAsync()
         {
-            // TODO: Implement Excel template download using ClosedXML
-            MessageBox.Show(
-                "Excel Template Download\n\n" +
-                "TODO: Implement using ClosedXML NuGet package\n\n" +
-                "Template columns:\n" +
-                "- StudentCode\n" +
-                "- FullName\n" +
-                "- Email\n" +
-                "- Password\n" +
-                "- Major\n" +
-                "- EnrollmentYear\n\n" +
-                "See: client/app/components/AddStudentDialog/ImportExcelTab.tsx (handleDownloadTemplate)\n" +
-                "Install: <PackageReference Include=\"ClosedXML\" Version=\"0.102.1\" />",
-                "Feature Not Implemented",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Lưu file mẫu",
+                    FileName = "student_template.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using var workbook = new XLWorkbook();
+                    var worksheet = workbook.Worksheets.Add("Students");
+
+                    // Headers - Match web version (removed Password and EnrollmentYear)
+                    worksheet.Cell(1, 1).Value = "StudentCode";
+                    worksheet.Cell(1, 2).Value = "FullName";
+                    worksheet.Cell(1, 3).Value = "Email";
+                    worksheet.Cell(1, 4).Value = "Major";
+
+                    // Style headers
+                    var headerRange = worksheet.Range(1, 1, 1, 4);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.LightBlue;
+
+                    // Sample data
+                    worksheet.Cell(2, 1).Value = "SV001";
+                    worksheet.Cell(2, 2).Value = "Nguyễn Văn A";
+                    worksheet.Cell(2, 3).Value = "sv001@example.com";
+                    worksheet.Cell(2, 4).Value = "Công nghệ phần mềm";
+
+                    worksheet.Cell(3, 1).Value = "SV002";
+                    worksheet.Cell(3, 2).Value = "Trần Thị B";
+                    worksheet.Cell(3, 3).Value = "sv002@example.com";
+                    worksheet.Cell(3, 4).Value = "Khoa học máy tính";
+
+                    worksheet.Columns().AdjustToContents();
+
+                    workbook.SaveAs(saveFileDialog.FileName);
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Đã tải file mẫu thành công!");
+                }
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi tải file mẫu: {ex.Message}");
+            }
         }
 
         private void UploadFile()
@@ -144,36 +178,88 @@ namespace UCode.Desktop.ViewModels
         private async Task ProcessExcelFileAsync(string filePath)
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ErrorMessage = string.Empty;
+            ValidationResults.Clear();
 
             try
             {
-                // TODO: Implement Excel parsing using ClosedXML
-                // Read file, parse rows, validate, populate ValidationResults
+                ActiveStep = 1; // Move to validation step
 
-                MessageBox.Show(
-                    $"Excel Processing\n\n" +
-                    $"File: {filePath}\n\n" +
-                    "TODO: Parse Excel file using ClosedXML\n" +
-                    "1. Read rows from Excel\n" +
-                    "2. Validate each row\n" +
-                    "3. Call API to check if students exist\n" +
-                    "4. Populate ValidationResults\n\n" +
-                    "See: client/app/components/AddStudentDialog/ImportExcelTab.tsx\n" +
-                    "(handleFileUpload + handleValidate)",
-                    "Feature Not Implemented",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                using var workbook = new XLWorkbook(filePath);
+                var worksheet = workbook.Worksheet(1);
+                
+                var rows = worksheet.RowsUsed().Skip(1); // Skip header
 
-                // Mock: Move to step 1, then step 2
-                ActiveStep = 1;
-                await Task.Delay(1500); // Simulate validation
-                ActiveStep = 2;
+                var studentData = new List<ValidationResultViewModel>();
+                int rowNumber = 2;
+
+                foreach (var row in rows)
+                {
+                    var result = new ValidationResultViewModel
+                    {
+                        RowNumber = rowNumber,
+                        StudentCode = row.Cell(1).GetString().Trim(),
+                        FullName = row.Cell(2).GetString().Trim(),
+                        Email = row.Cell(3).GetString().Trim(),
+                        Major = row.Cell(4).GetString().Trim(),
+                        EnrollmentYear = DateTime.Now.Year // Default to current year
+                    };
+
+                    // Basic validation
+                    if (string.IsNullOrWhiteSpace(result.StudentCode))
+                    {
+                        result.Status = "error";
+                        result.ErrorMessage = "Thiếu mã sinh viên";
+                    }
+                    else if (string.IsNullOrWhiteSpace(result.FullName))
+                    {
+                        result.Status = "error";
+                        result.ErrorMessage = "Thiếu họ tên";
+                    }
+                    else if (string.IsNullOrWhiteSpace(result.Email))
+                    {
+                        result.Status = "error";
+                        result.ErrorMessage = "Thiếu email";
+                    }
+                    else if (!result.Email.Contains("@"))
+                    {
+                        result.Status = "error";
+                        result.ErrorMessage = "Email không hợp lệ";
+                    }
+                    else
+                    {
+                        result.Status = "new"; // Will check with API
+                    }
+
+                    studentData.Add(result);
+                    rowNumber++;
+                }
+
+                // Check which students already exist
+                await ValidateStudentsAsync(studentData);
+
+                foreach (var result in studentData)
+                {
+                    ValidationResults.Add(result);
+                }
+
+                ActiveStep = 2; // Move to review step
+
+                OnPropertyChanged(nameof(TotalStudents));
+                OnPropertyChanged(nameof(NewCount));
+                OnPropertyChanged(nameof(ExistsCount));
+                OnPropertyChanged(nameof(ErrorCount));
+                OnPropertyChanged(nameof(HasNewStudents));
+                OnPropertyChanged(nameof(HasExistingStudents));
+                OnPropertyChanged(nameof(HasErrors));
+                OnPropertyChanged(nameof(CanImport));
+                OnPropertyChanged(nameof(ImportButtonText));
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Lỗi xử lý file: {ex.Message}";
                 ActiveStep = 0;
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", ErrorMessage);
             }
             finally
             {
@@ -181,30 +267,148 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
+        private async Task ValidateStudentsAsync(List<ValidationResultViewModel> students)
+        {
+            try
+            {
+                // Use bulk validation API like web version
+                var studentCodes = students.Where(s => s.Status != "error").Select(s => s.StudentCode).ToList();
+                
+                var response = await _classService.ValidateStudentsBulkAsync(studentCodes);
+                
+                if (response?.Success == true && response.Data != null)
+                {
+                    // Create lookup dictionary
+                    var validationMap = response.Data.ToDictionary(v => v.StudentCode, v => v);
+
+                    foreach (var student in students)
+                    {
+                        if (student.Status == "error") continue;
+
+                        if (validationMap.TryGetValue(student.StudentCode, out var validation))
+                        {
+                            if (validation.Exists)
+                            {
+                                student.Status = "exists";
+                                student.ExistingUserId = validation.UserId;
+                            }
+                            else
+                            {
+                                student.Status = "new";
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error validating students: {ex.Message}");
+            }
+        }
+
         private void Reset()
         {
             ActiveStep = 0;
             ValidationResults.Clear();
-            ErrorMessage = null;
+            ErrorMessage = string.Empty;
+            
+            OnPropertyChanged(nameof(TotalStudents));
+            OnPropertyChanged(nameof(NewCount));
+            OnPropertyChanged(nameof(ExistsCount));
+            OnPropertyChanged(nameof(ErrorCount));
         }
 
         private async Task ImportAsync()
         {
-            // TODO: Implement bulk create + bulk enroll
-            MessageBox.Show(
-                "Import Students Implementation\n\n" +
-                "TODO:\n" +
-                "1. Call StudentService.BulkCreateStudentsAsync for new students\n" +
-                "2. Call ClassService.BulkEnrollStudentsAsync for all students\n\n" +
-                "See: client/app/components/AddStudentDialog/ImportExcelTab.tsx (handleImport)\n" +
-                "and client/app/services/studentService.ts (bulkCreateStudents)\n" +
-                "and client/app/services/classService.ts (bulkEnrollStudents)",
-                "Feature Not Implemented",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            IsLoading = true;
+            ErrorMessage = string.Empty;
 
-            await Task.CompletedTask;
+            try
+            {
+                // Separate new and existing students
+                var newStudents = ValidationResults.Where(v => v.Status == "new").ToList();
+                var existingStudents = ValidationResults.Where(v => v.Status == "exists").ToList();
+
+                var createdUserIds = new List<string>();
+
+                // Step 1: Create new students using bulk create API
+                if (newStudents.Count > 0)
+                {
+                    var createRequests = newStudents.Select(s => new CreateStudentRequest
+                    {
+                        StudentCode = s.StudentCode,
+                        FullName = s.FullName,
+                        Email = s.Email,
+                        Major = s.Major,
+                        ClassYear = s.EnrollmentYear
+                    }).ToList();
+
+                    var createResponse = await _classService.BulkCreateStudentsAsync(createRequests);
+                    
+                    if (createResponse?.Success == true && createResponse.Data != null)
+                    {
+                        // Collect successfully created user IDs
+                        createdUserIds = createResponse.Data.Results
+                            .Where(r => r.Success)
+                            .Select(r => r.UserId)
+                            .ToList();
+
+                        if (createResponse.Data.FailureCount > 0)
+                        {
+                            var failedStudents = createResponse.Data.Results.Where(r => !r.Success).ToList();
+                            ErrorMessage = $"Không thể tạo {createResponse.Data.FailureCount} sinh viên:\n" +
+                                          string.Join("\n", failedStudents.Select(f => $"- {f.StudentCode}: {f.ErrorMessage}"));
+                        }
+                    }
+                    else
+                    {
+                        ErrorMessage = $"Lỗi tạo sinh viên: {createResponse?.Message}";
+                        return;
+                    }
+                }
+
+                // Step 2: Enroll all students (newly created + existing) into class
+                var allUserIds = createdUserIds.Concat(existingStudents.Select(s => s.ExistingUserId).Where(id => !string.IsNullOrEmpty(id))).ToList();
+                
+                if (allUserIds.Count > 0)
+                {
+                    var enrollResponse = await _classService.BulkEnrollStudentsAsync(_classId, allUserIds);
+                    
+                    if (enrollResponse?.Success == true && enrollResponse.Data != null)
+                    {
+                        var successMsg = $"Đã import thành công!\n" +
+                                       $"- Tạo mới: {createdUserIds.Count} sinh viên\n" +
+                                       $"- Đã tồn tại: {existingStudents.Count} sinh viên\n" +
+                                       $"- Đã thêm vào lớp: {enrollResponse.Data.SuccessCount}/{allUserIds.Count}";
+                        
+                        if (enrollResponse.Data.FailureCount > 0)
+                        {
+                            successMsg += $"\n- Lỗi thêm vào lớp: {enrollResponse.Data.FailureCount}";
+                        }
+                        
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", successMsg);
+                        Reset();
+                    }
+                    else
+                    {
+                        ErrorMessage = $"Lỗi thêm sinh viên vào lớp: {enrollResponse?.Message}";
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", ErrorMessage);
+                    }
+                }
+                else
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Không có sinh viên nào để import");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Lỗi import: {ex.Message}";
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", ErrorMessage);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 }
-

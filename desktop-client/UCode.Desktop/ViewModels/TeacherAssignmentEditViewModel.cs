@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -124,7 +126,7 @@ namespace UCode.Desktop.ViewModels
 
         public bool HasSelectedProblems => SelectedProblems.Count > 0;
 
-        public List<string> AssignmentTypes { get; } = new List<string> { "HOMEWORK", "EXAM", "PRACTICE" };
+        public List<string> AssignmentTypes { get; } = new List<string> { "HOMEWORK", "EXAMINATION", "PRACTICE" };
         public List<string> Statuses { get; } = new List<string> { "DRAFT", "PUBLISHED", "CLOSED" };
 
         public ICommand SaveCommand { get; }
@@ -189,7 +191,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi tải dữ liệu: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -298,7 +300,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi tải bài tập: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
         }
 
@@ -307,19 +309,19 @@ namespace UCode.Desktop.ViewModels
             // Validation
             if (string.IsNullOrWhiteSpace(ClassId))
             {
-                MessageBox.Show("Vui lòng chọn lớp học", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng chọn lớp học");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Title))
             {
-                MessageBox.Show("Vui lòng nhập tiêu đề bài tập", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tiêu đề bài tập");
                 return;
             }
 
             if (SelectedProblems.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn ít nhất một bài tập", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng chọn ít nhất một bài tập");
                 return;
             }
 
@@ -353,12 +355,12 @@ namespace UCode.Desktop.ViewModels
                     var response = await _assignmentService.CreateAssignmentAsync(request);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show("Tạo bài tập thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Tạo bài tập thành công!");
                         ExecuteCancel();
                     }
                     else
                     {
-                        MessageBox.Show($"Tạo bài tập thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Tạo bài tập thất bại: {response?.Message}");
                     }
                 }
                 else
@@ -379,19 +381,19 @@ namespace UCode.Desktop.ViewModels
                     var response = await _assignmentService.UpdateAssignmentAsync(_assignmentId, request);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show("Cập nhật bài tập thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Cập nhật bài tập thành công!");
                         ExecuteCancel();
                     }
                     else
                     {
-                        MessageBox.Show($"Cập nhật bài tập thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Cập nhật bài tập thất bại: {response?.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Error = $"Lỗi lưu bài tập: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -474,17 +476,15 @@ namespace UCode.Desktop.ViewModels
                         }
                         
                         OnPropertyChanged(nameof(HasSelectedProblems));
-                        MessageBox.Show($"Đã thêm {selectedProblems.Count} bài vào danh sách!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", $"Đã thêm {selectedProblems.Count} bài vào danh sách!");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Không thể mở cửa sổ chọn bài: {ex.Message}",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Lỗi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    $"Không thể mở cửa sổ chọn bài: {ex.Message}");
             }
         }
 

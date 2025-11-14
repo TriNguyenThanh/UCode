@@ -21,4 +21,13 @@ public class AssignmentUserDto
     public int? Score { get; set; }
     public int? MaxScore { get; set; }
     
+    /// <summary>
+    /// Number of times student switched tabs during examination
+    /// </summary>
+    public int TabSwitchCount { get; set; }
+    
+    /// <summary>
+    /// Number of times AI usage was detected during examination
+    /// </summary>
+    public int CapturedAICount { get; set; }
 }

@@ -1,9 +1,10 @@
 using System.Windows;
+using MahApps.Metro.Controls;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
-    public partial class CreateAssignmentWindow : Window
+    public partial class CreateAssignmentWindow : MetroWindow
     {
         public CreateAssignmentWindow(CreateAssignmentViewModel viewModel)
         {

@@ -44,46 +44,16 @@
             <Border Style="{StaticResource CardStyle}" Padding="0" 
                     Visibility="{Binding HasLanguages, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <DataGrid ItemsSource="{Binding ProblemLanguages}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          BorderThickness="0">
-                    
-                    <!-- Row Style with Hover Effect -->
-                    <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="White"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#E3F2FD"/>
-                                </Trigger>
-                                <Trigger Property="AlternationIndex" Value="1">
-                                    <Setter Property="Background" Value="#F9F9F9"/>
-                                </Trigger>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsMouseOver" Value="True"/>
-                                        <Condition Property="AlternationIndex" Value="1"/>
-                                    </MultiTrigger.Conditions>
-                                    <Setter Property="Background" Value="#E3F2FD"/>
-                                </MultiTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.RowStyle>
+                          Style="{StaticResource ModernDataGrid}"
+                          RowStyle="{StaticResource ModernDataGridRow}"
+                          CellStyle="{StaticResource ModernDataGridCell}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}">
                     
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Ngôn ngữ" Binding="{Binding LanguageDisplayName}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#1D1D1F"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Ngôn ngữ" Binding="{Binding LanguageDisplayName}" Width="*"/>
                         <DataGridTextColumn Header="Code" Binding="{Binding LanguageCode}" Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#1D1D1F"/>
                                     <Setter Property="Background" Value="#F0F0F0"/>
                                     <Setter Property="Padding" Value="5,2"/>
                                     <Setter Property="FontFamily" Value="Consolas"/>
@@ -95,21 +65,11 @@
                             <DataGridTextColumn.Binding>
                                 <Binding Path="TimeFactor" StringFormat="{}{0:0.00}x"/>
                             </DataGridTextColumn.Binding>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#1D1D1F"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         <DataGridTextColumn Header="Memory (KB)" Width="120">
                             <DataGridTextColumn.Binding>
                                 <Binding Path="MemoryKb" StringFormat="{}{0:N0}"/>
                             </DataGridTextColumn.Binding>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#1D1D1F"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         <DataGridTemplateColumn Header="Thao tác" Width="100">
                             <DataGridTemplateColumn.CellTemplate>

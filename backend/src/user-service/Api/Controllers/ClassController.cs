@@ -345,6 +345,30 @@ public class ClassController : ControllerBase
             return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to bulk enroll: {ex.Message}"));
         }
     }
+
+    /// <summary>
+    /// [INTERNAL] Lấy danh sách User IDs của lớp học
+    /// Internal API - không yêu cầu authentication, dùng cho service-to-service call
+    /// </summary>
+    /// <param name="classId">ID lớp học</param>
+    /// <returns>Danh sách User IDs</returns>
+    /// <response code="200">Trả về danh sách User IDs</response>
+    [HttpGet("{classId}/user-ids")]
+    [AllowAnonymous] // Internal service call - no auth required
+    [SwaggerOperation(Summary = "[INTERNAL] Lấy User IDs của lớp", Description = "Internal API để Assignment Service lấy danh sách sinh viên")]
+    [SwaggerResponse(200, "Danh sách User IDs", typeof(ApiResponse<List<Guid>>))]
+    public async Task<IActionResult> GetUserIdsByClassId(string classId)
+    {
+        try
+        {
+            var students = await _classService.GetStudentListByClassAsync(classId);
+            return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to get user IDs: {ex.Message}"));
+        }
+    }
 }
 
 // Helper DTOs

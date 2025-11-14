@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -124,7 +126,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi tải dữ liệu: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -230,36 +232,29 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteAddStudent()
+        private async void ExecuteAddStudent()
         {
             if (string.IsNullOrEmpty(_classId)) return;
 
             try
             {
-                // Create ViewModel with classId
-                var classService = App.ServiceProvider.GetService(typeof(ClassService)) as ClassService;
-                if (classService != null)
+                var viewModel = new AddStudentDialogViewModel(_classId, _classService);
+                var dialog = new Views.AddStudentDialog(viewModel)
                 {
-                    var viewModel = new AddStudentDialogViewModel(_classId, classService);
-                    var dialog = new Views.AddStudentDialog(viewModel)
-                    {
-                        Owner = Application.Current.MainWindow
-                    };
-                    
-                    if (dialog.ShowDialog() == true)
-                    {
-                        // Reload students after adding
-                        _ = LoadStudentsAsync();
-                    }
+                    Owner = Application.Current.MainWindow
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    _ = LoadStudentsAsync();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Không thể mở cửa sổ thêm sinh viên: {ex.Message}",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Lỗi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    $"Không thể mở cửa sổ thêm sinh viên: {ex.Message}\n\n{ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Error opening AddStudentDialog: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -270,13 +265,12 @@ namespace UCode.Desktop.ViewModels
             var student = Students.FirstOrDefault(s => s.UserId == userId);
             if (student == null) return;
 
-            var result = MessageBox.Show(
-                $"Bạn có chắc muốn xóa sinh viên {student.FullName} khỏi lớp?",
+            var result = await GetMetroWindow()?.ShowMessageAsync(
                 "Xác nhận xóa",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                $"Bạn có chắc muốn xóa sinh viên {student.FullName} khỏi lớp?",
+                MessageDialogStyle.AffirmativeAndNegative);
 
-            if (result == MessageBoxResult.Yes)
+            if (result == MessageDialogResult.Affirmative)
             {
                 IsLoading = true;
                 try
@@ -284,29 +278,23 @@ namespace UCode.Desktop.ViewModels
                     var response = await _classService.RemoveStudentFromClassAsync(_classId, userId);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show(
-                            "Xóa sinh viên thành công!",
+                        await GetMetroWindow()?.ShowMessageAsync(
                             "Thành công",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                            "Xóa sinh viên thành công!");
                         await LoadStudentsAsync();
                     }
                     else
                     {
-                        MessageBox.Show(
-                            $"Xóa sinh viên thất bại: {response?.Message}",
+                        await GetMetroWindow()?.ShowMessageAsync(
                             "Lỗi",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
+                            $"Xóa sinh viên thất bại: {response?.Message}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(
-                        $"Lỗi xóa sinh viên: {ex.Message}",
+                    await GetMetroWindow()?.ShowMessageAsync(
                         "Lỗi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                        $"Lỗi xóa sinh viên: {ex.Message}");
                 }
                 finally
                 {
@@ -315,7 +303,7 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteCreateAssignment()
+        private async void ExecuteCreateAssignment()
         {
             if (string.IsNullOrEmpty(_classId)) return;
 
@@ -338,11 +326,9 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Lỗi mở trang tạo bài tập: {ex.Message}",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Lỗi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    $"Lỗi mở trang tạo bài tập: {ex.Message}");
             }
         }
 
@@ -363,13 +349,11 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteEditClass()
+        private async void ExecuteEditClass()
         {
-            MessageBox.Show(
-                "Chức năng chỉnh sửa lớp học đang được phát triển.\n\nSử dụng trang web để chỉnh sửa thông tin lớp.",
+            await GetMetroWindow()?.ShowMessageAsync(
                 "Thông báo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Chức năng chỉnh sửa lớp học đang được phát triển.\n\nSử dụng trang web để chỉnh sửa thông tin lớp.");
         }
 
         // Helper methods for display
@@ -378,9 +362,8 @@ namespace UCode.Desktop.ViewModels
             return type switch
             {
                 AssignmentType.HOMEWORK => "Bài tập về nhà",
-                AssignmentType.EXAM => "Bài kiểm tra",
+                AssignmentType.EXAMINATION => "Bài kiểm tra",
                 AssignmentType.PRACTICE => "Luyện tập",
-                AssignmentType.CONTEST => "Thi đấu",
                 _ => type.ToString()
             };
         }

@@ -15,19 +15,22 @@ public class ClassAppService : IClassService
     private readonly IStudentRepository _studentRepository;
     private readonly IUserClassRepository _userClassRepository;
     private readonly IMapper _mapper;
+    private readonly IAssignmentServiceClient _assignmentServiceClient;
 
     public ClassAppService(
         IClassRepository classRepository,
         ITeacherRepository teacherRepository,
         IStudentRepository studentRepository,
         IUserClassRepository userClassRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IAssignmentServiceClient assignmentServiceClient)
     {
         _classRepository = classRepository;
         _teacherRepository = teacherRepository;
         _studentRepository = studentRepository;
         _userClassRepository = userClassRepository;
         _mapper = mapper;
+        _assignmentServiceClient = assignmentServiceClient;
     }
 
     public async Task<ClassResponse> CreateClassAsync(CreateClassRequest request)
@@ -192,6 +195,20 @@ public class ClassAppService : IClassService
         };
 
         await _userClassRepository.AddAsync(userClass);
+        
+        // Sync student to all active assignments of this class (fire-and-forget)
+        _ = Task.Run(async () => 
+        {
+            try 
+            {
+                await _assignmentServiceClient.SyncStudentsToClassAssignmentsAsync(classGuid, new List<Guid> { studentGuid });
+            }
+            catch
+            {
+                // Ignore errors - this is a best-effort sync
+            }
+        });
+        
         return true;
     }
 
@@ -229,7 +246,23 @@ public class ClassAppService : IClassService
         }
 
         if (userClasses.Any())
+        {
             await _userClassRepository.AddRangeAsync(userClasses);
+            
+            // Sync students to all active assignments of this class (fire-and-forget)
+            var addedStudentIds = userClasses.Select(uc => uc.StudentId).ToList();
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await _assignmentServiceClient.SyncStudentsToClassAssignmentsAsync(classGuid, addedStudentIds);
+                }
+                catch
+                {
+                    // Ignore errors - this is a best-effort sync
+                }
+            });
+        }
 
         return true;
     }
@@ -353,6 +386,27 @@ public class ClassAppService : IClassService
                     ErrorMessage = ex.Message
                 });
             }
+        }
+
+        // Sync all successfully enrolled students to class assignments (fire-and-forget)
+        var enrolledStudentIds = result.Results
+            .Where(r => r.Success)
+            .Select(r => Guid.Parse(r.StudentId))
+            .ToList();
+
+        if (enrolledStudentIds.Any())
+        {
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await _assignmentServiceClient.SyncStudentsToClassAssignmentsAsync(classGuid, enrolledStudentIds);
+                }
+                catch
+                {
+                    // Ignore errors - this is a best-effort sync
+                }
+            });
         }
 
         return result;

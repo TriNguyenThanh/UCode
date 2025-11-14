@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -106,7 +108,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi tải ngôn ngữ: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi khi tải ngôn ngữ: {ex.Message}");
             }
             finally
             {
@@ -135,7 +137,7 @@ namespace UCode.Desktop.ViewModels
 
                 if (selectedLanguages.Count == 0)
                 {
-                    MessageBox.Show("Vui lòng chọn ít nhất một ngôn ngữ", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng chọn ít nhất một ngôn ngữ");
                     return;
                 }
 
@@ -143,7 +145,7 @@ namespace UCode.Desktop.ViewModels
 
                 if (response?.Success == true && response.Data != null)
                 {
-                    MessageBox.Show("Cập nhật ngôn ngữ thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Cập nhật ngôn ngữ thành công!");
 
                     // Close dialog with success
                     foreach (Window window in Application.Current.Windows)
@@ -158,12 +160,12 @@ namespace UCode.Desktop.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"Cập nhật thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Cập nhật thất bại: {response?.Message}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
             finally
             {
