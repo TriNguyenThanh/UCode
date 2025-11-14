@@ -1,11 +1,12 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
-    public partial class TagSelectionDialog : Window
+    public partial class TagSelectionDialog : MetroWindow
     {
         public TagSelectionDialog(TagSelectionViewModel viewModel)
         {

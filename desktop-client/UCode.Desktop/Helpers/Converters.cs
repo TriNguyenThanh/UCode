@@ -130,10 +130,8 @@ namespace UCode.Desktop.Helpers
                 return type switch
                 {
                     Models.AssignmentType.HOMEWORK => "Bài tập về nhà",
-                    Models.AssignmentType.EXAM => "Bài kiểm tra",
                     Models.AssignmentType.EXAMINATION => "Bài kiểm tra",
                     Models.AssignmentType.PRACTICE => "Luyện tập",
-                    Models.AssignmentType.CONTEST => "Thi đấu",
                     _ => type.ToString()
                 };
             }
@@ -202,7 +200,7 @@ namespace UCode.Desktop.Helpers
                 return type switch
                 {
                     "HOMEWORK" => "Bài tập về nhà",
-                    "EXAM" => "Kiểm tra",
+                    "EXAMINATION" => "Kiểm tra",
                     "PRACTICE" => "Luyện tập",
                     _ => type
                 };

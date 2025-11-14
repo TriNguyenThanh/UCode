@@ -1,10 +1,17 @@
-<Window x:Class="UCode.Desktop.Views.TagSelectionDialog"
+<mah:MetroWindow x:Class="UCode.Desktop.Views.TagSelectionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         Title="Quản lý Tags" 
         Height="600" Width="800"
         WindowStartupLocation="CenterOwner"
-        Background="#F5F5F5">
+        Background="#F5F5F5"
+        ResizeMode="NoResize"
+        ShowMinButton="False"
+        ShowMaxRestoreButton="False"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
 
     <Grid>
         <!-- Loading Overlay -->
@@ -149,5 +156,5 @@
             </StackPanel>
         </Grid>
     </Grid>
-</Window>
+</mah:MetroWindow>
 

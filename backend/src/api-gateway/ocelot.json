@@ -107,6 +107,29 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/v1/admin/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "admin",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name"
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/problems/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -227,7 +229,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi tải dữ liệu: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -326,7 +328,7 @@ namespace UCode.Desktop.ViewModels
         {
             if (CurrentSubmission == null)
             {
-                MessageBox.Show("Không tìm thấy bài làm để chấm điểm", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không tìm thấy bài làm để chấm điểm");
                 return;
             }
 
@@ -348,11 +350,9 @@ namespace UCode.Desktop.ViewModels
 
                 if (response?.Success == true)
                 {
-                    MessageBox.Show(
-                        $"Đã lưu điểm cho {CurrentStudent.User?.FullName ?? "sinh viên"}",
+                    await GetMetroWindow()?.ShowMessageAsync(
                         "Thành công",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        $"Đã lưu điểm cho {CurrentStudent.User?.FullName ?? "sinh viên"}");
 
                     // Reload submissions
                     await LoadCurrentStudentSubmissionsAsync();
@@ -360,13 +360,13 @@ namespace UCode.Desktop.ViewModels
                 else
                 {
                     Error = response?.Message ?? "Không thể lưu điểm. API có thể chưa sẵn sàng.";
-                    MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
                 }
             }
             catch (Exception ex)
             {
                 Error = $"Lỗi lưu điểm: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {

@@ -41,4 +41,9 @@ public interface IAssignmentRepository : IRepository<Assignment>
     // Task<List<BestSubmission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
     // Task<BestSubmission> UpdateSubmissionAsync(BestSubmission submission);
     // Task<bool> DeleteSubmissionAsync(Guid submissionId);
+    
+    // ExamActivityLog operations
+    Task<ExamActivityLog> AddExamActivityLogAsync(ExamActivityLog activity);
+    Task<List<ExamActivityLog>> AddExamActivityLogsBatchAsync(List<ExamActivityLog> activities);
+    Task<List<ExamActivityLog>> GetExamActivityLogsByAssignmentUserAsync(Guid assignmentUserId);
 }

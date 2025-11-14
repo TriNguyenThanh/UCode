@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
@@ -91,6 +92,7 @@ public class UserController : ControllerBase
     /// <returns>Danh sách user</returns>
     /// <response code="200">Trả về danh sách user</response>
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     [SwaggerOperation(Summary = "Get users", Description = "Lấy danh sách user có phân trang và lọc theo vai trò, trạng thái")]
     [SwaggerResponse(200, "Danh sách user", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetUsers(
@@ -112,6 +114,7 @@ public class UserController : ControllerBase
     /// <response code="200">Cập nhật thành công</response>
     /// <response code="400">Cập nhật thất bại</response>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [SwaggerOperation(Summary = "Update user", Description = "Cập nhật thông tin user")]
     [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
@@ -171,6 +174,7 @@ public class UserController : ControllerBase
     /// <response code="200">Cập nhật thành công</response>
     /// <response code="400">Cập nhật thất bại</response>
     [HttpPatch("update-status")]
+    [Authorize(Roles = "Admin")]
     [SwaggerOperation(Summary = "Update user status", Description = "Cập nhật trạng thái user")]
     [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
@@ -190,11 +194,12 @@ public class UserController : ControllerBase
     /// <returns>Trạng thái xóa</returns>
     /// <response code="200">Xóa thành công</response>
     /// <response code="400">Xóa thất bại</response>
-    [HttpDelete("delete")]
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [SwaggerOperation(Summary = "Delete user", Description = "Xóa một user")]
     [SwaggerResponse(200, "Xóa thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> DeleteUser([FromQuery] string id)
+    public async Task<IActionResult> DeleteUser(string id)
     {
         var result = await _userService.DeleteUserAsync(id);
         if (!result)
@@ -202,12 +207,39 @@ public class UserController : ControllerBase
 
         return Ok(ApiResponse<object>.SuccessResponse(null, "User deleted successfully"));
     }
+
+    /// <summary>
+    /// Thay đổi role của user
+    /// </summary>
+    /// <param name="id">ID user</param>
+    /// <param name="request">Thông tin role mới</param>
+    /// <returns>Trạng thái cập nhật</returns>
+    /// <response code="200">Cập nhật role thành công</response>
+    /// <response code="400">Cập nhật thất bại</response>
+    [HttpPut("{id}/role")]
+    [Authorize(Roles = "Admin")]
+    [SwaggerOperation(Summary = "Update user role", Description = "Thay đổi role của user")]
+    [SwaggerResponse(200, "Cập nhật role thành công", typeof(ApiResponse<object>))]
+    [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateUserRoleRequest request)
+    {
+        var result = await _userService.UpdateUserRoleAsync(id, request.Role);
+        if (!result)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user role"));
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "User role updated successfully"));
+    }
 }
 
-// Helper DTO for UpdateUserStatus
+// Helper DTOs
 public class UpdateUserStatusRequest
 {
     public string UserId { get; set; } = string.Empty;
     public UserStatus Status { get; set; }
+}
+
+public class UpdateUserRoleRequest
+{
+    public UserRole Role { get; set; }
 }
 

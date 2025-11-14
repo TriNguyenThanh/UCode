@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -105,7 +107,7 @@ namespace UCode.Desktop.ViewModels
         public ObservableCollection<string> AssignmentTypes { get; } = new()
         {
             "HOMEWORK",
-            "EXAM",
+            "EXAMINATION",
             "PRACTICE"
         };
 
@@ -145,7 +147,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -158,13 +160,13 @@ namespace UCode.Desktop.ViewModels
             // Validation
             if (string.IsNullOrWhiteSpace(Title))
             {
-                MessageBox.Show("Vui lòng nhập tên bài tập", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tên bài tập");
                 return;
             }
 
             if (!NoEndDate && EndTime <= StartTime)
             {
-                MessageBox.Show("Thời gian kết thúc phải sau thời gian bắt đầu", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian kết thúc phải sau thời gian bắt đầu");
                 return;
             }
 
@@ -190,11 +192,9 @@ namespace UCode.Desktop.ViewModels
                 
                 if (response?.Success == true && response.Data != null)
                 {
-                    MessageBox.Show(
-                        "Tạo bài tập thành công!\n\nBạn sẽ được chuyển đến trang quản lý bài tập để thêm các bài toán.",
+                    await GetMetroWindow()?.ShowMessageAsync(
                         "Thành công",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        "Tạo bài tập thành công!\n\nBạn sẽ được chuyển đến trang quản lý bài tập để thêm các bài toán.");
 
                     // Close the window first
                     ExecuteCancel();
@@ -208,17 +208,15 @@ namespace UCode.Desktop.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show(
-                        $"Tạo bài tập thất bại: {response?.Message}",
+                    await GetMetroWindow()?.ShowMessageAsync(
                         "Lỗi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                        $"Tạo bài tập thất bại: {response?.Message}");
                 }
             }
             catch (Exception ex)
             {
                 Error = $"Lỗi: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -243,7 +241,7 @@ namespace UCode.Desktop.ViewModels
             return type switch
             {
                 "HOMEWORK" => "Bài tập về nhà",
-                "EXAM" => "Kiểm tra",
+                "EXAMINATION" => "Kiểm tra",
                 "PRACTICE" => "Luyện tập",
                 _ => type
             };

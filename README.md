@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # UCode - Online Judge Platform For UTC2 Student
+=======
+# UCode - Online Judge Platform
+>>>>>>> origin/dev
 
 A comprehensive Online Judge platform for programming education, featuring microservices architecture with ASP.NET Core backend, React frontend, and automated code execution using Isolate sandbox.
 

@@ -16,7 +16,7 @@
 
         <!-- Description -->
         <TextBlock Grid.Row="0" Text="Import sinh viên từ file Excel. Tải xuống file mẫu để bắt đầu." 
-                   Foreground="#666" FontSize="13" Margin="0,0,0,20"/>
+                   Foreground="#666" FontSize="14" Margin="0,0,0,15"/>
 
         <!-- Stepper -->
         <Grid Grid.Row="1" Margin="0,0,0,30">
@@ -28,71 +28,77 @@
 
             <!-- Step 1 -->
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Ellipse Width="40" Height="40" Margin="0,0,10,0">
-                    <Ellipse.Style>
-                        <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#FACB01"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="0">
-                                    <Setter Property="Fill" Value="#FACB01"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="1">
-                                    <Setter Property="Fill" Value="#34C759"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="2">
-                                    <Setter Property="Fill" Value="#34C759"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Ellipse.Style>
-                </Ellipse>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="1" Foreground="White" FontSize="16" FontWeight="Bold" Margin="-30,0,0,0"/>
-                    <TextBlock Text="Tải file" FontSize="12" FontWeight="SemiBold" Margin="10,5,0,0"/>
-                </StackPanel>
+                <Grid Width="40" Height="40" Margin="0,0,10,0">
+                    <Ellipse>
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#FACB01"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="0">
+                                        <Setter Property="Fill" Value="#FACB01"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="1">
+                                        <Setter Property="Fill" Value="#34C759"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="2">
+                                        <Setter Property="Fill" Value="#34C759"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="1" Foreground="White" FontSize="16" FontWeight="Bold" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Panel.ZIndex="1"/>
+                </Grid>
+                <TextBlock Text="Tải file" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Step 2 -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Ellipse Width="40" Height="40" Margin="0,0,10,0">
-                    <Ellipse.Style>
-                        <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#E0E0E0"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="1">
-                                    <Setter Property="Fill" Value="#FACB01"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="2">
-                                    <Setter Property="Fill" Value="#34C759"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Ellipse.Style>
-                </Ellipse>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="2" Foreground="White" FontSize="16" FontWeight="Bold" Margin="-30,0,0,0"/>
-                    <TextBlock Text="Kiểm tra dữ liệu" FontSize="12" FontWeight="SemiBold" Margin="10,5,0,0"/>
-                </StackPanel>
+                <Grid Width="40" Height="40" Margin="0,0,10,0">
+                    <Ellipse>
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#E0E0E0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="1">
+                                        <Setter Property="Fill" Value="#FACB01"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="2">
+                                        <Setter Property="Fill" Value="#34C759"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="2" Foreground="White" FontSize="16" FontWeight="Bold" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Panel.ZIndex="1"/>
+                </Grid>
+                <TextBlock Text="Kiểm tra dữ liệu" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Step 3 -->
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <Ellipse Width="40" Height="40" Margin="0,0,10,0">
-                    <Ellipse.Style>
-                        <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#E0E0E0"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ActiveStep}" Value="2">
-                                    <Setter Property="Fill" Value="#FACB01"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Ellipse.Style>
-                </Ellipse>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="3" Foreground="White" FontSize="16" FontWeight="Bold" Margin="-30,0,0,0"/>
-                    <TextBlock Text="Xác nhận và Import" FontSize="12" FontWeight="SemiBold" Margin="10,5,0,0"/>
-                </StackPanel>
+                <Grid Width="40" Height="40" Margin="0,0,10,0">
+                    <Ellipse>
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#E0E0E0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ActiveStep}" Value="2">
+                                        <Setter Property="Fill" Value="#FACB01"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="3" Foreground="White" FontSize="16" FontWeight="Bold" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Panel.ZIndex="1"/>
+                </Grid>
+                <TextBlock Text="Xác nhận và Import" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
@@ -112,15 +118,21 @@
                 <!-- Step 0: Upload File -->
                 <StackPanel Visibility="{Binding IsStep0, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Button Content="TẢI XUỐNG FILE MẪU" 
-                            Style="{StaticResource SecondaryButtonStyle}"
+                            Background="White" Foreground="#FACB01" 
+                            BorderBrush="#FACB01" BorderThickness="2"
+                            FontSize="14" FontWeight="Bold"
+                            Padding="20,12"
                             Command="{Binding DownloadTemplateCommand}"
                             Margin="0,0,0,15"
-                            Height="40"/>
+                            Height="45" Cursor="Hand"/>
 
                     <Button Content="TẢI LÊN FILE EXCEL" 
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#FACB01" Foreground="#003A70" 
+                            BorderThickness="0"
+                            FontSize="14" FontWeight="Bold"
+                            Padding="20,12"
                             Command="{Binding UploadFileCommand}"
-                            Height="40"/>
+                            Height="45" Cursor="Hand"/>
 
                     <!-- Loading -->
                     <StackPanel HorizontalAlignment="Center" Margin="0,30,0,0"
@@ -180,24 +192,19 @@
 
                 <!-- Validation Results Table -->
                 <DataGrid Grid.Row="1" ItemsSource="{Binding ValidationResults}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          RowBackground="White"
-                          BorderThickness="1"
-                          BorderBrush="#D2D2D7"
-                          MaxHeight="300">
+                          Style="{StaticResource ModernDataGrid}"
+                          RowStyle="{StaticResource ModernDataGridRow}"
+                          CellStyle="{StaticResource ModernDataGridCell}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                          MaxHeight="300" SelectionChanged="DataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Dòng" Binding="{Binding RowNumber}" Width="60"/>
                         <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100"/>
                         <DataGridTextColumn Header="Họ tên" Binding="{Binding FullName}" Width="*"/>
                         <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
                         <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="150"/>
-                        <DataGridTextColumn Header="Năm" Binding="{Binding EnrollmentYear}" Width="60"/>
-                        
-                        <DataGridTemplateColumn Header="Trạng thái" Width="120">
+
+                            <DataGridTemplateColumn Header="Trạng thái" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border CornerRadius="12" Padding="8,4">
@@ -235,19 +242,25 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" Content="Làm lại" 
-                    Style="{StaticResource SecondaryButtonStyle}"
+                    Background="White" Foreground="#666" 
+                    BorderBrush="#E0E0E0" BorderThickness="1"
+                    FontSize="13" FontWeight="SemiBold"
+                    Padding="15,10"
                     Command="{Binding ResetCommand}"
                     Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Width="120"
-                    HorizontalAlignment="Left"/>
+                    HorizontalAlignment="Left" Cursor="Hand"/>
 
             <Button Grid.Column="1" 
                     Content="{Binding ImportButtonText}" 
-                    Style="{StaticResource PrimaryButtonStyle}"
+                    Background="#FACB01" Foreground="#003A70" 
+                    BorderThickness="0"
+                    FontSize="14" FontWeight="Bold"
+                    Padding="20,12"
                     Command="{Binding ImportCommand}"
                     IsEnabled="{Binding CanImport}"
                     Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Width="180"/>
+                    Width="200" Cursor="Hand"/>
         </Grid>
     </Grid>
 </UserControl>

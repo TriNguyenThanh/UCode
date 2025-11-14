@@ -30,12 +30,11 @@ public class CreateStudentRequest
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// Mật khẩu (tối thiểu 6 ký tự)
+    /// Mật khẩu (tối thiểu 6 ký tự). Nếu không cung cấp, mặc định sẽ là "123456"
     /// </summary>
-    [Required(ErrorMessage = "Password is required")]
     [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
     [MaxLength(100)]
-    public string Password { get; set; } = string.Empty;
+    public string? Password { get; set; }
 
     /// <summary>
     /// Họ và tên đầy đủ

@@ -148,9 +148,16 @@ export const auth = {
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     try {
-      const response = await API.post<ApiResponse<void>>('api/v1/auth/change-password', {
-        currentPassword,
-        newPassword
+      const user = this.getUser()
+      if (!user) {
+        throw new Error('Người dùng chưa đăng nhập')
+      }
+
+      const response = await API.post<ApiResponse<void>>('api/v1/users/change-password', {
+        userId: user.userId,
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: newPassword
       })
 
       if (!response.data.success) {

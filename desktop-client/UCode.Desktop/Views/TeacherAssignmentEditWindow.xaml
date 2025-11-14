@@ -1,15 +1,17 @@
-<Window x:Class="UCode.Desktop.Views.TeacherAssignmentEditWindow"
+<mah:MetroWindow x:Class="UCode.Desktop.Views.TeacherAssignmentEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
         Title="Chỉnh sửa bài tập - UCode" 
         Height="824" Width="1195"
         WindowStartupLocation="CenterScreen"
         Background="#F5F5F5"
         ResizeMode="NoResize"
-        WindowStyle="SingleBorderWindow">
+        ShowMinButton="False"
+        ShowMaxRestoreButton="False">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -236,5 +238,5 @@
             </StackPanel>
         </Grid> -->
     </Grid>
-</Window>
+</mah:MetroWindow>
 

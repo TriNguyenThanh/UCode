@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -254,13 +256,11 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteCreateClass()
+        private async void ExecuteCreateClass()
         {
-            MessageBox.Show(
-                "Chức năng tạo lớp học đang được phát triển.\n\nVui lòng sử dụng trang web để tạo lớp học mới.",
+            await GetMetroWindow()?.ShowMessageAsync(
                 "Thông báo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Chức năng tạo lớp học đang được phát triển.\n\nVui lòng sử dụng trang web để tạo lớp học mới.");
         }
 
         private void ExecuteCreateProblem()
@@ -296,15 +296,13 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteViewProblem(string problemId)
+        private async void ExecuteViewProblem(string problemId)
         {
             if (!string.IsNullOrEmpty(problemId))
             {
-                MessageBox.Show(
-                    $"Xem chi tiết problem: {problemId}\n\nChức năng đang được phát triển.",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Thông báo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    $"Xem chi tiết problem: {problemId}\n\nChức năng đang được phát triển.");
             }
         }
 
@@ -321,25 +319,21 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteViewReport(string assignmentId)
+        private async void ExecuteViewReport(string assignmentId)
         {
             if (!string.IsNullOrEmpty(assignmentId))
             {
-                MessageBox.Show(
-                    $"Xem báo cáo bài tập: {assignmentId}\n\nChức năng đang được phát triển.",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Thông báo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    $"Xem báo cáo bài tập: {assignmentId}\n\nChức năng đang được phát triển.");
             }
         }
 
-        private void ExecuteViewAllAssignments()
+        private async void ExecuteViewAllAssignments()
         {
-            MessageBox.Show(
-                "Trang danh sách tất cả bài tập đang được phát triển.\n\nHiện tại bạn có thể xem bài tập từ trang chủ.",
+            await GetMetroWindow()?.ShowMessageAsync(
                 "Thông báo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Trang danh sách tất cả bài tập đang được phát triển.\n\nHiện tại bạn có thể xem bài tập từ trang chủ.");
         }
 
         private void ExecuteViewAllProblems()
@@ -351,16 +345,15 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteLogout()
+        private async void ExecuteLogout()
         {
-            var result = MessageBox.Show(
-                "Bạn có chắc muốn đăng xuất?",
+            var result = await GetMetroWindow()?.ShowMessageAsync(
                 "Đăng xuất",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question
+                "Bạn có chắc muốn đăng xuất?",
+                MessageDialogStyle.AffirmativeAndNegative
             );
 
-            if (result == MessageBoxResult.Yes)
+            if (result == MessageDialogResult.Affirmative)
             {
                 _authService.Logout();
 

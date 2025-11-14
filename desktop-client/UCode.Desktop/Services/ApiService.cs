@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 
 namespace UCode.Desktop.Services
@@ -12,6 +13,10 @@ namespace UCode.Desktop.Services
     {
         private readonly HttpClient _httpClient;
         private string _accessToken;
+        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        {
+            Converters = { new UtcToLocalDateTimeConverter() }
+        };
 
         public ApiService(HttpClient httpClient)
         {
@@ -43,10 +48,10 @@ namespace UCode.Desktop.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<ApiResponse<T>>(content);
+                    return JsonConvert.DeserializeObject<ApiResponse<T>>(content, JsonSettings);
                 }
 
-                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(content);
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(content, JsonSettings);
                 return new ApiResponse<T>
                 {
                     Success = false,
@@ -76,10 +81,10 @@ namespace UCode.Desktop.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent);
+                    return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent, JsonSettings);
                 }
 
-                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent);
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent, JsonSettings);
                 return new ApiResponse<T>
                 {
                     Success = false,
@@ -108,7 +113,7 @@ namespace UCode.Desktop.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent);
+                    return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent, JsonSettings);
                 }
 
                 return new ApiResponse<T>

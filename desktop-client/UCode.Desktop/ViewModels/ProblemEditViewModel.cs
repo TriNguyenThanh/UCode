@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Models.Enums;
@@ -225,7 +227,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi khi tải dữ liệu: {ex.Message}");
             }
             finally
             {
@@ -294,7 +296,12 @@ namespace UCode.Desktop.ViewModels
         {
             if (string.IsNullOrEmpty(tagName)) return;
 
-            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa tag \"{tagName}\"?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận",
+                $"Bạn có chắc chắn muốn xóa tag \"{tagName}\"?",
+                MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result != MessageDialogResult.Affirmative)
             {
                 return;
             }
@@ -314,18 +321,18 @@ namespace UCode.Desktop.ViewModels
                             CurrentTags.Remove(tagName);
                             OnPropertyChanged(nameof(HasTags));
                             OnPropertyChanged(nameof(HasNoTags));
-                            MessageBox.Show($"Đã xóa tag \"{tagName}\"", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                            await GetMetroWindow()?.ShowMessageAsync("Thành công", $"Đã xóa tag \"{tagName}\"");
                         }
                         else
                         {
-                            MessageBox.Show($"Không thể xóa tag: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể xóa tag: {response?.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
         }
 
@@ -390,18 +397,16 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void EditLanguage(ProblemLanguage language)
+        private async void EditLanguage(ProblemLanguage language)
         {
             if (language == null) return;
 
-            MessageBox.Show(
+            await GetMetroWindow()?.ShowMessageAsync(
+                "Chỉnh sửa cấu hình ngôn ngữ",
                 $"Edit Language: {language.LanguageDisplayName}\n\n" +
                 $"Time Factor: {language.TimeFactor}x\n" +
                 $"Memory: {language.MemoryKb} KB\n\n" +
-                "Language Detail Dialog - To be implemented",
-                "Chỉnh sửa cấu hình ngôn ngữ",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Language Detail Dialog - To be implemented");
 
             // TODO: Implement LanguageDetailDialog
             // Allow editing timeFactor, memoryKb, head, body, tail
@@ -449,7 +454,12 @@ namespace UCode.Desktop.ViewModels
         {
             if (string.IsNullOrEmpty(datasetId)) return;
 
-            if (MessageBox.Show("Bạn có chắc chắn muốn xóa dataset này?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận",
+                "Bạn có chắc chắn muốn xóa dataset này?",
+                MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result != MessageDialogResult.Affirmative)
             {
                 return;
             }
@@ -460,16 +470,16 @@ namespace UCode.Desktop.ViewModels
                 if (response?.Success == true)
                 {
                     await LoadDatasetsAsync();
-                    MessageBox.Show("Xóa dataset thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Xóa dataset thành công!");
                 }
                 else
                 {
-                    MessageBox.Show($"Không thể xóa dataset: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể xóa dataset: {response?.Message}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
         }
 
@@ -483,7 +493,7 @@ namespace UCode.Desktop.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Title))
             {
-                MessageBox.Show("Vui lòng nhập tên bài toán", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tên bài toán");
                 return;
             }
 
@@ -513,16 +523,16 @@ namespace UCode.Desktop.ViewModels
 
                 if (response?.Success == true)
                 {
-                    MessageBox.Show("Cập nhật bài toán thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Cập nhật bài toán thành công!");
                 }
                 else
                 {
-                    MessageBox.Show($"Cập nhật thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Cập nhật thất bại: {response?.Message}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
             finally
             {

@@ -3,6 +3,7 @@ import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/admin.home'
 import { auth } from '~/auth'
 import { Navigation } from '~/components/Navigation'
+import axios from 'axios'
 import {
   Container,
   Typography,
@@ -14,6 +15,8 @@ import {
   Avatar,
   AvatarGroup,
   LinearProgress,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
 import PeopleIcon from '@mui/icons-material/People'
 import SchoolIcon from '@mui/icons-material/School'
@@ -27,6 +30,8 @@ import StorageIcon from '@mui/icons-material/Storage'
 import BugReportIcon from '@mui/icons-material/BugReport'
 import SpeedIcon from '@mui/icons-material/Speed'
 
+const API_BASE_URL = 'http://localhost:5000/api/v1'
+
 export const meta: Route.MetaFunction = () => [
   { title: 'Admin Dashboard | UCode' },
   { name: 'description', content: 'Quản trị hệ thống UCode.' },
@@ -37,38 +42,65 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   if (!user) throw redirect('/login')
   if (user.role !== 'admin') throw redirect('/home')
 
-  // Mock admin stats
-  const stats = {
-    totalUsers: 1247,
-    totalTeachers: 45,
-    totalStudents: 1202,
-    totalClasses: 87,
-    activeAssignments: 156,
-    totalProblems: 542,
-    serverUptime: '99.8%',
-    storageUsed: 65,
-    avgResponseTime: 142,
-  }
-
-  const recentActivities = [
-    { id: 1, type: 'user', message: 'Nguyễn Văn A đã đăng ký tài khoản', time: '5 phút trước', avatar: '👤' },
-    { id: 2, type: 'class', message: 'Lớp Java Technology 2024 đã được tạo', time: '15 phút trước', avatar: '📚' },
-    { id: 3, type: 'assignment', message: 'Bài tập "Cấu trúc dữ liệu" đã được giao', time: '1 giờ trước', avatar: '📝' },
-    { id: 4, type: 'system', message: 'Hệ thống đã được cập nhật phiên bản 2.1.0', time: '2 giờ trước', avatar: '⚙️' },
-  ]
-
-  const systemHealth = [
-    { name: 'CPU Usage', value: 45, color: '#34D399' },
-    { name: 'Memory', value: 68, color: '#FBBF24' },
-    { name: 'Database', value: 32, color: '#60A5FA' },
-    { name: 'API Response', value: 28, color: '#A78BFA' },
-  ]
-
-  return { user, stats, recentActivities, systemHealth }
+  return { user }
 }
 
 export default function AdminHome() {
-  const { stats, recentActivities, systemHealth } = useLoaderData<typeof clientLoader>()
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [stats, setStats] = React.useState({
+    totalUsers: 0,
+    totalTeachers: 0,
+    totalStudents: 0,
+    totalClasses: 0,
+    activeClasses: 0,
+    archivedClasses: 0,
+    totalStudentsEnrolled: 0,
+    avgStudentsPerClass: 0,
+  })
+
+  // Fetch statistics
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true)
+        const token = localStorage.getItem('token')
+
+        // Fetch user statistics
+        const userStatsResponse = await axios.get(`${API_BASE_URL}/admin/users/statistics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        // Fetch class statistics
+        const classStatsResponse = await axios.get(`${API_BASE_URL}/admin/classes/statistics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        const userStats = userStatsResponse.data.data
+        const classStats = classStatsResponse.data.data
+
+        setStats({
+          totalUsers: userStats.totalUsers,
+          totalTeachers: userStats.teachers,
+          totalStudents: userStats.students,
+          totalClasses: classStats.totalClasses,
+          activeClasses: classStats.activeClasses,
+          archivedClasses: classStats.archivedClasses,
+          totalStudentsEnrolled: classStats.totalStudentsEnrolled,
+          avgStudentsPerClass: classStats.averageStudentsPerClass,
+        })
+
+        setError(null)
+      } catch (err: any) {
+        console.error('Failed to fetch statistics:', err)
+        setError(err.response?.data?.message || 'Không thể tải thống kê')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   return (
     <Box
@@ -90,12 +122,29 @@ export default function AdminHome() {
           </Typography>
         </Box>
 
-        {/* Main Stats - Clean Apple style */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 4 }}>
-          {[
-            { label: 'Tổng người dùng', value: stats.totalUsers, icon: PeopleIcon, color: '#007AFF' },
-            { label: 'Giảng viên', value: stats.totalTeachers, icon: SchoolIcon, color: '#34C759' },
-            { label: 'Sinh viên', value: stats.totalStudents, icon: PeopleIcon, color: '#FF9500' },
+        {/* Loading State */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress size={48} />
+          </Box>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <Alert severity='error' sx={{ mb: 4, borderRadius: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Content - Only show when loaded */}
+        {!loading && !error && (
+          <>
+            {/* Main Stats - Clean Apple style */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 4 }}>
+              {[
+                { label: 'Tổng người dùng', value: stats.totalUsers, icon: PeopleIcon, color: '#007AFF' },
+                { label: 'Giảng viên', value: stats.totalTeachers, icon: SchoolIcon, color: '#34C759' },
+                { label: 'Sinh viên', value: stats.totalStudents, icon: PeopleIcon, color: '#FF9500' },
             { label: 'Lớp học', value: stats.totalClasses, icon: ClassIcon, color: '#AF52DE' },
           ].map((stat, index) => (
             <Card
@@ -130,9 +179,14 @@ export default function AdminHome() {
         {/* Secondary Stats */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 4 }}>
           {[
-            { label: 'Bài tập đang hoạt động', value: stats.activeAssignments, icon: AssignmentIcon, color: '#007AFF' },
-            { label: 'Tổng bài lập trình', value: stats.totalProblems, icon: StorageIcon, color: '#34C759' },
-            { label: 'Thời gian hoạt động', value: stats.serverUptime, icon: SpeedIcon, color: '#FF3B30' },
+            { label: 'Lớp đang hoạt động', value: stats.activeClasses, icon: ClassIcon, color: '#007AFF' },
+            { label: 'Lớp đã lưu trữ', value: stats.archivedClasses, icon: StorageIcon, color: '#34C759' },
+            {
+              label: 'Trung bình SV/Lớp',
+              value: stats.avgStudentsPerClass.toFixed(1),
+              icon: PeopleIcon,
+              color: '#FF9500',
+            },
           ].map((stat, index) => (
             <Card
               key={index}
@@ -165,136 +219,72 @@ export default function AdminHome() {
           ))}
         </Box>
 
-        {/* System Health & Recent Activities */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2, mb: 4 }}>
-          {/* System Health */}
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              bgcolor: 'white',
-              border: '1px solid #d2d2d7',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <SpeedIcon sx={{ color: '#007AFF', mr: 1.5, fontSize: 24 }} />
-                <Typography variant='h6' sx={{ fontWeight: 600, color: '#1d1d1f', fontSize: '1.25rem' }}>
-                  Tình trạng hệ thống
-                </Typography>
-              </Box>
+        {/* Statistics Summary Card */}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'white',
+            border: '1px solid #d2d2d7',
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <TrendingUpIcon sx={{ color: '#007AFF', mr: 1.5, fontSize: 24 }} />
+              <Typography variant='h6' sx={{ fontWeight: 600, color: '#1d1d1f', fontSize: '1.25rem' }}>
+                Tóm tắt thống kê
+              </Typography>
+            </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {systemHealth.map((item, index) => (
-                  <Box key={index}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                        {item.name}
-                      </Typography>
-                      <Typography variant='body2' sx={{ fontWeight: 700, color: item.color }}>
-                        {item.value}%
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant='determinate'
-                      value={item.value}
-                      sx={{
-                        height: 8,
-                        borderRadius: 2,
-                        backgroundColor: `${item.color}20`,
-                        '& .MuiLinearProgress-bar': {
-                          borderRadius: 2,
-                          backgroundColor: item.color,
-                        },
-                      }}
-                    />
-                  </Box>
-                ))}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
+              <Box
+                sx={{
+                  p: 2.5,
+                  borderRadius: 2,
+                  bgcolor: '#f5f5f7',
+                }}
+              >
+                <Typography variant='body2' sx={{ fontWeight: 600, color: '#86868b', mb: 1 }}>
+                  Tổng sinh viên đã ghi danh
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                  {stats.totalStudentsEnrolled.toLocaleString()}
+                </Typography>
               </Box>
 
               <Box
                 sx={{
-                  mt: 3,
                   p: 2.5,
                   borderRadius: 2,
-                  bgcolor: '#34C759',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  bgcolor: '#f5f5f7',
                 }}
               >
-                <Box>
-                  <Typography variant='body2' sx={{ color: 'white', fontWeight: 600, mb: 0.5 }}>
-                    Trạng thái: Hoạt động tốt
-                  </Typography>
-                  <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.95)' }}>
-                    Tất cả các dịch vụ đang chạy bình thường
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activities */}
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              bgcolor: 'white',
-              border: '1px solid #d2d2d7',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TrendingUpIcon sx={{ color: '#007AFF', mr: 1.5, fontSize: 24 }} />
-                  <Typography variant='h6' sx={{ fontWeight: 600, color: '#1d1d1f', fontSize: '1.25rem' }}>
-                    Hoạt động gần đây
-                  </Typography>
-                </Box>
-                <Button
-                  size='small'
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    color: '#007AFF',
-                    '&:hover': {
-                      bgcolor: 'transparent',
-                    },
-                  }}
-                >
-                  Xem tất cả
-                </Button>
+                <Typography variant='body2' sx={{ fontWeight: 600, color: '#86868b', mb: 1 }}>
+                  Tổng lớp học
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                  {stats.totalClasses.toLocaleString()}
+                </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {recentActivities.map((activity) => (
-                  <Box
-                    key={activity.id}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      bgcolor: '#f5f5f7',
-                      transition: 'background 0.2s',
-                      '&:hover': {
-                        bgcolor: '#e8e8ed',
-                      },
-                    }}
-                  >
-                    <Typography variant='body2' sx={{ fontWeight: 500, mb: 0.5, color: '#1d1d1f' }}>
-                      {activity.message}
-                    </Typography>
-                    <Typography variant='caption' sx={{ color: '#86868b' }}>
-                      {activity.time}
-                    </Typography>
-                  </Box>
-                ))}
+              <Box
+                sx={{
+                  p: 2.5,
+                  borderRadius: 2,
+                  bgcolor: '#f5f5f7',
+                }}
+              >
+                <Typography variant='body2' sx={{ fontWeight: 600, color: '#86868b', mb: 1 }}>
+                  Tổng giảng viên
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 600, color: '#1d1d1f' }}>
+                  {stats.totalTeachers.toLocaleString()}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Box>
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card
@@ -349,6 +339,8 @@ export default function AdminHome() {
             </Box>
           </CardContent>
         </Card>
+          </>
+        )}
       </Container>
     </Box>
   )

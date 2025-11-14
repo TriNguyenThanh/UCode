@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link, useNavigation } from 'react-router'
+import { useLoaderData, redirect, Link, useNavigation, useNavigate } from 'react-router'
 import type { Route } from './+types/class.$id'
 import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
@@ -18,13 +18,20 @@ import {
   Paper,
   IconButton,
   Divider,
-  Avatar
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingIcon from '@mui/icons-material/Pending'
+import WarningIcon from '@mui/icons-material/Warning'
 
 export const meta: Route.MetaFunction = ({ params }) => [
   { title: `Lớp học | UCode` },
@@ -51,9 +58,35 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function ClassDetail() {
-  const { classData, assignments } = useLoaderData<typeof clientLoader>()
+  const { classData, assignments, user } = useLoaderData<typeof clientLoader>()
   const navigation = useNavigation()
+  const navigate = useNavigate()
   const isLoading = navigation.state === 'loading'
+  
+  const [examDialogOpen, setExamDialogOpen] = React.useState(false)
+  const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null)
+
+  const handleAssignmentClick = (assignment: Assignment, event: React.MouseEvent) => {
+    // Only show dialog for students accessing EXAMINATION type assignments
+    if (user.role === 'student' && assignment.assignmentType === 'EXAMINATION') {
+      event.preventDefault()
+      setSelectedAssignment(assignment)
+      setExamDialogOpen(true)
+    }
+    // For other types or roles, let the default Link behavior work
+  }
+
+  const handleExamConfirm = () => {
+    if (selectedAssignment) {
+      setExamDialogOpen(false)
+      navigate(`/assignment/${selectedAssignment.assignmentId}`)
+    }
+  }
+
+  const handleExamCancel = () => {
+    setExamDialogOpen(false)
+    setSelectedAssignment(null)
+  }
 
   const getDaysUntilDue = (endTime?: string) => {
     if (!endTime) return null
@@ -138,9 +171,8 @@ export default function ClassDetail() {
   const getAssignmentTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       HOMEWORK: 'Bài tập',
-      EXAM: 'Kiểm tra',
+      EXAMINATION: 'Kiểm tra',
       PRACTICE: 'Luyện tập',
-      CONTEST: 'Thi đấu',
     }
     return typeMap[type] || type
   }
@@ -278,7 +310,11 @@ export default function ClassDetail() {
                       }
                     }}
                   >
-                    <CardActionArea component={Link} to={`/assignment/${assignment.assignmentId}`}>
+                    <CardActionArea 
+                      component={Link} 
+                      to={`/assignment/${assignment.assignmentId}`}
+                      onClick={(e) => handleAssignmentClick(assignment, e)}
+                    >
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', gap: 3 }}>
                           {/* Icon */}
@@ -416,6 +452,42 @@ export default function ClassDetail() {
           )}
         </Box>
       </Container>
+
+      {/* Examination Warning Dialog */}
+      <Dialog
+        open={examDialogOpen}
+        onClose={handleExamCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon color="warning" />
+          <Typography variant="h6">Bài kiểm tra - Lưu ý quan trọng</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            <strong>Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:</strong>
+          </DialogContentText>
+          <DialogContentText component="div" sx={{ mb: 2 }}>
+            <Box component="ul" sx={{ pl: 2 }}>
+              <li>Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài</li>
+              <li>Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên</li>
+              <li>Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn</li>
+            </Box>
+          </DialogContentText>
+          <DialogContentText>
+            Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleExamCancel} color="inherit">
+            Hủy
+          </Button>
+          <Button onClick={handleExamConfirm} variant="contained" color="primary" autoFocus>
+            Xác nhận và bắt đầu
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

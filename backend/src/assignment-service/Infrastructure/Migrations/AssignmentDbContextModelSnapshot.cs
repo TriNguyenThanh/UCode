@@ -278,6 +278,53 @@ namespace Infrastructure.Migrations
                     b.ToTable("dataset", (string)null);
                 });
 
+            modelBuilder.Entity("AssignmentService.Domain.Entities.ExamActivityLog", b =>
+                {
+                    b.Property<Guid>("ActivityLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("activity_log_id");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("activity_type");
+
+                    b.Property<Guid>("AssignmentUserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("assignment_user_id");
+
+                    b.Property<string>("Metadata")
+                        .HasMaxLength(4000)
+                        .HasColumnType("text")
+                        .HasColumnName("metadata");
+
+                    b.Property<int>("SuspicionLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("suspicion_level");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("timestamp");
+
+                    b.HasKey("ActivityLogId")
+                        .HasName("pk_exam_activity_log");
+
+                    b.HasIndex("AssignmentUserId")
+                        .HasDatabaseName("idx_exam_activity_logs_assignment_user_id");
+
+                    b.HasIndex("Timestamp")
+                        .HasDatabaseName("idx_exam_activity_logs_timestamp");
+
+                    b.HasIndex("AssignmentUserId", "Timestamp")
+                        .HasDatabaseName("idx_exam_activity_logs_user_timestamp");
+
+                    b.ToTable("exam_activity_log", (string)null);
+                });
+
             modelBuilder.Entity("AssignmentService.Domain.Entities.Language", b =>
                 {
                     b.Property<Guid>("LanguageId")
@@ -932,6 +979,18 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_dataset_problem_problem_id");
 
                     b.Navigation("Problem");
+                });
+
+            modelBuilder.Entity("AssignmentService.Domain.Entities.ExamActivityLog", b =>
+                {
+                    b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", "AssignmentUser")
+                        .WithMany()
+                        .HasForeignKey("AssignmentUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_exam_activity_log_assignment_user_assignment_user_id");
+
+                    b.Navigation("AssignmentUser");
                 });
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemAsset", b =>

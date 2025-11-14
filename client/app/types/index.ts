@@ -116,6 +116,9 @@ export interface Class {
   studentCount: number
   createdAt: string
   updatedAt?: string
+  isArchived?: boolean
+  archivedAt?: string
+  archiveReason?: string
 }
 
 export interface CreateClassRequest {
@@ -338,7 +341,7 @@ export interface Dataset {
 // ASSIGNMENT
 // ============================================
 
-export type AssignmentType = 'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'
+export type AssignmentType = 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE' | 'CONTEST'
 export type AssignmentStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED'
 
 export interface Assignment {

@@ -152,6 +152,9 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IEmailService, EmailAppService>();
 builder.Services.AddScoped<IExcelService, ExcelAppService>();
 
+// Register HTTP Clients
+builder.Services.AddHttpClient<IAssignmentServiceClient, AssignmentServiceClient>();
+
 // Add CORS
 builder.Services.AddCors(options =>
 {

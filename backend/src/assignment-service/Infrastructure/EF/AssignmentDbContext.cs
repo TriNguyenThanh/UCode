@@ -38,6 +38,7 @@ public class AssignmentDbContext : DbContext
     public DbSet<AssignmentUser> AssignmentUsers { get; set; } = null!;
     public DbSet<BestSubmission> BestSubmissions { get; set; } = null!;
     public DbSet<Submission> Submissions { get; set; } = null!;
+    public DbSet<ExamActivityLog> ExamActivityLogs { get; set; } = null!;
 
     /// <summary>
     /// Method này được gọi khi EF Core tạo model

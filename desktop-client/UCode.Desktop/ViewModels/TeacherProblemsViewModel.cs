@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Models.Enums;
@@ -24,7 +26,9 @@ namespace UCode.Desktop.ViewModels
         public string ProblemId => _problem.ProblemId;
         public string Code => _problem.Code;
         public string Title => _problem.Title;
-        
+        public string ShortStament => _problem.Statement.Length > 50
+            ? _problem.Statement.Substring(0, 50) + "..."
+            : _problem.Statement;
         public string Difficulty => GetDifficultyDisplayText(_problem.Difficulty);
         public string DifficultyColor => GetDifficultyColor(_problem.Difficulty);
         
@@ -248,7 +252,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Không thể tải danh sách đề bài: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải danh sách đề bài: {ex.Message}");
             }
             finally
             {
@@ -292,7 +296,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tìm kiếm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi tìm kiếm: {ex.Message}");
             }
             finally
             {
@@ -300,7 +304,7 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteCreateProblem()
+        private async void ExecuteCreateProblem()
         {
             try
             {
@@ -313,11 +317,11 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
         }
 
-        private void ExecuteEditProblem(string problemId)
+        private async void ExecuteEditProblem(string problemId)
         {
             if (string.IsNullOrEmpty(problemId)) return;
 
@@ -332,7 +336,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Không thể mở trang chỉnh sửa đề bài: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể mở trang chỉnh sửa đề bài: {ex.Message}");
             }
         }
 
@@ -340,14 +344,13 @@ namespace UCode.Desktop.ViewModels
         {
             if (string.IsNullOrEmpty(problemId)) return;
 
-            var result = MessageBox.Show(
-                "Bạn có chắc muốn xóa đề bài này?",
+            var result = await GetMetroWindow()?.ShowMessageAsync(
                 "Xác nhận xóa",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning
+                "Bạn có chắc muốn xóa đề bài này?",
+                MessageDialogStyle.AffirmativeAndNegative
             );
 
-            if (result == MessageBoxResult.Yes)
+            if (result == MessageDialogResult.Affirmative)
             {
                 IsLoading = true;
                 try
@@ -355,17 +358,17 @@ namespace UCode.Desktop.ViewModels
                     var response = await _problemService.DeleteProblemAsync(problemId);
                     if (response?.Success == true)
                     {
-                        MessageBox.Show("Xóa đề bài thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Xóa đề bài thành công!");
                         await LoadProblemsAsync();
                     }
                     else
                     {
-                        MessageBox.Show($"Xóa đề bài thất bại: {response?.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Xóa đề bài thất bại: {response?.Message}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi xóa đề bài: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi xóa đề bài: {ex.Message}");
                 }
                 finally
                 {
