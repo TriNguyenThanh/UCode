@@ -9,16 +9,22 @@ public class BestSubmissionResponse
     public Guid BestSubmissionId { get; set; }
     
     /// <summary>
-    /// ID của AssignmentUser (stored only, không có FK relationship)
+    /// ID của Assignment (stored only, không có FK relationship)
     /// Denormalized để query nhanh hơn
     /// </summary>
-    public Guid AssignmentUserId { get; set; }
+    public Guid AssignmentId { get; set; }
     
     /// <summary>
     /// ID của Problem (stored only, không có FK relationship)
     /// Denormalized để query nhanh hơn
     /// </summary>
     public Guid ProblemId { get; set; }
+
+    /// <summary>
+    /// ID của Problem (stored only, không có FK relationship)
+    /// Denormalized để query nhanh hơn
+    /// </summary>
+    public Guid UserId { get; set; }
     
     /// <summary>
     /// Foreign Key đến Submission (best submission)
@@ -31,11 +37,6 @@ public class BestSubmissionResponse
     public int Score { get; set; }
     
     /// <summary>
-    /// Điểm tối đa
-    /// </summary>
-    public int MaxScore { get; set; }
-    
-    /// <summary>
     /// Tổng thời gian thực thi (ms)
     /// </summary>
     public long TotalTime { get; set; }
@@ -44,4 +45,9 @@ public class BestSubmissionResponse
     /// Tổng bộ nhớ sử dụng (KB)
     /// </summary>
     public long TotalMemory { get; set; }
+
+    /// <summary>
+    /// Thời gian nộp bài
+    /// </summary>
+    public DateTime SubmitAt { get; set; }
 }

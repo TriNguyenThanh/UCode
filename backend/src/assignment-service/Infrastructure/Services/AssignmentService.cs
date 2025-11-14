@@ -2,6 +2,7 @@ using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Application.DTOs.Responses;
 using AssignmentService.Application.DTOs.Common;
+using AssignmentService.Application.DTOs.Requests;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 using System.Data.Common;
@@ -268,7 +269,7 @@ public class AssignmentService : IAssignmentService
             if (assignmentUser == null)
                 throw new KeyNotFoundException("AssignmentUser not found");
 
-            assignmentUser.Score = score;
+            assignmentUser.Score += score;
             assignmentUser.Status = AssignmentUserStatus.IN_PROGRESS;
 
             return await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
@@ -430,6 +431,152 @@ public class AssignmentService : IAssignmentService
         catch (Exception ex)
         {
             throw new ApiException($"Error checking assignment existence: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds)
+    {
+        try
+        {
+            // Lấy tất cả assignments của class đang PUBLISHED hoặc Nháp (chưa CLOSED)
+            var assignments = await _assignmentRepository.GetByClassIdAsync(classId);
+            var activeAssignments = assignments
+                .Where(a => a.Status == AssignmentStatus.PUBLISHED || a.Status == AssignmentStatus.DRAFT)
+                .ToList();
+
+            if (!activeAssignments.Any() || !studentIds.Any())
+                return 0;
+
+            int totalCreated = 0;
+
+            foreach (var assignment in activeAssignments)
+            {
+                // Lấy danh sách studentId đã có AssignmentUser
+                var existingAssignmentUsers = await _assignmentRepository.GetAssignmentUsersByAssignmentAsync(assignment.AssignmentId);
+                var existingStudentIds = existingAssignmentUsers.Select(au => au.UserId).ToHashSet();
+
+                // Chỉ thêm những student chưa có AssignmentUser
+                var newStudentIds = studentIds.Where(sid => !existingStudentIds.Contains(sid)).ToList();
+
+                if (newStudentIds.Any())
+                {
+                    var maxScore = await _assignmentRepository.GetAssignmentMaxScoreAsync(assignment.AssignmentId);
+                    
+                    var newAssignmentUsers = newStudentIds.Select(studentId => new AssignmentUser
+                    {
+                        AssignmentUserId = Guid.NewGuid(),
+                        AssignmentId = assignment.AssignmentId,
+                        UserId = studentId,
+                        Status = AssignmentUserStatus.NOT_STARTED,
+                        AssignedAt = DateTime.UtcNow,
+                        MaxScore = maxScore
+                    }).ToList();
+
+                    await _assignmentRepository.AddAssignmentUsersAsync(newAssignmentUsers);
+                    totalCreated += newAssignmentUsers.Count;
+                }
+            }
+
+            return totalCreated;
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error syncing students to class assignments: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<AssignmentUser> IncrementTabSwitchCountAsync(Guid assignmentId, Guid userId)
+    {
+        try
+        {
+            var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignmentId, userId);
+            if (assignmentUser == null)
+                throw new ApiException("Assignment detail not found", 404);
+
+            assignmentUser.TabSwitchCount++;
+            await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
+            
+            return assignmentUser;
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error incrementing tab switch count: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId)
+    {
+        try
+        {
+            var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignmentId, userId);
+            if (assignmentUser == null)
+                throw new ApiException("Assignment detail not found", 404);
+
+            assignmentUser.CapturedAICount++;
+            await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
+            
+            return assignmentUser;
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error incrementing AI detection count: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<bool> LogExamActivityAsync(Guid assignmentId, Guid userId, ActivityLogRequest activityLog)
+    {
+        try
+        {
+            var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignmentId, userId);
+            if (assignmentUser == null)
+                return false;
+
+            var activity = new ExamActivityLog
+            {
+                ActivityLogId = Guid.NewGuid(),
+                AssignmentUserId = assignmentUser.AssignmentUserId,
+                ActivityType = activityLog.ActivityType,
+                Timestamp = activityLog.Timestamp,
+                Metadata = activityLog.Metadata,
+                SuspicionLevel = activityLog.SuspicionLevel
+            };
+
+            await _assignmentRepository.AddExamActivityLogAsync(activity);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error logging exam activity: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<int> LogExamActivitiesBatchAsync(Guid assignmentId, Guid userId, List<ActivityLogRequest> activities)
+    {
+        try
+        {
+            if (!activities.Any())
+                return 0;
+
+            var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignmentId, userId);
+            if (assignmentUser == null)
+                return 0;
+
+            var activityLogs = activities.Select(a => new ExamActivityLog
+            {
+                ActivityLogId = Guid.NewGuid(),
+                AssignmentUserId = assignmentUser.AssignmentUserId,
+                ActivityType = a.ActivityType,
+                Timestamp = a.Timestamp,
+                Metadata = a.Metadata,
+                SuspicionLevel = a.SuspicionLevel
+            }).ToList();
+
+            await _assignmentRepository.AddExamActivityLogsBatchAsync(activityLogs);
+            return activityLogs.Count;
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error logging exam activities batch: {ex.Message}", 500);
         }
     }
 }

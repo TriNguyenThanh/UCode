@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using UCode.Desktop.Services;
@@ -12,7 +13,7 @@ namespace UCode.Desktop;
 /// </summary>
 public partial class App : Application
 {
-    public static IServiceProvider ServiceProvider { get; private set; }
+    public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -50,12 +51,52 @@ public partial class App : Application
             System.IO.File.AppendAllText(logPath, "Building service provider...\n");
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            System.IO.File.AppendAllText(logPath, "Creating login window...\n");
-            // Show login window
-            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-
-            System.IO.File.AppendAllText(logPath, "Showing login window...\n");
-            loginWindow.Show();
+            System.IO.File.AppendAllText(logPath, "Trying auto-login...\n");
+            // Try auto-login first
+            var authService = ServiceProvider.GetRequiredService<AuthService>();
+            bool autoLoginSuccess = false;
+            
+            try
+            {
+                var autoLoginTask = authService.TryAutoLoginAsync();
+                autoLoginTask.Wait();
+                autoLoginSuccess = autoLoginTask.Result;
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
+                autoLoginSuccess = false;
+            }
+            
+            if (autoLoginSuccess)
+            {
+                System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
+                // Auto-login successful, open main window based on user role
+                var user = authService.CurrentUser;
+                
+                // Change shutdown mode to close when main window closes
+                ShutdownMode = ShutdownMode.OnMainWindowClose;
+                
+                if (user?.Role.ToString().ToLower() == "teacher")
+                {
+                    var teacherWindow = ServiceProvider.GetRequiredService<TeacherHomeWindow>();
+                    MainWindow = teacherWindow;
+                    teacherWindow.Show();
+                }
+                else
+                {
+                    var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                    MainWindow = mainWindow;
+                    mainWindow.Show();
+                }
+            }
+            else
+            {
+                System.IO.File.AppendAllText(logPath, "Auto-login failed, showing login window...\n");
+                // Show login window
+                var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+                loginWindow.Show();
+            }
 
             System.IO.File.AppendAllText(logPath, "App started successfully!\n");
         }
@@ -72,17 +113,72 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        // Services
-        services.AddHttpClient<ApiService>();
-        services.AddSingleton<AuthService>();
+        // Register HttpClient and ApiService as Singleton
+        services.AddHttpClient();
+        services.AddSingleton<ApiService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            return new ApiService(httpClient);
+        });
 
-        // ViewModels
+        // Services
+        services.AddSingleton<TokenStorageService>();
+        services.AddSingleton<AuthService>();
+        services.AddSingleton<ProblemService>();
+        services.AddSingleton<AssignmentService>();
+        services.AddSingleton<ClassService>();
+        services.AddSingleton<SubmissionService>();
+        services.AddSingleton<LanguageService>();
+        services.AddSingleton<DatasetService>();
+        services.AddSingleton<TagService>();
+        services.AddSingleton<NavigationService>();
+
+        // ViewModels - Student
         services.AddTransient<LoginViewModel>();
         services.AddTransient<MainViewModel>();
 
-        // Views
+        // ViewModels - Teacher
+        services.AddTransient<TeacherHomeViewModel>();
+        services.AddTransient<TeacherProblemsViewModel>();
+        services.AddTransient<TeacherGradingViewModel>();
+        services.AddTransient<TeacherClassViewModel>();
+        services.AddTransient<TeacherAssignmentViewModel>();
+        services.AddTransient<TeacherAssignmentEditViewModel>();
+        services.AddTransient<CreateAssignmentViewModel>();
+        services.AddTransient<ProblemCreateViewModel>();
+        services.AddTransient<ProblemEditViewModel>();
+        services.AddTransient<TagSelectionViewModel>();
+        services.AddTransient<LanguageSelectionViewModel>();
+        services.AddTransient<DatasetEditViewModel>();
+        services.AddTransient<TestCaseEditViewModel>();
+        services.AddTransient<AddProblemDialogViewModel>();
+        services.AddTransient<AddStudentDialogViewModel>();
+        services.AddTransient<VisualSelectTabViewModel>();
+        services.AddTransient<ImportExcelTabViewModel>();
+
+        // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
+
+        // Views - Teacher
+        services.AddTransient<TeacherHomeWindow>();
+        // services.AddTransient<TeacherProblemsWindow>(); // ← Đã chuyển sang Page
+        services.AddTransient<TeacherGradingWindow>();
+        // services.AddTransient<TeacherClassWindow>(); // ← Đã chuyển sang Page
+        // services.AddTransient<TeacherAssignmentWindow>(); // ← Đã chuyển sang Page
+        services.AddTransient<TeacherAssignmentEditWindow>();
+        services.AddTransient<CreateAssignmentWindow>();
+        // services.AddTransient<ProblemCreateWindow>(); // ← Đã chuyển sang Page
+        // services.AddTransient<ProblemEditWindow>(); // ← Đã chuyển sang Page
+
+        // Pages - Teacher (for navigation)
+        services.AddTransient<Pages.TeacherHomePage>();
+        services.AddTransient<Pages.TeacherClassPage>();
+        services.AddTransient<Pages.TeacherAssignmentPage>();
+        services.AddTransient<Pages.TeacherProblemsPage>();
+        services.AddTransient<Pages.ProblemCreatePage>();
+        services.AddTransient<Pages.ProblemEditPage>();
     }
 }
 

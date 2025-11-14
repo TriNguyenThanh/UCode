@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -127,7 +129,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Exception loading classes: {ex.Message}");
-                MessageBox.Show($"Không thể tải danh sách lớp học: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải danh sách lớp học: {ex.Message}");
             }
         }
         private async Task LoadUpcomingAssignmentsAsync()
@@ -142,7 +144,7 @@ namespace UCode.Desktop.ViewModels
                 {
                     foreach (var assignment in response.Data.Items)
                     {
-                        var daysLeft = (assignment.DueDate - DateTime.Now).Days;
+                        var daysLeft = (assignment.EndTime - DateTime.Now)?.Days ?? 0;
                         
                         UpcomingAssignments.Add(new AssignmentItem
                         {
@@ -150,7 +152,7 @@ namespace UCode.Desktop.ViewModels
                             Title = assignment.Title,
                             ClassName = assignment.ClassName ?? "Unknown Class",
                             DaysLeft = daysLeft > 0 ? daysLeft : 0,
-                            ProblemCount = assignment.ProblemCount,
+                            ProblemCount = assignment.TotalProblems ?? 0,
                             TotalPoints = assignment.TotalPoints
                         });
                     }
@@ -204,18 +206,20 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteLogout()
+        private async void ExecuteLogout()
         {
-            var result = MessageBox.Show(
-                "Bạn có chắc muốn đăng xuất?",
+            var result = await GetMetroWindow()?.ShowMessageAsync(
                 "Đăng xuất",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question
+                "Bạn có chắc muốn đăng xuất?",
+                MessageDialogStyle.AffirmativeAndNegative
             );
 
-            if (result == MessageBoxResult.Yes)
+            if (result == MessageDialogResult.Affirmative)
             {
                 _authService.Logout();
+
+                // Change shutdown mode back to explicit before closing main window
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
                 // Close main window and show login window
                 var loginWindow = App.ServiceProvider.GetService(typeof(Views.LoginWindow)) as Views.LoginWindow;

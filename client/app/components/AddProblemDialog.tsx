@@ -72,7 +72,7 @@ export function AddProblemDialog({ open, onClose, existingProblems, onSave }: Ad
         pageSize: 100, // Large number to get all problems
       })
       
-      const mockProblems: Problem[] = response.data || []
+      const mockProblems: Problem[] = response.items || []
 
       const problemsWithSelection = mockProblems.map((problem) => {
         const existing = existingProblems.find((p) => p.problemId === problem.problemId)

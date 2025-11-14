@@ -3,9 +3,13 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <NoWarn>$(NoWarn);CS8632;CS1998;CS0649;CS0067;CS0414</NoWarn>
+    
+    <!-- Enable DPI Awareness and Modern Rendering -->
+    <!-- <ApplicationManifest>app.manifest</ApplicationManifest> -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +21,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+
+    <PackageReference Include="ClosedXML" Version="0.102.1" />
+    
+    <!-- ModernWpf - Makes WPF look like Windows 11 (like FlatLaf for Java) -->
+    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
   </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         builder.Property(bs => bs.MaxScore).HasColumnName("MaxScore");
         builder.Property(bs => bs.TotalTime).HasColumnName("TotalTime");
         builder.Property(bs => bs.TotalMemory).HasColumnName("TotalMemory");
-        builder.Property(bs => bs.UpdatedAt).HasColumnName("UpdatedAt");
+        builder.Property(bs => bs.SubmitAt).HasColumnName("SubmitAt");
         
         // VIEW không có relationships, indexes, hoặc constraints
         // Đây là read-only computed view

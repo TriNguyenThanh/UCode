@@ -202,7 +202,7 @@ export default function EditAssignment() {
                 label="Loại bài tập"
               >
                 <MenuItem value="HOMEWORK">Bài tập về nhà</MenuItem>
-                <MenuItem value="EXAM">Bài kiểm tra</MenuItem>
+                <MenuItem value="EXAMINATION">Bài kiểm tra</MenuItem>
                 <MenuItem value="PRACTICE">Luyện tập</MenuItem>
               </Select>
             </FormControl>

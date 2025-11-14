@@ -9,7 +9,7 @@ public class SubmissionResponse
     /// <summary>
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
     /// </summary>
-    public string SourceCodeRef { get; set; } = string.Empty;
+    public string SourceCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Ngôn ngữ lập trình

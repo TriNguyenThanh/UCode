@@ -1,0 +1,33 @@
+@startuml
+digraph ContextDFD {
+    rankdir=LR
+    node [shape=box, style=filled, fontname="Arial", fontsize=12]
+    edge [fontname="Arial", fontsize=10]
+
+    SV [label="Sinh viên", fillcolor="#A3E4D7", width=1.8, height=0.5]
+    GV [label="Giảng viên", fillcolor="#F9E79F", width=1.8, height=0.5]
+    AD [label="Quản trị viên", fillcolor="#F5B7B1", width=1.8, height=0.5]
+
+    SYS [label="Hệ thống quản lý bài tập lập trình trực tuyến", shape=ellipse, fillcolor="#FEF9E7", width=3.5, height=1.5, fontname="Arial", fontsize=13]
+
+
+    '--- Sinh viên ---
+    SV -> SYS [label="Nộp bài tập"]
+    SV -> SYS [label="Danh sách bài toán"]
+    SYS -> SV [label="Danh sách bài tập"]
+    SYS -> SV [label="Kết quả chấm bài"]
+    SYS -> SV [label="Thông tin lớp học"]
+
+    '--- Giảng viên ---
+    GV -> SYS [label="Tạo/Cập nhật lớp học"]
+    GV -> SYS [label="Giao bài tập / đề thi"]
+    SYS -> GV [label="Thống kê sinh viên"]
+    SYS -> GV [label="Danh sách nộp bài"]
+
+    '--- Quản trị viên ---
+    AD -> SYS [label="Quản lý người dùng"]
+    AD -> SYS [label="Quản lý ngôn ngữ & loại bài tập"]
+    SYS -> AD [label="Báo cáo hệ thống"]
+    SYS -> AD [label="Lịch sử hoạt động"]
+}
+@enduml

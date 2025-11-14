@@ -1,15 +1,20 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
     public partial class LoginWindow : Window
     {
-        public LoginWindow(LoginViewModel viewModel)
+        private readonly AuthService _authService;
+
+        public LoginWindow(LoginViewModel viewModel, AuthService authService)
         {
             InitializeComponent();
             DataContext = viewModel;
+            _authService = authService;
 
             viewModel.LoginCompleted += OnLoginCompleted;
         }
@@ -31,24 +36,41 @@ namespace UCode.Desktop.Views
 
                 if (success)
                 {
-                    System.IO.File.AppendAllText(logPath, "Getting MainWindow from ServiceProvider...\n");
-                    var mainWindow = App.ServiceProvider.GetService(typeof(MainWindow)) as MainWindow;
+                    // Get current user to check role
+                    var currentUser = _authService.CurrentUser;
+                    var userRole = currentUser?.Role.ToString().ToLower() ?? "student";
 
-                    if (mainWindow != null)
+                    System.IO.File.AppendAllText(logPath, $"User role: {userRole}\n");
+
+                    Window targetWindow = null;
+
+                    // Redirect based on role
+                    if (userRole == "teacher")
                     {
-                        System.IO.File.AppendAllText(logPath, "MainWindow created. Showing...\n");
-                        mainWindow.Show();
+                        System.IO.File.AppendAllText(logPath, "Getting TeacherHomeWindow from ServiceProvider...\n");
+                        targetWindow = App.ServiceProvider.GetService(typeof(TeacherHomeWindow)) as TeacherHomeWindow;
+                    }
+                    else
+                    {
+                        System.IO.File.AppendAllText(logPath, "Getting MainWindow from ServiceProvider...\n");
+                        targetWindow = App.ServiceProvider.GetService(typeof(MainWindow)) as MainWindow;
+                    }
 
-                        // Set main window as the main window and enable auto-shutdown
+                    if (targetWindow != null)
+                    {
+                        System.IO.File.AppendAllText(logPath, $"{targetWindow.GetType().Name} created. Showing...\n");
+                        targetWindow.Show();
+
+                        // Set as the main window and enable auto-shutdown
                         System.IO.File.AppendAllText(logPath, "Setting as main window...\n");
                         Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                        Application.Current.MainWindow = mainWindow;
+                        Application.Current.MainWindow = targetWindow;
 
                         System.IO.File.AppendAllText(logPath, "Closing login window...\n");
                     }
                     else
                     {
-                        System.IO.File.AppendAllText(logPath, "ERROR: MainWindow is NULL!\n");
+                        System.IO.File.AppendAllText(logPath, "ERROR: Target window is NULL!\n");
                         MessageBox.Show("Cannot create main window!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }

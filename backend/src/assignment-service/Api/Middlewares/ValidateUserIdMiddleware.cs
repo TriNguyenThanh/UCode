@@ -4,10 +4,27 @@ using AssignmentService.Application.DTOs.Common;
 
 namespace AssignmentService.Api.Middlewares;
 
+/// <summary>
+/// Attribute to skip X-User-Id validation for internal service-to-service calls
+/// </summary>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+public class SkipValidateUserIdAttribute : Attribute
+{
+}
+
 public class ValidateUserIdAttribute : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
+        // Skip validation if SkipValidateUserId attribute is present
+        var skipValidation = context.ActionDescriptor.EndpointMetadata
+            .Any(m => m is SkipValidateUserIdAttribute);
+
+        if (skipValidation)
+        {
+            return;
+        }
+
         var userIdHeader = context.HttpContext.Request.Headers["X-User-Id"].ToString();
 
         if (string.IsNullOrWhiteSpace(userIdHeader))

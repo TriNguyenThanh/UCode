@@ -1,5 +1,6 @@
 using AssignmentService.Domain.Entities;
 using AssignmentService.Application.DTOs.Responses;
+using AssignmentService.Application.DTOs.Requests;
 
 namespace AssignmentService.Application.Interfaces.Services;
 
@@ -40,4 +41,15 @@ public interface IAssignmentService
     
     // Statistics
     Task<AssignmentStatistics> GetAssignmentStatisticsAsync(Guid assignmentId);
+    
+    // Sync students to class assignments
+    Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds);
+    
+    // Tracking methods for exam monitoring
+    Task<AssignmentUser> IncrementTabSwitchCountAsync(Guid assignmentId, Guid userId);
+    Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId);
+    
+    // Activity logging for detailed exam monitoring
+    Task<bool> LogExamActivityAsync(Guid assignmentId, Guid userId, ActivityLogRequest activityLog);
+    Task<int> LogExamActivitiesBatchAsync(Guid assignmentId, Guid userId, List<ActivityLogRequest> activities);
 }

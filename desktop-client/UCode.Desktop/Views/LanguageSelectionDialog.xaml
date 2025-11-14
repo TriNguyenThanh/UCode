@@ -1,0 +1,111 @@
+<mah:MetroWindow x:Class="UCode.Desktop.Views.LanguageSelectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="Quản lý ngôn ngữ lập trình" 
+        Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5"
+        ResizeMode="NoResize"
+        ShowMinButton="False"
+        ShowMaxRestoreButton="False"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="Quản lý ngôn ngữ lập trình" FontSize="24" FontWeight="Bold" Foreground="#191970"/>
+                <TextBlock Text="Chọn các ngôn ngữ được phép sử dụng cho bài toán này" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- Languages Table -->
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="0">
+                <DataGrid ItemsSource="{Binding AllLanguages}"
+                          Style="{StaticResource ModernDataGrid}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                          CellStyle="{StaticResource ModernDataGridCell}">
+                    
+                    <!-- Row Style with Click Handler -->
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRow}">
+                            <EventSetter Event="MouseLeftButtonUp" Handler="DataGridRow_MouseLeftButtonUp"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Width="60" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <DataGridCheckBoxColumn.ElementStyle>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                </Style>
+                            </DataGridCheckBoxColumn.ElementStyle>
+                        </DataGridCheckBoxColumn>
+                        <DataGridTextColumn Header="Ngôn ngữ" Binding="{Binding LanguageDisplayName}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Code" Binding="{Binding LanguageCode}" Width="150">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="Background" Value="#F0F0F0"/>
+                                    <Setter Property="Padding" Value="5,2"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Time Factor" Width="120">
+                            <DataGridTextColumn.Binding>
+                                <Binding Path="TimeFactor" StringFormat="{}{0}x"/>
+                            </DataGridTextColumn.Binding>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="HỦY" Style="{StaticResource SecondaryButtonStyle}"
+                        Click="Cancel_Click"
+                        Width="120" Margin="0,0,15,0"/>
+                <Button Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding !IsSaving}"
+                        Width="120">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔒" Margin="0,0,5,0" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="LƯU" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</mah:MetroWindow>
+

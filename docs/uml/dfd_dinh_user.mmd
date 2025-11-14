@@ -1,0 +1,40 @@
+---
+config:
+  layout: elk
+---
+flowchart LR
+    SV["Sinh viên"] -- Thông tin đăng nhập --> P1("1.Quản lý người dùng")
+    GV["Giảng viên"] -- Thông tin đăng nhập --> P1
+    AD["Quản trị viên"] -- Thông tin đăng nhập --> P1
+    AD -- Yêu cầu quản lý tài khoản<br>(thêm/sửa/khóa) --> P1
+    P1 -- Xác thực & cập nhật --> D_User[("Thông tin người dùng")]
+    D_User -- Thông tin người dùng --> P1
+    P1 -- Kết quả quản lý --> AD
+    P1 -- Xác nhận đăng nhập --> SV & GV
+    GV -- Tạo/Cập nhật lớp học --> P2("2.Quản lý lớp học")
+    AD -- Quản lý lớp học --> P2
+    SV -- Yêu cầu ghi danh --> P2
+    P2 -- Cập nhật thông tin lớp --> D_Class[("Thông tin lớp học")]
+    D_Class -- Dữ liệu lớp học --> P2
+    P2 -- Xác nhận lớp học --> GV
+    P2 -- Xác nhận ghi danh --> SV
+    GV -- Tạo buổi điểm danh --> P7("7.Theo dõi điểm danh")
+    SV -- Xác nhận điểm danh --> P7
+    P7 -- Lưu điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    D_Attendance -- Dữ liệu điểm danh --> P7
+    P7 -- Xác nhận điểm danh --> SV
+    P7 -- Kết quả điểm danh --> GV
+     SV:::student
+     P1:::process
+     GV:::lecturer
+     AD:::admin
+     D_User:::datastore
+     P2:::process
+     D_Class:::datastore
+     P7:::process
+     D_Attendance:::datastore
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef process fill:#FEF9E7,stroke:#333,stroke-width:2px
+    classDef datastore fill:#D6EAF8,stroke:#333,stroke-width:2px

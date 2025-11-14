@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251108211121_CreateView")]
-    partial class CreateView
+    [Migration("20251112171457_BestSubmission")]
+    partial class BestSubmission
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -228,6 +228,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("SubmissionId");
 
+                    b.Property<DateTime>("SubmitAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("SubmitAt");
+
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
                         .HasColumnName("TotalMemory");
@@ -235,10 +239,6 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TotalTime")
                         .HasColumnType("bigint")
                         .HasColumnName("TotalTime");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("UpdatedAt");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")
@@ -737,6 +737,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)")
                         .HasColumnName("result_file_ref");
 
+                    b.Property<int>("Score")
+                        .HasColumnType("int")
+                        .HasColumnName("score");
+
                     b.Property<string>("SourceCode")
                         .IsRequired()
                         .HasMaxLength(4000)
@@ -776,6 +780,10 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
+
+                    b.Property<bool>("isSubmitLate")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_submit_late");
 
                     b.HasKey("SubmissionId")
                         .HasName("pk_submission");

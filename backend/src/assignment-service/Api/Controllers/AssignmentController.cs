@@ -150,15 +150,15 @@ public class AssignmentController : ControllerBase
         return Ok(ApiResponse<object>.SuccessResponse(new {}, "Assignment deleted successfully"));
     }
 
-    /// <summary>
-    /// Retrieves a specific assignment by ID with statistics
-    /// </summary>
-    /// <param name="id">The unique identifier of the assignment</param>
-    /// <returns>Assignment details with statistics</returns>
-    /// <response code="200">Assignment retrieved successfully</response>
-    /// <response code="401">Unauthorized - Teacher role required</response>
-    /// <response code="404">Assignment not found</response>
-    /// <response code="500">Internal server error</response>
+    // /// <summary>
+    // /// Retrieves a specific assignment by ID with statistics
+    // /// </summary>
+    // /// <param name="id">The unique identifier of the assignment</param>
+    // /// <returns>Assignment details with statistics</returns>
+    // /// <response code="200">Assignment retrieved successfully</response>
+    // /// <response code="401">Unauthorized - Teacher role required</response>
+    // /// <response code="404">Assignment not found</response>
+    // /// <response code="500">Internal server error</response>
     // [HttpGet("{id:guid}")]
     // [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -180,7 +180,6 @@ public class AssignmentController : ControllerBase
     /// Retrieves assignment with only basic problem info (ID, Title, Code, Difficulty)
     /// </summary>
     /// <param name="id">The unique identifier of the assignment</param>
-    /// <param name="includeBasics">Set to true to get lightweight response</param>
     /// <returns>Assignment with problem basics only</returns>
     /// <response code="200">Assignment retrieved successfully</response>
     /// <response code="404">Assignment not found</response>
@@ -295,7 +294,12 @@ public class AssignmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetAssignmentsByClass(Guid classId)
     {
+        var userId = GetAuthenticatedUserId();
         var assignments = await _assignmentService.GetAssignmentsByClassIdAsync(classId);
+
+        assignments = assignments.Where(a =>
+            a.AssignedBy == userId).ToList();
+
         var response = _mapper.Map<List<AssignmentResponse>>(assignments);
         
         return Ok(ApiResponse<List<AssignmentResponse>>.SuccessResponse(response));
@@ -402,7 +406,6 @@ public class AssignmentController : ControllerBase
         var response = _mapper.Map<AssignmentUserDto>(updated);
         return Ok(ApiResponse<AssignmentUserDto>.SuccessResponse(response, "Assignment started successfully"));
     }
-    /// 
 
     // /// <summary>
     // /// Retrieves all submissions for the current student in a specific assignment
@@ -439,7 +442,6 @@ public class AssignmentController : ControllerBase
     /// Webhook endpoint for Submission Service to save assignment problem submission results
     /// </summary>
     /// <param name="assignmentId">The unique identifier of the assignment</param>
-    /// <param name="problemId">The unique identifier of the problem</param>
     /// <param name="request">Submission result containing solution code, test results, and execution metrics</param>
     /// <returns>Saved submission information with calculated score</returns>
     /// <response code="200">Submission saved successfully with calculated score</response>
@@ -603,5 +605,147 @@ public class AssignmentController : ControllerBase
     //     // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
 
         return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
+    }
+
+    /// <summary>
+    /// Syncs students to all active assignments of a class
+    /// Called by User Service when students are added to a class
+    /// Internal API - No user authentication required
+    /// </summary>
+    /// <param name="classId">The unique identifier of the class</param>
+    /// <param name="request">List of student IDs to sync</param>
+    /// <returns>Number of AssignmentUsers created</returns>
+    /// <response code="200">Students synced successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("classes/{classId:guid}/students/sync")]
+    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> SyncStudentsToClassAssignments(Guid classId, [FromBody] SyncStudentsRequest request)
+    {
+        if (request.StudentIds == null || !request.StudentIds.Any())
+            return BadRequest(ApiResponse<object>.ErrorResponse("StudentIds list cannot be empty"));
+
+        var count = await _assignmentService.SyncStudentsToClassAssignmentsAsync(classId, request.StudentIds);
+        
+        return Ok(ApiResponse<object>.SuccessResponse(
+            new { AssignmentUsersCreated = count },
+            $"Synced {request.StudentIds.Count} student(s) to {count} assignment user(s)"
+        ));
+    }
+
+    /// <summary>
+    /// Increments the tab switch count for a student's assignment
+    /// Called when student switches tabs or loses focus during an examination
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <returns>Updated assignment user with incremented tab switch count</returns>
+    /// <response code="200">Tab switch count incremented successfully</response>
+    /// <response code="401">Unauthorized - Student role required</response>
+    /// <response code="404">Assignment detail not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("{id:guid}/student/increment-tab-switch")]
+    [RequireRole("student")]
+    [ProducesResponseType(typeof(ApiResponse<AssignmentUserDto>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> IncrementTabSwitch(Guid id)
+    {
+        var userId = GetAuthenticatedUserId();
+        var updated = await _assignmentService.IncrementTabSwitchCountAsync(id, userId);
+        
+        if (updated == null)
+            return NotFound(ApiResponse<AssignmentUserDto>.ErrorResponse("Assignment detail not found"));
+        
+        var response = _mapper.Map<AssignmentUserDto>(updated);
+        return Ok(ApiResponse<AssignmentUserDto>.SuccessResponse(response, "Tab switch recorded"));
+    }
+
+    /// <summary>
+    /// Increments the AI detection count for a student's assignment
+    /// Called when AI usage is detected during an examination
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <returns>Updated assignment user with incremented AI detection count</returns>
+    /// <response code="200">AI detection count incremented successfully</response>
+    /// <response code="401">Unauthorized - Student role required</response>
+    /// <response code="404">Assignment detail not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("{id:guid}/student/increment-ai-detection")]
+    [RequireRole("student")]
+    [ProducesResponseType(typeof(ApiResponse<AssignmentUserDto>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> IncrementAIDetection(Guid id)
+    {
+        var userId = GetAuthenticatedUserId();
+        var updated = await _assignmentService.IncrementCapturedAICountAsync(id, userId);
+        
+        if (updated == null)
+            return NotFound(ApiResponse<AssignmentUserDto>.ErrorResponse("Assignment detail not found"));
+        
+        var response = _mapper.Map<AssignmentUserDto>(updated);
+        return Ok(ApiResponse<AssignmentUserDto>.SuccessResponse(response, "AI detection recorded"));
+    }
+
+    /// <summary>
+    /// Logs a single activity event for exam monitoring
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <param name="request">Activity log data</param>
+    /// <returns>Success confirmation</returns>
+    /// <response code="200">Activity logged successfully</response>
+    /// <response code="401">Unauthorized - Student role required</response>
+    /// <response code="404">Assignment detail not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("{id:guid}/student/log-activity")]
+    [RequireRole("student")]
+    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> LogActivity(Guid id, [FromBody] ActivityLogRequest request)
+    {
+        var userId = GetAuthenticatedUserId();
+        var success = await _assignmentService.LogExamActivityAsync(id, userId, request);
+        
+        if (!success)
+            return NotFound(ApiResponse<object>.ErrorResponse("Assignment detail not found"));
+        
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Activity logged"));
+    }
+
+    /// <summary>
+    /// Logs multiple activity events in a batch for exam monitoring
+    /// More efficient than logging one by one
+    /// </summary>
+    /// <param name="id">The unique identifier of the assignment</param>
+    /// <param name="request">Batch of activity logs</param>
+    /// <returns>Success confirmation with count of logged activities</returns>
+    /// <response code="200">Activities logged successfully</response>
+    /// <response code="401">Unauthorized - Student role required</response>
+    /// <response code="404">Assignment detail not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("{id:guid}/student/log-activities-batch")]
+    [RequireRole("student")]
+    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> LogActivitiesBatch(Guid id, [FromBody] ActivityLogBatchRequest request)
+    {
+        var userId = GetAuthenticatedUserId();
+        var count = await _assignmentService.LogExamActivitiesBatchAsync(id, userId, request.Activities);
+        
+        if (count == 0)
+            return NotFound(ApiResponse<object>.ErrorResponse("Assignment detail not found or no activities to log"));
+        
+        return Ok(ApiResponse<object>.SuccessResponse(
+            new { ActivitiesLogged = count },
+            $"Logged {count} activities"
+        ));
     }
 }

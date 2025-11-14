@@ -10,7 +10,10 @@
                  WindowState="Maximized"
                  TitleCharacterCasing="Normal"
                  ShowIconOnTitleBar="True"
-                 GlowBrush="{DynamicResource MahApps.Brushes.Accent}">
+                 GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+                 TextOptions.TextFormattingMode="Display"
+                 TextOptions.TextRenderingMode="ClearType"
+                 RenderOptions.BitmapScalingMode="HighQuality">
 
     <Grid>
         <Grid.RowDefinitions>

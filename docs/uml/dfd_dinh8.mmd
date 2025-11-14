@@ -1,0 +1,36 @@
+---
+config:
+  layout: elk
+---
+flowchart BT
+    GV["Giảng viên"] -- Yêu cầu nhắc hạn --> P81("8.1. Nhắc hạn nộp bài")
+    P81 -- Truy vấn hạn nộp --> D_Assignment[("Thông tin bài tập")]
+    D_Assignment -- Dữ liệu hạn --> P81
+    P81 -- Thông báo nhắc hạn --> SV["Sinh viên"]
+    P81 -- Xác nhận gửi --> GV
+    
+    GV -- Yêu cầu báo cáo --> P82("8.2. Tạo báo cáo thống kê<br>(kết quả, AI/copy)")
+    AD["Quản trị viên"] -- Yêu cầu báo cáo hệ thống --> P82
+    P82 -- Truy vấn nộp bài --> D_Submission[("Lịch sử nộp bài")]
+    D_Submission -- Dữ liệu kết quả --> P82
+    P82 -- Truy vấn điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    D_Attendance -- Dữ liệu điểm danh --> P82
+    P82 -- Truy vấn bài tập --> D_Assignment
+    D_Assignment -- Dữ liệu bài tập --> P82
+    P82 -- Báo cáo thống kê --> GV
+    P82 -- Báo cáo hệ thống --> AD
+    
+    GV:::lecturer
+    AD:::admin
+    SV:::student
+    P81:::process
+    P82:::process
+    D_Assignment:::datastore
+    D_Submission:::datastore
+    D_Attendance:::datastore
+    
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

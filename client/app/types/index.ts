@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 }
 
 export interface PagedResponse<T> {
-  data: T[] // Frontend standard format
+  items: T[] // Frontend standard format
   page: number
   pageSize: number
   totalCount: number
@@ -341,7 +341,7 @@ export interface Dataset {
 // ASSIGNMENT
 // ============================================
 
-export type AssignmentType = 'HOMEWORK' | 'EXAM' | 'PRACTICE' | 'CONTEST'
+export type AssignmentType = 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE' | 'CONTEST'
 export type AssignmentStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED'
 
 export interface Assignment {
