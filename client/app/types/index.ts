@@ -116,6 +116,9 @@ export interface Class {
   studentCount: number
   createdAt: string
   updatedAt?: string
+  isArchived?: boolean
+  archivedAt?: string
+  archiveReason?: string
 }
 
 export interface CreateClassRequest {

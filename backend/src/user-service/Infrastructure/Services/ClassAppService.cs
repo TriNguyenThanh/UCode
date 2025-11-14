@@ -69,12 +69,16 @@ public class ClassAppService : IClassService
     public async Task<ClassResponse?> GetClassByIdAsync(string classId)
     {
         var classEntity = await _classRepository.GetClassWithTeacherAsync(Guid.Parse(classId));
+        
+        // Return class even if archived (for teacher to see with warning)
         return classEntity != null ? _mapper.Map<ClassResponse>(classEntity) : null;
     }
 
     public async Task<ClassDetailResponse?> GetClassDetailAsync(string classId)
     {
         var classEntity = await _classRepository.GetClassWithStudentsAsync(Guid.Parse(classId));
+        
+        // Return class even if archived (for teacher to see with warning)
         return classEntity != null ? _mapper.Map<ClassDetailResponse>(classEntity) : null;
     }
 
@@ -82,14 +86,17 @@ public class ClassAppService : IClassService
     {
         var teacherGuid = !string.IsNullOrEmpty(teacherId) ? Guid.Parse(teacherId) : (Guid?)null;
         
+        // Filter out archived classes for normal users (Teacher/Student views)
         var classes = await _classRepository.GetPagedAsync(pageNumber, pageSize, c =>
             (teacherGuid == null || c.TeacherId == teacherGuid) &&
-            (!isActive.HasValue || c.IsActive == isActive.Value)
+            (!isActive.HasValue || c.IsActive == isActive.Value) &&
+            !c.IsArchived // Only show non-archived classes
         );
 
         var totalCount = await _classRepository.CountAsync(c =>
             (teacherGuid == null || c.TeacherId == teacherGuid) &&
-            (!isActive.HasValue || c.IsActive == isActive.Value)
+            (!isActive.HasValue || c.IsActive == isActive.Value) &&
+            !c.IsArchived // Only count non-archived classes
         );
 
         // Load teachers for each class
@@ -111,6 +118,9 @@ public class ClassAppService : IClassService
     {
         var classes = await _classRepository.GetClassesByTeacherIdAsync(Guid.Parse(teacherId));
         
+        // Filter out archived classes - Teacher không nên thấy classes đã archive
+        classes = classes.Where(c => !c.IsArchived).ToList();
+        
         // Load teacher info
         foreach (var cls in classes)
         {
@@ -125,7 +135,11 @@ public class ClassAppService : IClassService
     public async Task<List<ClassResponse>> GetClassesByStudentIdAsync(string studentId)
     {
         var classes = await _classRepository.GetClassesByStudentIdAsync(Guid.Parse(studentId));
-        return _mapper.Map<List<ClassResponse>>(classes);
+        
+        // Filter out archived classes - Student không nên thấy classes đã archive
+        var activeClasses = classes.Where(c => !c.IsArchived).ToList();
+        
+        return _mapper.Map<List<ClassResponse>>(activeClasses);
     }
 
     public async Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request)
@@ -133,6 +147,10 @@ public class ClassAppService : IClassService
         var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
+
+        // Prevent updating archived classes
+        if (classEntity.IsArchived)
+            throw new ApiException("Cannot update archived class. Please unarchive it first.", 400);
 
         if (!string.IsNullOrEmpty(request.Name))
             classEntity.Name = request.Name;
@@ -152,6 +170,8 @@ public class ClassAppService : IClassService
         if (request.IsActive.HasValue)
             classEntity.IsActive = request.IsActive.Value;
 
+        classEntity.UpdatedAt = DateTime.UtcNow;
+
         return await _classRepository.UpdateAsync(classEntity);
     }
 
@@ -160,6 +180,10 @@ public class ClassAppService : IClassService
         var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
+
+        // Prevent deleting archived classes - should unarchive first or use admin delete
+        if (classEntity.IsArchived)
+            throw new ApiException("Cannot delete archived class. Please contact admin.", 400);
 
         return await _classRepository.DeleteAsync(Guid.Parse(classId));
     }
@@ -173,6 +197,10 @@ public class ClassAppService : IClassService
         var classEntity = await _classRepository.GetByIdAsync(classGuid);
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
+
+        // Prevent enrolling to archived classes
+        if (classEntity.IsArchived)
+            throw new ApiException("Cannot enroll students to archived class", 400);
 
         // Validate student exists
         var student = await _studentRepository.GetByIdAsync(studentGuid);
@@ -203,6 +231,10 @@ public class ClassAppService : IClassService
         var classEntity = await _classRepository.GetByIdAsync(classGuid);
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
+
+        // Prevent enrolling to archived classes
+        if (classEntity.IsArchived)
+            throw new ApiException("Cannot enroll students to archived class", 400);
 
         var userClasses = new List<UserClass>();
 
@@ -377,5 +409,363 @@ public class ClassAppService : IClassService
         } while (await _classRepository.ClassCodeExistsAsync(classCode));
 
         return classCode;
+    }
+
+    // ===== ADMIN METHODS =====
+
+    public async Task<PagedResultDto<AdminClassResponse>> GetAllClassesForAdminAsync(
+        int pageNumber, 
+        int pageSize, 
+        string? teacherId = null, 
+        bool? isActive = null,
+        bool? isArchived = null,
+        string? searchTerm = null)
+    {
+        var teacherGuid = !string.IsNullOrEmpty(teacherId) ? Guid.Parse(teacherId) : (Guid?)null;
+        
+        var classes = await _classRepository.GetPagedAsync(pageNumber, pageSize, c =>
+            (teacherGuid == null || c.TeacherId == teacherGuid) &&
+            (!isActive.HasValue || c.IsActive == isActive.Value) &&
+            (!isArchived.HasValue || c.IsArchived == isArchived.Value) &&
+            (string.IsNullOrEmpty(searchTerm) || 
+             c.Name.Contains(searchTerm) || 
+             c.ClassCode.Contains(searchTerm) ||
+             c.Description.Contains(searchTerm))
+        );
+
+        var totalCount = await _classRepository.CountAsync(c =>
+            (teacherGuid == null || c.TeacherId == teacherGuid) &&
+            (!isActive.HasValue || c.IsActive == isActive.Value) &&
+            (!isArchived.HasValue || c.IsArchived == isArchived.Value) &&
+            (string.IsNullOrEmpty(searchTerm) || 
+             c.Name.Contains(searchTerm) || 
+             c.ClassCode.Contains(searchTerm) ||
+             c.Description.Contains(searchTerm))
+        );
+
+        var adminClassResponses = new List<AdminClassResponse>();
+
+        foreach (var cls in classes)
+        {
+            var fullClass = await _classRepository.GetClassWithTeacherAsync(cls.ClassId);
+            if (fullClass != null)
+            {
+                var response = new AdminClassResponse
+                {
+                    ClassId = fullClass.ClassId,
+                    Name = fullClass.Name,
+                    Description = fullClass.Description,
+                    ClassCode = fullClass.ClassCode,
+                    TeacherId = fullClass.TeacherId,
+                    TeacherName = fullClass.Teacher?.FullName ?? "Unknown",
+                    TeacherEmail = fullClass.Teacher?.Email ?? "Unknown",
+                    StudentCount = fullClass.UserClasses?.Count ?? 0,
+                    ActiveStudentCount = fullClass.UserClasses?.Count(uc => uc.IsActive) ?? 0,
+                    AssignmentCount = 0, // TODO: Integrate with assignment service
+                    SubmissionCount = 0, // TODO: Integrate with assignment service
+                    IsActive = fullClass.IsActive,
+                    IsArchived = fullClass.IsArchived,
+                    CreatedAt = fullClass.CreatedAt,
+                    UpdatedAt = fullClass.UpdatedAt,
+                    ArchivedAt = fullClass.ArchivedAt
+                };
+                adminClassResponses.Add(response);
+            }
+        }
+
+        return new PagedResultDto<AdminClassResponse>(adminClassResponses, totalCount, pageNumber, pageSize);
+    }
+
+    public async Task<AdminClassResponse?> GetClassDetailForAdminAsync(string classId)
+    {
+        var classEntity = await _classRepository.GetClassWithTeacherAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            return null;
+
+        return new AdminClassResponse
+        {
+            ClassId = classEntity.ClassId,
+            Name = classEntity.Name,
+            Description = classEntity.Description,
+            ClassCode = classEntity.ClassCode,
+            TeacherId = classEntity.TeacherId,
+            TeacherName = classEntity.Teacher?.FullName ?? "Unknown",
+            TeacherEmail = classEntity.Teacher?.Email ?? "Unknown",
+            StudentCount = classEntity.UserClasses?.Count ?? 0,
+            ActiveStudentCount = classEntity.UserClasses?.Count(uc => uc.IsActive) ?? 0,
+            AssignmentCount = 0, // TODO: Integrate with assignment service
+            SubmissionCount = 0, // TODO: Integrate with assignment service
+            IsActive = classEntity.IsActive,
+            IsArchived = classEntity.IsArchived,
+            CreatedAt = classEntity.CreatedAt,
+            UpdatedAt = classEntity.UpdatedAt,
+            ArchivedAt = classEntity.ArchivedAt
+        };
+    }
+
+    public async Task<bool> ArchiveClassAsync(string classId, string? reason = null)
+    {
+        var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        if (classEntity.IsArchived)
+            throw new ApiException("Class is already archived");
+
+        classEntity.IsArchived = true;
+        classEntity.ArchivedAt = DateTime.UtcNow;
+        classEntity.ArchiveReason = reason;
+        classEntity.UpdatedAt = DateTime.UtcNow;
+
+        return await _classRepository.UpdateAsync(classEntity);
+    }
+
+    public async Task<bool> UnarchiveClassAsync(string classId)
+    {
+        var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        if (!classEntity.IsArchived)
+            throw new ApiException("Class is not archived");
+
+        classEntity.IsArchived = false;
+        classEntity.ArchivedAt = null;
+        classEntity.ArchiveReason = null;
+        classEntity.UpdatedAt = DateTime.UtcNow;
+
+        return await _classRepository.UpdateAsync(classEntity);
+    }
+
+    public async Task<bool> UpdateClassByAdminAsync(UpdateClassByAdminRequest request)
+    {
+        var classEntity = await _classRepository.GetByIdAsync(request.ClassId);
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        // Validate teacher exists
+        var teacher = await _teacherRepository.GetByIdAsync(request.TeacherId);
+        if (teacher == null)
+            throw new ApiException("Teacher not found", 404);
+
+        classEntity.Name = request.Name;
+        classEntity.Description = request.Description;
+        classEntity.TeacherId = request.TeacherId;
+        classEntity.IsActive = request.IsActive;
+        classEntity.UpdatedAt = DateTime.UtcNow;
+
+        return await _classRepository.UpdateAsync(classEntity);
+    }
+
+    public async Task<bool> DeleteClassByAdminAsync(string classId)
+    {
+        var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        // Remove all student enrollments first
+        await _userClassRepository.RemoveAllByClassIdAsync(Guid.Parse(classId));
+
+        // Delete the class
+        return await _classRepository.DeleteAsync(Guid.Parse(classId));
+    }
+
+    public async Task<ClassStatisticsResponse> GetClassStatisticsAsync()
+    {
+        var allClasses = await _classRepository.GetAllAsync();
+        var activeClasses = allClasses.Where(c => c.IsActive && !c.IsArchived).ToList();
+        var archivedClasses = allClasses.Where(c => c.IsArchived).ToList();
+
+        // Get all enrollments
+        var allEnrollments = await _userClassRepository.GetAllAsync();
+        
+        // Calculate statistics
+        var totalStudentsEnrolled = allEnrollments.Select(e => e.StudentId).Distinct().Count();
+        var teacherIds = allClasses.Select(c => c.TeacherId).Distinct().ToList();
+        
+        var averageStudentsPerClass = allClasses.Any() 
+            ? (double)allEnrollments.Count() / allClasses.Count() 
+            : 0;
+
+        // Find most popular class
+        var classStudentCounts = allClasses
+            .Select(c => new
+            {
+                Class = c,
+                StudentCount = allEnrollments.Count(e => e.ClassId == c.ClassId)
+            })
+            .OrderByDescending(x => x.StudentCount)
+            .FirstOrDefault();
+
+        ClassWithMostStudents? mostPopularClass = null;
+        if (classStudentCounts != null)
+        {
+            mostPopularClass = new ClassWithMostStudents
+            {
+                ClassId = classStudentCounts.Class.ClassId,
+                ClassName = classStudentCounts.Class.Name,
+                StudentCount = classStudentCounts.StudentCount
+            };
+        }
+
+        // Get top teachers by class count
+        var teacherClassCounts = allClasses
+            .GroupBy(c => c.TeacherId)
+            .Select(g => new
+            {
+                TeacherId = g.Key,
+                ClassCount = g.Count()
+            })
+            .OrderByDescending(x => x.ClassCount)
+            .Take(5)
+            .ToList();
+
+        var topTeachers = new List<TeacherClassCount>();
+        foreach (var tcc in teacherClassCounts)
+        {
+            var teacher = await _teacherRepository.GetByIdAsync(tcc.TeacherId);
+            if (teacher != null)
+            {
+                topTeachers.Add(new TeacherClassCount
+                {
+                    TeacherId = tcc.TeacherId,
+                    TeacherName = teacher.FullName ?? "Unknown",
+                    ClassCount = tcc.ClassCount
+                });
+            }
+        }
+
+        return new ClassStatisticsResponse
+        {
+            TotalClasses = allClasses.Count,
+            ActiveClasses = activeClasses.Count,
+            ArchivedClasses = archivedClasses.Count,
+            TotalStudentsEnrolled = totalStudentsEnrolled,
+            TotalTeachers = teacherIds.Count,
+            AverageStudentsPerClass = Math.Round(averageStudentsPerClass, 2),
+            MostPopularClass = mostPopularClass,
+            TopTeachers = topTeachers
+        };
+    }
+
+    public async Task<object> BulkActionAsync(string action, List<string> classIds, string? reason)
+    {
+        var results = new List<object>();
+        var successCount = 0;
+        var failureCount = 0;
+
+        foreach (var classIdStr in classIds)
+        {
+            try
+            {
+                var classId = Guid.Parse(classIdStr);
+                
+                switch (action.ToLower())
+                {
+                    case "archive":
+                        await ArchiveClassAsync(classIdStr, reason);
+                        successCount++;
+                        results.Add(new { classId = classIdStr, success = true });
+                        break;
+                        
+                    case "unarchive":
+                        await UnarchiveClassAsync(classIdStr);
+                        successCount++;
+                        results.Add(new { classId = classIdStr, success = true });
+                        break;
+                        
+                    case "delete":
+                        await DeleteClassByAdminAsync(classIdStr);
+                        successCount++;
+                        results.Add(new { classId = classIdStr, success = true });
+                        break;
+                        
+                    default:
+                        throw new ApiException($"Invalid action: {action}", 400);
+                }
+            }
+            catch (Exception ex)
+            {
+                failureCount++;
+                results.Add(new { classId = classIdStr, success = false, error = ex.Message });
+            }
+        }
+
+        return new
+        {
+            action,
+            totalRequested = classIds.Count,
+            successCount,
+            failureCount,
+            results
+        };
+    }
+
+    public async Task<object> GetClassStudentsForAdminAsync(Guid classId, int pageNumber, int pageSize, string? searchTerm)
+    {
+        var classEntity = await _classRepository.GetByIdAsync(classId);
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        var userClassesQuery = await _userClassRepository.GetByClassIdAsync(classId);
+        var studentIds = userClassesQuery.Select(uc => uc.StudentId).ToList();
+
+        if (!studentIds.Any())
+        {
+            return new
+            {
+                items = new List<object>(),
+                totalCount = 0,
+                pageNumber,
+                pageSize,
+                totalPages = 0
+            };
+        }
+
+        var studentsQuery = (await _studentRepository.GetAllAsync())
+            .Where(s => studentIds.Contains(s.UserId))
+            .AsQueryable();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            studentsQuery = studentsQuery.Where(s =>
+                s.FullName.Contains(searchTerm) ||
+                s.StudentCode.Contains(searchTerm) ||
+                s.Email.Contains(searchTerm));
+        }
+
+        var totalCount = studentsQuery.Count();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var studentsList = studentsQuery
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var students = studentsList
+            .Select(s =>
+            {
+                var userClass = userClassesQuery.FirstOrDefault(uc => uc.StudentId == s.UserId);
+                return new
+                {
+                    userId = s.UserId,
+                    fullName = s.FullName,
+                    email = s.Email,
+                    studentCode = s.StudentCode,
+                    isActive = userClass?.IsActive ?? false,
+                    joinedAt = userClass?.JoinedAt
+                };
+            })
+            .ToList();
+
+        return new
+        {
+            items = students,
+            totalCount,
+            pageNumber,
+            pageSize,
+            totalPages
+        };
     }
 }
