@@ -36,10 +36,6 @@ public class BestSubmission
     /// </summary>
     public int Score { get; set; }
     
-    /// <summary>
-    /// Điểm tối đa
-    /// </summary>
-    public int MaxScore { get; set; }
     
     /// <summary>
     /// Tổng thời gian thực thi (ms)

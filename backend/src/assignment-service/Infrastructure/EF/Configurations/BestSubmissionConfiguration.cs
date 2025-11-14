@@ -21,7 +21,6 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         builder.Property(bs => bs.ProblemId).HasColumnName("ProblemId");
         builder.Property(bs => bs.SubmissionId).HasColumnName("SubmissionId");
         builder.Property(bs => bs.Score).HasColumnName("Score");
-        builder.Property(bs => bs.MaxScore).HasColumnName("MaxScore");
         builder.Property(bs => bs.TotalTime).HasColumnName("TotalTime");
         builder.Property(bs => bs.TotalMemory).HasColumnName("TotalMemory");
         builder.Property(bs => bs.SubmitAt).HasColumnName("SubmitAt");
