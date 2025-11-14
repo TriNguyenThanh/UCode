@@ -25,6 +25,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { mockPracticeCategories } from '~/data/mock'
 import type { ApiResponse, PagedResponse, Class, Assignment } from '~/types'
 import { getStudentAssignments, getMyAssignments } from '~/services/assignmentService'
+import * as StudentService from '~/services/studentService'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Trang chủ | UCode' },
@@ -34,6 +35,18 @@ export const meta: Route.MetaFunction = () => [
 export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
+  
+  // Get user profile to display full name
+  let userName = user.email.split('@')[0] // Fallback to email username
+  try {
+    if (user.role === 'student') {
+      const profile = await StudentService.getMyProfile()
+      userName = profile.fullName || userName
+    }
+  } catch (error) {
+    console.error('Error loading profile:', error)
+    // Keep fallback username
+  }
   
   try {
     // Student: Get enrolled classes from new endpoint
@@ -90,6 +103,7 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
     
     return {
       user,
+      userName,
       classes,
       upcomingAssignments,
       practiceCategories: mockPracticeCategories,
@@ -99,6 +113,7 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
     // Fallback to empty data nếu API fail
     return {
       user,
+      userName,
       classes: [],
       upcomingAssignments: [],
       practiceCategories: mockPracticeCategories,
@@ -107,7 +122,7 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
 }
 
 export default function Home() {
-  const { user, classes, upcomingAssignments, practiceCategories } = useLoaderData<typeof clientLoader>()
+  const { user, userName, classes, upcomingAssignments, practiceCategories } = useLoaderData<typeof clientLoader>()
 
   const getDaysUntilDue = (endTime?: string) => {
     if (!endTime) return null
@@ -138,7 +153,7 @@ export default function Home() {
         {/* Welcome Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-            Xin chào, {user.email.split('@')[0]}! 👋
+            Xin chào, {userName}! 👋
           </Typography>
           <Typography variant='body1' color='text.secondary'>
             Hôm nay bạn muốn học gì?

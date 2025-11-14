@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { redirect, useNavigate, Form, useActionData } from 'react-router'
 import type { Route } from './+types/teacher.class.create'
 import { auth } from '~/auth'
@@ -12,10 +11,6 @@ import {
   Button,
   Paper,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -35,7 +30,6 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData()
   const className = formData.get('name') as string
   const classCode = formData.get('code') as string
-  const semester = formData.get('semester') as string
   const description = formData.get('description') as string
 
   if (!className) {
@@ -71,14 +65,6 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 export default function CreateClass() {
   const navigate = useNavigate()
   const actionData = useActionData<typeof clientAction>()
-  const [semester, setSemester] = useState('HK1 2024-2025')
-
-  const currentYear = new Date().getFullYear()
-  const semesters = [
-    `HK1 ${currentYear}-${currentYear + 1}`,
-    `HK2 ${currentYear}-${currentYear + 1}`,
-    `HK3 ${currentYear}-${currentYear + 1}`,
-  ]
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -123,23 +109,6 @@ export default function CreateClass() {
               sx={{ mb: 3 }}
               helperText="Mã lớp học (viết tắt), dùng để định danh lớp"
             />
-
-            {/* Semester */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Học kỳ *</InputLabel>
-              <Select
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-                label="Học kỳ *"
-                name="semester"
-              >
-                {semesters.map((sem) => (
-                  <MenuItem key={sem} value={sem}>
-                    {sem}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
 
             {/* Description */}
             <TextField
