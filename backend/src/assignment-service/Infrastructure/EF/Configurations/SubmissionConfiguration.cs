@@ -25,10 +25,6 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(s => s.Language)
-            .IsRequired()
-            .HasMaxLength(50);
-
         builder.Property(s => s.CompareResult)
             .HasMaxLength(255);
 
@@ -48,9 +44,9 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
             .HasDefaultValueSql("SYSDATETIME()");
 
         // Relationships
-        builder.HasOne(s => s.AssignmentUser)
-            .WithMany(au => au.Submissions)
-            .HasForeignKey(s => s.AssignmentUserId)
+        builder.HasOne(s => s.Assignment)
+            .WithMany()
+            .HasForeignKey(s => s.AssignmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(s => s.Problem)
@@ -58,9 +54,19 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
             .HasForeignKey(s => s.ProblemId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(s => s.Dataset)
+            .WithMany()
+            .HasForeignKey(s => s.DatasetId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(s => s.Language)
+            .WithMany()
+            .HasForeignKey(s => s.LanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Indexes
         builder.HasIndex(s => s.UserId);
-        builder.HasIndex(s => s.AssignmentUserId);
+        builder.HasIndex(s => s.AssignmentId);
         builder.HasIndex(s => s.ProblemId);
         builder.HasIndex(s => s.DatasetId);
         builder.HasIndex(s => s.Status);

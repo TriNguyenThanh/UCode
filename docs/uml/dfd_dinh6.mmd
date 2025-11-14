@@ -1,0 +1,33 @@
+---
+config:
+  layout: elk
+---
+flowchart BT
+    SV["Sinh viên"] -- Nộp bài từ P5 --> P61("6.1. Lưu trữ lịch sử nộp bài")
+    P61 -- Lưu lịch sử --> D_Submission[("Lịch sử nộp bài")]
+    D_Submission -- Xác nhận lưu --> P61
+    P61 -- Chuyển code chấm --> P62("6.2. Chấm điểm tự động<br>&amp; lưu kết quả")
+    P62 -- Truy vấn testcase --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Testcase --> P62
+    P62 -- Lưu kết quả chấm --> D_Submission
+    D_Submission -- Dữ liệu kết quả --> P62
+    P62 -- Dữ liệu thống kê --> P63("6.3. Thống kê<br>(tỉ lệ pass/fail)")
+    P63 -- Truy vấn dữ liệu --> D_Submission
+    D_Submission -- Dữ liệu nộp --> P63
+    P63 -- Thống kê pass/fail --> GV["Giảng viên"]
+    P64("6.4. Cung cấp phản hồi<br>(điểm, code mẫu)") -- Truy vấn kết quả --> D_Submission
+    D_Submission -- Dữ liệu phản hồi --> P64
+    P64 -- Phản hồi điểm/code --> SV
+    P64 -- Phản hồi cho GV --> GV
+     SV:::student
+     P61:::process
+     D_Submission:::datastore
+     P62:::process
+     D_Problem:::datastore
+     P63:::process
+     GV:::lecturer
+     P64:::process
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

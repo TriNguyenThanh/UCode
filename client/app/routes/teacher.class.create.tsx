@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { redirect, useNavigate, Form, useActionData } from 'react-router'
 import type { Route } from './+types/teacher.class.create'
 import { auth } from '~/auth'
+import * as ClassService from '~/services/classService'
 import { Navigation } from '~/components/Navigation'
 import {
   Box,
@@ -28,21 +29,43 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
+  const user = auth.getUser()
+  if (!user) throw redirect('/login')
+  
   const formData = await request.formData()
-  const name = formData.get('name') as string
-  const code = formData.get('code') as string
+  const className = formData.get('name') as string
+  const classCode = formData.get('code') as string
   const semester = formData.get('semester') as string
   const description = formData.get('description') as string
 
-  if (!name || !code || !semester) {
-    return { error: 'Vui lòng điền đầy đủ thông tin bắt buộc' }
+  if (!className) {
+    return { error: 'Vui lòng nhập tên lớp học' }
   }
 
-  // Create class (mock - in real app, this would call API)
-  const newClassId = `class-${Date.now()}`
-  
-  // Redirect to class detail page
-  return redirect(`/teacher/class/${newClassId}`)
+  if (!user.userId) {
+    console.error('User ID is missing:', user)
+    return { error: 'Không tìm thấy thông tin giáo viên. Vui lòng đăng nhập lại.' }
+  }
+
+  const requestData = {
+    name: className,
+    classCode: classCode || undefined, // Optional - backend will auto-generate if empty
+    teacherId: user.userId,
+    description: description || undefined,
+  }
+
+  console.log('Creating class with data:', requestData)
+
+  try {
+    // Create class via API
+    const newClass = await ClassService.createClass(requestData)
+    
+    // Redirect to class detail page
+    return redirect(`/teacher/class/${newClass.classId}`)
+  } catch (error) {
+    console.error('Error creating class:', error)
+    return { error: 'Không thể tạo lớp học. Vui lòng thử lại.' }
+  }
 }
 
 export default function CreateClass() {

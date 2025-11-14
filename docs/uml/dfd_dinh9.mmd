@@ -1,0 +1,38 @@
+---
+config:
+  layout: elk
+---
+flowchart LR
+    AD["Quản trị viên"] -- Yêu cầu sao lưu --> P91("9.1. Sao lưu dữ liệu<br>(CSDL, bài nộp)")
+    P91 -- Sao lưu người dùng --> D_User[("Thông tin người dùng")]
+    P91 -- Sao lưu lớp học --> D_Class[("Thông tin lớp học")]
+    P91 -- Sao lưu bài tập --> D_Assignment[("Thông tin bài tập")]
+    P91 -- Sao lưu bài toán --> D_Problem[("Thông tin bài toán")]
+    P91 -- Sao lưu nộp bài --> D_Submission[("Lịch sử nộp bài")]
+    P91 -- Sao lưu điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    P91 -- Lưu sao lưu --> D_Backup[("Dữ liệu sao lưu")]
+    D_Backup -- Xác nhận lưu --> P91
+    P91 -- Kết quả sao lưu --> AD
+    AD -- Yêu cầu khôi phục --> P92("9.2. Khôi phục dữ liệu")
+    P92 -- Truy vấn sao lưu --> D_Backup
+    D_Backup -- Dữ liệu khôi phục --> P92
+    P92 -- Khôi phục người dùng --> D_User
+    P92 -- Khôi phục lớp học --> D_Class
+    P92 -- Khôi phục bài tập --> D_Assignment
+    P92 -- Khôi phục bài toán --> D_Problem
+    P92 -- Khôi phục nộp bài --> D_Submission
+    P92 -- Khôi phục điểm danh --> D_Attendance
+    P92 -- Kết quả khôi phục --> AD
+     AD:::admin
+     P91:::process
+     D_User:::datastore
+     D_Class:::datastore
+     D_Assignment:::datastore
+     D_Problem:::datastore
+     D_Submission:::datastore
+     D_Attendance:::datastore
+     D_Backup:::datastore
+     P92:::process
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

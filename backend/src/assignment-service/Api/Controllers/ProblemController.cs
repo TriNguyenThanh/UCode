@@ -25,13 +25,15 @@ public class ProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
     private readonly ILanguageService _languageService;
+    private readonly IDatasetService _datasetService;
     private readonly IMapper _mapper;
-    
-    public ProblemController(IProblemService problemService, ILanguageService languageService, IMapper mapper)
+
+    public ProblemController(IProblemService problemService, ILanguageService languageService, IDatasetService datasetService, IMapper mapper)
     {
         _problemService = problemService;
         _languageService = languageService;
         _mapper = mapper;
+        _datasetService = datasetService;
     }
 
     #region Helper Methods
@@ -156,8 +158,17 @@ public class ProblemController : ControllerBase
         }
         
         var problem = await GetProblemOrThrowAsync(problemId);
+        var problemRes = _mapper.Map<ProblemResponse>(problem);
+        
+        // Get sample dataset and map to DTO
+        var datasets = await _datasetService.GetDatasetsByProblemIdAsync(problemId, DatasetKind.SAMPLE);
+        var sampleDataset = datasets?.FirstOrDefault();
+        if (sampleDataset != null)
+        {
+            problemRes.datasetSample = _mapper.Map<DatasetDto>(sampleDataset);
+        }
 
-        return Ok(ApiResponse<ProblemResponse>.SuccessResponse(_mapper.Map<ProblemResponse>(problem), "Problem retrieved successfully"));
+        return Ok(ApiResponse<ProblemResponse>.SuccessResponse(problemRes, "Problem retrieved successfully"));
     }
 
     /// <summary>
@@ -179,13 +190,19 @@ public class ProblemController : ControllerBase
         
         var visibility = problem.Visibility;
         
-        // Students can only access PUBLIC problems
         if (visibility != Visibility.PUBLIC)
             throw new ApiException("Problem not accessible");
         
         var response = _mapper.Map<ProblemResponse>(problem);
         
         response.OwnerId = Guid.Empty;
+        
+        var datasets = await _datasetService.GetDatasetsByProblemIdAsync(problemId, DatasetKind.SAMPLE);
+        var sampleDataset = datasets?.FirstOrDefault();
+        if (sampleDataset != null)
+        {
+            response.datasetSample = _mapper.Map<DatasetDto>(sampleDataset);
+        }
 
         return Ok(ApiResponse<ProblemResponse>.SuccessResponse(response, "Problem retrieved successfully"));
     }
@@ -222,7 +239,7 @@ public class ProblemController : ControllerBase
         
         var pagedResponse = new PagedResponse<ProblemResponse>
         {
-            Data = problemDtos,
+            Items = problemDtos,
             Page = page,
             PageSize = pageSize,
             TotalCount = total,
@@ -361,6 +378,7 @@ public class ProblemController : ControllerBase
         var problems = await _problemService.GetPublicProblemsAsync();
 
         var problemDtos = _mapper.Map<List<ProblemResponse>>(problems);
+
         return Ok(ApiResponse<List<ProblemResponse>>.SuccessResponse(problemDtos, "Public problems retrieved successfully"));
     }
 
@@ -573,7 +591,7 @@ public class ProblemController : ControllerBase
         
         var pagedResponse = new PagedResponse<ProblemResponse>
         {
-            Data = problemDtos,
+            Items = problemDtos,
             Page = page,
             PageSize = pageSize,
             TotalCount = total,

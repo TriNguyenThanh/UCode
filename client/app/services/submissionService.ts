@@ -8,6 +8,7 @@ export interface SubmitCodeRequest {
   problemId: string
   languageId: string
   sourceCode: string
+  assignmentId: string | null
 }
 
 export interface CreateSubmissionResponse {
@@ -104,14 +105,32 @@ export async function getSubmissionsByProblem(
  * Get best submissions (leaderboard) for a specific problem in an assignment
  */
 export async function getBestSubmissions(
-  assignmentUserId: string,
+  assignmentId: string,
   problemId: string,
   pageNumber = 1,
   pageSize = 10,
 ): Promise<BestSubmission[]> {
   try {
     const response = await API.get<ApiResponse<BestSubmission[]>>(
-      `/api/v1/submissions/assignment/${assignmentUserId}/problem/${problemId}/best${buildQueryString({ pageNumber, pageSize })}`,
+      `/api/v1/submissions/assignment/${assignmentId}/problem/${problemId}/best${buildQueryString({ pageNumber, pageSize })}`,
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get best submissions (leaderboard) for a specific problem in an assignment
+ */
+export async function getListBestSubmissions(
+  assignmentId: string,
+  problems: string[]
+): Promise<BestSubmission[]> {
+  try {
+    const response = await API.post<ApiResponse<BestSubmission[]>>(
+      `/api/v1/submissions/assignment/${assignmentId}/problem/list-my-best`,
+      { problemIds: problems }
     )
     return unwrapApiResponse(response.data)
   } catch (error) {

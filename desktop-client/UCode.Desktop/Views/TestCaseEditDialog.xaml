@@ -1,0 +1,76 @@
+<Window x:Class="UCode.Desktop.Views.TestCaseEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:UCode.Desktop.Views"
+        Title="Test Case" 
+        Height="600" Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" FontSize="24" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,20">
+            <TextBlock.Text>
+                <Binding Path="IsEditing">
+                    <Binding.Converter>
+                        <local:BoolToTextConverter TrueText="Chỉnh sửa Test Case" FalseText="Thêm Test Case mới"/>
+                    </Binding.Converter>
+                </Binding>
+            </TextBlock.Text>
+        </TextBlock>
+
+        <!-- Form -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Input -->
+                <TextBlock Grid.Row="0" Text="Input *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                <TextBox Grid.Row="1"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         Padding="10"/>
+
+                <!-- Output -->
+                <TextBlock Grid.Row="3" Text="Expected Output *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                <TextBox Grid.Row="4"
+                         Text="{Binding OutputText, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         Padding="10"/>
+            </Grid>
+        </Border>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Hủy" Style="{StaticResource SecondaryButtonStyle}"
+                    Click="Cancel_Click"
+                    Width="120" Margin="0,0,15,0"/>
+            <Button Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding SaveTestCaseCommand}"
+                    Width="120">
+                <TextBlock Text="{Binding SaveButtonText}"/>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
+

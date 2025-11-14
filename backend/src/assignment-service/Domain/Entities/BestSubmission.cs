@@ -9,11 +9,17 @@ public class BestSubmission
     public Guid BestSubmissionId { get; set; }
     
     /// <summary>
-    /// ID của AssignmentUser (stored only, không có FK relationship)
+    /// ID của Assignment (stored only, không có FK relationship)
     /// Denormalized để query nhanh hơn
     /// </summary>
-    public Guid AssignmentUserId { get; set; }
-    
+    public Guid AssignmentId { get; set; }
+
+    /// <summary>
+    /// ID của User (stored only, không có FK relationship)
+    /// Denormalized để query nhanh hơn
+    /// </summary>
+    public Guid UserId { get; set; }
+
     /// <summary>
     /// ID của Problem (stored only, không có FK relationship)
     /// Denormalized để query nhanh hơn
@@ -44,9 +50,9 @@ public class BestSubmission
     /// Tổng bộ nhớ sử dụng (KB)
     /// </summary>
     public long TotalMemory { get; set; }
-    
+
     /// <summary>
-    /// Thời gian cập nhật lần cuối
+    /// Thời gian nộp bài
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime SubmitAt { get; set; }
 }

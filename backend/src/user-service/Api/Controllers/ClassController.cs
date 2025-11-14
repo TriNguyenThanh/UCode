@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
+using UserService.Application.DTOs.Responses;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -21,14 +24,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Tạo lớp học mới
+    /// [TEACHER] Tạo lớp học mới
     /// </summary>
     /// <param name="request">Thông tin lớp học</param>
     /// <returns>Thông tin lớp học đã tạo</returns>
     /// <response code="200">Lớp học được tạo thành công</response>
     /// <response code="400">Dữ liệu không hợp lệ</response>
     [HttpPost("create")]
-    [SwaggerOperation(Summary = "Tạo lớp học", Description = "Tạo một lớp học mới")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Tạo lớp học", Description = "Tạo một lớp học mới")]
     [SwaggerResponse(200, "Lớp học được tạo thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Dữ liệu không hợp lệ", typeof(ApiResponse<object>))]
     public async Task<IActionResult> CreateClass([FromBody] CreateClassRequest request)
@@ -41,14 +45,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy thông tin lớp học theo ID
+    /// [TEACHER/STUDENT] Lấy thông tin lớp học theo ID
     /// </summary>
     /// <param name="id">ID của lớp học</param>
     /// <returns>Thông tin lớp học</returns>
     /// <response code="200">Trả về thông tin lớp học</response>
     /// <response code="404">Không tìm thấy lớp học</response>
     [HttpGet("{id}")]
-    [SwaggerOperation(Summary = "Lấy lớp học theo ID", Description = "Lấy thông tin lớp học theo ID")]
+    [Authorize(Roles = "Teacher,Student")]
+    [SwaggerOperation(Summary = "[TEACHER/STUDENT] Lấy lớp học theo ID", Description = "Lấy thông tin lớp học theo ID")]
     [SwaggerResponse(200, "Thông tin lớp học", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "Không tìm thấy lớp học", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetClass(string id)
@@ -61,14 +66,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy thông tin chi tiết lớp học theo ID
+    /// [TEACHER] Lấy thông tin chi tiết lớp học theo ID
     /// </summary>
     /// <param name="id">ID của lớp học</param>
     /// <returns>Thông tin chi tiết lớp học bao gồm danh sách sinh viên</returns>
     /// <response code="200">Thông tin chi tiết lớp học</response>
     /// <response code="404">Không tìm thấy lớp học</response>
     [HttpGet("{id}/detail")]
-    [SwaggerOperation(Summary = "Lấy thông tin chi tiết lớp học", Description = "Lấy thông tin chi tiết lớp học bao gồm danh sách sinh viên")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Lấy thông tin chi tiết lớp học", Description = "Lấy thông tin chi tiết lớp học bao gồm danh sách sinh viên")]
     [SwaggerResponse(200, "Thông tin chi tiết lớp học", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "Không tìm thấy lớp học", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetClassDetail(string id)
@@ -81,18 +87,45 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy danh sách lớp học
+    /// [TEACHER] Lấy danh sách lớp học của teacher hiện tại
+    /// </summary>
+    /// <param name="pageNumber">Số trang</param>
+    /// <param name="pageSize">Số lượng mỗi trang</param>
+    /// <param name="isActive">Trạng thái hoạt động (lọc)</param>
+    /// <returns>Danh sách lớp học</returns>
+    /// <response code="200">Trả về danh sách lớp học</response>
+    [HttpGet]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Lấy danh sách lớp học", Description = "Lấy danh sách lớp học của teacher hiện tại có phân trang và lọc theo trạng thái")]
+    [SwaggerResponse(200, "Danh sách lớp học", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> GetClasses(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool? isActive = null)
+    {
+        // Lấy teacherId từ JWT token
+        var teacherId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+
+        var classes = await _classService.GetClassesAsync(pageNumber, pageSize, teacherId, isActive);
+        return Ok(ApiResponse<object>.SuccessResponse(classes, "Classes retrieved successfully"));
+    }
+
+    /// <summary>
+    /// [ADMIN] Lấy tất cả lớp học trong hệ thống
     /// </summary>
     /// <param name="pageNumber">Số trang</param>
     /// <param name="pageSize">Số lượng mỗi trang</param>
     /// <param name="teacherId">ID giáo viên (lọc)</param>
     /// <param name="isActive">Trạng thái hoạt động (lọc)</param>
-    /// <returns>Danh sách lớp học</returns>
+    /// <returns>Danh sách tất cả lớp học</returns>
     /// <response code="200">Trả về danh sách lớp học</response>
-    [HttpGet]
-    [SwaggerOperation(Summary = "Lấy danh sách lớp học", Description = "Lấy danh sách lớp học có phân trang và lọc theo giáo viên, trạng thái")]
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    [SwaggerOperation(Summary = "[ADMIN] Lấy tất cả lớp học", Description = "Lấy tất cả lớp học trong hệ thống có phân trang và lọc")]
     [SwaggerResponse(200, "Danh sách lớp học", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> GetClasses(
+    public async Task<IActionResult> GetAllClasses(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? teacherId = null,
@@ -103,14 +136,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Cập nhật thông tin lớp học
+    /// [TEACHER] Cập nhật thông tin lớp học
     /// </summary>
     /// <param name="request">Thông tin cập nhật</param>
     /// <returns>Trạng thái cập nhật</returns>
     /// <response code="200">Cập nhật thành công</response>
     /// <response code="400">Cập nhật thất bại</response>
     [HttpPut("update")]
-    [SwaggerOperation(Summary = "Cập nhật lớp học", Description = "Cập nhật thông tin lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Cập nhật lớp học", Description = "Cập nhật thông tin lớp học")]
     [SwaggerResponse(200, "Cập nhật thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> UpdateClass([FromBody] UpdateClassRequest request)
@@ -126,14 +160,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Xóa lớp học
+    /// [TEACHER] Xóa lớp học
     /// </summary>
     /// <param name="id">ID lớp học</param>
     /// <returns>Trạng thái xóa</returns>
     /// <response code="200">Xóa thành công</response>
     /// <response code="400">Xóa thất bại</response>
     [HttpDelete("delete")]
-    [SwaggerOperation(Summary = "Xóa lớp học", Description = "Xóa một lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Xóa lớp học", Description = "Xóa một lớp học")]
     [SwaggerResponse(200, "Xóa thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> DeleteClass([FromQuery] string id)
@@ -146,14 +181,34 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Thêm sinh viên vào lớp học
+    /// [STUDENT] Lấy danh sách lớp học đã đăng ký
+    /// </summary>
+    /// <returns>Danh sách lớp học đã đăng ký</returns>
+    /// <response code="200">Danh sách lớp học</response>
+    [HttpGet("enrolled")]
+    [Authorize(Roles = "Student")]
+    [SwaggerOperation(Summary = "[STUDENT] Lấy lớp học đã đăng ký", Description = "Student lấy danh sách các lớp đã enroll từ JWT token")]
+    [SwaggerResponse(200, "Danh sách lớp học đã đăng ký", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> GetEnrolledClasses()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+
+        var classes = await _classService.GetClassesByStudentIdAsync(userId);
+        return Ok(ApiResponse<object>.SuccessResponse(classes, "Enrolled classes retrieved successfully"));
+    }
+
+    /// <summary>
+    /// [TEACHER] Thêm sinh viên vào lớp học
     /// </summary>
     /// <param name="request">ID lớp học và sinh viên</param>
     /// <returns>Trạng thái thêm</returns>
     /// <response code="200">Thêm thành công</response>
     /// <response code="400">Thêm thất bại</response>
     [HttpPost("add-student")]
-    [SwaggerOperation(Summary = "Thêm sinh viên vào lớp", Description = "Thêm một sinh viên vào lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Thêm sinh viên vào lớp", Description = "Thêm một sinh viên vào lớp học")]
     [SwaggerResponse(200, "Thêm thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Thêm thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> AddStudentToClass([FromBody] AddStudentToClassRequest request)
@@ -169,14 +224,15 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Thêm nhiều sinh viên vào lớp học
+    /// [TEACHER] Thêm nhiều sinh viên vào lớp học
     /// </summary>
     /// <param name="request">ID lớp học và danh sách sinh viên</param>
     /// <returns>Trạng thái thêm</returns>
     /// <response code="200">Thêm thành công</response>
     /// <response code="400">Thêm thất bại</response>
     [HttpPost("add-students")]
-    [SwaggerOperation(Summary = "Thêm nhiều sinh viên vào lớp", Description = "Thêm nhiều sinh viên vào lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Thêm nhiều sinh viên vào lớp", Description = "Thêm nhiều sinh viên vào lớp học")]
     [SwaggerResponse(200, "Thêm thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Thêm thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> AddStudentsToClass([FromBody] AddStudentsToClassRequest request)
@@ -192,7 +248,7 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Xóa sinh viên khỏi lớp học
+    /// [TEACHER] Xóa sinh viên khỏi lớp học
     /// </summary>
     /// <param name="classId">ID lớp học</param>
     /// <param name="studentId">ID sinh viên</param>
@@ -200,7 +256,8 @@ public class ClassController : ControllerBase
     /// <response code="200">Xóa thành công</response>
     /// <response code="400">Xóa thất bại</response>
     [HttpDelete("remove-student")]
-    [SwaggerOperation(Summary = "Xóa sinh viên khỏi lớp", Description = "Xóa sinh viên khỏi lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Xóa sinh viên khỏi lớp", Description = "Xóa sinh viên khỏi lớp học")]
     [SwaggerResponse(200, "Xóa thành công", typeof(ApiResponse<object>))]
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> RemoveStudentFromClass([FromQuery] string classId, [FromQuery] string studentId)
@@ -213,18 +270,80 @@ public class ClassController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy danh sách sinh viên trong lớp học
+    /// [TEACHER] Lấy danh sách sinh viên trong lớp học
     /// </summary>
     /// <param name="classId">ID lớp học</param>
     /// <returns>Danh sách sinh viên</returns>
     /// <response code="200">Trả về danh sách sinh viên</response>
     [HttpGet("{classId}/students")]
-    [SwaggerOperation(Summary = "Lấy danh sách sinh viên trong lớp", Description = "Lấy danh sách sinh viên trong một lớp học")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Lấy danh sách sinh viên trong lớp", Description = "Lấy danh sách sinh viên trong một lớp học")]
     [SwaggerResponse(200, "Danh sách sinh viên", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetStudentListByClass(string classId)
     {
         var students = await _classService.GetStudentListByClassAsync(classId);
         return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
+    }
+
+    /// <summary>
+    /// [TEACHER] Check duplicate students khi import
+    /// </summary>
+    /// <param name="classId">ID lớp học</param>
+    /// <param name="request">Danh sách MSSV hoặc Email cần check</param>
+    /// <returns>Danh sách student IDs đã tồn tại trong lớp</returns>
+    /// <response code="200">Check thành công</response>
+    [HttpPost("{classId}/check-duplicates")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Check duplicate students", Description = "Kiểm tra xem sinh viên đã enroll vào lớp chưa")]
+    [SwaggerResponse(200, "Check duplicates thành công", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> CheckDuplicates(string classId, [FromBody] CheckDuplicatesRequest request)
+    {
+        try
+        {
+            var duplicates = await _classService.CheckDuplicatesAsync(classId, request.Identifiers);
+            
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new {
+                    ClassId = classId,
+                    TotalChecked = request.Identifiers.Count,
+                    DuplicateCount = duplicates.Count,
+                    Duplicates = duplicates
+                },
+                "Duplicate check completed"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to check duplicates: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER] Bulk enroll sinh viên vào lớp
+    /// </summary>
+    /// <param name="classId">ID lớp học</param>
+    /// <param name="request">Danh sách student IDs cần enroll</param>
+    /// <returns>Kết quả enroll</returns>
+    /// <response code="200">Enroll thành công</response>
+    [HttpPost("{classId}/bulk-enroll")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Bulk enroll students", Description = "Enroll nhiều sinh viên vào lớp cùng lúc")]
+    [SwaggerResponse(200, "Bulk enroll thành công", typeof(ApiResponse<BulkEnrollResult>))]
+    public async Task<IActionResult> BulkEnrollStudents(string classId, [FromBody] BulkEnrollRequest request)
+    {
+        try
+        {
+            var result = await _classService.BulkEnrollStudentsAsync(classId, request.StudentIds);
+            
+            return Ok(ApiResponse<BulkEnrollResult>.SuccessResponse(
+                result,
+                $"Đã thêm {result.SuccessCount}/{request.StudentIds.Count} sinh viên vào lớp thành công"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to bulk enroll: {ex.Message}"));
+        }
     }
 }
 
@@ -235,3 +354,12 @@ public class AddStudentToClassRequest
     public string StudentId { get; set; } = string.Empty;
 }
 
+public class CheckDuplicatesRequest
+{
+    public List<string> Identifiers { get; set; } = new(); // MSSV or Email
+}
+
+public class BulkEnrollRequest
+{
+    public List<string> StudentIds { get; set; } = new();
+}
