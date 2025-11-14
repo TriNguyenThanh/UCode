@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.assignment.$id'
 import { auth } from '~/auth'
-import type { Assignment, AssignmentUser, AssignmentStatistics } from '~/types/index'
+import type { Assignment, AssignmentUser, AssignmentStatistics, StudentResponse } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
 import { AddProblemDialog } from '~/components/AddProblemDialog'
 import { 
@@ -13,6 +13,7 @@ import {
   updateAssignment,
   getAssignmentsByClass
 } from '~/services/assignmentService'
+import { getClassStudents } from '~/services/classService'
 import {
   Box,
   Container,
@@ -71,12 +72,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     
     // Fetch statistics
     const statistics = await getAssignmentStatistics(params.id)
+    
+    // Fetch class students to get MSSV and full names
+    const classStudents = await getClassStudents(assignment.classId)
 
     return { 
       user, 
       assignment, 
       students,
-      statistics
+      statistics,
+      classStudents
     }
   } catch (error) {
     console.error('Failed to load assignment:', error)
@@ -85,7 +90,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function TeacherAssignmentDetail() {
-  const { assignment, students, statistics } = useLoaderData<typeof clientLoader>()
+  const { assignment, students, statistics, classStudents } = useLoaderData<typeof clientLoader>()
   const revalidator = useRevalidator()
   const [tabValue, setTabValue] = useState(0)
   const [openDialog, setOpenDialog] = useState(false)
@@ -93,6 +98,11 @@ export default function TeacherAssignmentDetail() {
   const [problemToDelete, setProblemToDelete] = useState<string | null>(null)
   const [deleteAssignmentDialogOpen, setDeleteAssignmentDialogOpen] = useState(false)
 
+  // Create a map to lookup student info by userId
+  const studentMap = new Map<string, StudentResponse>()
+  classStudents.forEach(student => {
+    studentMap.set(student.userId, student)
+  })
 
   // Calculate statistics from students data
   const submittedStudents = students.filter((s) => s.status === 'SUBMITTED' || s.status === 'GRADED')
@@ -135,7 +145,7 @@ export default function TeacherAssignmentDetail() {
     try {
       // Update assignment with new problems
       await updateAssignment(assignment.assignmentId, {
-        assignmentType: assignment.assignmentType,
+        assignmentType: assignment.assignmentType as 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE',
         classId: assignment.classId,
         title: assignment.title,
         description: assignment.description,
@@ -247,7 +257,7 @@ export default function TeacherAssignmentDetail() {
           }}
         >
           <Tab label="Danh sách bài" />
-          <Tab label="Bài nộp sinh viên" />
+          <Tab label="Danh sách sinh viên" />
           <Tab label="Thống kê" />
         </Tabs>
       </Box>
@@ -345,8 +355,8 @@ export default function TeacherAssignmentDetail() {
           <Table>
             <TableHead sx={{ bgcolor: 'secondary.main' }}>
               <TableRow>
-                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>ID</TableCell>
-                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Thông tin SV</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>MSSV</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Họ tên</TableCell>
                 <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Trạng thái</TableCell>
                 <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Thời gian bắt đầu</TableCell>
                 <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Điểm</TableCell>
@@ -356,24 +366,19 @@ export default function TeacherAssignmentDetail() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {students.map((student) => (
+              {students.map((student) => {
+                const studentInfo = studentMap.get(student.userId)
+                return (
                 <TableRow key={student.userId} hover>
-                  <TableCell>{student.userId.substring(0, 8)}...</TableCell>
                   <TableCell>
-                    {student.user ? (
-                      <Box>
-                        <Typography variant="body2" fontWeight="500">
-                          {student.user.fullName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {student.user.studentCode || student.user.email}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        User ID: {student.userId.substring(0, 8)}...
-                      </Typography>
-                    )}
+                    <Typography variant="body2" fontWeight="500">
+                      {studentInfo?.studentCode || 'N/A'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="500">
+                      {studentInfo?.fullName || 'N/A'}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     {student.status === 'SUBMITTED' || student.status === 'GRADED' ? (
@@ -431,7 +436,7 @@ export default function TeacherAssignmentDetail() {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </TableContainer>

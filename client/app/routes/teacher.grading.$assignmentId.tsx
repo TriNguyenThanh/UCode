@@ -9,15 +9,16 @@ import {
   getAssignmentStudents,
   gradeSubmission,
 } from '~/services/assignmentService'
-import { getBestSubmissions } from '~/services/submissionService'
+import { getBestSubmissionForStudent } from '~/services/submissionService'
 import { getProblem } from '~/services/problemService'
-import { getClassById } from '~/services/classService'
+import { getClassStudents } from '~/services/classService'
 import type {
   Assignment,
   AssignmentUser,
   BestSubmission,
   Problem,
   Class,
+  StudentResponse,
 } from '~/types'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -55,13 +56,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   }
 
   try {
-    // Fetch assignment, class, and students in parallel
-    const [assignment, students] = await Promise.all([
+    // Fetch assignment and assignment students in parallel
+    const [assignment, assignmentStudents] = await Promise.all([
       getAssignment(params.assignmentId),
       getAssignmentStudents(params.assignmentId),
     ])
 
-    const classData = await getClassById(assignment.classId)
+    // Fetch class students to get full info (MSSV, name)
+    const classStudents = await getClassStudents(assignment.classId)
 
     // Fetch problems in parallel
     const problems = await Promise.all(
@@ -71,9 +73,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     return {
       user,
       assignment,
-      classData,
       problems,
-      students,
+      assignmentStudents,
+      classStudents,
     }
   } catch (error: any) {
     console.error('Failed to load grading data:', error)
@@ -82,55 +84,52 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function TeacherGrading() {
-  const { assignment, classData, problems, students } = useLoaderData<typeof clientLoader>()
+  const { assignment, problems, assignmentStudents, classStudents } = useLoaderData<typeof clientLoader>()
   const navigate = useNavigate()
-  const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    assignmentStudents.length > 0 ? assignmentStudents[0].userId : null
+  )
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0)
   const [score, setScore] = useState<number | string>('')
   const [feedback, setFeedback] = useState('')
-  const [bestSubmissions, setBestSubmissions] = useState<BestSubmission[]>([])
+  const [currentSubmission, setCurrentSubmission] = useState<BestSubmission | null>(null)
   const [sourceCode, setSourceCode] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const currentStudent = students[currentStudentIndex]
+  // Create map for quick lookup
+  const studentMap = new Map(classStudents.map(s => [s.userId, s]))
+  
+  const currentStudent = assignmentStudents.find(s => s.userId === selectedStudentId)
+  const currentStudentInfo = selectedStudentId ? studentMap.get(selectedStudentId) : null
   const currentProblem = problems[currentProblemIndex]
-  const currentSubmission = bestSubmissions.find(
-    (sub) => sub.problemId === currentProblem?.problemId,
-  )
 
-  // Load best submissions for current student
+  // Load best submission for selected student and current problem
   useEffect(() => {
-    async function loadBestSubmissions() {
-      if (!currentStudent || !assignment.assignmentId) return
+    async function loadBestSubmission() {
+      if (!selectedStudentId || !assignment.assignmentId || !currentProblem?.problemId) return
 
       setIsLoading(true)
       setError(null)
       try {
-        // Fetch best submissions for all problems in this assignment for the current student
-        const submissions = await Promise.all(
-          problems.map(async (problem) => {
-            try {
-              const subs = await getBestSubmissions(assignment.assignmentId, problem.problemId, 1, 1)
-              // Filter by current student userId
-              return subs.find((s) => s.userId === currentStudent.userId) || null
-            } catch (err) {
-              console.error(`Failed to load submission for problem ${problem.problemId}:`, err)
-              return null
-            }
-          }),
+        const submission = await getBestSubmissionForStudent(
+          assignment.assignmentId, 
+          currentProblem.problemId, 
+          selectedStudentId
         )
-        setBestSubmissions(submissions.filter((s): s is BestSubmission => s !== null))
+        setCurrentSubmission(submission)
       } catch (err: any) {
+        console.error(`Failed to load submission for problem ${currentProblem.problemId}:`, err)
+        setCurrentSubmission(null)
         setError(err.message || 'Không thể tải bài làm của sinh viên')
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadBestSubmissions()
-  }, [currentStudent, assignment.assignmentId, problems])
+    loadBestSubmission()
+  }, [selectedStudentId, currentProblemIndex, assignment.assignmentId, currentProblem?.problemId])
 
   // Load source code when submission changes
   useEffect(() => {
@@ -168,18 +167,6 @@ export default function TeacherGrading() {
     }
   }, [currentSubmission])
 
-  const handlePrevStudent = () => {
-    if (currentStudentIndex > 0) {
-      setCurrentStudentIndex(currentStudentIndex - 1)
-    }
-  }
-
-  const handleNextStudent = () => {
-    if (currentStudentIndex < students.length - 1) {
-      setCurrentStudentIndex(currentStudentIndex + 1)
-    }
-  }
-
   const handleSaveGrade = async () => {
     if (!currentSubmission?.submissionId) {
       alert('Không tìm thấy bài làm để chấm điểm')
@@ -193,21 +180,16 @@ export default function TeacherGrading() {
         score: typeof score === 'number' ? score : parseFloat(score as string) || undefined,
         teacherFeedback: feedback || undefined,
       })
-      alert(`Đã lưu điểm cho ${currentStudent.user?.fullName || 'sinh viên'}`)
-      // Reload submissions
-      const updatedSubs = await getBestSubmissions(
-        assignment.assignmentId,
-        currentProblem.problemId,
-        1,
-        100,
-      )
-      setBestSubmissions((prev) =>
-        prev.map((sub) =>
-          sub.problemId === currentProblem.problemId
-            ? updatedSubs.find((s) => s.userId === currentStudent.userId) || sub
-            : sub,
-        ),
-      )
+      alert(`Đã lưu điểm cho ${currentStudentInfo?.fullName || 'sinh viên'}`)
+      // Reload best submission for current problem
+      if (selectedStudentId) {
+        const updatedSub = await getBestSubmissionForStudent(
+          assignment.assignmentId,
+          currentProblem.problemId,
+          selectedStudentId,
+        )
+        setCurrentSubmission(updatedSub)
+      }
     } catch (err: any) {
       console.error('Failed to save grade:', err)
       setError(err.message || 'Không thể lưu điểm. API có thể chưa sẵn sàng.')
@@ -216,8 +198,8 @@ export default function TeacherGrading() {
     }
   }
 
-  // Show loading while fetching data
-  if (isLoading && bestSubmissions.length === 0) {
+  // Show loading while fetching data initially
+  if (isLoading && !currentSubmission && selectedStudentId) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
         <Navigation />
@@ -227,7 +209,7 @@ export default function TeacherGrading() {
   }
 
   // Check if there are any students
-  if (students.length === 0) {
+  if (assignmentStudents.length === 0) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
         <Navigation />
@@ -256,52 +238,52 @@ export default function TeacherGrading() {
         {/* Header */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Chấm bài: {classData?.className} ({classData?.classCode}) / {assignment.title}
+            Chấm bài: {assignment.title}
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-              Chấm bài cho sinh viên ({currentStudentIndex + 1}/{students.length})
+              Chấm bài cho sinh viên
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<NavigateBeforeIcon />}
-                onClick={handlePrevStudent}
-                disabled={currentStudentIndex === 0 || isSaving}
-                sx={{ borderColor: 'secondary.main', color: 'secondary.main' }}
+            
+            {/* Student Selection Combobox */}
+            <FormControl sx={{ minWidth: 350 }}>
+              <InputLabel>Chọn sinh viên</InputLabel>
+              <Select
+                value={selectedStudentId || ''}
+                onChange={(e) => setSelectedStudentId(e.target.value)}
+                label="Chọn sinh viên"
+                disabled={isSaving}
               >
-                Sinh viên trước
-              </Button>
-              <Button
-                variant="outlined"
-                endIcon={<NavigateNextIcon />}
-                onClick={handleNextStudent}
-                disabled={currentStudentIndex === students.length - 1 || isSaving}
-                sx={{ borderColor: 'secondary.main', color: 'secondary.main' }}
-              >
-                Sinh viên sau
-              </Button>
-            </Box>
+                {assignmentStudents.map((student) => {
+                  const studentInfo = studentMap.get(student.userId)
+                  
+                  return (
+                    <MenuItem key={student.userId} value={student.userId}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {studentInfo?.fullName || 'N/A'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          MSSV: {studentInfo?.studentCode || 'N/A'}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  )
+                })}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
 
-        {error && (
-          <Box sx={{ mb: 3 }}>
-            <Typography color="error" variant="body2">
-              {error}
-            </Typography>
-          </Box>
-        )}
-
-        {/* Student Info */}
+        {/* Student Info and Problems */}
         <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.main' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                {currentStudent.user?.fullName || 'Sinh viên'}
+                {currentStudentInfo?.fullName || 'Sinh viên'}
               </Typography>
               <Typography variant="body2" sx={{ color: 'primary.main' }}>
-                MSSV: {currentStudent.user?.studentCode || 'N/A'}
+                MSSV: {currentStudentInfo?.studentCode || 'N/A'}
                 {currentSubmission?.submittedAt && (
                   <>
                     {' • Nộp lúc: '}
@@ -310,11 +292,11 @@ export default function TeacherGrading() {
                 )}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               {problems.map((problem, idx) => {
-                const submission = bestSubmissions.find((s) => s.problemId === problem.problemId)
-                const isPassed = submission && submission.passedTestCases === submission.totalTestCases
-                const hasSubmission = !!submission
+                const isCurrentProblem = currentProblemIndex === idx
+                const isPassed = isCurrentProblem && currentSubmission && currentSubmission.passedTestCases === currentSubmission.totalTestCases
+                const hasSubmission = isCurrentProblem && !!currentSubmission
                 
                 return (
                   <Chip
@@ -329,8 +311,18 @@ export default function TeacherGrading() {
                         : 'default'
                     }
                     sx={{
-                      fontWeight: currentProblemIndex === idx ? 'bold' : 'normal',
-                      border: currentProblemIndex === idx ? 2 : 0,
+                      fontWeight: isCurrentProblem ? 'bold' : 'normal',
+                      cursor: 'pointer',
+                      color: 'white',
+                      border: '2px solid',
+                      borderColor: 'white',
+                      ...(isCurrentProblem && {
+                        border: '2px solid',
+                        borderColor: 'white',
+                        boxShadow: '0 0 0 2px',
+                        boxShadowColor: isPassed ? 'success.main' : hasSubmission ? 'warning.main' : 'grey.500',
+                        transform: 'scale(1.1)',
+                      }),
                     }}
                   />
                 )
@@ -514,30 +506,25 @@ export default function TeacherGrading() {
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-              Tổng quan bài làm:
+              Bài hiện tại:
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-              {problems.map((problem, idx) => {
-                const submission = bestSubmissions.find((s) => s.problemId === problem.problemId)
-                return (
-                  <Box key={problem.problemId} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Bài {idx + 1}:</Typography>
-                    {submission ? (
-                      <Chip
-                        size="small"
-                        label={`${submission.passedTestCases || 0}/${submission.totalTestCases || 0}`}
-                        color={
-                          submission.passedTestCases === submission.totalTestCases
-                            ? 'success'
-                            : 'warning'
-                        }
-                      />
-                    ) : (
-                      <Chip size="small" label="Chưa nộp" color="default" />
-                    )}
-                  </Box>
-                )
-              })}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2">Bài {currentProblemIndex + 1}:</Typography>
+                {currentSubmission ? (
+                  <Chip
+                    size="small"
+                    label={`${currentSubmission.passedTestCases || 0}/${currentSubmission.totalTestCases || 0}`}
+                    color={
+                      currentSubmission.passedTestCases === currentSubmission.totalTestCases
+                        ? 'success'
+                        : 'warning'
+                    }
+                  />
+                ) : (
+                  <Chip size="small" label="Chưa nộp" color="default" />
+                )}
+              </Box>
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

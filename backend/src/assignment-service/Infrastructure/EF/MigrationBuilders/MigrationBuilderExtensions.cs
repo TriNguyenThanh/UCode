@@ -31,7 +31,7 @@ public static class MigrationBuilderExtensions
                             submitted_at DESC
                     ) AS RowNum
                 FROM submission
-                WHERE status IN (4, 5) -- 4: Passed, 5: Failed
+                WHERE status IN ('Passed', 'Failed') -- Only completed submissions
             )
             SELECT 
                 NEWID() AS BestSubmissionId,
