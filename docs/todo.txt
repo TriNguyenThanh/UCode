@@ -28,3 +28,14 @@
     + Chưa có route lớp học
 
 #ADMIN#
+
+WPF
+XAML
+MVVM
+MVC
+API
+EF
+SQL
+LINQ
+RDBMS
+CI/CD
