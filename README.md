@@ -1,4 +1,4 @@
-# UCode - Online Judge Platform
+# UCode - Online Judge Platform For UTC2 Student
 
 A comprehensive Online Judge platform for programming education, featuring microservices architecture with ASP.NET Core backend, React frontend, and automated code execution using Isolate sandbox.
 
@@ -16,16 +16,16 @@ UCode is a complete online learning platform designed for educational institutio
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Client Layer                          │
+│                        Client Layer                         │
 ├──────────────────────┬──────────────────────────────────────┤
 │   React Web App      │    Desktop App (WinForms/WPF)        │
-│   (Port: 5173)       │                                       │
+│   (Port: 5173)       │                                      │
 └──────────────────────┴──────────────────────────────────────┘
                               │
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                     API Gateway (Ocelot)                     │
-│                        Port: 5000                            │
+│                     API Gateway (Ocelot)                    │
+│                        Port: 5000                           │
 └─────────────────────────────────────────────────────────────┘
                               │
         ┌─────────────────────┼─────────────────────┐
