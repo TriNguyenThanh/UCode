@@ -41,5 +41,9 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         // Indexes
         builder.HasIndex(au => au.AssignmentId);
         builder.HasIndex(au => au.UserId);
+        
+        // Unique constraint: One user can only be assigned to an assignment once
+        builder.HasIndex(au => new { au.AssignmentId, au.UserId })
+            .IsUnique();
     }
 }
