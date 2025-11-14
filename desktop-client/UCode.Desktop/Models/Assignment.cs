@@ -89,10 +89,8 @@ namespace UCode.Desktop.Models
     public enum AssignmentType
     {
         HOMEWORK,
-        EXAM,
         EXAMINATION,
-        PRACTICE,
-        CONTEST
+        PRACTICE
     }
 
     public enum AssignmentStatus

@@ -1,4 +1,4 @@
-<Window x:Class="UCode.Desktop.Views.DatasetEditDialog"
+<mah:MetroWindow x:Class="UCode.Desktop.Views.DatasetEditDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -6,7 +6,13 @@
         Title="Quản lý Dataset" 
         Height="700" Width="1100"
         WindowStartupLocation="CenterOwner"
-        Background="#F5F5F5">
+        Background="#F5F5F5"
+        ResizeMode="NoResize"
+        ShowMinButton="False"
+        ShowMaxRestoreButton="False"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
 
     <Grid>
         <!-- Loading Overlay -->
@@ -223,48 +229,26 @@
 
                         <!-- DataGrid -->
                         <DataGrid ItemsSource="{Binding TestCases}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  HeadersVisibility="Column"
-                                  GridLinesVisibility="Horizontal"
-                                  BorderThickness="1"
-                                  BorderBrush="#D2D2D7"
+                                  Style="{StaticResource ModernDataGrid}"
+                                  RowStyle="{StaticResource ModernDataGridRow}"
+                                  CellStyle="{StaticResource ModernDataGridCell}"
+                                  ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
                                   Visibility="{Binding HasTestCases, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            
-                            <!-- Row Style with Hover Effect -->
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Background" Value="White"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E3F2FD"/>
-                                        </Trigger>
-                                        <Trigger Property="AlternationIndex" Value="1">
-                                            <Setter Property="Background" Value="#F9F9F9"/>
-                                        </Trigger>
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="IsMouseOver" Value="True"/>
-                                                <Condition Property="AlternationIndex" Value="1"/>
-                                            </MultiTrigger.Conditions>
-                                            <Setter Property="Background" Value="#E3F2FD"/>
-                                        </MultiTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
                             
                             <DataGrid.Columns>
                                 <DataGridCheckBoxColumn Width="50" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <DataGridCheckBoxColumn.Header>
-                                        <CheckBox IsChecked="{Binding DataContext.AllTestCasesSelected, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"/>
+                                        <CheckBox IsChecked="{Binding DataContext.AllTestCasesSelected, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                                                  Style="{StaticResource SelectionCheckBox}"/>
                                     </DataGridCheckBoxColumn.Header>
+                                    <DataGridCheckBoxColumn.ElementStyle>
+                                        <Style TargetType="CheckBox" BasedOn="{StaticResource SelectionCheckBox}"/>
+                                    </DataGridCheckBoxColumn.ElementStyle>
                                 </DataGridCheckBoxColumn>
                                 <DataGridTextColumn Header="☰" Width="40" IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="TextAlignment" Value="Center"/>
-                                            <Setter Property="Foreground" Value="#999"/>
                                             <Setter Property="Cursor" Value="Hand"/>
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
@@ -391,5 +375,5 @@
             </StackPanel>
         </Grid>
     </Grid>
-</Window>
+</mah:MetroWindow>
 

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1200"
              Background="White">
@@ -166,7 +167,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.5"/>
+                    <iconPacks:PackIconMaterial Grid.Column="0" Kind="Magnify" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.5" Foreground="#999"/>
                     <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"
                              FontSize="14">
@@ -302,7 +303,7 @@
                                 <StackPanel>
                                     <TextBlock Text="{Binding Code}" Foreground="#6C757D" FontSize="12" Margin="0,0,0,3"/>
                                     <TextBlock Text="{Binding Title}" Foreground="#007BFF" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding FilePath}" Foreground="#6C757D" FontSize="11" Opacity="0.7" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding ShortStament}" Foreground="#6C757D" FontSize="11" Opacity="0.7" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -348,19 +349,19 @@
                     </DataGridTemplateColumn>
 
                     <!-- Tags Column -->
-                    <DataGridTemplateColumn Header="Tags" Width="*">
+                    <!-- <DataGridTemplateColumn Header="Tags" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Tags}" Foreground="#6C757D" FontSize="13"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    </DataGridTemplateColumn> -->
 
-                    <!-- Time Limit Column -->
-                    <DataGridTemplateColumn Header="Giới hạn" Width="*">
+                    <!-- Time Created Column -->
+                    <DataGridTemplateColumn Header="Thời gian tạo" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding TimeLimit}" Foreground="#6C757D" FontSize="13"/>
+                                <TextBlock Text="{Binding CreatedAt}" Foreground="#6C757D" FontSize="13"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -370,16 +371,20 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Button Content="✏️" ToolTip="Chỉnh sửa"
+                                    <Button ToolTip="Chỉnh sửa"
                                             Command="{Binding DataContext.EditProblemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding ProblemId}"
                                             Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                            FontSize="16" Padding="8" Margin="0,0,5,0"/>
-                                    <Button Content="🗑️" ToolTip="Xóa"
+                                            Padding="8" Margin="0,0,5,0">
+                                        <iconPacks:PackIconMaterial Kind="Pencil" FontSize="14" Foreground="#007BFF"/>
+                                    </Button>
+                                    <Button ToolTip="Xóa"
                                             Command="{Binding DataContext.DeleteProblemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding ProblemId}"
                                             Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                            FontSize="16" Padding="8"/>
+                                            Padding="8">
+                                        <iconPacks:PackIconMaterial Kind="Delete" FontSize="14" Foreground="#DC3545"/>
+                                    </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -407,10 +412,16 @@
             </TextBlock>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="← Trang trước" Command="{Binding PreviousPageCommand}"
-                        Style="{StaticResource FilterButtonStyle}" Margin="0,0,10,0"/>
-                <Button Content="Trang sau →" Command="{Binding NextPageCommand}"
-                        Style="{StaticResource FilterButtonStyle}"/>
+                <Button Command="{Binding PreviousPageCommand}"
+                        Style="{StaticResource FilterButtonStyle}" Margin="0,0,10,0"
+                        ToolTip="Trang trước">
+                    <iconPacks:PackIconMaterial Kind="ChevronLeft" FontSize="14"/>
+                </Button>
+                <Button Command="{Binding NextPageCommand}"
+                        Style="{StaticResource FilterButtonStyle}"
+                        ToolTip="Trang sau">
+                    <iconPacks:PackIconMaterial Kind="ChevronRight" FontSize="14"/>
+                </Button>
             </StackPanel>
         </Grid>
     </Grid>

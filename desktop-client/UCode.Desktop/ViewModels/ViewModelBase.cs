@@ -1,5 +1,8 @@
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using MahApps.Metro.Controls;
 
 namespace UCode.Desktop.ViewModels
 {
@@ -20,6 +23,19 @@ namespace UCode.Desktop.ViewModels
             field = value;
             OnPropertyChanged(propertyName);
             return true;
+        }
+
+        protected MetroWindow GetMetroWindow()
+        {
+            // Try to get the active window first (for dialogs)
+            var activeWindow = Application.Current.Windows.OfType<MetroWindow>()
+                .FirstOrDefault(w => w.IsActive);
+            
+            if (activeWindow != null)
+                return activeWindow;
+            
+            // Fallback to main window
+            return Application.Current.Windows.OfType<MetroWindow>().FirstOrDefault();
         }
     }
 }

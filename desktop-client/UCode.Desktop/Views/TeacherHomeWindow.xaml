@@ -1,14 +1,20 @@
-<Window x:Class="UCode.Desktop.Views.TeacherHomeWindow"
+<mah:MetroWindow x:Class="UCode.Desktop.Views.TeacherHomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
         Title="UCode - Trang Giảng viên" 
         Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
         Background="#F5F5F5"
-        WindowState="Maximized">
+        WindowState="Maximized"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -66,4 +72,4 @@
         <!-- This will show either home content or navigated pages -->
         <ContentControl x:Name="NavigationFrame" Grid.Row="1"/>
     </Grid>
-</Window>
+</mah:MetroWindow>

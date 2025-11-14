@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Models.Enums;
@@ -222,7 +224,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải danh sách bài: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi tải danh sách bài: {ex.Message}");
             }
             finally
             {
@@ -268,13 +270,13 @@ namespace UCode.Desktop.ViewModels
             problem.IsEditingPoints = true;
         }
 
-        private void SavePoints(ProblemItemViewModel? problem)
+        private async void SavePoints(ProblemItemViewModel? problem)
         {
             if (problem == null) return;
 
             if (problem.Points <= 0 || problem.Points > 1000)
             {
-                MessageBox.Show("Điểm phải từ 1 đến 1000", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Điểm phải từ 1 đến 1000");
                 return;
             }
 
@@ -308,7 +310,7 @@ namespace UCode.Desktop.ViewModels
 
                 if (selectedProblems.Count == 0)
                 {
-                    MessageBox.Show("Vui lòng chọn ít nhất một bài toán!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng chọn ít nhất một bài toán!");
                     return;
                 }
 
@@ -325,7 +327,7 @@ namespace UCode.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi: {ex.Message}");
             }
             finally
             {

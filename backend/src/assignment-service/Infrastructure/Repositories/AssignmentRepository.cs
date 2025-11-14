@@ -431,4 +431,31 @@ public class AssignmentRepository : IAssignmentRepository
 
         return result != null ? (true, result.AssignedBy) : (false, null);
     }
+
+    // ================[ ExamActivityLog methods ]==================
+    public async Task<ExamActivityLog> AddExamActivityLogAsync(ExamActivityLog activity)
+    {
+        await _context.ExamActivityLogs.AddAsync(activity);
+        await _context.SaveChangesAsync();
+        return activity;
+    }
+
+    public async Task<List<ExamActivityLog>> AddExamActivityLogsBatchAsync(List<ExamActivityLog> activities)
+    {
+        if (!activities.Any())
+            return new List<ExamActivityLog>();
+
+        await _context.ExamActivityLogs.AddRangeAsync(activities);
+        await _context.SaveChangesAsync();
+        return activities;
+    }
+
+    public async Task<List<ExamActivityLog>> GetExamActivityLogsByAssignmentUserAsync(Guid assignmentUserId)
+    {
+        return await _context.ExamActivityLogs
+            .AsNoTracking()
+            .Where(log => log.AssignmentUserId == assignmentUserId)
+            .OrderBy(log => log.Timestamp)
+            .ToListAsync();
+    }
 }

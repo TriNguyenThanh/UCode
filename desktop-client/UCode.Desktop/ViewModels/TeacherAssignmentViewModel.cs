@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -170,7 +172,7 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 Error = $"Lỗi tải dữ liệu: {ex.Message}";
-                MessageBox.Show(Error, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", Error);
             }
             finally
             {
@@ -261,27 +263,23 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteViewProblem(string problemId)
+        private async void ExecuteViewProblem(string problemId)
         {
             if (!string.IsNullOrEmpty(problemId))
             {
-                MessageBox.Show(
-                    $"Xem chi tiết problem: {problemId}\n\nChức năng đang được phát triển.",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Thông báo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    $"Xem chi tiết problem: {problemId}\n\nChức năng đang được phát triển.");
             }
         }
 
-        private void ExecuteViewStudent(string userId)
+        private async void ExecuteViewStudent(string userId)
         {
             if (!string.IsNullOrEmpty(userId))
             {
-                MessageBox.Show(
-                    $"Xem chi tiết sinh viên: {userId}\n\nChức năng đang được phát triển.",
+                await GetMetroWindow()?.ShowMessageAsync(
                     "Thông báo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    $"Xem chi tiết sinh viên: {userId}\n\nChức năng đang được phát triển.");
             }
         }
 
@@ -290,9 +288,8 @@ namespace UCode.Desktop.ViewModels
             return type switch
             {
                 "HOMEWORK" => "Bài tập về nhà",
-                "EXAM" => "Bài kiểm tra",
+                "EXAMINATION" => "Bài kiểm tra",
                 "PRACTICE" => "Luyện tập",
-                "CONTEST" => "Thi đấu",
                 _ => type ?? "N/A"
             };
         }

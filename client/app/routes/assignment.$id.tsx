@@ -32,6 +32,7 @@ import type { Assignment, AssignmentUser, BestSubmission, Problem } from '~/type
 import { Loading } from '~/components/Loading'
 import { useNavigate } from 'react-router'
 import { formatDateTime, getDaysUntil } from '~/utils/dateUtils'
+import { useExamMonitoring } from '~/utils/useExamMonitoring'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Bài tập | UCode' },
@@ -103,6 +104,24 @@ export default function AssignmentDetail() {
   const [startDialogOpen, setStartDialogOpen] = React.useState(false)
   const [selectedProblemId, setSelectedProblemId] = React.useState<string | null>(null)
   const [isStarting, setIsStarting] = React.useState(false)
+
+  // Exam monitoring for EXAMINATION type assignments
+  const isExamination = assignment.assignmentType === 'EXAMINATION'
+  const isStudent = user.role === 'student'
+  const hasStarted = assignmentUser?.status !== 'NOT_STARTED'
+  
+  const { startMonitoring } = useExamMonitoring({
+    assignmentId: assignment.assignmentId,
+    isExamination,
+    enabled: isStudent && hasStarted
+  })
+
+  // Start monitoring when component mounts if assignment has already started
+  React.useEffect(() => {
+    if (isStudent && isExamination && hasStarted) {
+      startMonitoring()
+    }
+  }, [isStudent, isExamination, hasStarted, startMonitoring])
 
   // Handle problem click - check if assignment is started
   const handleProblemClick = (e: React.MouseEvent, problemId: string) => {
