@@ -7,6 +7,7 @@ public static class MigrationBuilderExtensions
     public static void CreateBestSubmissionsView(this MigrationBuilder migrationBuilder)
     {
         migrationBuilder.Sql(@"
+            Drop view if exists BestSubmissions;
             CREATE VIEW BestSubmissions AS
             WITH RankedSubmissions AS (
                 SELECT 
@@ -31,7 +32,7 @@ public static class MigrationBuilderExtensions
                             submitted_at DESC
                     ) AS RowNum
                 FROM submission
-                WHERE status IN (4, 5) -- 4: Passed, 5: Failed
+                WHERE status IN ('Passed', 'Failed') -- 4: Passed, 5: Failed
             )
             SELECT 
                 NEWID() AS BestSubmissionId,
