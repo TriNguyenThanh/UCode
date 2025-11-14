@@ -201,9 +201,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.BestSubmission", b =>
                 {
-                    b.Property<Guid>("AssignmentUserId")
+                    b.Property<Guid>("AssignmentId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("AssignmentUserId");
+                        .HasColumnName("AssignmentId");
 
                     b.Property<Guid>("BestSubmissionId")
                         .HasColumnType("uniqueidentifier")
@@ -225,6 +225,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("SubmissionId");
 
+                    b.Property<DateTime>("SubmitAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("SubmitAt");
+
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
                         .HasColumnName("TotalMemory");
@@ -233,9 +237,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("TotalTime");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("UpdatedAt");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("UserId");
 
                     b.ToTable((string)null);
 
@@ -686,6 +690,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("submission_id");
 
+                    b.Property<Guid?>("AssignmentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("assignment_id");
+
                     b.Property<Guid?>("AssignmentUserId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_user_id");
@@ -709,11 +717,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("error_message");
 
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("language");
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("language_id");
 
                     b.Property<int>("PassedTestcase")
                         .HasColumnType("int")
@@ -727,6 +733,10 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)")
                         .HasColumnName("result_file_ref");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int")
+                        .HasColumnName("score");
 
                     b.Property<string>("SourceCode")
                         .IsRequired()
@@ -768,14 +778,24 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
 
+                    b.Property<bool>("isSubmitLate")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_submit_late");
+
                     b.HasKey("SubmissionId")
                         .HasName("pk_submission");
+
+                    b.HasIndex("AssignmentId")
+                        .HasDatabaseName("ix_submission_assignment_id");
 
                     b.HasIndex("AssignmentUserId")
                         .HasDatabaseName("ix_submission_assignment_user_id");
 
                     b.HasIndex("DatasetId")
                         .HasDatabaseName("ix_submission_dataset_id");
+
+                    b.HasIndex("LanguageId")
+                        .HasDatabaseName("ix_submission_language_id");
 
                     b.HasIndex("ProblemId")
                         .HasDatabaseName("ix_submission_problem_id");
@@ -970,11 +990,30 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.Submission", b =>
                 {
-                    b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", "AssignmentUser")
+                    b.HasOne("AssignmentService.Domain.Entities.Assignment", "Assignment")
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_submission_assignment_assignment_id");
+
+                    b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", null)
                         .WithMany("Submissions")
                         .HasForeignKey("AssignmentUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_submission_assignment_user_assignment_user_id");
+
+                    b.HasOne("AssignmentService.Domain.Entities.Dataset", "Dataset")
+                        .WithMany()
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_dataset_dataset_id");
+
+                    b.HasOne("AssignmentService.Domain.Entities.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_language_language_id");
 
                     b.HasOne("AssignmentService.Domain.Entities.Problem", "Problem")
                         .WithMany()
@@ -983,7 +1022,11 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_submission_problem_problem_id");
 
-                    b.Navigation("AssignmentUser");
+                    b.Navigation("Assignment");
+
+                    b.Navigation("Dataset");
+
+                    b.Navigation("Language");
 
                     b.Navigation("Problem");
                 });

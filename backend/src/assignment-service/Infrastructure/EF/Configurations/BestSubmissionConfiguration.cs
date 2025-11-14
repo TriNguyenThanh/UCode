@@ -16,14 +16,15 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
         
         // Map tên cột từ PascalCase trong entity sang PascalCase trong database
         builder.Property(bs => bs.BestSubmissionId).HasColumnName("BestSubmissionId");
-        builder.Property(bs => bs.AssignmentUserId).HasColumnName("AssignmentUserId");
+        builder.Property(bs => bs.AssignmentId).HasColumnName("AssignmentId");
+        builder.Property(bs => bs.UserId).HasColumnName("UserId");
         builder.Property(bs => bs.ProblemId).HasColumnName("ProblemId");
         builder.Property(bs => bs.SubmissionId).HasColumnName("SubmissionId");
         builder.Property(bs => bs.Score).HasColumnName("Score");
         builder.Property(bs => bs.MaxScore).HasColumnName("MaxScore");
         builder.Property(bs => bs.TotalTime).HasColumnName("TotalTime");
         builder.Property(bs => bs.TotalMemory).HasColumnName("TotalMemory");
-        builder.Property(bs => bs.UpdatedAt).HasColumnName("UpdatedAt");
+        builder.Property(bs => bs.SubmitAt).HasColumnName("SubmitAt");
         
         // VIEW không có relationships, indexes, hoặc constraints
         // Đây là read-only computed view

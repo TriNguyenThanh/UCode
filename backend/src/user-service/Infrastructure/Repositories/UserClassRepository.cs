@@ -63,6 +63,14 @@ public class UserClassRepository : IUserClassRepository
         return await _dbSet.AnyAsync(uc => uc.StudentId == studentId && uc.ClassId == classId);
     }
 
+    public async Task<bool> IsStudentEnrolledAsync(Guid studentId, Guid classId)
+    {
+        return await _dbSet.AnyAsync(uc => 
+            uc.StudentId == studentId && 
+            uc.ClassId == classId && 
+            uc.IsActive);
+    }
+
     public async Task<int> CountStudentsInClassAsync(Guid classId)
     {
         return await _dbSet.CountAsync(uc => uc.ClassId == classId && uc.IsActive);
@@ -75,4 +83,3 @@ public class UserClassRepository : IUserClassRepository
         return userClasses;
     }
 }
-

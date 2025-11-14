@@ -1,0 +1,394 @@
+<Window x:Class="UCode.Desktop.Views.TeacherGradingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Chấm bài - UCode" 
+        Height="900" Width="1600"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5"
+        WindowState="Maximized">
+
+    <Window.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FACB01"/>
+            <Setter Property="Foreground" Value="#191970"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#191970"/>
+                    <Setter Property="Foreground" Value="#FACB01"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Saving Overlay -->
+        <Grid x:Name="SavingOverlay" Background="#80000000" 
+              Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="999">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <TextBlock Text="Đang lưu điểm..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#191970" Padding="30,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding ClassData.ClassName}" Foreground="White" FontSize="14" Opacity="0.8"/>
+                        <TextBlock Text="{Binding Assignment.Title}" Foreground="#FACB01" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="◀ Sinh viên trước" Command="{Binding PreviousStudentCommand}" 
+                                Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
+                        <Border Background="#FACB01" CornerRadius="6" Padding="15,8" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding CurrentStudentDisplay}" Foreground="#191970" FontWeight="Bold" FontSize="14"/>
+                        </Border>
+                        <Button Content="Sinh viên sau ▶" Command="{Binding NextStudentCommand}" 
+                                Style="{StaticResource PrimaryButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Student Info Card -->
+            <Border Grid.Row="1" Background="#FACB01" Padding="30,15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding CurrentStudent.User.FullName}" Foreground="#191970" FontSize="20" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="MSSV: " Foreground="#191970" FontSize="14"/>
+                            <TextBlock Text="{Binding CurrentStudent.User.StudentCode}" Foreground="#191970" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text=" • " Foreground="#191970" FontSize="14" Margin="10,0"/>
+                            <TextBlock Text="{Binding CurrentStudent.User.Email}" Foreground="#191970" FontSize="14"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Problem Chips -->
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding ProblemSubmissions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Right"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="5" Padding="12,6"
+                                        Command="{Binding DataContext.SelectProblemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding ProblemId}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="{Binding StatusColor, Converter={StaticResource ColorToBrushConverter}}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="FontSize" Value="12"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Cursor" Value="Hand"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="20"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Bài " VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding OrderIndex}" VerticalAlignment="Center" Margin="2,0"/>
+                                                                <TextBlock Text=" • " VerticalAlignment="Center" Margin="5,0"/>
+                                                                <TextBlock Text="{Binding PassedTestCases}" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="/" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding TotalTestCases}" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+
+            <!-- Main Content - 3 Columns -->
+            <Grid Grid.Row="2" Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="380"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Problem Description -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,7.5,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="{Binding CurrentProblem.Title}" FontSize="20" FontWeight="Bold" 
+                                       Foreground="#191970" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                            
+                            <Border Background="#F8F9FA" CornerRadius="4" Padding="10" Margin="0,0,0,15">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Background="#ffc107" CornerRadius="4" Padding="8,4" Margin="0,0,10,0">
+                                        <TextBlock Text="{Binding CurrentProblem.Difficulty}" Foreground="White" 
+                                                   FontWeight="SemiBold" FontSize="11"/>
+                                    </Border>
+                                    <Border Background="{Binding CurrentSubmission.Status, Converter={StaticResource ColorToBrushConverter}}" 
+                                            CornerRadius="4" Padding="8,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding CurrentSubmission.PassedTestCases}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                            <TextBlock Text="/" Foreground="White" FontWeight="SemiBold" FontSize="11" Margin="2,0"/>
+                                            <TextBlock Text="{Binding CurrentSubmission.TotalTestCases}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                            <TextBlock Text=" test cases" Foreground="White" FontWeight="SemiBold" FontSize="11" Margin="5,0,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Separator Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Mô tả:" FontWeight="Bold" FontSize="14" Foreground="#191970" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding CurrentProblem.Statement}" TextWrapping="Wrap" 
+                                       Foreground="#666" FontSize="13" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Input:" FontWeight="Bold" FontSize="14" Foreground="#191970" 
+                                       Margin="0,0,0,10" Visibility="{Binding CurrentProblem.InputFormat, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            <TextBlock Text="{Binding CurrentProblem.InputFormat}" TextWrapping="Wrap" 
+                                       Foreground="#666" FontSize="13" Margin="0,0,0,15"
+                                       Visibility="{Binding CurrentProblem.InputFormat, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                            <TextBlock Text="Output:" FontWeight="Bold" FontSize="14" Foreground="#191970" 
+                                       Margin="0,0,0,10" Visibility="{Binding CurrentProblem.OutputFormat, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            <TextBlock Text="{Binding CurrentProblem.OutputFormat}" TextWrapping="Wrap" 
+                                       Foreground="#666" FontSize="13"
+                                       Visibility="{Binding CurrentProblem.OutputFormat, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Middle: Source Code -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="7.5,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Code Header -->
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Code của sinh viên" FontSize="18" FontWeight="Bold" Foreground="#191970"/>
+                            <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="4" Padding="8,4">
+                                <TextBlock Text="{Binding CurrentSubmission.Status}" FontSize="11" FontWeight="SemiBold" Foreground="#191970"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Source Code Display -->
+                        <Border Grid.Row="1" Background="#1e1e1e" CornerRadius="6" Padding="15">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <TextBox Text="{Binding SourceCode, Mode=OneWay}" 
+                                         IsReadOnly="True"
+                                         FontFamily="Consolas" 
+                                         FontSize="13"
+                                         Background="Transparent"
+                                         Foreground="#d4d4d4"
+                                         BorderThickness="0"
+                                         TextWrapping="NoWrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Disabled"
+                                         HorizontalScrollBarVisibility="Disabled"/>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Test Results Card -->
+                        <Border Grid.Row="2" Margin="0,15,0,0" CornerRadius="6" Padding="15">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#fff3cd"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentSubmission.Status}" Value="Passed">
+                                            <Setter Property="Background" Value="#d4edda"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding CurrentSubmission.Status}" Value="Failed">
+                                            <Setter Property="Background" Value="#f8d7da"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="Kết quả chạy test:" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                    <TextBlock Text="✓ " FontSize="16" FontWeight="Bold" Foreground="#28a745"/>
+                                    <TextBlock FontSize="13">
+                                        <Run Text="{Binding CurrentSubmission.PassedTestCases, Mode=OneWay}"/>
+                                        <Run Text="/"/>
+                                        <Run Text="{Binding CurrentSubmission.TotalTestCases, Mode=OneWay}"/>
+                                        <Run Text=" test cases passed"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                    <TextBlock Text="⏱ Thời gian: " FontSize="13" Foreground="#666"/>
+                                    <TextBlock Text="{Binding CurrentSubmission.ExecutionTime}" FontSize="13" Foreground="#666"/>
+                                    <TextBlock Text="ms" FontSize="13" Foreground="#666" Margin="2,0,0,0"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="💾 Bộ nhớ: " FontSize="13" Foreground="#666"/>
+                                    <TextBlock Text="{Binding CurrentSubmission.MemoryUsed}" FontSize="13" Foreground="#666"/>
+                                    <TextBlock Text="KB" FontSize="13" Foreground="#666" Margin="2,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Right: Grading Panel -->
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="7.5,0,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Chấm điểm" FontSize="20" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,20"/>
+
+                            <!-- Score Input -->
+                            <TextBlock Text="Điểm cho bài này" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Score, UpdateSourceTrigger=PropertyChanged}" 
+                                     Padding="12" FontSize="14" Margin="0,0,0,5"
+                                     BorderBrush="#E0E0E0" BorderThickness="1"/>
+                            <TextBlock FontSize="11" Foreground="#666" Margin="0,0,0,20">
+                                <Run Text="Điểm tối đa: "/>
+                                <Run Text="{Binding CurrentSubmission.MaxScore, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+
+                            <!-- Feedback Input -->
+                            <TextBlock Text="Nhận xét" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Feedback, UpdateSourceTrigger=PropertyChanged}" 
+                                     TextWrapping="Wrap" AcceptsReturn="True"
+                                     Height="150" Padding="12" FontSize="13"
+                                     BorderBrush="#E0E0E0" BorderThickness="1"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Margin="0,0,0,20"/>
+
+                            <Separator Margin="0,0,0,20"/>
+
+                            <!-- Problem Overview -->
+                            <TextBlock Text="Tổng quan bài làm:" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
+                            <ItemsControl ItemsSource="{Binding ProblemSubmissions}" Margin="0,0,0,15">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#F8F9FA" CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" FontSize="13">
+                                                    <Run Text="Bài "/>
+                                                    <Run Text="{Binding OrderIndex}" FontWeight="SemiBold"/>
+                                                    <Run Text=":"/>
+                                                </TextBlock>
+                                                <Border Grid.Column="1" Background="{Binding StatusColor, Converter={StaticResource ColorToBrushConverter}}" 
+                                                        CornerRadius="4" Padding="6,3">
+                                                    <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold">
+                                                        <Run Text="{Binding PassedTestCases}"/>
+                                                        <Run Text="/"/>
+                                                        <Run Text="{Binding TotalTestCases}"/>
+                                                    </TextBlock>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Border Background="#F8F9FA" CornerRadius="4" Padding="12" Margin="0,0,0,20">
+                                <StackPanel>
+                                    <TextBlock Text="Tổng số lần nộp:" FontSize="12" Foreground="#666" Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding CurrentSubmission.AttemptCount}" FontSize="20" FontWeight="Bold" Foreground="#191970"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Error Message -->
+                            <Border Background="#f8d7da" CornerRadius="6" Padding="12" Margin="0,0,0,15"
+                                    Visibility="{Binding Error, Converter={StaticResource StringToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Error}" Foreground="#721c24" FontSize="12" TextWrapping="Wrap"/>
+                            </Border>
+
+                            <!-- Save Button -->
+                            <Button Content="Lưu điểm và nhận xét" 
+                                    Command="{Binding SaveGradeCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="0,15" FontSize="15" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+

@@ -150,15 +150,15 @@ public class AssignmentController : ControllerBase
         return Ok(ApiResponse<object>.SuccessResponse(new {}, "Assignment deleted successfully"));
     }
 
-    /// <summary>
-    /// Retrieves a specific assignment by ID with statistics
-    /// </summary>
-    /// <param name="id">The unique identifier of the assignment</param>
-    /// <returns>Assignment details with statistics</returns>
-    /// <response code="200">Assignment retrieved successfully</response>
-    /// <response code="401">Unauthorized - Teacher role required</response>
-    /// <response code="404">Assignment not found</response>
-    /// <response code="500">Internal server error</response>
+    // /// <summary>
+    // /// Retrieves a specific assignment by ID with statistics
+    // /// </summary>
+    // /// <param name="id">The unique identifier of the assignment</param>
+    // /// <returns>Assignment details with statistics</returns>
+    // /// <response code="200">Assignment retrieved successfully</response>
+    // /// <response code="401">Unauthorized - Teacher role required</response>
+    // /// <response code="404">Assignment not found</response>
+    // /// <response code="500">Internal server error</response>
     // [HttpGet("{id:guid}")]
     // [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     // [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
@@ -180,13 +180,12 @@ public class AssignmentController : ControllerBase
     /// Retrieves assignment with only basic problem info (ID, Title, Code, Difficulty)
     /// </summary>
     /// <param name="id">The unique identifier of the assignment</param>
-    /// <param name="includeBasics">Set to true to get lightweight response</param>
     /// <returns>Assignment with problem basics only</returns>
     /// <response code="200">Assignment retrieved successfully</response>
     /// <response code="404">Assignment not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id:guid}")]
-    [RequireRole("teacher,admin")]
+    // [RequireRole("teacher,admin")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
@@ -295,7 +294,12 @@ public class AssignmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetAssignmentsByClass(Guid classId)
     {
+        var userId = GetAuthenticatedUserId();
         var assignments = await _assignmentService.GetAssignmentsByClassIdAsync(classId);
+
+        assignments = assignments.Where(a =>
+            a.AssignedBy == userId).ToList();
+
         var response = _mapper.Map<List<AssignmentResponse>>(assignments);
         
         return Ok(ApiResponse<List<AssignmentResponse>>.SuccessResponse(response));
@@ -402,7 +406,6 @@ public class AssignmentController : ControllerBase
         var response = _mapper.Map<AssignmentUserDto>(updated);
         return Ok(ApiResponse<AssignmentUserDto>.SuccessResponse(response, "Assignment started successfully"));
     }
-    /// 
 
     // /// <summary>
     // /// Retrieves all submissions for the current student in a specific assignment
@@ -439,7 +442,6 @@ public class AssignmentController : ControllerBase
     /// Webhook endpoint for Submission Service to save assignment problem submission results
     /// </summary>
     /// <param name="assignmentId">The unique identifier of the assignment</param>
-    /// <param name="problemId">The unique identifier of the problem</param>
     /// <param name="request">Submission result containing solution code, test results, and execution metrics</param>
     /// <returns>Saved submission information with calculated score</returns>
     /// <response code="200">Submission saved successfully with calculated score</response>

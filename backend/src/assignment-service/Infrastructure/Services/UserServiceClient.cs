@@ -57,7 +57,7 @@ public class UserServiceClient : IUserServiceClient
                 {
                     var student = new StudentDto
                     {
-                        Id = studentElement.GetProperty("id").GetGuid(),
+                        Id = studentElement.GetProperty("userId").GetGuid(),
                         Email = studentElement.TryGetProperty("email", out var emailProp) ? emailProp.GetString() ?? string.Empty : string.Empty,
                         EnrollmentYear = studentElement.TryGetProperty("enrollmentYear", out var yearProp) ? yearProp.GetInt32() : 0,
                         Major = studentElement.TryGetProperty("major", out var majorProp) ? majorProp.GetString() ?? string.Empty : string.Empty,

@@ -1,5 +1,6 @@
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Domain.Entities;
+using AssignmentService.Domain.Enums;
 using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -64,12 +65,18 @@ public class DatasetRepository : IDatasetRepository
             .FirstOrDefaultAsync(d => d.DatasetId == id);
     }
 
-    public async Task<List<Dataset>> GetByProblemIdAsync(Guid problemId)
+    public async Task<List<Dataset>> GetByProblemIdAsync(Guid problemId, DatasetKind? datasetKind = null)
     {
-        return await context.Datasets
+        var query = context.Datasets
             .Include(d => d.TestCases)
-            .Where(d => d.ProblemId == problemId)
-            .ToListAsync();
+            .Where(d => d.ProblemId == problemId);
+
+        if (datasetKind.HasValue)
+        {
+            query = query.Where(d => d.Kind == datasetKind.Value);
+        }
+
+        return await query.ToListAsync();
     }
 
     public Task<(List<Dataset> Items, int Total)> GetPagedAsync(int page, int pageSize, Expression<Func<Dataset, bool>>? predicate = null, Func<IQueryable<Dataset>, IOrderedQueryable<Dataset>>? orderBy = null)

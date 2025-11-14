@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using UserService.Application.DTOs.Common;
 using UserService.Application.DTOs.Requests;
+using UserService.Application.DTOs.Responses;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
+using UCode.UserService.Application.DTOs.Requests;
 
 namespace UserService.Api.Controllers;
 
@@ -120,6 +122,39 @@ public class StudentController : ControllerBase
     }
 
     /// <summary>
+    /// [ADMIN/TEACHER] Tạo nhiều sinh viên cùng lúc (bulk create - optimized)
+    /// </summary>
+    /// <param name="request">Danh sách sinh viên cần tạo</param>
+    /// <returns>Kết quả tạo từng sinh viên</returns>
+    /// <response code="200">Bulk create hoàn tất</response>
+    /// <response code="400">Dữ liệu không hợp lệ</response>
+    [HttpPost("bulk-create")]
+    [Authorize(Roles = "Admin,Teacher")]
+    [SwaggerOperation(
+        Summary = "[ADMIN/TEACHER] Bulk create students", 
+        Description = "Tạo nhiều sinh viên cùng lúc - optimized single API call")]
+    [SwaggerResponse(200, "Bulk create hoàn tất", typeof(ApiResponse<BulkCreateResult>))]
+    [SwaggerResponse(400, "Dữ liệu không hợp lệ", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> BulkCreateStudents([FromBody] BulkCreateStudentsRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
+
+        try
+        {
+            var result = await _studentService.BulkCreateStudentsAsync(request.Students);
+            
+            return Ok(ApiResponse<BulkCreateResult>.SuccessResponse(
+                result, 
+                $"Đã tạo {result.SuccessCount}/{request.Students.Count} sinh viên thành công"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to bulk create students: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
     /// [ADMIN/TEACHER] Lấy sinh viên theo ID
     /// </summary>
     /// <param name="id">ID sinh viên</param>
@@ -167,18 +202,29 @@ public class StudentController : ControllerBase
     /// <param name="pageNumber">Số trang</param>
     /// <param name="pageSize">Số lượng mỗi trang</param>
     /// <param name="classId">ID lớp học (lọc)</param>
+    /// <param name="search">Tìm kiếm theo tên, email, MSSV</param>
+    /// <param name="year">Lọc theo năm học</param>
+    /// <param name="major">Lọc theo khoa</param>
+    /// <param name="status">Lọc theo trạng thái</param>
+    /// <param name="excludeClassId">Loại trừ sinh viên đã có trong lớp này</param>
     /// <returns>Danh sách sinh viên</returns>
     /// <response code="200">Trả về danh sách sinh viên</response>
     [HttpGet]
     [Authorize(Roles = "Admin,Teacher")]
-    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Lấy danh sách sinh viên", Description = "Lấy danh sách sinh viên có phân trang")]
+    [SwaggerOperation(Summary = "[ADMIN/TEACHER] Lấy danh sách sinh viên", Description = "Lấy danh sách sinh viên có phân trang và filter")]
     [SwaggerResponse(200, "Danh sách sinh viên", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetStudents(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] string? classId = null)
+        [FromQuery] string? classId = null,
+        [FromQuery] string? search = null,
+        [FromQuery] int? year = null,
+        [FromQuery] string? major = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? excludeClassId = null)
     {
-        var students = await _studentService.GetStudentsAsync(pageNumber, pageSize, classId);
+        var students = await _studentService.GetStudentsAsync(
+            pageNumber, pageSize, classId, search, year, major, status, excludeClassId);
         return Ok(ApiResponse<object>.SuccessResponse(students, "Students retrieved successfully"));
     }
 
@@ -309,6 +355,98 @@ public class StudentController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to export Excel file: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER] Download Excel template để import sinh viên
+    /// </summary>
+    /// <param name="classId">ID lớp học (để loại trừ sinh viên đã enroll)</param>
+    /// <returns>File Excel template có thể bao gồm danh sách sinh viên available</returns>
+    /// <response code="200">Download thành công</response>
+    /// <response code="400">Download thất bại</response>
+    [HttpGet("template")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Download Excel template", Description = "Download file Excel template để import sinh viên, có thể bao gồm danh sách sinh viên available")]
+    [SwaggerResponse(200, "Download thành công")]
+    [SwaggerResponse(400, "Download thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> DownloadImportTemplate([FromQuery] string? classId = null)
+    {
+        try
+        {
+            var fileBytes = await _excelService.GenerateImportTemplateAsync(classId);
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+                $"Student_Import_Template_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to generate template: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER/ADMIN] Kiểm tra danh sách mã sinh viên đã tồn tại hay chưa (bulk validation)
+    /// </summary>
+    /// <param name="request">Danh sách mã sinh viên cần kiểm tra</param>
+    /// <returns>Kết quả kiểm tra từng student code</returns>
+    /// <response code="200">Validation thành công</response>
+    /// <response code="400">Validation thất bại</response>
+    [HttpPost("validate-bulk")]
+    [Authorize(Roles = "Teacher,Admin")]
+    [SwaggerOperation(
+        Summary = "[TEACHER/ADMIN] Bulk validate student codes", 
+        Description = "Kiểm tra danh sách mã sinh viên đã tồn tại hay chưa (optimized - single API call)")]
+    [SwaggerResponse(200, "Validation thành công", typeof(ApiResponse<List<BulkValidationResult>>))]
+    [SwaggerResponse(400, "Validation thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> ValidateBulk([FromBody] ValidateBulkRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
+
+        try
+        {
+            var results = await _studentService.ValidateBulkAsync(request.StudentCodes);
+            return Ok(ApiResponse<List<BulkValidationResult>>.SuccessResponse(
+                results, 
+                $"Validated {results.Count} student codes"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to validate bulk: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// [TEACHER] Validate danh sách sinh viên trước khi import (batch validation)
+    /// </summary>
+    /// <param name="request">Danh sách MSSV hoặc Email cần validate</param>
+    /// <returns>Kết quả validation từng student</returns>
+    /// <response code="200">Validation thành công</response>
+    /// <response code="400">Validation thất bại</response>
+    [HttpPost("validate-batch")]
+    [Authorize(Roles = "Teacher")]
+    [SwaggerOperation(Summary = "[TEACHER] Validate batch students", Description = "Validate danh sách sinh viên trước khi import để hiện preview")]
+    [SwaggerResponse(200, "Validation thành công", typeof(ApiResponse<object>))]
+    [SwaggerResponse(400, "Validation thất bại", typeof(ApiResponse<object>))]
+    public async Task<IActionResult> ValidateBatch([FromBody] ValidateBatchRequest request)
+    {
+        try
+        {
+            var validationResults = await _studentService.ValidateBatchAsync(request.Identifiers, request.ClassId);
+            
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new {
+                    TotalCount = validationResults.Count,
+                    ValidCount = validationResults.Count(r => r.IsValid),
+                    InvalidCount = validationResults.Count(r => !r.IsValid),
+                    Results = validationResults
+                },
+                "Batch validation completed"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to validate batch: {ex.Message}"));
         }
     }
 

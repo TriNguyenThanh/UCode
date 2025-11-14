@@ -1,8 +1,12 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link } from 'react-router'
+import { useLoaderData, redirect, Link, useNavigation } from 'react-router'
 import type { Route } from './+types/class.$id'
 import { auth } from '~/auth'
+import * as ClassService from '~/services/classService'
+import { getAssignmentStudents, getStudentAssignments } from '~/services/assignmentService'
 import { Navigation } from '~/components/Navigation'
+import { Loading } from '~/components/Loading'
+import type { Assignment, AssignmentStatus } from '~/types'
 import {
   Container,
   Typography,
@@ -14,47 +18,141 @@ import {
   Paper,
   IconButton,
   Divider,
-  Avatar,
+  Avatar
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingIcon from '@mui/icons-material/Pending'
-import { mockClasses, mockAssignments } from '~/data/mock'
 
 export const meta: Route.MetaFunction = ({ params }) => [
   { title: `Lớp học | UCode` },
-  { name: 'description', content: 'Chi tiết lớp học và danh sách bài tập.' },
+  { name: 'description', content: 'Chi tiết lớp học và danh sách bài tập.' }
 ]
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
   if (!user) throw redirect('/login')
 
-  const classItem = mockClasses.find((c) => c.id === params.id)
-  if (!classItem) throw new Response('Not Found', { status: 404 })
+  try {
+    // Student chỉ cần thông tin cơ bản của class, không cần detail với danh sách sinh viên
+    const classData = await ClassService.getClassById(params.id)
+    
+    // TODO: assignments need to come from assignment-service
+    // For now, assignments will be an empty array
+    const assignments = await getStudentAssignments()
 
-  const classAssignments = mockAssignments.filter((a) => a.classId === params.id)
-
-  return { user, classItem, assignments: classAssignments }
+    return { user, classData, assignments }
+  } catch (error) {
+    console.error('Error loading class detail:', error)
+    throw new Response('Lớp học không tồn tại', { status: 404 })
+  }
 }
 
 export default function ClassDetail() {
-  const { classItem, assignments } = useLoaderData<typeof clientLoader>()
+  const { classData, assignments } = useLoaderData<typeof clientLoader>()
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
 
-  const getDaysUntilDue = (dueDate: Date) => {
+  const getDaysUntilDue = (endTime?: string) => {
+    if (!endTime) return null
     const now = new Date()
+    const dueDate = new Date(endTime)
     const diff = dueDate.getTime() - now.getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
 
-  const getStatusInfo = (assignment: typeof assignments[0]) => {
-    const daysLeft = getDaysUntilDue(assignment.dueDate)
-    if (daysLeft < 0) return { label: 'Quá hạn', color: 'error' as const, icon: <PendingIcon /> }
-    if (daysLeft <= 2) return { label: `Còn ${daysLeft} ngày`, color: 'error' as const, icon: <AccessTimeIcon /> }
-    if (daysLeft <= 7) return { label: `Còn ${daysLeft} ngày`, color: 'warning' as const, icon: <AccessTimeIcon /> }
-    return { label: `Còn ${daysLeft} ngày`, color: 'info' as const, icon: <AccessTimeIcon /> }
+  const getStatusInfo = (assignment: Assignment) => {
+    // Status based on assignment.status (AssignmentStatus type)
+    const status: AssignmentStatus = assignment.status
+    
+    switch (status) {
+      case 'DRAFT':
+        return { 
+          label: 'Bản nháp', 
+          color: 'default' as const, 
+          icon: <PendingIcon /> 
+        }
+        
+      case 'PUBLISHED': {
+        const daysLeft = getDaysUntilDue(assignment.endTime)
+        if (daysLeft === null) {
+          return { 
+            label: 'Đang diễn ra', 
+            color: 'success' as const, 
+            icon: <CheckCircleIcon /> 
+          }
+        }
+        if (daysLeft < 0) {
+          return { 
+            label: 'Quá hạn', 
+            color: 'error' as const, 
+            icon: <PendingIcon /> 
+          }
+        }
+        if (daysLeft === 0) {
+          return { 
+            label: 'Hết hạn hôm nay', 
+            color: 'error' as const, 
+            icon: <AccessTimeIcon /> 
+          }
+        }
+        if (daysLeft === 1) {
+          return { 
+            label: 'Còn 1 ngày', 
+            color: 'error' as const, 
+            icon: <AccessTimeIcon /> 
+          }
+        }
+        if (daysLeft <= 3) {
+          return { 
+            label: `Còn ${daysLeft} ngày`, 
+            color: 'error' as const, 
+            icon: <AccessTimeIcon /> 
+          }
+        }
+        if (daysLeft <= 7) {
+          return { 
+            label: `Còn ${daysLeft} ngày`, 
+            color: 'warning' as const, 
+            icon: <AccessTimeIcon /> 
+          }
+        }
+        return { 
+          label: `Còn ${daysLeft} ngày`, 
+          color: 'info' as const, 
+          icon: <AccessTimeIcon /> 
+        }
+      }
+      
+      case 'CLOSED':
+        return { 
+          label: 'Đã đóng', 
+          color: 'error' as const, 
+          icon: <PendingIcon /> 
+        }
+    }
+  }
+
+  const getAssignmentTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      HOMEWORK: 'Bài tập',
+      EXAM: 'Kiểm tra',
+      PRACTICE: 'Luyện tập',
+      CONTEST: 'Thi đấu',
+    }
+    return typeMap[type] || type
+  }
+
+  // Show loading screen while navigation is in progress
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+        <Navigation />
+        <Loading fullScreen message="Đang tải thông tin lớp học..." />
+      </Box>
+    )
   }
 
   return (
@@ -72,45 +170,83 @@ export default function ClassDetail() {
           sx={{
             mb: 4,
             overflow: 'hidden',
-            background: 'linear-gradient(135deg, #00275e 0%, #003d8f 100%)',
+            background: 'linear-gradient(135deg, #00275e 0%, #003d8f 100%)'
           }}
         >
           <Box sx={{ p: 4 }}>
             <Chip
-              label={classItem.code}
+              label={classData.classCode}
               sx={{
                 mb: 2,
                 bgcolor: 'primary.main',
                 color: 'secondary.main',
                 fontWeight: 700,
-                fontSize: '0.9rem',
+                fontSize: '0.9rem'
               }}
             />
             <Typography variant='h3' sx={{ fontWeight: 700, color: 'white', mb: 2 }}>
-              {classItem.name}
+              {classData.className}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                  {classItem.teacherName.charAt(0)}
+                  {classData.teacherName.charAt(0)}
                 </Avatar>
                 <Typography variant='body1' sx={{ color: 'primary.main', fontWeight: 500 }}>
-                  {classItem.teacherName}
+                  {classData.teacherName}
                 </Typography>
               </Box>
               <Chip
-                label={classItem.semester}
+                label={classData.semester}
                 sx={{ bgcolor: 'rgba(250, 203, 1, 0.1)', color: 'primary.main', borderColor: 'primary.main' }}
                 variant='outlined'
               />
             </Box>
-            {classItem.description && (
+            {classData.description && (
               <Typography variant='body1' sx={{ mt: 2, color: 'rgba(255,255,255,0.8)' }}>
-                {classItem.description}
+                {classData.description}
               </Typography>
             )}
           </Box>
         </Paper>
+
+        {/* Assignment Summary */}
+        {assignments.length > 0 && (
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 4 }}>
+            <Card elevation={0} sx={{ border: '2px solid', borderColor: 'divider' }}>
+              <CardContent>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                  Tổng số bài tập
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  {assignments.length}
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card elevation={0} sx={{ border: '2px solid', borderColor: 'divider' }}>
+              <CardContent>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                  Tổng điểm tối đa
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
+                  {assignments.reduce((sum, a) => sum + (a.totalPoints ?? 0), 0)}
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card elevation={0} sx={{ border: '2px solid', borderColor: 'divider' }}>
+              <CardContent>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                  Đang diễn ra
+                </Typography>
+                <Typography variant='h4' sx={{ fontWeight: 700, color: 'info.main' }}>
+                  {assignments.filter((a) => a.status === 'PUBLISHED').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
         {/* Assignments List */}
         <Box>
@@ -129,7 +265,7 @@ export default function ClassDetail() {
                 const statusInfo = getStatusInfo(assignment)
                 return (
                   <Card
-                    key={assignment.id}
+                    key={assignment.assignmentId}
                     elevation={0}
                     sx={{
                       border: '2px solid',
@@ -138,11 +274,11 @@ export default function ClassDetail() {
                       '&:hover': {
                         borderColor: 'primary.main',
                         transform: 'translateY(-2px)',
-                        boxShadow: 3,
-                      },
+                        boxShadow: 3
+                      }
                     }}
                   >
-                    <CardActionArea component={Link} to={`/assignment/${assignment.id}`}>
+                    <CardActionArea component={Link} to={`/assignment/${assignment.assignmentId}`}>
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', gap: 3 }}>
                           {/* Icon */}
@@ -155,7 +291,7 @@ export default function ClassDetail() {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              flexShrink: 0,
+                              flexShrink: 0
                             }}
                           >
                             <AssignmentIcon sx={{ color: 'primary.main', fontSize: 32 }} />
@@ -163,24 +299,112 @@ export default function ClassDetail() {
 
                           {/* Content */}
                           <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
-                              {assignment.title}
-                            </Typography>
-                            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                              {assignment.description}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Typography variant='h6' sx={{ fontWeight: 600 }}>
+                                {assignment.title}
+                              </Typography>
+                              <Chip
+                                label={getAssignmentTypeLabel(assignment.assignmentType)}
+                                size='small'
+                                color='primary'
+                                sx={{ height: 20, fontSize: '0.7rem' }}
+                              />
+                            </Box>
+                            
+                            {assignment.description && (
+                              <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                                {assignment.description}
+                              </Typography>
+                            )}
 
                             {/* Stats */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                              <Chip icon={statusInfo.icon} label={statusInfo.label} size='small' color={statusInfo.color} />
-                              <Chip label={`${assignment.problems.length} bài`} size='small' variant='outlined' />
-                              <Chip label={`${assignment.totalPoints} điểm`} size='small' variant='outlined' />
                               <Chip
-                                label={`Bắt đầu: ${new Date(assignment.startDate).toLocaleDateString('vi-VN')}`}
+                                icon={statusInfo.icon}
+                                label={statusInfo.label}
                                 size='small'
-                                variant='outlined'
+                                color={statusInfo.color}
                               />
+                              
+                              
+                              {/* Total Points */}
+                              <Chip 
+                                label={`${assignment.totalPoints ?? 0} điểm`} 
+                                size='small' 
+                                variant='outlined'
+                                color='primary'
+                                sx={{ fontWeight: 600 }}
+                              />
+
+                              {/* Start Time */}
+                              {assignment.startTime && (
+                                <Chip
+                                  label={`Bắt đầu: ${new Date(assignment.startTime).toLocaleDateString('vi-VN', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                  })}`}
+                                  size='small'
+                                  variant='outlined'
+                                />
+                              )}
+                              
+                              {/* End Time */}
+                              {assignment.endTime && (
+                                <Chip
+                                  label={`Hạn: ${new Date(assignment.endTime).toLocaleDateString('vi-VN', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                  })}`}
+                                  size='small'
+                                  variant='outlined'
+                                  color='error'
+                                />
+                              )}
+                              
+                              {/* Late Submission Indicator */}
+                              {assignment.allowLateSubmission && (
+                                <Chip
+                                  label='Cho phép nộp trễ'
+                                  size='small'
+                                  variant='outlined'
+                                  color='warning'
+                                />
+                              )}
                             </Box>
+
+                            {/* Statistics (if available) */}
+                            {assignment.statistics && (
+                              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                  <Box>
+                                    <Typography variant='caption' color='text.secondary'>
+                                      Đã nộp
+                                    </Typography>
+                                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                      {assignment.statistics.submitted}/{assignment.statistics.totalStudents}
+                                    </Typography>
+                                  </Box>
+                                  <Box>
+                                    <Typography variant='caption' color='text.secondary'>
+                                      Điểm TB
+                                    </Typography>
+                                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                      {assignment.statistics.averageScore.toFixed(1)}
+                                    </Typography>
+                                  </Box>
+                                  <Box>
+                                    <Typography variant='caption' color='text.secondary'>
+                                      Hoàn thành
+                                    </Typography>
+                                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                                      {assignment.statistics.completionRate.toFixed(0)}%
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                            )}
                           </Box>
                         </Box>
                       </CardContent>

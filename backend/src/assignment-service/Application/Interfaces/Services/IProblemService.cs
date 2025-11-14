@@ -53,6 +53,7 @@ public interface IProblemService
     
     // ProblemLanguage methods (using new Language + ProblemLanguage schema)
     Task<List<ProblemLanguage>> GetProblemLanguagesAsync(Guid problemId);
+    Task<ProblemLanguage?> GetProblemLanguageAsync(Guid problemId, Guid languageId);
     Task<List<ProblemLanguage>> AddOrUpdateProblemLanguagesAsync(Guid problemId, List<ProblemLanguageDto> requests);
     Task<bool> DeleteProblemLanguageAsync(Guid problemId, Guid languageId);
     

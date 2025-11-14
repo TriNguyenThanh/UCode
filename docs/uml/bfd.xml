@@ -1,0 +1,42 @@
+@startwbs
+* Hệ thống luyện tập lập trình trực tuyến
+** 1. Quản lý người dùng
+*** 1.1 Đăng nhập & xác thực
+*** 1.2 Quản lý tài khoản (tạo, sửa, khóa)
+*** 1.3 Thêm/xóa/cập nhật tài khoản (SV, GV, Admin)
+*** 1.4 Phân quyền & reset mật khẩu
+** 2. Quản lý lớp học
+*** 2.1 Tạo/Cập nhật lớp học
+*** 2.2 Quản lý sinh viên lớp (thêm/xóa SV)
+** 3. Quản lý bài tập (Assignment)
+*** 3.1 Tạo/Sửa/Xóa bài tập
+*** 3.2 Gán bài tập cho lớp & thêm đề bài vào bài tập
+*** 3.3 Thiết lập thời hạn và loại bài tập (kiểm tra/BT)
+*** 3.4 Sao chép bài tập sang lớp khác
+** 4. Quản lý bài toán (Problem)
+*** 4.1 Tạo/Sửa/Xóa đề bài (bài toán)
+*** 4.2 Quản lý chi tiết đề (mô tả, code mẫu)
+*** 4.3 Quản lý bộ testcase (chính thức, mẫu)
+*** 4.4 Chọn ngôn ngữ lập trình (cho phép & code template)
+** 5. Thực hiện bài tập (Sinh viên)
+*** 5.1 Xem danh sách bài tập & trạng thái (chưa làm, đang làm, v.v.)
+*** 5.2 Xem chi tiết đề bài & chạy thử test
+*** 5.3 Nộp code bài toán
+*** 5.4 Xem lịch sử nộp bài và kết quả
+** 6. Quản lý nộp bài
+*** 6.1 Lưu trữ lịch sử nộp bài
+*** 6.2 Chấm điểm tự động & lưu kết quả từng lần nộp
+*** 6.3 Thống kê (tỉ lệ pass/fail, số lần nộp)
+*** 6.4 Cung cấp phản hồi (điểm, code mẫu) cho SV
+** 7. Theo dõi điểm danh
+*** 7.1 Tạo buổi điểm danh (QR, URL, chọn IP)
+*** 7.2 Xác nhận điểm danh của sinh viên
+*** 7.3 Lưu lịch sử điểm danh (SV, IP, thời gian)
+** 8. Báo cáo & thông báo
+*** 8.1 Nhắc hạn nộp bài
+*** 8.2 Tạo báo cáo thống kê kết quả (bài tập, AI/copy)
+** 9. Bảo trì hệ thống
+*** 9.1 Sao lưu dữ liệu (CSDL, bài nộp)
+*** 9.2 Khôi phục dữ liệu
+@endwbs
+

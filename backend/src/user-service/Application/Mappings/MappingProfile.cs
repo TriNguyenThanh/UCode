@@ -19,6 +19,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Classes, opt => opt.MapFrom(src => 
                 src.UserClasses.Select(uc => uc.Class).ToList()));
         
+        // StudentListResponse (không bao gồm classes)
+        CreateMap<Student, StudentListResponse>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.StudentCode, opt => opt.MapFrom(src => src.StudentCode));
+        
         // Teacher mappings
         CreateMap<Teacher, TeacherResponse>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))

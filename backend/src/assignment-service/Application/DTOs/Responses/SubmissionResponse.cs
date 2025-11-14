@@ -1,13 +1,15 @@
-﻿using AssignmentService.Domain.Enums;
+using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Application.DTOs.Responses;
 
 public class SubmissionResponse
 {
+    public Guid SubmissionId { get; set; }
+
     /// <summary>
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
     /// </summary>
-    public string SourceCodeRef { get; set; } = string.Empty;
+    public string SourceCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Ngôn ngữ lập trình
@@ -33,6 +35,16 @@ public class SubmissionResponse
     /// Thông báo lỗi chi tiết
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Tổng số test case
+    /// </summary>
+    public int TotalTestcase { get; set; } = 0;
+    
+    /// <summary>
+    /// Số test case passed
+    /// </summary>
+    public int PassedTestcase { get; set; } = 0;
     
     /// <summary>
     /// Tổng thời gian thực thi (ms)

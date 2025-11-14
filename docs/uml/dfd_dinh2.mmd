@@ -1,0 +1,30 @@
+---
+config:
+  layout: elk
+---
+flowchart BT
+    GV["Giảng viên"] -- Tạo/Cập nhật lớp --> P21("2.1. Tạo/Cập nhật lớp học")
+    AD["Quản trị viên"] -- Quản lý lớp --> P21
+    P21 -- Lưu thông tin lớp --> D_Class[("Thông tin lớp học")]
+    D_Class -- Dữ liệu lớp --> P21
+    P21 -- Xác nhận --> GV & AD
+    GV -- Thêm/xóa SV --> P22("2.2. Quản lý sinh viên lớp<br>(thêm/xóa SV)")
+    SV["Sinh viên"] -- Yêu cầu ghi danh --> P22
+    P22 -- Cập nhật thành viên --> D_Class
+    D_Class -- Dữ liệu thành viên --> P22
+    P22 -- Truy vấn SV --> D_User[("Thông tin người dùng")]
+    D_User -- Thông tin SV --> P22
+    P22 -- Xác nhận --> GV
+    P22 -- Xác nhận ghi danh --> SV
+     GV:::lecturer
+     P21:::process
+     AD:::admin
+     D_Class:::datastore
+     P22:::process
+     SV:::student
+     D_User:::datastore
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px 
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

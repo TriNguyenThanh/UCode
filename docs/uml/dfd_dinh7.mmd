@@ -1,0 +1,35 @@
+---
+config:
+  layout: elk
+---
+flowchart BT
+    GV["Giảng viên"] -- Tạo buổi điểm danh --> P71("7.1. Tạo buổi điểm danh<br>(QR, URL, IP)")
+    P71 -- Lưu buổi điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    D_Attendance -- Mã buổi --> P71
+    P71 -- Xác nhận tạo --> GV
+    P71 -- QR/URL cho SV --> SV["Sinh viên"]
+    
+    SV -- Xác nhận điểm danh --> P72("7.2. Xác nhận điểm danh<br>của sinh viên")
+    P72 -- Truy vấn buổi --> D_Attendance
+    D_Attendance -- Thông tin buổi --> P72
+    P72 -- Truy vấn lớp/SV --> D_Class[("Thông tin lớp học")]
+    D_Class -- Dữ liệu SV --> P72
+    P72 -- Xác nhận --> SV
+    
+    P72 -- Chuyển lưu lịch sử --> P73("7.3. Lưu lịch sử điểm danh<br>(SV, IP, thời gian)")
+    P73 -- Lưu lịch sử --> D_Attendance
+    D_Attendance -- Dữ liệu lưu --> P73
+    P73 -- Kết quả điểm danh --> GV
+    
+    GV:::lecturer
+    SV:::student
+    P71:::process
+    P72:::process
+    P73:::process
+    D_Attendance:::datastore
+    D_Class:::datastore
+    
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef process fill:#FFF,stroke:#333,stroke-width:2px
+    classDef datastore fill:#FFF,stroke:#333,stroke-width:2px

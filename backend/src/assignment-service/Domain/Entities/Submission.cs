@@ -10,7 +10,7 @@ public class Submission
     
     public Guid UserId { get; set; }
     
-    public Guid? AssignmentUserId { get; set; }
+    public Guid? AssignmentId { get; set; }
     
     public Guid ProblemId { get; set; }
     
@@ -28,21 +28,26 @@ public class Submission
     /// Đường dẫn hoặc reference đến source code (lưu trên storage)
     /// </summary>
     public string SourceCodeRef { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Ngôn ngữ lập trình
     /// </summary>
-    public string Language { get; set; } = string.Empty;
-    
+    public Guid LanguageId { get; set; }
+
     /// <summary>
     /// Kết quả so sánh (compare result)
     /// </summary>
     public string? CompareResult { get; set; }
-    
+
     /// <summary>
     /// Trạng thái submission
     /// </summary>
     public SubmissionStatus Status { get; set; } = SubmissionStatus.Pending;
+
+    /// <summary>
+    /// Trạng thái submission
+    /// </summary>
+    public bool isSubmitLate { get; set; } = false;
     
     /// <summary>
     /// Mã lỗi (nếu có)
@@ -58,11 +63,16 @@ public class Submission
     /// Tổng số test case
     /// </summary>
     public int TotalTestcase { get; set; } = 0;
-    
+
     /// <summary>
     /// Số test case passed
     /// </summary>
     public int PassedTestcase { get; set; } = 0;
+
+    /// <summary>
+    /// Số test case passed
+    /// </summary>
+    public int Score { get; set; } = 0;
     
     /// <summary>
     /// Tổng thời gian thực thi (ms)
@@ -85,6 +95,8 @@ public class Submission
     public string? ResultFileRef { get; set; }
 
     // Navigation Properties
-    public AssignmentUser AssignmentUser { get; set; } = null!;
+    public Assignment Assignment { get; set; } = null!;
     public Problem Problem { get; set; } = null!;
+    public Dataset Dataset { get; set; } = null!;
+    public Language Language { get; set; } = null!;
 }

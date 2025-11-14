@@ -1,0 +1,93 @@
+---
+config:
+  layout: elk
+---
+flowchart TB
+    SV["Sinh viên"] -- Thông tin đăng nhập --> P1("1.Quản lý người dùng")
+    GV["Giảng viên"] -- Thông tin đăng nhập --> P1
+    AD["Quản trị viên"] -- Thông tin đăng nhập --> P1
+    AD -- Yêu cầu quản lý tài khoản<br>(thêm/sửa/khóa) --> P1
+    P1 -- Xác thực & cập nhật --> D_User[("Thông tin người dùng")]
+    D_User -- Thông tin người dùng --> P1
+    P1 -- Kết quả quản lý --> AD
+    P1 -- Xác nhận đăng nhập --> SV & GV
+    GV -- Tạo/Cập nhật lớp học --> P2("2.Quản lý lớp học")
+    AD -- Quản lý lớp học --> P2
+    SV -- Yêu cầu ghi danh --> P2
+    P2 -- Cập nhật thông tin lớp --> D_Class[("Thông tin lớp học")]
+    D_Class -- Dữ liệu lớp học --> P2
+    P2 -- Xác nhận lớp học --> GV
+    P2 -- Xác nhận ghi danh --> SV
+    GV -- Tạo/Sửa/Xóa bài tập --> P3("3.Quản lý bài tập<br>(Assignment)")
+    GV -- Gán bài tập cho lớp --> P3
+    P3 -- Cập nhật bài tập --> D_Assignment[("Thông tin bài tập")]
+    D_Assignment -- Dữ liệu bài tập --> P3 & P8("8.Báo cáo & thông báo")
+    D_Class -- Thông tin lớp --> P3
+    P3 -- Xác nhận bài tập --> GV
+    GV -- Tạo/Sửa/Xóa bài toán --> P4("4.Quản lý bài toán<br>(Problem)")
+    GV -- Quản lý testcase & ngôn ngữ --> P4
+    P4 -- Cập nhật bài toán --> D_Problem[("Thông tin bài toán")]
+    D_Problem -- Dữ liệu bài toán --> P4
+    P4 -- Xác nhận bài toán --> GV
+    SV -- Yêu cầu xem danh sách bài tập --> P5("5.Thực hiện bài tập<br>(Sinh viên)")
+    SV -- Nộp code --> P5
+    P5 -- Truy vấn bài tập --> D_Assignment
+    P5 -- Truy vấn chi tiết đề --> D_Problem
+    D_Assignment -- Danh sách bài tập --> P5
+    D_Problem -- Chi tiết đề bài --> P5
+    P5 -- Danh sách & chi tiết bài tập --> SV
+    P5 -- Kết quả nộp bài --> SV
+    P5 -- Nộp code & kết quả chấm --> P6("6.Quản lý nộp bài")
+    P6 -- Lưu lịch sử nộp --> D_Submission[("Lịch sử nộp bài")]
+    D_Submission -- Dữ liệu nộp bài --> P6 & P8
+    P6 -- Phản hồi kết quả --> SV
+    P6 -- Thống kê nộp bài --> GV
+    GV -- Tạo buổi điểm danh --> P7("7.Theo dõi điểm danh")
+    SV -- Xác nhận điểm danh --> P7
+    P7 -- Lưu điểm danh --> D_Attendance[("Thông tin điểm danh")]
+    D_Attendance -- Dữ liệu điểm danh --> P7 & P8
+    P7 -- Xác nhận điểm danh --> SV
+    P7 -- Kết quả điểm danh --> GV
+    GV -- Yêu cầu báo cáo --> P8
+    AD -- Yêu cầu báo cáo hệ thống --> P8
+    P8 -- Truy vấn nộp bài --> D_Submission
+    P8 -- Truy vấn điểm danh --> D_Attendance
+    P8 -- Truy vấn hạn nộp --> D_Assignment
+    P8 -- Báo cáo thống kê --> GV
+    P8 -- Báo cáo hệ thống --> AD
+    P8 -- Thông báo nhắc hạn --> SV
+    AD -- Yêu cầu sao lưu/khôi phục --> P9("9.Bảo trì hệ thống")
+    P9 -- Sao lưu dữ liệu --> D_Backup[("Dữ liệu sao lưu")]
+    D_Backup -- Dữ liệu khôi phục --> P9
+    P9 -- Kết quả bảo trì --> AD
+    P9 -- Sao lưu người dùng --> D_User
+    P9 -- Sao lưu lớp học --> D_Class
+    P9 -- Sao lưu bài tập --> D_Assignment
+    P9 -- Sao lưu bài toán --> D_Problem
+    P9 -- Sao lưu nộp bài --> D_Submission
+    P9 -- Sao lưu điểm danh --> D_Attendance
+    n1["Untitled Node"]
+     SV:::student
+     P1:::process
+     GV:::lecturer
+     AD:::admin
+     D_User:::datastore
+     P2:::process
+     D_Class:::datastore
+     P3:::process
+     D_Assignment:::datastore
+     P8:::process
+     P4:::process
+     D_Problem:::datastore
+     P5:::process
+     P6:::process
+     D_Submission:::datastore
+     P7:::process
+     D_Attendance:::datastore
+     P9:::process
+     D_Backup:::datastore
+    classDef student fill:#A3E4D7,stroke:#333,stroke-width:2px
+    classDef lecturer fill:#F9E79F,stroke:#333,stroke-width:2px
+    classDef admin fill:#F5B7B1,stroke:#333,stroke-width:2px
+    classDef process fill:#FEF9E7,stroke:#333,stroke-width:2px
+    classDef datastore fill:#D6EAF8,stroke:#333,stroke-width:2px
