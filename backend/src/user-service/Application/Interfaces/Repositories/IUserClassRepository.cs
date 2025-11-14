@@ -13,4 +13,6 @@ public interface IUserClassRepository
     Task<bool> IsStudentEnrolledAsync(Guid studentId, Guid classId);
     Task<int> CountStudentsInClassAsync(Guid classId);
     Task<List<UserClass>> AddRangeAsync(List<UserClass> userClasses);
+    Task<bool> RemoveAllByClassIdAsync(Guid classId);
+    Task<List<UserClass>> GetAllAsync();
 }

@@ -114,7 +114,10 @@ public class StudentAppService : IStudentService
                     StudentCode = studentRequest.StudentCode,
                     Username = studentRequest.Username,
                     Email = studentRequest.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(studentRequest.Password),
+                    // Use default password "123456" if not provided
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(
+                        string.IsNullOrWhiteSpace(studentRequest.Password) ? "123456" : studentRequest.Password
+                    ),
                     FullName = studentRequest.FullName,
                     Major = studentRequest.Major,
                     EnrollmentYear = studentRequest.EnrollmentYear,

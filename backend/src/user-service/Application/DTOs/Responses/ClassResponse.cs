@@ -11,5 +11,8 @@ public class ClassResponse
     public int StudentCount { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool IsArchived { get; set; }
+    public DateTime? ArchivedAt { get; set; }
+    public string? ArchiveReason { get; set; }
 }
 

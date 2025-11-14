@@ -82,4 +82,19 @@ public class UserClassRepository : IUserClassRepository
         await _context.SaveChangesAsync();
         return userClasses;
     }
+
+    public async Task<bool> RemoveAllByClassIdAsync(Guid classId)
+    {
+        var userClasses = await _dbSet.Where(uc => uc.ClassId == classId).ToListAsync();
+        if (!userClasses.Any())
+            return true;
+
+        _dbSet.RemoveRange(userClasses);
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<List<UserClass>> GetAllAsync()
+    {
+        return await _dbSet.ToListAsync();
+    }
 }
