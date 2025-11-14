@@ -21,7 +21,6 @@ public class BestSubmissionDto
     public DateTime? SubmittedAt { get; set; }
     
     public int? Score { get; set; }
-    public int MaxScore { get; set; }
     
     [StringLength(10000)]
     public string? SolutionCode { get; set; }
