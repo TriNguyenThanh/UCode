@@ -224,6 +224,7 @@ export default function Settings() {
               onChange={(e) => setCurrentPassword(e.target.value)}
               fullWidth
               required
+              helperText='Nhập mật khẩu hiện tại của bạn'
             />
             <TextField
               label='Mật khẩu mới'
@@ -232,6 +233,12 @@ export default function Settings() {
               onChange={(e) => setNewPassword(e.target.value)}
               fullWidth
               required
+              error={newPassword !== '' && newPassword.length < 6}
+              helperText={
+                newPassword !== '' && newPassword.length < 6
+                  ? 'Mật khẩu phải có ít nhất 6 ký tự'
+                  : 'Tối thiểu 6 ký tự'
+              }
             />
             <TextField
               label='Xác nhận mật khẩu mới'
@@ -240,126 +247,35 @@ export default function Settings() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               fullWidth
               required
+              error={confirmPassword !== '' && newPassword !== confirmPassword}
+              helperText={
+                confirmPassword !== '' && newPassword !== confirmPassword
+                  ? 'Mật khẩu xác nhận không khớp'
+                  : 'Nhập lại mật khẩu mới'
+              }
             />
             
             <Button
               type="submit"
               variant='contained'
               startIcon={<SaveIcon />}
-              disabled={isSaving}
+              disabled={
+                isSaving || 
+                !currentPassword || 
+                !newPassword || 
+                !confirmPassword ||
+                newPassword.length < 6 ||
+                newPassword !== confirmPassword
+              }
               sx={{ alignSelf: 'flex-start' }}
             >
-              {isSaving ? 'Đang lưu...' : 'Đổi mật khẩu'}
+              {isSaving ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
             </Button>
           </Box>
         </Paper>
 
-        {/* Account Info Section */}
-        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-            <LockIcon sx={{ color: 'primary.main' }} />
-            <Typography variant='h6' sx={{ fontWeight: 600 }}>
-              Thông tin tài khoản
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label='Email đăng nhập'
-              value={user.email}
-              disabled
-              fullWidth
-              helperText='Email đăng nhập không thể thay đổi'
-            />
-            <TextField
-              label='Họ và tên'
-              defaultValue='Nguyễn Văn A'
-              fullWidth
-            />
-            <TextField
-              label='Mã số sinh viên'
-              defaultValue='UTC2123456'
-              fullWidth
-            />
-            <Button
-              variant='contained'
-              startIcon={<SaveIcon />}
-              sx={{ 
-                bgcolor: 'primary.main', 
-                color: 'secondary.main',
-                fontWeight: 600,
-                alignSelf: 'flex-start'
-              }}
-            >
-              Lưu thay đổi
-            </Button>
-          </Box>
-        </Paper>
-
-        {/* Change Password Section */}
-        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-            <LockIcon sx={{ color: 'primary.main' }} />
-            <Typography variant='h6' sx={{ fontWeight: 600 }}>
-              Đổi mật khẩu
-            </Typography>
-          </Box>
-
-          <form onSubmit={handlePasswordChange}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField
-                label='Mật khẩu hiện tại'
-                type='password'
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                fullWidth
-                required
-              />
-              <TextField
-                label='Mật khẩu mới'
-                type='password'
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                fullWidth
-                required
-                helperText='Tối thiểu 8 ký tự'
-              />
-              <TextField
-                label='Xác nhận mật khẩu mới'
-                type='password'
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                fullWidth
-                required
-                error={confirmPassword !== '' && newPassword !== confirmPassword}
-                helperText={
-                  confirmPassword !== '' && newPassword !== confirmPassword
-                    ? 'Mật khẩu không khớp'
-                    : ''
-                }
-              />
-              <Button
-                type='submit'
-                variant='contained'
-                startIcon={<SaveIcon />}
-                disabled={newPassword !== confirmPassword || newPassword.length < 8}
-                sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'secondary.main',
-                  fontWeight: 600,
-                  alignSelf: 'flex-start'
-                }}
-              >
-                Đổi mật khẩu
-              </Button>
-            </Box>
-          </form>
-        </Paper>
-
-        <Divider sx={{ my: 4 }} />
-
-        {/* Notification Settings */}
-        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+        {/* Notification Settings - COMMENTED OUT */}
+        {/* <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
             <NotificationsIcon sx={{ color: 'primary.main' }} />
             <Typography variant='h6' sx={{ fontWeight: 600 }}>
@@ -434,10 +350,10 @@ export default function Settings() {
               Lưu cài đặt
             </Button>
           </Box>
-        </Paper>
+        </Paper> */}
 
-        {/* Appearance Settings */}
-        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+        {/* Appearance Settings - COMMENTED OUT */}
+        {/* <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
             <PaletteIcon sx={{ color: 'primary.main' }} />
             <Typography variant='h6' sx={{ fontWeight: 600 }}>
@@ -484,10 +400,10 @@ export default function Settings() {
               Lưu cài đặt
             </Button>
           </Box>
-        </Paper>
+        </Paper> */}
 
-        {/* Danger Zone */}
-        <Paper 
+        {/* Danger Zone - COMMENTED OUT */}
+        {/* <Paper 
           elevation={0} 
           sx={{ 
             p: 3, 
@@ -509,7 +425,7 @@ export default function Settings() {
           >
             Xóa tài khoản
           </Button>
-        </Paper>
+        </Paper> */}
       </Container>
     </Box>
   )
