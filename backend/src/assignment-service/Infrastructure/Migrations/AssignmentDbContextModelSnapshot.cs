@@ -196,10 +196,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_assignment_user_user_id");
 
-                    b.HasIndex("AssignmentId", "UserId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_assignment_user_assignment_id_user_id");
-
                     b.ToTable("assignment_user", (string)null);
                 });
 
@@ -208,6 +204,12 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("AssignmentId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_id");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("comment");
 
                     b.Property<string>("CompareResult")
                         .HasMaxLength(4000)
@@ -822,9 +824,15 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_user_id");
 
-                    b.Property<string>("CompareResult")
+                    b.Property<string>("Comment")
+                        .IsRequired()
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("comment");
+
+                    b.Property<string>("CompareResult")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("compare_result");
 
                     b.Property<Guid>("DatasetId")
@@ -832,13 +840,13 @@ namespace Infrastructure.Migrations
                         .HasColumnName("dataset_id");
 
                     b.Property<string>("ErrorCode")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("error_code");
 
                     b.Property<string>("ErrorMessage")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("error_message");
 
                     b.Property<string>("LanguageCode")
@@ -876,18 +884,21 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("SourceCodeRef")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("source_code_ref");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("SubmittedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("submitted_at");
+                        .HasColumnName("submitted_at")
+                        .HasDefaultValueSql("SYSDATETIME()");
 
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
@@ -909,9 +920,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("UserFullName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
                         .HasColumnName("user_full_name");
 
                     b.Property<Guid>("UserId")
@@ -939,6 +949,15 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ProblemId")
                         .HasDatabaseName("ix_submission_problem_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_submission_status");
+
+                    b.HasIndex("SubmittedAt")
+                        .HasDatabaseName("ix_submission_submitted_at");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_submission_user_id");
 
                     b.ToTable("submission", (string)null);
                 });
@@ -1136,6 +1155,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("AssignmentService.Domain.Entities.Assignment", "Assignment")
                         .WithMany()
                         .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_submission_assignment_assignment_id");
 
                     b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", null)
@@ -1146,14 +1166,14 @@ namespace Infrastructure.Migrations
                     b.HasOne("AssignmentService.Domain.Entities.Dataset", "Dataset")
                         .WithMany()
                         .HasForeignKey("DatasetId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_submission_dataset_dataset_id");
 
                     b.HasOne("AssignmentService.Domain.Entities.Language", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_submission_language_language_id");
 

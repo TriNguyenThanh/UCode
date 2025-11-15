@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251115005536_InitDb")]
+    [Migration("20251115043157_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -207,6 +207,12 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("AssignmentId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_id");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("comment");
 
                     b.Property<string>("CompareResult")
                         .HasMaxLength(4000)
@@ -821,6 +827,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("assignment_user_id");
 
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("comment");
+
                     b.Property<string>("CompareResult")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
@@ -911,9 +923,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("UserFullName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
                         .HasColumnName("user_full_name");
 
                     b.Property<Guid>("UserId")

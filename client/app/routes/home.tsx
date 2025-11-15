@@ -69,7 +69,7 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
     
     const classes = classesData.map((cls: Class) => ({
       id: cls.classId,
-      name: cls.name,
+      name: cls.className,
       code: cls.classCode,
       teacherName: cls.teacherName,
       semester: cls.semester,

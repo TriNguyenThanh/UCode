@@ -172,15 +172,40 @@ public class SubmissionService : ISubmissionService
         try
         {
             var BestSubmission = await _repository.GetBestSubmission(submission.AssignmentId ?? Guid.Empty, submission.ProblemId, submission.UserId);
-            if (BestSubmission == null || submission.Score > BestSubmission.Score)
+
+            // if (BestSubmission == null || submission.Score > BestSubmission.Score)
+            // {
+            //     var score = submission.Score - (BestSubmission?.Score ?? 0);
+            //     if (submission.AssignmentId != null)
+            //     {
+            //         await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, score);
+            //     }
+            //     Console.WriteLine($"[x] Added/Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+            // }
+
+            if (BestSubmission == null)
             {
-                var score = submission.Score - (BestSubmission?.Score ?? 0);
+                var score = submission.Score;
                 if (submission.AssignmentId != null)
                 {
                     await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, score);
                 }
-                Console.WriteLine($"[x] Added/Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+                Console.WriteLine($"[x] Added best submission for user {submission.UserId} on problem {submission.ProblemId}");
             }
+            else
+            {
+                var previousScore = BestSubmission.Score;
+                if (submission.Score > previousScore)
+                {
+                    var scoreDifference = submission.Score - previousScore;
+                    if (submission.AssignmentId != null)
+                    {
+                        await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, scoreDifference);
+                    }
+                    Console.WriteLine($"[x] Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+                }
+            }
+
 
             return await _repository.UpdateSubmission(submission);
         }
@@ -201,12 +226,20 @@ public class SubmissionService : ISubmissionService
         {
             int score = 0;
             if (submission.TotalTestcase == 0) return score;
+
+            var datasetKind = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
+            if (datasetKind?.Kind == DatasetKind.SAMPLE)
+            {
+                // Nếu là dataset mẫu, không tính điểm
+                return score;
+            }
+
             Guid assignmentId = submission.AssignmentId ?? Guid.Empty;
             if (assignmentId == Guid.Empty) return score;
-            var assignment = await _assignmentService.GetAssignmentProblemAsync(assignmentId, submission.ProblemId);
-            if (assignment == null) return score;
+            var assignmentProblem = await _assignmentService.GetAssignmentProblemAsync(assignmentId, submission.ProblemId);
+            if (assignmentProblem == null) return score;
 
-            score = (int)Math.Round((double)(submission.PassedTestcase * assignment.Points) / submission.TotalTestcase);
+            score = (int)Math.Round((double)(submission.PassedTestcase * assignmentProblem.Points) / submission.TotalTestcase);
             return score;
         }
         catch (Exception ex)

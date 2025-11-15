@@ -582,7 +582,7 @@ public static class AssignmentDbContextSeed
                 Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
                 StartedAt = null,
-                Score = null,
+                Score = 0,
                 MaxScore = 200
             },
             
@@ -595,7 +595,7 @@ public static class AssignmentDbContextSeed
                 Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
                 StartedAt = null,
-                Score = null,
+                Score = 0,
                 MaxScore = 250
             },
             
@@ -608,7 +608,7 @@ public static class AssignmentDbContextSeed
                 Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
                 StartedAt = null,
-                Score = null,
+                Score = 0,
                 MaxScore = 250
             }
         };

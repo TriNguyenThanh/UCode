@@ -387,7 +387,7 @@ export default function SubmissionGrading() {
             </Card>
 
             {/* Grading Panel */}
-            <Paper sx={{ p: 3 }}>
+            {/* <Paper sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 3 }}>
                 Chấm điểm
               </Typography>
@@ -456,7 +456,7 @@ export default function SubmissionGrading() {
               >
                 {isSaving ? 'Đang lưu...' : 'Lưu điểm và nhận xét'}
               </Button>
-            </Paper>
+            </Paper> */}
           </Box>
         </Box>
       </Container>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.assignment.$id'
 import { auth } from '~/auth'
-import type { Assignment, AssignmentUser, AssignmentStatistics, StudentResponse } from '~/types/index'
+import type { Assignment, AssignmentUser, AssignmentStatistics } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
 import { AddProblemDialog } from '~/components/AddProblemDialog'
 import {
@@ -30,7 +30,6 @@ import {
   IconButton,
   Tabs,
   Tab,
-  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -80,13 +79,10 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
     // Fetch statistics
     const statistics = await getAssignmentStatistics(params.id)
-    
-    // Fetch class students to get MSSV and full names
-    const classStudents = await getClassStudents(assignment.classId)
 
-    return {
-      user,
-      assignment,
+    return { 
+      user, 
+      assignment, 
       students: assignmentStudents,
       classStudents: classStudents.items,
       statistics
@@ -106,11 +102,6 @@ export default function TeacherAssignmentDetail() {
   const [problemToDelete, setProblemToDelete] = useState<string | null>(null)
   const [deleteAssignmentDialogOpen, setDeleteAssignmentDialogOpen] = useState(false)
 
-  // Create a map to lookup student info by userId
-  const studentMap = new Map<string, StudentResponse>()
-  classStudents.forEach(student => {
-    studentMap.set(student.userId, student)
-  })
 
   // Calculate statistics from students data
   const submittedStudents = students.filter((s) => s.status === 'SUBMITTED' || s.status === 'GRADED')
@@ -157,7 +148,7 @@ export default function TeacherAssignmentDetail() {
     try {
       // Update assignment with new problems
       await updateAssignment(assignment.assignmentId, {
-        assignmentType: assignment.assignmentType as 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE',
+        assignmentType: assignment.assignmentType,
         classId: assignment.classId,
         title: assignment.title,
         description: assignment.description,
@@ -200,8 +191,8 @@ export default function TeacherAssignmentDetail() {
                   color="primary"
                   sx={{ bgcolor: 'primary.main', color: 'secondary.main' }}
                 />
-                <Chip label={`Đã chấm: ${statistics.graded}`} color="success" />
-                <Chip label={`Chưa chấm: ${pendingGrading}`} color="warning" />
+                {/* <Chip label={`Đã chấm: ${statistics.graded}`} color="success" /> */}
+                {/* <Chip label={`Chưa chấm: ${pendingGrading}`} color="warning" /> */}
                 {assignment.endTime && (
                   <Chip label={`Hạn: ${new Date(assignment.endTime).toLocaleDateString('vi-VN')}`} />
                 )}
@@ -257,22 +248,22 @@ export default function TeacherAssignmentDetail() {
           </Typography>
         </Box>
 
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={tabValue}
-            onChange={(_, newValue) => setTabValue(newValue)}
-            sx={{
-              '& .MuiTab-root': { color: 'text.secondary' },
-              '& .Mui-selected': { color: 'secondary.main' },
-              '& .MuiTabs-indicator': { bgcolor: 'primary.main' },
-            }}
-          >
-            <Tab label="Danh sách bài" />
-            <Tab label="Bảng điểm" />
-            <Tab label="Thống kê" />
-          </Tabs>
-        </Box>
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+          sx={{
+            '& .MuiTab-root': { color: 'text.secondary' },
+            '& .Mui-selected': { color: 'secondary.main' },
+            '& .MuiTabs-indicator': { bgcolor: 'primary.main' },
+          }}
+        >
+          <Tab label="Danh sách bài" />
+          <Tab label="Bảng điểm" />
+          <Tab label="Thống kê" />
+        </Tabs>
+      </Box>
 
         {/* Problems Tab */}
         <TabPanel value={tabValue} index={0}>
@@ -371,95 +362,92 @@ export default function TeacherAssignmentDetail() {
           </TableContainer>
         </TabPanel>
 
-        {/* Grade Tab */}
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-              Bảng điểm ({classStudents.length} sinh viên)
-            </Typography>
-          </Box>
+      {/* Grade Tab */}
+      <TabPanel value={tabValue} index={1}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+            Bảng điểm ({classStudents.length} sinh viên)
+          </Typography>
+        </Box>
 
-          <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
-            <Table>
-              <TableHead sx={{ bgcolor: 'secondary.main' }}>
-                <TableRow>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>STT</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>MSSV</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Họ tên</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Email</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Trạng thái</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Điểm</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {classStudents.map((student, index) => {
-                  // Find matching assignment student data
-                  const assignmentStudent = students.find(s => s.userId === student.userId)
-                  
-                  return (
-                    <TableRow key={student.userId} hover>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="500">
-                          {student.studentCode || '-'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="500">
-                          {student.fullName}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {student.email}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        {assignmentStudent ? (
-                          assignmentStudent.status === 'GRADED' ? (
-                            <Chip
-                              icon={<CheckCircleIcon />}
-                              label="Đã chấm"
-                              size="small"
-                              color="success"
-                            />
-                          ) : assignmentStudent.status === 'SUBMITTED' ? (
-                            <Chip label="Chờ chấm" size="small" color="warning" />
-                          ) : assignmentStudent.status === 'IN_PROGRESS' ? (
-                            <Chip label="Đang làm" size="small" color="info" />
-                          ) : (
-                            <Chip icon={<CancelIcon />} label="Chưa bắt đầu" size="small" />
-                          )
+        <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+          <Table>
+            <TableHead sx={{ bgcolor: 'secondary.main' }}>
+              <TableRow>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>STT</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>MSSV</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Họ tên</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Email</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Trạng thái</TableCell>
+                <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Điểm</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {classStudents.map((student, index) => {
+                // Find matching assignment student data
+                const assignmentStudent = students.find(s => s.userId === student.userId)
+                
+                return (
+                  <TableRow key={student.userId} hover>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="500">
+                        {student.studentCode || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="500">
+                        {student.fullName}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {student.email}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      {assignmentStudent ? (
+                        assignmentStudent.status === 'GRADED' ? (
+                          <Chip
+                            icon={<CheckCircleIcon />}
+                            label="Đã chấm"
+                            size="small"
+                            color="success"
+                          />
+                        ) : assignmentStudent.status === 'SUBMITTED' ? (
+                          <Chip label="Chờ chấm" size="small" color="warning" />
+                        ) : assignmentStudent.status === 'IN_PROGRESS' ? (
+                          <Chip label="Đang làm" size="small" color="info" />
                         ) : (
-                          <Chip label="Chưa tham gia" size="small" />
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography
-                          variant="body2"
-                          fontWeight="bold"
-                          sx={{
-                            color:
-                              assignmentStudent?.score !== null && assignmentStudent?.score !== undefined
-                                ? 'success.main'
-                                : 'text.secondary',
-                          }}
-                        >
-                          {assignmentStudent?.score !== null && assignmentStudent?.score !== undefined
-                            ? `${assignmentStudent.score}/${assignmentStudent.maxScore}`
-                            : '-'}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
+                          <Chip icon={<CancelIcon />} label="Chưa bắt đầu" size="small" />
+                        )
+                      ) : (
+                        <Chip label="Chưa tham gia" size="small" />
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        sx={{
+                          color: assignmentStudent?.score === assignmentStudent?.maxScore ? '#34C759' : '#FF3B30',
+                        }}
+                      >
+                        {assignmentStudent?.score !== null && assignmentStudent?.score !== undefined
+                          ? `${assignmentStudent.score}/${assignmentStudent.maxScore}`
+                          : '-'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </TabPanel>
 
-        {/* Statistics Tab */}
-        <TabPanel value={tabValue} index={2}>
+      {/* Statistics Tab */}
+      <TabPanel value={tabValue} index={2}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 3 }}>
               Thống kê chi tiết

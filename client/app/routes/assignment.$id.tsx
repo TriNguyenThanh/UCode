@@ -157,7 +157,7 @@ export default function AssignmentDetail() {
   const daysLeft = getDaysUntil(assignment.endTime)
   
   const totalProblems = assignment.totalProblems || problems.length
-  // Count problems that have been successfully submitted (Passed status)
+  // Count problems that have BestSubmission with Passed status
   const completedProblems = Object.values(problemSubmissions || {}).filter(
     (submission) => submission?.status === 'Passed'
   ).length
@@ -397,7 +397,7 @@ export default function AssignmentDetail() {
                                 <Typography 
                                   variant='body2' 
                                   sx={{ 
-                                    color: submission.status === 'Passed' ? '#34C759' : '#FF3B30',
+                                    
                                     fontWeight: 500 
                                   }}
                                 >

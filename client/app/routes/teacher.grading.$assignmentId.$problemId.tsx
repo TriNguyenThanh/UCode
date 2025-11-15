@@ -189,7 +189,7 @@ export default function TeacherGrading() {
                 <TableCell sx={{ fontWeight: 'bold' }}>Bộ nhớ</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Ngày nộp</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Điểm</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Thao tác</TableCell>
+                {/* <TableCell sx={{ fontWeight: 'bold' }}>Thao tác</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -277,7 +277,7 @@ export default function TeacherGrading() {
                           </Typography>
                         )}
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Button
                           size="small"
                           variant="outlined"
@@ -289,7 +289,7 @@ export default function TeacherGrading() {
                         >
                           Chấm bài
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   )
                 })
