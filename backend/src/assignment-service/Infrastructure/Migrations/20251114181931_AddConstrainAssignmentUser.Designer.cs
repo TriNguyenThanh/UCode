@@ -4,6 +4,7 @@ using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    partial class AssignmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114181931_AddConstrainAssignmentUser")]
+    partial class AddConstrainAssignmentUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,122 +208,45 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.BestSubmission", b =>
                 {
-                    b.Property<Guid?>("AssignmentId")
+                    b.Property<Guid>("AssignmentId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("assignment_id");
+                        .HasColumnName("AssignmentId");
 
-                    b.Property<string>("CompareResult")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("compare_result");
-
-                    b.Property<Guid>("DatasetId")
+                    b.Property<Guid>("BestSubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("dataset_id");
-
-                    b.Property<string>("ErrorCode")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("error_code");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("error_message");
-
-                    b.Property<string>("LanguageCode")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("language_code");
-
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("language_id");
-
-                    b.Property<int>("PassedTestcase")
-                        .HasColumnType("int")
-                        .HasColumnName("passed_testcase");
+                        .HasColumnName("BestSubmissionId");
 
                     b.Property<Guid>("ProblemId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("problem_id");
-
-                    b.Property<string>("ResultFileRef")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("result_file_ref");
+                        .HasColumnName("ProblemId");
 
                     b.Property<int>("Score")
                         .HasColumnType("int")
-                        .HasColumnName("score");
-
-                    b.Property<string>("SourceCode")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("source_code");
-
-                    b.Property<string>("SourceCodeRef")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("source_code_ref");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("status");
+                        .HasColumnName("Score");
 
                     b.Property<Guid>("SubmissionId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("submission_id");
+                        .HasColumnName("SubmissionId");
 
-                    b.Property<DateTime>("SubmittedAt")
+                    b.Property<DateTime>("SubmitAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("submitted_at");
+                        .HasColumnName("SubmitAt");
 
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_memory");
-
-                    b.Property<int>("TotalSubmission")
-                        .HasColumnType("int")
-                        .HasColumnName("total_submission");
-
-                    b.Property<int>("TotalTestcase")
-                        .HasColumnType("int")
-                        .HasColumnName("total_testcase");
+                        .HasColumnName("TotalMemory");
 
                     b.Property<long>("TotalTime")
                         .HasColumnType("bigint")
-                        .HasColumnName("total_time");
-
-                    b.Property<string>("UserCode")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("user_code");
-
-                    b.Property<string>("UserFullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("user_full_name");
+                        .HasColumnName("TotalTime");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("user_id");
-
-                    b.Property<bool>("isSubmitLate")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_submit_late");
+                        .HasColumnName("UserId");
 
                     b.ToTable((string)null);
 
-                    b.ToView("best_submissions", (string)null);
+                    b.ToView("BestSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.Dataset", b =>
@@ -841,12 +767,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)")
                         .HasColumnName("error_message");
 
-                    b.Property<string>("LanguageCode")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("language_code");
-
                     b.Property<Guid>("LanguageId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("language_id");
@@ -900,19 +820,6 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TotalTime")
                         .HasColumnType("bigint")
                         .HasColumnName("total_time");
-
-                    b.Property<string>("UserCode")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("user_code");
-
-                    b.Property<string>("UserFullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("user_full_name");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")

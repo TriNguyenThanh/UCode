@@ -287,7 +287,7 @@ public class SubmissionController : ControllerBase
     /// <summary>
     /// Get a specific best submission by submission ID
     /// </summary>
-    /// <param name="assignmentUserId">The unique identifier of the assignment</param>
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
     /// <param name="problemId">The unique identifier of the problem</param>
     /// <param name="submissionId">The unique identifier of the submission</param>
     /// <returns>Returns the best submission details if found</returns>
@@ -295,12 +295,13 @@ public class SubmissionController : ControllerBase
     /// <response code="404">Best submission not found</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet("assignment/{assignmentUserId:guid}/problem/{problemId:guid}/best/{submissionId:guid}")]
+    /// for student to get his/her best submission for a problem in an assignment
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best")]
     [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetBestSubmission(Guid assignmentUserId, Guid problemId, Guid submissionId)
+    public async Task<IActionResult> GetBestSubmission(Guid assignmentUserId, Guid problemId)
     {
         var bestSubmission = await _submissionService.GetBestSubmission(assignmentUserId, problemId, submissionId);
 

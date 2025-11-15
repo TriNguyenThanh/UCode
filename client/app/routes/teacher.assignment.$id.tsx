@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.assignment.$id'
 import { auth } from '~/auth'
-import type { Assignment, AssignmentUser, AssignmentStatistics } from '~/types/index'
+import type { Assignment, AssignmentUser, AssignmentStatistics, StudentResponse } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
 import { AddProblemDialog } from '~/components/AddProblemDialog'
 import {
@@ -80,6 +80,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
     // Fetch statistics
     const statistics = await getAssignmentStatistics(params.id)
+    
+    // Fetch class students to get MSSV and full names
+    const classStudents = await getClassStudents(assignment.classId)
 
     return {
       user,
@@ -103,6 +106,11 @@ export default function TeacherAssignmentDetail() {
   const [problemToDelete, setProblemToDelete] = useState<string | null>(null)
   const [deleteAssignmentDialogOpen, setDeleteAssignmentDialogOpen] = useState(false)
 
+  // Create a map to lookup student info by userId
+  const studentMap = new Map<string, StudentResponse>()
+  classStudents.forEach(student => {
+    studentMap.set(student.userId, student)
+  })
 
   // Calculate statistics from students data
   const submittedStudents = students.filter((s) => s.status === 'SUBMITTED' || s.status === 'GRADED')
@@ -149,7 +157,7 @@ export default function TeacherAssignmentDetail() {
     try {
       // Update assignment with new problems
       await updateAssignment(assignment.assignmentId, {
-        assignmentType: assignment.assignmentType,
+        assignmentType: assignment.assignmentType as 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE',
         classId: assignment.classId,
         title: assignment.title,
         description: assignment.description,
