@@ -166,20 +166,20 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AssignmentDbContext>();
         var logger = services.GetRequiredService<ILogger<Program>>();
         
-        logger.LogInformation("🔄 Checking database connection...");
+        logger.LogInformation("Checking database connection...");
         
         // Tạo database nếu chưa tồn tại và chạy migrations
         await context.Database.MigrateAsync();
-        logger.LogInformation("✅ Database migrated successfully!");
+        logger.LogInformation("Database migrated successfully!");
         
         // Seed data nếu database trống
         await AssignmentDbContextSeed.SeedAsync(context);
-        logger.LogInformation("✅ Database seeded successfully!");
+        logger.LogInformation("Database seeded successfully!");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "❌ An error occurred while migrating or seeding the database.");
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
 
