@@ -47,7 +47,7 @@ public static class AssignmentDbContextSeed
 
         // ===== 2. Seed Problems =====
         Console.WriteLine("\nSeeding Problems...");
-        var teacherId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var teacherId = Guid.Parse("e54be995-11d5-4bb1-8c2d-f8af59b91707");
 
         var problem1 = new Problem
         {
@@ -286,20 +286,20 @@ public static class AssignmentDbContextSeed
                 DisplayOrder = 1,
                 CreatedAt = DateTime.UtcNow
             },
-            new Language 
-            { 
-                LanguageId = Guid.NewGuid(), 
-                Code = "java", 
-                DisplayName = "Java 17", 
-                DefaultTimeFactor = 1.5m,
-                DefaultMemoryKb = 524288, // 512MB - Java cần nhiều memory hơn
-                DefaultHead = "import java.util.*;\nimport java.io.*;\n",
-                DefaultBody = "public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}",
-                DefaultTail = null,
-                IsEnabled = true,
-                DisplayOrder = 2,
-                CreatedAt = DateTime.UtcNow
-            },
+            // new Language 
+            // { 
+            //     LanguageId = Guid.NewGuid(), 
+            //     Code = "java", 
+            //     DisplayName = "Java 17", 
+            //     DefaultTimeFactor = 1.5m,
+            //     DefaultMemoryKb = 524288, // 512MB - Java cần nhiều memory hơn
+            //     DefaultHead = "import java.util.*;\nimport java.io.*;\n",
+            //     DefaultBody = "public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}",
+            //     DefaultTail = null,
+            //     IsEnabled = true,
+            //     DisplayOrder = 2,
+            //     CreatedAt = DateTime.UtcNow
+            // },
             new Language 
             { 
                 LanguageId = Guid.NewGuid(), 
@@ -314,34 +314,34 @@ public static class AssignmentDbContextSeed
                 DisplayOrder = 3,
                 CreatedAt = DateTime.UtcNow
             },
-            new Language 
-            { 
-                LanguageId = Guid.NewGuid(), 
-                Code = "javascript", 
-                DisplayName = "Node.js 20", 
-                DefaultTimeFactor = 2.0m,
-                DefaultMemoryKb = 262144, // 256MB
-                DefaultHead = "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n",
-                DefaultBody = "// Your code here\n",
-                DefaultTail = null,
-                IsEnabled = true,
-                DisplayOrder = 4,
-                CreatedAt = DateTime.UtcNow
-            },
-            new Language 
-            { 
-                LanguageId = Guid.NewGuid(), 
-                Code = "csharp", 
-                DisplayName = "C# .NET 8", 
-                DefaultTimeFactor = 1.2m,
-                DefaultMemoryKb = 262144, // 256MB
-                DefaultHead = "using System;\nusing System.Collections.Generic;\nusing System.Linq;\n",
-                DefaultBody = "class Program\n{\n    static void Main(string[] args)\n    {\n        // Your code here\n    }\n}",
-                DefaultTail = null,
-                IsEnabled = true,
-                DisplayOrder = 5,
-                CreatedAt = DateTime.UtcNow
-            }
+            // new Language 
+            // { 
+            //     LanguageId = Guid.NewGuid(), 
+            //     Code = "javascript", 
+            //     DisplayName = "Node.js 20", 
+            //     DefaultTimeFactor = 2.0m,
+            //     DefaultMemoryKb = 262144, // 256MB
+            //     DefaultHead = "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n",
+            //     DefaultBody = "// Your code here\n",
+            //     DefaultTail = null,
+            //     IsEnabled = true,
+            //     DisplayOrder = 4,
+            //     CreatedAt = DateTime.UtcNow
+            // },
+            // new Language 
+            // { 
+            //     LanguageId = Guid.NewGuid(), 
+            //     Code = "csharp", 
+            //     DisplayName = "C# .NET 8", 
+            //     DefaultTimeFactor = 1.2m,
+            //     DefaultMemoryKb = 262144, // 256MB
+            //     DefaultHead = "using System;\nusing System.Collections.Generic;\nusing System.Linq;\n",
+            //     DefaultBody = "class Program\n{\n    static void Main(string[] args)\n    {\n        // Your code here\n    }\n}",
+            //     DefaultTail = null,
+            //     IsEnabled = true,
+            //     DisplayOrder = 5,
+            //     CreatedAt = DateTime.UtcNow
+            // }
         };
 
         await context.Languages.AddRangeAsync(languages);
@@ -353,7 +353,7 @@ public static class AssignmentDbContextSeed
         // Ví dụ: Problem 1 cần Python chạy nhanh hơn default
         Console.WriteLine("\nSeeding ProblemLanguages (overrides)...");
         var cppLang = languages.First(l => l.Code == "cpp");
-        var javaLang = languages.First(l => l.Code == "java");
+        // var javaLang = languages.First(l => l.Code == "java");
         var pythonLang = languages.First(l => l.Code == "python");
         
         var problemLanguages = new List<ProblemLanguage>
@@ -379,10 +379,15 @@ public static class AssignmentDbContextSeed
             new ProblemLanguage 
             { 
                 ProblemId = problem3.ProblemId, 
-                LanguageId = javaLang.LanguageId,
-                MemoryKbOverride = 1048576, // 1GB for Fibonacci (override default 512MB)
+                LanguageId = cppLang.LanguageId,
+                IsAllowed = true // Explicit allow
+            },
+            new ProblemLanguage 
+            { 
+                ProblemId = problem3.ProblemId, 
+                LanguageId = pythonLang.LanguageId,
                 IsAllowed = true
-            }
+            },
         };
 
         await context.ProblemLanguages.AddRangeAsync(problemLanguages);
@@ -456,7 +461,7 @@ public static class AssignmentDbContextSeed
 
         // ===== 9. Seed Assignments =====
         Console.WriteLine("\nSeeding Assignments...");
-        var classId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var classId = Guid.Parse("3685709d-51e5-492c-bb2b-7bfbad2f1dcc");
         
         var assignment1 = new Assignment
         {
@@ -536,9 +541,9 @@ public static class AssignmentDbContextSeed
 
         // ===== 11. Seed AssignmentUsers =====
         Console.WriteLine("\nSeeding AssignmentUsers...");
-        var student1Id = Guid.Parse("44444444-4444-4444-4444-444444444444");
-        var student2Id = Guid.Parse("55555555-5555-5555-5555-555555555555");
-        var student3Id = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var student1Id = Guid.Parse("57b45e9b-a0dc-4126-a850-adae3e71d411");
+        var student2Id = Guid.Parse("214b4663-97b9-42ef-8671-90e500816e88");
+        var student3Id = Guid.Parse("eb63f6d4-1c8d-4cb9-a692-b3a107fee8ec");
 
         var assignmentUsers = new List<AssignmentUser>
         {
@@ -548,9 +553,9 @@ public static class AssignmentDbContextSeed
                 AssignmentUserId = Guid.NewGuid(),
                 AssignmentId = assignment1.AssignmentId,
                 UserId = student1Id,
-                Status = AssignmentUserStatus.IN_PROGRESS,
+                Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
-                StartedAt = DateTime.UtcNow.AddHours(1),
+                StartedAt = null,
                 Score = 150,
                 MaxScore = 200
             },
@@ -561,9 +566,9 @@ public static class AssignmentDbContextSeed
                 AssignmentUserId = Guid.NewGuid(),
                 AssignmentId = assignment1.AssignmentId,
                 UserId = student2Id,
-                Status = AssignmentUserStatus.SUBMITTED,
+                Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
-                StartedAt = DateTime.UtcNow.AddHours(2),
+                StartedAt = null,
                 Score = 200,
                 MaxScore = 200
             },
@@ -587,9 +592,9 @@ public static class AssignmentDbContextSeed
                 AssignmentUserId = Guid.NewGuid(),
                 AssignmentId = assignment2.AssignmentId,
                 UserId = student1Id,
-                Status = AssignmentUserStatus.IN_PROGRESS,
+                Status = AssignmentUserStatus.NOT_STARTED,
                 AssignedAt = DateTime.UtcNow,
-                StartedAt = DateTime.UtcNow.AddMinutes(30),
+                StartedAt = null,
                 Score = null,
                 MaxScore = 250
             },

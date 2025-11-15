@@ -6,6 +6,7 @@ using AssignmentService.Application.DTOs.Requests;
 using AssignmentService.Application.DTOs.Responses;
 using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AssignmentService.Api.Controllers;
 
@@ -27,7 +28,7 @@ public class SubmissionController : ControllerBase
     }
 
     #region Helper Methods
-    
+
     /// <summary>
     /// Gets authenticated user ID from X-User-Id header
     /// </summary>
@@ -36,8 +37,30 @@ public class SubmissionController : ControllerBase
         var userId = HttpContext.Items["X-User-Id"]?.ToString();
         if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userIdGuid))
             throw new ApiException("X-User-Id header is missing or invalid");
-        
+
         return userIdGuid;
+    }
+    /// <summary>
+    /// Gets authenticated user FullName from X-User-FullName header
+    /// </summary>
+    private string GetAuthenticatedUserName()
+    {
+        var userName = HttpContext.Items["X-User-FullName"]?.ToString();
+        if (string.IsNullOrEmpty(userName))
+            throw new ApiException("X-User-FullName header is missing or invalid");
+
+        return userName;
+    }
+    /// <summary>
+    /// Gets authenticated user Code from X-User-Code header
+    /// </summary>
+    private string GetAuthenticatedUserCode()
+    {
+        var userCode = HttpContext.Items["X-User-Code"]?.ToString();
+        if (string.IsNullOrEmpty(userCode))
+            throw new ApiException("X-User-Code header is missing or invalid");
+        
+        return userCode;
     }
 
     #endregion
@@ -83,9 +106,13 @@ public class SubmissionController : ControllerBase
     public async Task<IActionResult> CreateSubmission([FromBody] SubmissionRequest request)
     {
         var userId = GetAuthenticatedUserId();
-
+        var userCode = GetAuthenticatedUserCode();
+        var userName = GetAuthenticatedUserName();
         var submission = _mapper.Map<Submission>(request);
         submission.UserId = userId;
+        submission.UserCode = userCode;
+        submission.UserFullName = userName;
+        Console.WriteLine($"[✅] Creating submission for User: {userName}");
 
         var created = await _submissionService.SubmitCode(submission);
         var response = _mapper.Map<CreateSubmissionResponse>(created);
@@ -112,9 +139,12 @@ public class SubmissionController : ControllerBase
     public async Task<IActionResult> RunSubmission([FromBody] SubmissionRequest request)
     {
         var userId = GetAuthenticatedUserId();
-
+        var userCode = GetAuthenticatedUserCode();
+        var userName = GetAuthenticatedUserName();
         var submission = _mapper.Map<Submission>(request);
         submission.UserId = userId;
+        submission.UserCode = userCode;
+        submission.UserFullName = userName;
 
         var created = await _submissionService.RunCode(submission);
         var response = _mapper.Map<CreateSubmissionResponse>(created);
@@ -273,11 +303,40 @@ public class SubmissionController : ControllerBase
     public async Task<IActionResult> GetBestSubmission(Guid assignmentUserId, Guid problemId, Guid submissionId)
     {
         var bestSubmission = await _submissionService.GetBestSubmission(assignmentUserId, problemId, submissionId);
-        
+
         if (bestSubmission == null)
             return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Best submission not found"));
 
         var response = _mapper.Map<BestSubmissionResponse>(bestSubmission);
         return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Best submission retrieved successfully"));
+    }
+    public record UpdateBestSubmissionScoreRequest(Guid SubmissionId, int NewScore, string Comment);
+    /// <summary>
+    /// Get a specific best submission by submission ID
+    /// </summary>
+    /// <param name="request">The request containing the new score and submission ID to update for the best submission</param>
+    /// <returns>Returns the best submission details if found</returns>
+    /// <response code="200">Best submission retrieved successfully</response>
+    /// <response code="404">Best submission not found</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    /// <response code="400">Bad request</response>
+    [RequireRole("teacher, admin")]
+    [HttpPut("update-score")]
+    [ProducesResponseType(typeof(ApiResponse<Submission>), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> UpdateBestSubmissionScore([FromBody] UpdateBestSubmissionScoreRequest request)
+    {
+        var submission = await _submissionService.GetSubmission(request.SubmissionId);
+
+        if (submission == null)
+            return NotFound(ApiResponse<Submission>.ErrorResponse("Best submission not found"));
+        submission.Score = request.NewScore;
+        submission.Comment = request.Comment;
+        await _submissionService.UpdateSubmissionByTeacher(submission);
+        var response = _mapper.Map<Submission>(submission);
+        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission retrieved successfully"));
     }
 }

@@ -450,12 +450,12 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment detail not found</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("webhook/{assignmentId:guid}/save-assignment-problem-submission")]
-    [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionDto request)
+    public Task<IActionResult> SaveAssignmentProblemSubmission(Guid assignmentId, [FromBody] BestSubmissionResponse request)
     {
         // try {
 
@@ -523,7 +523,7 @@ public class AssignmentController : ControllerBase
 
     //     // }
 
-        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
+        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionResponse>.ErrorResponse("Api này chưa có đâu nhé")));
     }
 
     // /// <summary>
@@ -561,7 +561,7 @@ public class AssignmentController : ControllerBase
     /// </summary>
     /// <param name="id">The unique identifier of the assignment</param>
     /// <param name="submissionId">The unique identifier of the submission to grade</param>
-    /// <param name="request">Grading request containing score and feedback</param>
+    /// <param name="score">The score to assign to the submission</param>
     /// <returns>Updated submission with grade information</returns>
     /// <response code="200">Submission graded successfully</response>
     /// <response code="400">Invalid request data</response>
@@ -571,21 +571,19 @@ public class AssignmentController : ControllerBase
     /// <response code="500">Internal server error</response>
     [HttpPut("{id:guid}/grade-submission/{submissionId:guid}")]
     [RequireRole("teacher,admin")]
-    [ProducesResponseType(typeof(ApiResponse<BestSubmissionDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ForbiddenErrorResponse), 403)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public Task<IActionResult> GradeSubmission(Guid id, Guid submissionId, [FromBody] BestSubmissionDto request)
+    public async Task<IActionResult> GradeSubmission([FromQuery]Guid id, [FromQuery]Guid submissionId, [FromBody] int score)
     {
         // var assignment = await _assignmentService.GetAssignmentByIdAsync(id);
         // if (assignment == null)
-        //     return NotFound(ApiResponse<BestSubmissionDto>.ErrorResponse("Assignment not found"));
+        //     return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Assignment not found"));
         
-    //     // var userId = Guid.Parse(HttpContext.Items["X-User-Id"]?.ToString()!);
-    //     // if (assignment.AssignedBy != userId)
-    //     //     throw new ApiException("You do not have permission to grade this assignment");
+        // var userId = GetAuthenticatedUserId();
         
     //     // // Find submission by ID (we need to add this method to service)
     //     // var submissions = await _assignmentService.GetSubmissionsByAssignmentAsync(id);
@@ -602,9 +600,9 @@ public class AssignmentController : ControllerBase
     //     // var updated = await _assignmentService.UpdateSubmissionAsync(submission);
     //     // var response = _mapper.Map<BestSubmissionDto>(updated);
         
-    //     // return Ok(ApiResponse<BestSubmissionDto>.SuccessResponse(response, "Submission graded successfully"));
+    //     // return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Submission graded successfully"));
 
-        return Task.FromResult<IActionResult>(BadRequest(ApiResponse<BestSubmissionDto>.ErrorResponse("Api này chưa có đâu nhé")));
+        return BadRequest(ApiResponse<BestSubmissionResponse>.ErrorResponse("Api này chưa có đâu nhé"));
     }
 
     /// <summary>

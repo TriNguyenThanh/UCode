@@ -410,19 +410,19 @@ export default function AssignmentDetail() {
                                   {submission.status === 'Pending' && '⏳ Đang chờ'}
                                   {submission.status === 'Running' && '▶ Đang chạy'}
                                 </Typography>
-                                {submission.passedTestCases !== undefined && submission.totalTestCases !== undefined && (
+                                {submission.passedTestcase !== undefined && submission.totalTestcase !== undefined && (
                                   <Chip
-                                    label={`${submission.passedTestCases}/${submission.totalTestCases} testcases`}
+                                    label={`${submission.passedTestcase}/${submission.totalTestcase} testcases`}
                                     size='small'
-                                    color={submission.passedTestCases === submission.totalTestCases ? 'success' : 'default'}
+                                    color={submission.passedTestcase === submission.totalTestcase ? 'success' : 'default'}
                                   />
                                 )}
                                 {submission.score !== undefined && (
                                   <Chip
-                                    label={`${submission.score}/${submission.maxScore} điểm`}
+                                    label={`${submission.score} điểm`}
                                     size='small'
                                     sx={{ 
-                                      bgcolor: submission.score === submission.maxScore ? '#34C759' : '#FF9500',
+                                      bgcolor: submission.passedTestcase === submission.totalTestcase ? '#34C759' : '#FF9500',
                                       color: '#ffffff' 
                                     }}
                                   />

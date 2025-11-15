@@ -420,31 +420,34 @@ export type SubmissionStatus =
   | 'TimeLimitExceeded'
   | 'MemoryLimitExceeded'
 
-export interface SubmissionRequest {
-  problemId: string
-  assignmentUserId?: string
-  sourceCode: string
-  language: string
-}
+// export interface SubmissionRequest {
+//   problemId: string
+//   assignmentUserId?: string
+//   sourceCode: string
+//   language: string
+// }
 
-export interface CreateSubmissionResponse {
-  submissionId: string
-  status: SubmissionStatus
-}
+// export interface CreateSubmissionResponse {
+//   submissionId: string
+//   status: SubmissionStatus
+// }
 
 export interface Submission {
   submissionId: string
   userId: string
+  userFullName: string
+  userCode: string
   problemId: string
   assignmentUserId?: string
-  sourceCodeRef: string
-  language: string
+  sourceCode: string
+  languageCode: string
   status: SubmissionStatus
   compareResult?: string
   errorCode?: string
   errorMessage?: string
   totalTestcase: number
   passedTestcase: number
+  score: number
   totalTime: number
   totalMemory: number
   submittedAt: string
@@ -452,26 +455,27 @@ export interface Submission {
 }
 
 export interface BestSubmission {
-  submissionId?: string
-  assignmentId?: string
+  submissionId: string
+  userId: string
+  userFullName: string
+  userCode: string
   problemId: string
-  userId?: string
+  assignmentUserId?: string
+  sourceCode: string
+  languageCode: string
   status: SubmissionStatus
-  startedAt?: string
-  submittedAt?: string
-  score?: number
-  maxScore: number
-  solutionCode?: string
-  teacherFeedback?: string
-  attemptCount: number
-  totalTestCases?: number
-  passedTestCases?: number
-  executionTime?: number
-  memoryUsed?: number
+  compareResult?: string
+  errorCode?: string
+  errorMessage?: string
+  totalTestcase: number
+  passedTestcase: number
+  score: number
+  totalTime: number
+  totalMemory: number
+  submittedAt: string
+  resultFileRef?: string
+  totalSubmission?: number
 }
-
-
-
 
 // ============================================
 // LANGUAGE

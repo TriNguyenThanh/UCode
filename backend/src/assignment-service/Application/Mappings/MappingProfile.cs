@@ -94,12 +94,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Problem.Title))
             .ForMember(dest => dest.Difficulty, opt => opt.MapFrom(src => src.Problem.Difficulty.ToString()));
         
-        CreateMap<BestSubmission, BestSubmissionDto>().ReverseMap();
+        CreateMap<BestSubmission, BestSubmissionResponse>().ReverseMap();
 
         CreateMap<AssignmentProblemDto, AssignmentProblem>()
             .ForMember(dest => dest.Assignment, opt => opt.Ignore())
             .ForMember(dest => dest.Problem, opt => opt.Ignore());
-
 
         // Submission mappings
         CreateMap<Submission, SubmissionResponse>();

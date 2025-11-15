@@ -11,7 +11,7 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateBestSubmissionsView();   
+            migrationBuilder.CreateBestSubmissionsView();
         }
 
         /// <inheritdoc />
@@ -21,3 +21,4 @@ namespace Infrastructure.Migrations
         }
     }
 }
+

@@ -21,6 +21,11 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
         builder.Property(s => s.DatasetId)
             .IsRequired();
 
+        builder.Property(s => s.UserFullName)
+            .IsRequired()
+            .IsUnicode()
+            .HasMaxLength(100);
+
         builder.Property(s => s.SourceCodeRef)
             .IsRequired()
             .HasMaxLength(50);

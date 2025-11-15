@@ -16,6 +16,7 @@ public interface ISubmissionService
     Task<Submission> RunCode(Submission submission);
     Task<bool> UpdateSubmission(Submission submission);
     Task<int> Getscore(Submission submission);
+    Task UpdateSubmissionByTeacher(Submission submission);
     // Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status);
     // Task<bool> DeleteSubmission(Guid submissionId);
     // Task<bool> DeleteSubmissionByProblemId(Guid problemId);

@@ -143,8 +143,8 @@ export default function TeacherGrading() {
       setIsLoading(true)
       try {
         // If solutionCode is already in submission, use it
-        if (currentSubmission.solutionCode) {
-          setSourceCode(currentSubmission.solutionCode)
+        if (currentSubmission.sourceCode) {
+          setSourceCode(currentSubmission.sourceCode)
         } else {
           // Otherwise, try to download from file service (if sourceCodeRef exists)
           setSourceCode('// Source code not available')
@@ -161,7 +161,7 @@ export default function TeacherGrading() {
     // Initialize score and feedback from current submission
     if (currentSubmission) {
       setScore(currentSubmission.score ?? '')
-      setFeedback(currentSubmission.teacherFeedback || '')
+      // setFeedback(currentSubmission.teacherFeedback || '')
     } else {
       setScore('')
       setFeedback('')
@@ -313,7 +313,7 @@ export default function TeacherGrading() {
             <Box sx={{ display: 'flex', gap: 2 }}>
               {problems.map((problem, idx) => {
                 const submission = bestSubmissions.find((s) => s.problemId === problem.problemId)
-                const isPassed = submission && submission.passedTestCases === submission.totalTestCases
+                const isPassed = submission && submission.passedTestcase === submission.totalTestcase
                 const hasSubmission = !!submission
                 
                 return (
@@ -351,14 +351,14 @@ export default function TeacherGrading() {
               {currentSubmission && (
                 <Chip
                   icon={
-                    currentSubmission.passedTestCases === currentSubmission.totalTestCases
+                    currentSubmission.passedTestcase === currentSubmission.totalTestcase
                       ? <CheckCircleIcon />
                       : <CancelIcon />
                   }
-                  label={`${currentSubmission.passedTestCases || 0}/${currentSubmission.totalTestCases || 0} test cases`}
+                  label={`${currentSubmission.passedTestcase || 0}/${currentSubmission.totalTestcase || 0} test cases`}
                   size="small"
                   color={
-                    currentSubmission.passedTestCases === currentSubmission.totalTestCases
+                    currentSubmission.passedTestcase === currentSubmission.totalTestcase
                       ? 'success'
                       : 'warning'
                   }
@@ -454,17 +454,17 @@ export default function TeacherGrading() {
                       <CancelIcon color="error" />
                     )}
                     <Typography variant="body2">
-                      {currentSubmission.passedTestCases || 0}/{currentSubmission.totalTestCases || 0} test cases passed
+                      {currentSubmission.passedTestcase || 0}/{currentSubmission.totalTestcase || 0} test cases passed
                     </Typography>
                   </Box>
-                  {currentSubmission.executionTime && (
+                  {currentSubmission.totalTime && (
                     <Typography variant="body2" color="text.secondary">
-                      Thời gian: {currentSubmission.executionTime}ms
+                      Thời gian: {currentSubmission.totalTime}ms
                     </Typography>
                   )}
-                  {currentSubmission.memoryUsed && (
+                  {currentSubmission.totalMemory && (
                     <Typography variant="body2" color="text.secondary">
-                      Bộ nhớ: {currentSubmission.memoryUsed}KB
+                      Bộ nhớ: {currentSubmission.totalMemory}KB
                     </Typography>
                   )}
                 </CardContent>
@@ -493,8 +493,10 @@ export default function TeacherGrading() {
               value={score}
               onChange={(e) => setScore(e.target.value)}
               placeholder="Nhập điểm (0-100)"
-              inputProps={{ min: 0, max: currentSubmission?.maxScore || 100 }}
-              helperText={`Điểm tối đa: ${currentSubmission?.maxScore || 100}`}
+              // inputProps={{ min: 0, max: currentSubmission?.maxScore || 100 }}
+                // helperText={`Điểm tối đa: ${currentSubmission?.maxScore || 100}`}
+              inputProps={{ min: 0, max: 150 }}
+              helperText={`Điểm tối đa: 150`}
               sx={{ mb: 3 }}
               disabled={!currentSubmission || isSaving}
             />
@@ -525,9 +527,9 @@ export default function TeacherGrading() {
                     {submission ? (
                       <Chip
                         size="small"
-                        label={`${submission.passedTestCases || 0}/${submission.totalTestCases || 0}`}
+                        label={`${submission.passedTestcase || 0}/${submission.totalTestcase || 0}`}
                         color={
-                          submission.passedTestCases === submission.totalTestCases
+                          submission.passedTestcase === submission.totalTestcase
                             ? 'success'
                             : 'warning'
                         }
@@ -541,7 +543,7 @@ export default function TeacherGrading() {
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Tổng số lần nộp: {currentSubmission?.attemptCount || 0}
+              Tổng số lần nộp: {currentSubmission?.totalSubmission || 0}
             </Typography>
 
             <Button

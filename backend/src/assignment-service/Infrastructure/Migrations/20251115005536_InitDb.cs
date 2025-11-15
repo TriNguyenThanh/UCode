@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class BestSubmission : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -259,6 +259,28 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "exam_activity_log",
+                columns: table => new
+                {
+                    activity_log_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    assignment_user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    activity_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    metadata = table.Column<string>(type: "text", maxLength: 4000, nullable: true),
+                    suspicion_level = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_exam_activity_log", x => x.activity_log_id);
+                    table.ForeignKey(
+                        name: "fk_exam_activity_log_assignment_user_assignment_user_id",
+                        column: x => x.assignment_user_id,
+                        principalTable: "assignment_user",
+                        principalColumn: "assignment_user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "submission",
                 columns: table => new
                 {
@@ -267,9 +289,12 @@ namespace Infrastructure.Migrations
                     assignment_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     problem_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     dataset_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    user_full_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    user_code = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     source_code = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     source_code_ref = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     language_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    language_code = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     compare_result = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     is_submit_late = table.Column<bool>(type: "bit", nullable: false),
@@ -384,6 +409,21 @@ namespace Infrastructure.Migrations
                 name: "ix_datasets_problemid",
                 table: "dataset",
                 column: "problem_id");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_exam_activity_logs_assignment_user_id",
+                table: "exam_activity_log",
+                column: "assignment_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_exam_activity_logs_timestamp",
+                table: "exam_activity_log",
+                column: "timestamp");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_exam_activity_logs_user_timestamp",
+                table: "exam_activity_log",
+                columns: new[] { "assignment_user_id", "timestamp" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_language_code",
@@ -526,6 +566,9 @@ namespace Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "assignment_problem");
+
+            migrationBuilder.DropTable(
+                name: "exam_activity_log");
 
             migrationBuilder.DropTable(
                 name: "problem_asset");

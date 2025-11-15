@@ -37,6 +37,8 @@ public class ExecuteService : IExecuteService
         var memoryLimit = problemLanguageDto.MemoryKb; // in KB
         var testcases = dataset?.TestCases;
 
+        submission.LanguageCode = problemLanguageDto.LanguageCode ?? "unknown";
+
         RabbitMqMessage message = null!;
         try
         {
@@ -44,7 +46,7 @@ public class ExecuteService : IExecuteService
             {
                 SubmissionId = submission.SubmissionId.ToString(),
                 Code = submission.SourceCode,
-                Language = problemLanguageDto.LanguageCode ?? "unknown",
+                Language = submission.LanguageCode,
                 TimeLimit = timeLimit,
                 MemoryLimit = memoryLimit ?? 262144, // mac dinh 256MB
                 Testcases = testcases!.Select(tc => new TestCaseDto
