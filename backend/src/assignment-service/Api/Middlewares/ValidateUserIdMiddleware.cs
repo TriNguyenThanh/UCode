@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using AssignmentService.Application.DTOs.Common;
+using System.Text;
 
 namespace AssignmentService.Api.Middlewares;
 
@@ -45,6 +46,29 @@ public class ValidateUserIdAttribute : ActionFilterAttribute
 
         // Lưu userId vào HttpContext.Items để sử dụng trong controller
         context.HttpContext.Items["X-User-Id"] = userId;
+        
+        // Lưu các header khác vào HttpContext.Items (decode Base64 nếu cần)
+        var userFullNameHeader = context.HttpContext.Request.Headers["X-User-FullName"].ToString();
+        if (!string.IsNullOrWhiteSpace(userFullNameHeader))
+        {
+            try
+            {
+                // Decode from Base64
+                var decodedFullName = Encoding.UTF8.GetString(Convert.FromBase64String(userFullNameHeader));
+                context.HttpContext.Items["X-User-FullName"] = decodedFullName;
+            }
+            catch
+            {
+                // Fallback to original value if not Base64 encoded
+                context.HttpContext.Items["X-User-FullName"] = userFullNameHeader;
+            }
+        }
+        
+        var userCodeHeader = context.HttpContext.Request.Headers["X-User-Code"].ToString();
+        if (!string.IsNullOrWhiteSpace(userCodeHeader))
+        {
+            context.HttpContext.Items["X-User-Code"] = userCodeHeader;
+        }
     }
 
     public override void OnActionExecuted(ActionExecutedContext context)

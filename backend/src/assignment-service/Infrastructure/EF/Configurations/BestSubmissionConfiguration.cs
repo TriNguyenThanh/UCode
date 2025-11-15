@@ -9,22 +9,17 @@ public class BestSubmissionConfiguration : IEntityTypeConfiguration<BestSubmissi
     public void Configure(EntityTypeBuilder<BestSubmission> builder)
     {
         // Map tới VIEW thay vì TABLE
-        builder.ToView("BestSubmissions");
-        
-        // Đánh dấu là keyless vì NEWID() trong view tạo ID mới mỗi lần query
+        builder.ToView("best_submissions");
+
+        // Đánh dấu là keyless vì view không có primary key
         builder.HasNoKey();
-        
-        // Map tên cột từ PascalCase trong entity sang PascalCase trong database
-        builder.Property(bs => bs.BestSubmissionId).HasColumnName("BestSubmissionId");
-        builder.Property(bs => bs.AssignmentId).HasColumnName("AssignmentId");
-        builder.Property(bs => bs.UserId).HasColumnName("UserId");
-        builder.Property(bs => bs.ProblemId).HasColumnName("ProblemId");
-        builder.Property(bs => bs.SubmissionId).HasColumnName("SubmissionId");
-        builder.Property(bs => bs.Score).HasColumnName("Score");
-        builder.Property(bs => bs.TotalTime).HasColumnName("TotalTime");
-        builder.Property(bs => bs.TotalMemory).HasColumnName("TotalMemory");
-        builder.Property(bs => bs.SubmitAt).HasColumnName("SubmitAt");
-        
+
+        // Map enum Status sang string
+        builder.Property(bs => bs.Status).HasConversion<string>().HasMaxLength(50);
+        builder.Property(s => s.UserFullName)
+            .IsRequired()
+            .IsUnicode()
+            .HasMaxLength(100);
         // VIEW không có relationships, indexes, hoặc constraints
         // Đây là read-only computed view
     }

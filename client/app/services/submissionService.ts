@@ -15,7 +15,7 @@ export interface CreateSubmissionResponse {
   submissionId: string
   problemId: string
   userId: string
-  language: string
+  languageCode: string
   status: SubmissionStatus
   submittedAt: string
 }

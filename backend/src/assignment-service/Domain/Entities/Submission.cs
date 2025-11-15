@@ -20,6 +20,16 @@ public class Submission
     public Guid DatasetId { get; set; }
 
     /// <summary>
+    /// User name của người nộp bài
+    /// </summary>
+    public string UserFullName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// User code của người nộp bài
+    /// </summary>
+    public string UserCode { get; set; } = string.Empty;
+
+    /// <summary>
     /// Source code của bài nộp
     /// </summary>
     public string SourceCode { get; set; } = string.Empty;
@@ -33,6 +43,11 @@ public class Submission
     /// Ngôn ngữ lập trình
     /// </summary>
     public Guid LanguageId { get; set; }
+
+        /// <summary>
+    /// Ngôn ngữ lập trình
+    /// </summary>
+    public string LanguageCode { get; set; } = string.Empty;
 
     /// <summary>
     /// Kết quả so sánh (compare result)
@@ -74,6 +89,11 @@ public class Submission
     /// </summary>
     public int Score { get; set; } = 0;
     
+    /// <summary>
+    /// Nhận xét của submission
+    /// </summary>
+    public string Comment { get; set; } = string.Empty;
+
     /// <summary>
     /// Tổng thời gian thực thi (ms)
     /// </summary>

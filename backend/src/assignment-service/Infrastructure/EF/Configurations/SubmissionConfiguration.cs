@@ -9,7 +9,31 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 {
     public void Configure(EntityTypeBuilder<Submission> builder)
     {
-        // Configure Status enum to be stored as string in database
+        // builder.ToTable("Submissions");
+        
+        builder.HasKey(s => s.SubmissionId);
+
+        builder.Property(s => s.UserId)
+            .IsRequired();
+
+        builder.Property(s => s.ProblemId)
+            .IsRequired();
+
+        builder.Property(s => s.DatasetId)
+            .IsRequired();
+
+        builder.Property(s => s.UserFullName)
+            .IsRequired()
+            .IsUnicode()
+            .HasMaxLength(100);
+
+        builder.Property(s => s.SourceCodeRef)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(s => s.CompareResult)
+            .HasMaxLength(255);
+
         builder.Property(s => s.Status)
             .HasConversion<string>();
     }

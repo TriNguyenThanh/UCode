@@ -67,6 +67,26 @@ namespace ApiGateway.Middlewares
                 var userName = principal.FindFirst("name")?.Value
                             ?? principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
 
+                var userFullName = principal.FindFirst("fullName")?.Value
+                            ?? principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                            
+                // Get userCode based on role
+                string? userCode = null;
+                if (userRole?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    userCode = principal.FindFirst("studentCode")?.Value 
+                            ?? principal.FindFirst("userCode")?.Value;
+                }
+                else if (userRole?.Equals("Teacher", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    userCode = principal.FindFirst("teacherCode")?.Value 
+                            ?? principal.FindFirst("userCode")?.Value;
+                }
+                else
+                {
+                    userCode = principal.FindFirst("userCode")?.Value ?? "AD000";
+                }
+
                 if (string.IsNullOrEmpty(userId))
                 {
                     _logger.LogWarning("Missing user ID in JWT token for path: {Path}", context.Request.Path);
@@ -75,10 +95,12 @@ namespace ApiGateway.Middlewares
                 }
 
                 // Add secure headers for downstream services
+                // Encode Unicode strings to Base64 to avoid "Request headers must contain only ASCII characters" error
                 context.Request.Headers["X-User-Id"] = userId;
                 context.Request.Headers["X-Role"] = userRole?.ToLower();
                 context.Request.Headers["X-User-Name"] = userName;
-
+                context.Request.Headers["X-User-FullName"] = userFullName;
+                context.Request.Headers["X-User-Code"] = userCode;
 
                 // Add user info to context for logging
                 context.Items["AuthenticatedUserId"] = userId;

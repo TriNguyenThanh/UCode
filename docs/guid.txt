@@ -1,0 +1,9 @@
+Guid generate
+teacher1 = e54be995-11d5-4bb1-8c2d-f8af59b91707
+teacher2 = 1c009683-9544-4e67-bd72-d61982b67697
+student1 = 57b45e9b-a0dc-4126-a850-adae3e71d411
+student2 = 214b4663-97b9-42ef-8671-90e500816e88
+student3 = eb63f6d4-1c8d-4cb9-a692-b3a107fee8ec
+class1 = 3685709d-51e5-492c-bb2b-7bfbad2f1dcc
+class2 = 00f99f84-0f4f-418f-a1d8-99f050f1e6bb
+class3 = 445c57c7-388e-41db-a333-722f7a470118

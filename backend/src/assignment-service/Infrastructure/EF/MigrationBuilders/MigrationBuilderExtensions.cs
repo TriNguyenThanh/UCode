@@ -7,49 +7,83 @@ public static class MigrationBuilderExtensions
     public static void CreateBestSubmissionsView(this MigrationBuilder migrationBuilder)
     {
         migrationBuilder.Sql(@"
-            CREATE VIEW BestSubmissions AS
+            DROP VIEW IF EXISTS best_submissions;
+        ");
+        
+        migrationBuilder.Sql(@"
+            CREATE VIEW best_submissions AS
             WITH RankedSubmissions AS (
                 SELECT 
                     submission_id,
-                    assignment_id,
                     user_id,
+                    user_full_name,
+                    user_code,
+                    assignment_id,
                     problem_id,
+                    dataset_id,
+                    source_code,
+                    source_code_ref,
+                    language_id,
+                    language_code,
+                    compare_result,
+                    status,
+                    is_submit_late,
+                    error_code,
+                    error_message,
+                    total_testcase,
+                    passed_testcase,
                     score,
+                    comment,
                     total_time,
                     total_memory,
-                    submitted_at,   
+                    submitted_at,
+                    result_file_ref,
+                    COUNT(*) OVER (PARTITION BY assignment_id, user_id, problem_id) AS total_submission,
                     ROW_NUMBER() OVER (
                         PARTITION BY assignment_id, user_id, problem_id
                         ORDER BY 
-                            -- Điểm cao nhất
+                            comment DESC,
                             score DESC,
-                            -- Thời gian nhanh nhất
                             total_time ASC,
-                            -- Bộ nhớ ít nhất
                             total_memory ASC,
-                            -- Submission mới nhất
                             submitted_at DESC
-                    ) AS RowNum
+                    ) AS row_num
                 FROM submission
-                WHERE status IN ('Passed', 'Failed') -- Only completed submissions
+                WHERE status IN ('Passed', 'Failed')
             )
             SELECT 
-                NEWID() AS BestSubmissionId,
-                assignment_id AS AssignmentId,
-                user_id AS UserId,
-                problem_id AS ProblemId,
-                submission_id AS SubmissionId,
-                score AS Score,
-                total_time AS TotalTime,
-                total_memory AS TotalMemory,
-                submitted_at AS SubmitAt
+                submission_id,
+                user_id,
+                user_full_name,
+                user_code,
+                assignment_id,
+                problem_id,
+                dataset_id,
+                source_code,
+                source_code_ref,
+                language_id,
+                language_code,
+                compare_result,
+                status,
+                is_submit_late,
+                error_code,
+                error_message,
+                total_testcase,
+                passed_testcase,
+                score,
+                comment,
+                total_time,
+                total_memory,
+                submitted_at,
+                result_file_ref,
+                total_submission
             FROM RankedSubmissions
-            WHERE RowNum = 1;
+            WHERE row_num = 1;
         ");
     }
 
     public static void DropBestSubmissionsView(this MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.Sql("DROP VIEW IF EXISTS BestSubmissions;");
+        migrationBuilder.Sql("DROP VIEW IF EXISTS best_submissions;");
     }
 }
