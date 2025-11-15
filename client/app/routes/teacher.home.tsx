@@ -87,7 +87,7 @@ export default function TeacherHome() {
         {/* Welcome Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-            Xin chào, {teacherName}! 👨‍🏫
+            Xin chào, {teacherName}!
           </Typography>
           <Typography variant='body1' color='text.secondary'>
             Quản lý lớp học, bài tập và đánh giá sinh viên

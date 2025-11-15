@@ -271,7 +271,7 @@ public class AssignmentService : IAssignmentService
 
             assignmentUser.Score += score;
             assignmentUser.Status = AssignmentUserStatus.SUBMITTED;
-            Console.WriteLine($"[🤳] Updated AssignmentUser Score: {assignmentUser.Score}");
+            Console.WriteLine($"[x] Updated AssignmentUser Score: {assignmentUser.Score}");
 
             return await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
         }
