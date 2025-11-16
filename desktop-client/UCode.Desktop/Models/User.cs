@@ -1,4 +1,5 @@
 using System;
+using UCode.Desktop.Models.Enums;
 
 namespace UCode.Desktop.Models
 {
@@ -30,13 +31,6 @@ namespace UCode.Desktop.Models
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
-    }
-
-    public enum UserRole
-    {
-        Student,
-        Teacher,
-        Admin
     }
 
     public enum UserStatus

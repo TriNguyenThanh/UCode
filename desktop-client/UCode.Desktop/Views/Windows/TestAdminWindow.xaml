@@ -1,0 +1,15 @@
+<Window x:Class="UCode.Desktop.Views.Windows.TestAdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Test Admin Window" 
+        Height="600" 
+        Width="800"
+        WindowStartupLocation="CenterScreen">
+    <Grid Background="White">
+        <TextBlock Text="TEST ADMIN WINDOW" 
+                   FontSize="24" 
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+    </Grid>
+</Window>

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace UCode.Desktop.Services
 {
     public class NavigationService
     {
-        private readonly Stack<(UserControl page, object? parameter)> _navigationStack = new();
+        private readonly Stack<(object page, object? parameter)> _navigationStack = new();
         private ContentControl? _frame;
 
         public event EventHandler<bool>? CanGoBackChanged;
@@ -18,7 +19,7 @@ namespace UCode.Desktop.Services
             _frame = frame;
         }
 
-        public void NavigateTo(UserControl page, object? parameter = null)
+        public void NavigateTo(object page, object? parameter = null)
         {
             if (_frame == null)
                 throw new InvalidOperationException("Frame not set. Call SetFrame first.");
@@ -48,15 +49,18 @@ namespace UCode.Desktop.Services
                 _frame.Content = previousPage;
                 
                 // Re-initialize the page if needed (refresh data)
-                if (previousPage.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
+                if (previousPage is FrameworkElement element)
                 {
-                    _ = homeViewModel.LoadDataAsync();
-                }
-                else if (previousPage.DataContext is ViewModels.TeacherClassViewModel classViewModel)
-                {
-                    if (previousParameter is string classId)
+                    if (element.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
                     {
-                        _ = classViewModel.InitializeAsync(classId);
+                        _ = homeViewModel.LoadDataAsync();
+                    }
+                    else if (element.DataContext is ViewModels.TeacherClassViewModel classViewModel)
+                    {
+                        if (previousParameter is string classId)
+                        {
+                            _ = classViewModel.InitializeAsync(classId);
+                        }
                     }
                 }
             }
@@ -70,25 +74,28 @@ namespace UCode.Desktop.Services
             CanGoBackChanged?.Invoke(this, CanGoBack);
         }
 
-        private void InitializePage(UserControl page, object? parameter)
+        private void InitializePage(object page, object? parameter)
         {
             // Initialize ViewModels that have async initialization
-            if (page.DataContext is ViewModels.TeacherClassViewModel classViewModel && parameter is string classId)
+            if (page is FrameworkElement element)
             {
-                classViewModel.SetNavigationService(this);
-                _ = classViewModel.InitializeAsync(classId);
-            }
-            else if (page.DataContext is ViewModels.TeacherAssignmentViewModel assignmentViewModel && parameter is string assignmentId)
-            {
-                _ = assignmentViewModel.InitializeAsync(assignmentId);
-            }
-            else if (page.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
-            {
-                _ = homeViewModel.LoadDataAsync();
-            }
-            else if (page.DataContext is ViewModels.TeacherProblemsViewModel problemsViewModel)
-            {
-                _ = problemsViewModel.LoadProblemsAsync();
+                if (element.DataContext is ViewModels.TeacherClassViewModel classViewModel && parameter is string classId)
+                {
+                    classViewModel.SetNavigationService(this);
+                    _ = classViewModel.InitializeAsync(classId);
+                }
+                else if (element.DataContext is ViewModels.TeacherAssignmentViewModel assignmentViewModel && parameter is string assignmentId)
+                {
+                    _ = assignmentViewModel.InitializeAsync(assignmentId);
+                }
+                else if (element.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
+                {
+                    _ = homeViewModel.LoadDataAsync();
+                }
+                else if (element.DataContext is ViewModels.TeacherProblemsViewModel problemsViewModel)
+                {
+                    _ = problemsViewModel.LoadProblemsAsync();
+                }
             }
             
             // Initialize Page types

@@ -1,0 +1,316 @@
+<UserControl x:Class="UCode.Desktop.Pages.Admin.AdminHomePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1350"
+             Background="#F5F5F5"
+             Loaded="Page_Loaded">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" 
+                          Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Welcome Section -->
+            <Border Grid.Row="0" Background="White" Padding="40,30">
+                <StackPanel>
+                    <TextBlock FontSize="32" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,5">
+                        <Run Text="Bảng Điều Khiển Quản Trị 🎯"/>
+                    </TextBlock>
+                    <TextBlock Text="Tổng Quan Hệ Thống &amp; Quản Lý" 
+                               Foreground="#666" FontSize="16"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Main Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="40,30,40,40">
+                    
+                    <!-- Stats Cards Row -->
+                    <Grid Margin="0,0,0,30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Total Users Card -->
+                        <Border Grid.Column="0" Background="#FACB01" CornerRadius="8" Padding="25" Margin="0,0,12,0"
+                               Cursor="Hand" MouseLeftButtonUp="UsersCard_Click">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.15"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <TextBlock Text="Tổng Người Dùng" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#191970" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="👥" FontSize="28" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Stats.TotalUsers}" FontSize="56" FontWeight="Bold" 
+                                           Foreground="#191970" Margin="0,0,0,5"/>
+                                <TextBlock Foreground="#191970" FontSize="14">
+                                    <Run Text="+"/><Run Text="{Binding Stats.NewUsersThisWeek}"/><Run Text=" tuần này"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Total Classes Card -->
+                        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0"
+                               Cursor="Hand" MouseLeftButtonUp="ClassesCard_Click">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <TextBlock Text="Tổng Lớp Học" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#666" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="🏫" FontSize="28" Foreground="#17a2b8" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Stats.TotalClasses}" FontSize="56" FontWeight="Bold" 
+                                           Foreground="#191970" Margin="0,0,0,5"/>
+                                <TextBlock Foreground="#666" FontSize="14">
+                                    <Run Text="+"/><Run Text="{Binding Stats.NewClassesThisWeek}"/><Run Text=" tuần này"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Total Problems Card -->
+                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="25" Margin="6,0"
+                               Cursor="Hand" MouseLeftButtonUp="ProblemsCard_Click">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <TextBlock Text="Tổng Bài Tập" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#666" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="📝" FontSize="28" Foreground="#28a745" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Stats.TotalProblems}" FontSize="56" FontWeight="Bold" 
+                                           Foreground="#191970" Margin="0,0,0,5"/>
+                                <TextBlock Foreground="#666" FontSize="14">
+                                    <Run Text="+"/><Run Text="{Binding Stats.NewProblemsThisWeek}"/><Run Text=" tuần này"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Total Submissions Card -->
+                        <Border Grid.Column="3" Background="White" CornerRadius="8" Padding="25" Margin="12,0,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <TextBlock Text="Bài Nộp" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#666" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="📤" FontSize="28" Foreground="#ffc107" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Stats.TotalSubmissions}" FontSize="56" FontWeight="Bold" 
+                                           Foreground="#191970" Margin="0,0,0,5"/>
+                                <TextBlock Foreground="#666" FontSize="14">
+                                    <Run Text="+"/><Run Text="{Binding Stats.SubmissionsToday}"/><Run Text=" hôm nay"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Activity & Quick Actions Row -->
+                    <Grid Margin="0,0,0,30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- User Activity Card -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="30" Margin="0,0,12,0">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="📊 Hoạt Động Người Dùng" FontSize="20" FontWeight="SemiBold" 
+                                          Foreground="#191970" Margin="0,0,0,20"/>
+                                
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hoạt động hôm nay" FontSize="15" Foreground="#666"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Stats.ActiveUsersToday}" 
+                                              FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hoạt động tuần này" FontSize="15" Foreground="#666"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Stats.ActiveUsersThisWeek}" 
+                                              FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Hoạt động tháng này" FontSize="15" Foreground="#666"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Stats.ActiveUsersThisMonth}" 
+                                              FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
+                                </Grid>
+
+                                <Separator Margin="0,10"/>
+
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Tỷ lệ thành công trung bình" FontSize="15" Foreground="#666"/>
+                                    <TextBlock Grid.Column="1" FontSize="15" FontWeight="SemiBold" Foreground="#28a745">
+                                        <Run Text="{Binding Stats.AverageSuccessRate, StringFormat={}{0:F1}}"/>
+                                        <Run Text="%"/>
+                                    </TextBlock>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Quick Actions Card -->
+                        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="30" Margin="12,0,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="⚡ Thao Tác Nhanh" FontSize="20" FontWeight="SemiBold" 
+                                          Foreground="#191970" Margin="0,0,0,20"/>
+                                
+                                <Button Command="{Binding NavigateToUsersCommand}"
+                                       Background="#FACB01" Foreground="#191970" BorderThickness="0"
+                                       Padding="15,12" Margin="0,0,0,10" Cursor="Hand">
+                                    <TextBlock Text="👥 Quản Lý Người Dùng" FontWeight="SemiBold" FontSize="14"/>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                               CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#fbd433"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Command="{Binding NavigateToClassesCommand}"
+                                       Background="White" Foreground="#191970" BorderThickness="1" BorderBrush="#E0E0E0"
+                                       Padding="15,12" Margin="0,0,0,10" Cursor="Hand">
+                                    <TextBlock Text="🏫 Quản Lý Lớp Học" FontWeight="SemiBold" FontSize="14"/>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                               BorderBrush="{TemplateBinding BorderBrush}"
+                                                               BorderThickness="{TemplateBinding BorderThickness}"
+                                                               CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Command="{Binding NavigateToProblemsCommand}"
+                                       Background="White" Foreground="#191970" BorderThickness="1" BorderBrush="#E0E0E0"
+                                       Padding="15,12" Margin="0,0,0,10" Cursor="Hand">
+                                    <TextBlock Text="📝 Quản Lý Bài Tập" FontWeight="SemiBold" FontSize="14"/>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                               BorderBrush="{TemplateBinding BorderBrush}"
+                                                               BorderThickness="{TemplateBinding BorderThickness}"
+                                                               CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Command="{Binding NavigateToSettingsCommand}"
+                                       Background="White" Foreground="#191970" BorderThickness="1" BorderBrush="#E0E0E0"
+                                       Padding="15,12" Cursor="Hand">
+                                    <TextBlock Text="⚙️ Cài Đặt Hệ Thống" FontWeight="SemiBold" FontSize="14"/>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                               BorderBrush="{TemplateBinding BorderBrush}"
+                                                               BorderThickness="{TemplateBinding BorderThickness}"
+                                                               CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

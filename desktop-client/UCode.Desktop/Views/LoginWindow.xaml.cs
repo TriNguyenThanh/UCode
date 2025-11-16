@@ -50,6 +50,11 @@ namespace UCode.Desktop.Views
                         System.IO.File.AppendAllText(logPath, "Getting TeacherHomeWindow from ServiceProvider...\n");
                         targetWindow = App.ServiceProvider.GetService(typeof(TeacherHomeWindow)) as TeacherHomeWindow;
                     }
+                    else if (userRole == "admin")
+                    {
+                        System.IO.File.AppendAllText(logPath, "Getting AdminHomeWindow from ServiceProvider...\n");
+                        targetWindow = App.ServiceProvider.GetService(typeof(Views.Windows.AdminHomeWindow)) as Views.Windows.AdminHomeWindow;
+                    }
                     else
                     {
                         System.IO.File.AppendAllText(logPath, "Getting MainWindow from ServiceProvider...\n");

@@ -1,0 +1,280 @@
+<Window x:Class="UCode.Desktop.Views.Windows.AdminHomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UCode - Bảng Quản Trị" 
+        Height="900" 
+        Width="1600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        WindowState="Maximized"
+        Background="#F5F5F5">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Sidebar -->
+        <Border Grid.Column="0" Background="#191970" BorderThickness="0,0,1,0" BorderBrush="#E0E0E0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Logo/Header -->
+                <StackPanel Grid.Row="0" Margin="20,30">
+                    <TextBlock Text="👨‍💼" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="QUẢN TRỊ" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Foreground="#FACB01"
+                              TextAlignment="Center"/>
+                    <TextBlock Text="Bảng Điều Khiển" 
+                              FontSize="12" 
+                              Foreground="White"
+                              TextAlignment="Center"
+                              Margin="0,5,0,0"
+                              Opacity="0.7"/>
+                </StackPanel>
+
+                <!-- Navigation Menu -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,20">
+                        
+                        <Button x:Name="DashboardButton"
+                               Click="NavigateToPage"
+                               Tag="AdminHomePage"
+                               Background="Transparent"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,15"
+                               HorizontalContentAlignment="Left"
+                               Cursor="Hand"
+                               FontSize="14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Tổng Quan" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FACB01"/>
+                                            <Setter Property="Foreground" Value="#191970"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button x:Name="UsersButton"
+                               Click="NavigateToPage"
+                               Tag="AdminUsersPage"
+                               Background="Transparent"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,15"
+                               HorizontalContentAlignment="Left"
+                               Cursor="Hand"
+                               FontSize="14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👥" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Quản Lý Người Dùng" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FACB01"/>
+                                            <Setter Property="Foreground" Value="#191970"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button x:Name="ClassesButton"
+                               Click="NavigateToPage"
+                               Tag="AdminClassesPage"
+                               Background="Transparent"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,15"
+                               HorizontalContentAlignment="Left"
+                               Cursor="Hand"
+                               FontSize="14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏫" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Quản Lý Lớp Học" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FACB01"/>
+                                            <Setter Property="Foreground" Value="#191970"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button x:Name="ProblemsButton"
+                               Click="NavigateToPage"
+                               Tag="AdminProblemsPage"
+                               Background="Transparent"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,15"
+                               HorizontalContentAlignment="Left"
+                               Cursor="Hand"
+                               FontSize="14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📝" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Quản Lý Bài Tập" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FACB01"/>
+                                            <Setter Property="Foreground" Value="#191970"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Separator Background="#2a3a6e" Margin="15,10"/>
+
+                        <Button x:Name="SettingsButton"
+                               Click="NavigateToPage"
+                               Tag="AdminSettingsPage"
+                               Background="Transparent"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,15"
+                               HorizontalContentAlignment="Left"
+                               Cursor="Hand"
+                               FontSize="14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚙️" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Cài Đặt Hệ Thống" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FACB01"/>
+                                            <Setter Property="Foreground" Value="#191970"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer -->
+                <StackPanel Grid.Row="2" Margin="20,20,20,30">
+                    <Button Content="🚪 Đăng Xuất" 
+                           Click="LogoutButton_Click"
+                           Background="#dc3545"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Padding="15,10"
+                           Cursor="Hand"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Stretch">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                   CornerRadius="4" 
+                                                   Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#c82333"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <TextBlock Text="UCode Quản Trị v1.0" 
+                              FontSize="11" 
+                              Foreground="White"
+                              TextAlignment="Center"
+                              Opacity="0.5"
+                              Margin="0,15,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right Content Area -->
+        <Frame Grid.Column="1" 
+              x:Name="MainFrame"
+              NavigationUIVisibility="Hidden"
+              Background="#F5F5F5"/>
+    </Grid>
+</Window>

@@ -83,6 +83,12 @@ public partial class App : Application
                     MainWindow = teacherWindow;
                     teacherWindow.Show();
                 }
+                else if (user?.Role.ToString().ToLower() == "admin")
+                {
+                    var adminWindow = ServiceProvider.GetRequiredService<Views.Windows.AdminHomeWindow>();
+                    MainWindow = adminWindow;
+                    adminWindow.Show();
+                }
                 else
                 {
                     var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
@@ -133,6 +139,7 @@ public partial class App : Application
         services.AddSingleton<DatasetService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<NavigationService>();
+        services.AddSingleton<AdminService>();
 
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
@@ -157,6 +164,13 @@ public partial class App : Application
         services.AddTransient<VisualSelectTabViewModel>();
         services.AddTransient<ImportExcelTabViewModel>();
 
+        // ViewModels - Admin
+        services.AddTransient<ViewModels.Admin.AdminHomeViewModel>();
+        services.AddTransient<ViewModels.Admin.AdminUsersViewModel>();
+        services.AddTransient<ViewModels.Admin.AdminClassesViewModel>();
+        services.AddTransient<ViewModels.Admin.AdminProblemsViewModel>();
+        services.AddTransient<ViewModels.Admin.AdminSettingsViewModel>();
+
         // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
@@ -172,6 +186,9 @@ public partial class App : Application
         // services.AddTransient<ProblemCreateWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<ProblemEditWindow>(); // ← Đã chuyển sang Page
 
+        // Views - Admin
+        services.AddTransient<Views.Windows.AdminHomeWindow>();
+
         // Pages - Teacher (for navigation)
         services.AddTransient<Pages.TeacherHomePage>();
         services.AddTransient<Pages.TeacherClassPage>();
@@ -179,6 +196,13 @@ public partial class App : Application
         services.AddTransient<Pages.TeacherProblemsPage>();
         services.AddTransient<Pages.ProblemCreatePage>();
         services.AddTransient<Pages.ProblemEditPage>();
+
+        // Pages - Admin (for navigation)
+        services.AddTransient<Pages.Admin.AdminHomePage>();
+        services.AddTransient<Pages.Admin.AdminUsersPage>();
+        services.AddTransient<Pages.Admin.AdminClassesPage>();
+        services.AddTransient<Pages.Admin.AdminProblemsPage>();
+        services.AddTransient<Pages.Admin.AdminSettingsPage>();
     }
 }
 

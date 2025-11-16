@@ -64,6 +64,11 @@ namespace UCode.Desktop.Helpers
             Application.Current.Dispatcher.Invoke(async () => await ShowAsync(message, title));
         }
 
+        public static MessageBoxResult Show(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
+        {
+            return MessageBox.Show(message, title, buttons, icon);
+        }
+
         public static void ShowInfo(string message, string title = "Thông báo")
         {
             Application.Current.Dispatcher.Invoke(async () => await ShowInfoAsync(message, title));

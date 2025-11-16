@@ -1,0 +1,302 @@
+<Page x:Class="UCode.Desktop.Pages.Admin.AdminSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1200"
+      Title="System Settings"
+      Loaded="Page_Loaded">
+
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <materialDesign:Card Grid.Row="0" Margin="20,20,20,10" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="System Settings" 
+                               FontSize="28" 
+                               FontWeight="Bold"
+                               Foreground="#455A64"/>
+                    <TextBlock Text="Configure system-wide settings and preferences" 
+                               FontSize="14" 
+                               Foreground="#666"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding SaveCommand}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentSave" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,5,0"/>
+                            <TextBlock Text="Save Settings"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ResetCommand}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Refresh" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,5,0"/>
+                            <TextBlock Text="Reset"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Settings Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="20,0,20,20">
+            <StackPanel>
+                <!-- Email Configuration -->
+                <materialDesign:Card Margin="0,0,0,20" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="📧 Email Configuration" 
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Margin="0,0,0,20"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox Grid.Row="0" Grid.Column="0"
+                                    Text="{Binding Settings.SmtpServer}"
+                                    materialDesign:HintAssist.Hint="SMTP Server"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,15"/>
+
+                            <TextBox Grid.Row="0" Grid.Column="1"
+                                    Text="{Binding Settings.SmtpPort}"
+                                    materialDesign:HintAssist.Hint="Port"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,0,15"/>
+
+                            <TextBox Grid.Row="1" Grid.Column="0"
+                                    Text="{Binding Settings.SmtpUsername}"
+                                    materialDesign:HintAssist.Hint="Username"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,15"/>
+
+                            <PasswordBox Grid.Row="1" Grid.Column="1"
+                                        materialDesign:HintAssist.Hint="Password"
+                                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                        Margin="0,0,0,15"/>
+
+                            <TextBox Grid.Row="2" Grid.Column="0"
+                                    Text="{Binding Settings.FromEmail}"
+                                    materialDesign:HintAssist.Hint="From Email"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,15"/>
+
+                            <TextBox Grid.Row="2" Grid.Column="1"
+                                    Text="{Binding Settings.FromName}"
+                                    materialDesign:HintAssist.Hint="From Name"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,0,15"/>
+
+                            <CheckBox Grid.Row="3" Grid.ColumnSpan="2"
+                                     IsChecked="{Binding Settings.EnableSsl}"
+                                     Content="Enable SSL/TLS"
+                                     Margin="0,5,0,10"/>
+                        </Grid>
+
+                        <Button Command="{Binding TestEmailCommand}"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Email" 
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,5,0"/>
+                                <TextBlock Text="Test Email Configuration"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Security Settings -->
+                <materialDesign:Card Margin="0,0,0,20" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="🔐 Security Settings" 
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Margin="0,0,0,20"/>
+
+                        <CheckBox IsChecked="{Binding Settings.RequireTwoFactorForAdmins}"
+                                 Content="Require two-factor authentication for admins"
+                                 Margin="0,0,0,15"/>
+
+                        <CheckBox IsChecked="{Binding Settings.EnablePasswordComplexity}"
+                                 Content="Enable password complexity requirements"
+                                 Margin="0,0,0,15"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0"
+                                    Text="{Binding Settings.MinPasswordLength}"
+                                    materialDesign:HintAssist.Hint="Minimum Password Length"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,15"/>
+
+                            <TextBox Grid.Column="1"
+                                    Text="{Binding Settings.SessionTimeoutMinutes}"
+                                    materialDesign:HintAssist.Hint="Session Timeout (minutes)"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,0,15"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0"
+                                    Text="{Binding Settings.MaxLoginAttempts}"
+                                    materialDesign:HintAssist.Hint="Max Login Attempts"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,0"/>
+
+                            <TextBox Grid.Column="1"
+                                    Text="{Binding Settings.LockoutDurationMinutes}"
+                                    materialDesign:HintAssist.Hint="Lockout Duration (minutes)"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                        </Grid>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Judge Configuration -->
+                <materialDesign:Card Margin="0,0,0,20" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="⚖️ Judge Configuration" 
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Margin="0,0,0,20"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox Grid.Row="0" Grid.Column="0"
+                                    Text="{Binding Settings.MaxExecutionTimeSeconds}"
+                                    materialDesign:HintAssist.Hint="Max Execution Time (seconds)"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,15"/>
+
+                            <TextBox Grid.Row="0" Grid.Column="1"
+                                    Text="{Binding Settings.MaxMemoryMB}"
+                                    materialDesign:HintAssist.Hint="Max Memory (MB)"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,0,15"/>
+
+                            <TextBox Grid.Row="1" Grid.Column="0"
+                                    Text="{Binding Settings.MaxOutputSizeKB}"
+                                    materialDesign:HintAssist.Hint="Max Output Size (KB)"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Margin="0,0,10,0"/>
+
+                            <TextBox Grid.Row="1" Grid.Column="1"
+                                    Text="{Binding Settings.MaxConcurrentJobs}"
+                                    materialDesign:HintAssist.Hint="Max Concurrent Jobs"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                        </Grid>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- System Configuration -->
+                <materialDesign:Card Margin="0,0,0,20" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="🖥️ System Configuration" 
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Margin="0,0,0,20"/>
+
+                        <CheckBox IsChecked="{Binding Settings.MaintenanceMode}"
+                                 Content="Maintenance Mode"
+                                 Margin="0,0,0,15"/>
+
+                        <TextBox Text="{Binding Settings.MaintenanceMessage}"
+                                materialDesign:HintAssist.Hint="Maintenance Message"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                MinHeight="60"
+                                Margin="0,0,0,15"/>
+
+                        <CheckBox IsChecked="{Binding Settings.EnableRegistration}"
+                                 Content="Enable User Registration"
+                                 Margin="0,0,0,15"/>
+
+                        <CheckBox IsChecked="{Binding Settings.RequireEmailVerification}"
+                                 Content="Require Email Verification"
+                                 Margin="0,0,0,15"/>
+
+                        <TextBox Text="{Binding Settings.DataRetentionDays}"
+                                materialDesign:HintAssist.Hint="Data Retention (days)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Assignment Settings -->
+                <materialDesign:Card Margin="0,0,0,20" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="📝 Assignment Settings" 
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Margin="0,0,0,20"/>
+
+                        <TextBox Text="{Binding Settings.DefaultAssignmentDurationDays}"
+                                materialDesign:HintAssist.Hint="Default Assignment Duration (days)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"/>
+
+                        <CheckBox IsChecked="{Binding Settings.AllowLateSubmissions}"
+                                 Content="Allow Late Submissions"
+                                 Margin="0,0,0,15"/>
+
+                        <TextBox Text="{Binding Settings.LatePenaltyPercentage}"
+                                materialDesign:HintAssist.Hint="Late Penalty (%)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Loading Indicator -->
+                <ProgressBar IsIndeterminate="True" 
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Height="4"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
