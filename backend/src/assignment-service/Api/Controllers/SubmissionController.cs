@@ -294,7 +294,7 @@ public class SubmissionController : ControllerBase
     /// <response code="404">Best submission not found</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    /// chỉ dành cho student xem best submission của mình thôi
+    /// for student to get his/her best submission for a problem in an assignment
     [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/my-best")]
     [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -302,37 +302,32 @@ public class SubmissionController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetBestSubmission(Guid assignmentId, Guid problemId)
     {
-        var userId = GetAuthenticatedUserId();
-        var bestSubmission = await _submissionService.GetBestSubmission(assignmentId, problemId, userId);
-        
+        var bestSubmission = await _submissionService.GetBestSubmission(assignmentId, problemId, GetAuthenticatedUserId());
+
         if (bestSubmission == null)
             return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Best submission not found"));
 
         var response = _mapper.Map<BestSubmissionResponse>(bestSubmission);
         return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Best submission retrieved successfully"));
     }
-
-    // Additional endpoints can be added here as needed
-    
+    public record UpdateBestSubmissionScoreRequest(Guid SubmissionId, int NewScore, string Comment);
     /// <summary>
     /// Get a specific best submission by submission ID
     /// </summary>
-    /// <param name="assignmentId">The unique identifier of the assignment</param>
-    /// <param name="problemId">The unique identifier of the problem</param>
-    /// <param name="userId">The unique identifier of the user</param>
+    /// <param name="request">The request containing the new score and submission ID to update for the best submission</param>
     /// <returns>Returns the best submission details if found</returns>
     /// <response code="200">Best submission retrieved successfully</response>
     /// <response code="404">Best submission not found</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    /// chỉ dành cho student xem best submission của mình thôi
-    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best/{userId:guid}")]
-    [RequireRole("teacher,admin")]
-    [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
+    /// <response code="400">Bad request</response>
+    [RequireRole("teacher, admin")]
+    [HttpPut("update-score")]
+    [ProducesResponseType(typeof(ApiResponse<Submission>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetBestSubmissionByUser(Guid assignmentId, Guid problemId, Guid userId)
+    public async Task<IActionResult> UpdateBestSubmissionScore([FromBody] UpdateBestSubmissionScoreRequest request)
     {
         var submission = await _submissionService.GetSubmission(request.SubmissionId);
 
@@ -344,5 +339,4 @@ public class SubmissionController : ControllerBase
         var response = _mapper.Map<Submission>(submission);
         return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission retrieved successfully"));
     }
-
 }
