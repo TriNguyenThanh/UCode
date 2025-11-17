@@ -3,6 +3,7 @@ import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/teacher.home'
 import { auth } from '~/auth'
 import * as TeacherService from '~/services/teacherService'
+import * as AssignmentService from '~/services/assignmentService'
 import { Navigation } from '~/components/Navigation'
 import {
   Container,
@@ -23,7 +24,6 @@ import GradingIcon from '@mui/icons-material/Grading'
 import AddIcon from '@mui/icons-material/Add'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import { mockAssignments } from '~/data/mock'
 
 export const meta: Route.MetaFunction = () => [
   { title: 'Giáo viên | UCode' },
@@ -36,33 +36,40 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
   if (user.role !== 'teacher') throw redirect('/home')
 
   try {
-    // Lấy profile và classes từ API
-    const [teacherProfile, myClasses] = await Promise.all([
+    // Lấy profile, classes và assignments từ API
+    const [teacherProfile, myClasses, myAssignments] = await Promise.all([
       TeacherService.getMyProfile(),
       TeacherService.getMyClasses(),
+      AssignmentService.getMyAssignments(),
     ])
     
     // Tính stats từ data thật
     const totalStudents = myClasses.reduce((sum, cls) => sum + (cls.studentCount || 0), 0)
     
+    // Đếm số assignment đang active (PUBLISHED)
+    const activeAssignments = myAssignments.filter(a => a.status === 'PUBLISHED').length
+    
+    // TODO: Tính pendingGrading từ assignment statistics API
+    const pendingGrading = 0
+    
     const stats = {
       totalClasses: myClasses.length,
       totalStudents,
-      activeAssignments: 5, // TODO: Lấy từ assignment service
-      pendingGrading: 12, // TODO: Lấy từ assignment service
+      activeAssignments,
+      pendingGrading,
     }
 
     return { 
       user, 
       teacherProfile,
       classes: myClasses, 
-      assignments: mockAssignments, // TODO: Replace with real API
+      assignments: myAssignments,
       stats 
     }
   } catch (error) {
     console.error('Error loading teacher home:', error)
     
-    // Fallback to mock data
+    // Fallback to empty data
     const stats = {
       totalClasses: 0,
       totalStudents: 0,
@@ -78,6 +85,15 @@ export default function TeacherHome() {
   const { teacherProfile, classes, assignments, stats } = useLoaderData<typeof clientLoader>()
   
   const teacherName = teacherProfile?.fullName || 'Giáo viên'
+  
+  // Tạo map để lookup tên class từ classId
+  const classMap = React.useMemo(() => {
+    const map = new Map<string, string>()
+    classes.forEach(cls => {
+      map.set(cls.classId, cls.className)
+    })
+    return map
+  }, [classes])
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
@@ -221,14 +237,13 @@ export default function TeacherHome() {
                   </Box>
                   <CardContent>
                     <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
-                      {classItem.className}
+                      {classItem.name}
                     </Typography>
                     <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
                       {classItem.semester}
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Chip label='28 SV' size='small' icon={<PeopleIcon />} />
-                      <Chip label='5 bài tập' size='small' variant='outlined' />
+                      <Chip label={`${classItem.studentCount || 0} SV`} size='small' icon={<PeopleIcon />} />
                     </Box>
                   </CardContent>
                 </CardActionArea>
@@ -250,9 +265,9 @@ export default function TeacherHome() {
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {assignments.slice(0, 3).map((assignment: any) => (
+            {assignments.slice(0, 3).map((assignment) => (
               <Card
-                key={assignment.id}
+                key={assignment.assignmentId}
                 elevation={0}
                 sx={{
                   border: '2px solid',
@@ -265,7 +280,7 @@ export default function TeacherHome() {
                   },
                 }}
               >
-                <CardActionArea component={Link} to={`/teacher/assignment/${assignment.id}`}>
+                <CardActionArea component={Link} to={`/teacher/assignment/${assignment.assignmentId}`}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', gap: 3 }}>
                       <Box
@@ -288,12 +303,24 @@ export default function TeacherHome() {
                           {assignment.title}
                         </Typography>
                         <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                          {assignment.className || 'N/A'}
+                          {(() => {
+                            const classItem = classes.find(c => c.classId === assignment.classId)
+                            return classItem 
+                              ? `${classItem.name}`
+                              : 'Không xác định'
+                          })()}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                           <Chip label={`${assignment.problems?.length || 0} câu hỏi`} size='small' variant='outlined' />
-                          <Chip label={`Hạn: ${new Date(assignment.dueDate || Date.now()).toLocaleDateString('vi-VN')}`} size='small' />
-                          <Chip label='8/28 đã nộp' size='small' color='warning' />
+                          <Chip 
+                            label={`Hạn: ${assignment.endTime ? new Date(assignment.endTime).toLocaleDateString('vi-VN') : 'Không giới hạn'}`} 
+                            size='small' 
+                          />
+                          <Chip 
+                            label={assignment.status === 'PUBLISHED' ? 'Đang hoạt động' : assignment.status === 'DRAFT' ? 'Bản nháp' : 'Đã đóng'} 
+                            size='small' 
+                            color={assignment.status === 'PUBLISHED' ? 'success' : 'default'}
+                          />
                         </Box>
                       </Box>
 

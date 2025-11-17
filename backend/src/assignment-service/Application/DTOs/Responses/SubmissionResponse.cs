@@ -5,16 +5,24 @@ namespace AssignmentService.Application.DTOs.Responses;
 public class SubmissionResponse
 {
     public Guid SubmissionId { get; set; }
+    /// <summary>
+    /// User name của người nộp bài
+    /// </summary>
+    public string UserFullName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Đường dẫn hoặc reference đến source code (lưu trên storage)
+    /// User code của người nộp bài
+    /// </summary>
+    public string UserCode { get; set; } = string.Empty;
+    /// <summary>
+    /// Source code của submission
     /// </summary>
     public string SourceCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Ngôn ngữ lập trình
     /// </summary>
-    public string Language { get; set; } = string.Empty;
+    public string LanguageCode { get; set; } = string.Empty;
     
     /// <summary>
     /// Trạng thái submission
@@ -40,12 +48,21 @@ public class SubmissionResponse
     /// Tổng số test case
     /// </summary>
     public int TotalTestcase { get; set; } = 0;
-    
+
     /// <summary>
     /// Số test case passed
     /// </summary>
     public int PassedTestcase { get; set; } = 0;
+
+    /// <summary>
+    /// Điểm số của submission
+    /// </summary>
+    public int Score { get; set; } = 0;
     
+    /// <summary>
+    /// Nhận xét của submission
+    /// </summary>
+    public string Comment { get; set; } = string.Empty;
     /// <summary>
     /// Tổng thời gian thực thi (ms)
     /// </summary>

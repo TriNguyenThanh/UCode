@@ -36,13 +36,13 @@
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBlock Text="Quản lý Tags" FontSize="24" FontWeight="Bold" Foreground="#191970"/>
-                <TextBlock Text="Chọn các tag phù hợp cho bài toán này" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                <TextBlock Text="Chọn các tag phù hợp cho bài toán này" FontSize="16" Foreground="#666" Margin="0,5,0,0"/>
             </StackPanel>
 
             <!-- Selected Tags -->
             <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="15" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,10">
+                    <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,10">
                         <Run Text="Tags đã chọn ("/>
                         <Run Text="{Binding SelectedTagIds.Count, Mode=OneWay}"/>
                         <Run Text=")"/>
@@ -68,7 +68,7 @@
 
                     <!-- Empty State -->
                     <TextBlock Text="Chưa có tag nào được chọn" 
-                               FontSize="13" Foreground="#999" 
+                               FontSize="15" Foreground="#999" 
                                Visibility="{Binding HasNoSelectedTags, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,10,0,0"/>
                 </StackPanel>
@@ -82,7 +82,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,10">
+                    <TextBlock Grid.Row="0" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,10">
                         <Run Text="Tất cả các tags ("/>
                         <Run Text="{Binding AllTags.Count, Mode=OneWay}"/>
                         <Run Text=")"/>

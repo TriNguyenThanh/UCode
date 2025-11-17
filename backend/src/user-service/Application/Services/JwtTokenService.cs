@@ -74,7 +74,7 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.Name, user.Username),
             // new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Role, user.Role.ToString()),
-            // new("fullName", user.FullName),
+            new("fullName", Convert.ToBase64String(Encoding.UTF8.GetBytes(user.FullName))),
             // new("status", user.Status.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
@@ -87,6 +87,7 @@ public class JwtTokenService : IJwtTokenService
                 var student = user as Student;
                 if (student != null)
                 {
+                    claims.Add(new Claim("userCode", student.StudentCode));
                     claims.Add(new Claim("studentCode", student.StudentCode));
                     // claims.Add(new Claim("major", student.Major));
                     // claims.Add(new Claim("classYear", student.ClassYear.ToString()));
@@ -97,6 +98,7 @@ public class JwtTokenService : IJwtTokenService
                 var teacher = user as Teacher;
                 if (teacher != null)
                 {
+                    claims.Add(new Claim("userCode", teacher.TeacherCode));
                     claims.Add(new Claim("teacherCode", teacher.TeacherCode));
                     // claims.Add(new Claim("department", teacher.Department));
                     // claims.Add(new Claim("title", teacher.Title ?? ""));

@@ -73,9 +73,11 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
           problemIds
         )
         
-        // Map submissions to their corresponding problems
+        // Map submissions to their corresponding problems using problemId
         submissions.forEach((submission) => {
-          problemSubmissions.set(submission.problemId, submission)
+          if (submission.problemId) {
+            problemSubmissions.set(submission.problemId, submission)
+          }
         })
       } catch (error) {
         console.error('Error loading submissions:', error)
@@ -157,7 +159,7 @@ export default function AssignmentDetail() {
   const daysLeft = getDaysUntil(assignment.endTime)
   
   const totalProblems = assignment.totalProblems || problems.length
-  // Count problems that have been successfully submitted (Passed status)
+  // Count problems that have BestSubmission with Passed status
   const completedProblems = Object.values(problemSubmissions || {}).filter(
     (submission) => submission?.status === 'Passed'
   ).length
@@ -393,38 +395,46 @@ export default function AssignmentDetail() {
 
                             {/* Submission Status */}
                             {submission && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
                                 <Typography 
                                   variant='body2' 
                                   sx={{ 
-                                    color: submission.status === 'Passed' ? '#34C759' : '#FF3B30',
                                     fontWeight: 500 
                                   }}
                                 >
-                                  {submission.status === 'Passed' && '✓ Đã qua'}
+                                  {/* {submission.status === 'Passed' && '✓ Đã qua'}
                                   {submission.status === 'Failed' && '✗ Chưa qua'}
                                   {submission.status === 'CompilationError' && '⚠ Lỗi biên dịch'}
                                   {submission.status === 'RuntimeError' && '⚠ Lỗi runtime'}
                                   {submission.status === 'TimeLimitExceeded' && '⏱ Vượt quá thời gian'}
                                   {submission.status === 'MemoryLimitExceeded' && '💾 Vượt quá bộ nhớ'}
                                   {submission.status === 'Pending' && '⏳ Đang chờ'}
-                                  {submission.status === 'Running' && '▶ Đang chạy'}
+                                  {submission.status === 'Running' && '▶ Đang chạy'} */}
                                 </Typography>
-                                {submission.passedTestCases !== undefined && submission.totalTestCases !== undefined && (
+                                {submission.passedTestcase !== undefined && submission.totalTestcase !== undefined && (
                                   <Chip
-                                    label={`${submission.passedTestCases}/${submission.totalTestCases} testcases`}
+                                    label={`${submission.passedTestcase}/${submission.totalTestcase} testcases`}
                                     size='small'
-                                    color={submission.passedTestCases === submission.totalTestCases ? 'success' : 'default'}
+                                    color={submission.passedTestcase === submission.totalTestcase ? 'success' : 'default'}
                                   />
                                 )}
-                                {submission.score !== undefined && (
+                                {submission.score !== undefined && submission.score !== null && (
                                   <Chip
-                                    label={`${submission.score}/${submission.maxScore} điểm`}
+                                    label={`Điểm: ${submission.score}/${problem.points}`}
                                     size='small'
                                     sx={{ 
-                                      bgcolor: submission.score === submission.maxScore ? '#34C759' : '#FF9500',
-                                      color: '#ffffff' 
+                                      bgcolor: submission.status === 'Passed' ? '#34C759' : '#FF9500',
+                                      color: '#ffffff',
+                                      fontWeight: 600
                                     }}
+                                  />
+                                )}
+                                {submission.totalSubmission !== undefined && submission.totalSubmission > 0 && (
+                                  <Chip
+                                    label={`${submission.totalSubmission} lần nộp`}
+                                    size='small'
+                                    variant='outlined'
+                                    sx={{ borderColor: '#d2d2d7', color: '#1d1d1f' }}
                                   />
                                 )}
                               </Box>

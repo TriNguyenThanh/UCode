@@ -35,7 +35,7 @@
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBlock Text="Quản lý ngôn ngữ lập trình" FontSize="24" FontWeight="Bold" Foreground="#191970"/>
-                <TextBlock Text="Chọn các ngôn ngữ được phép sử dụng cho bài toán này" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                <TextBlock Text="Chọn các ngôn ngữ được phép sử dụng cho bài toán này" FontSize="16" Foreground="#666" Margin="0,5,0,0"/>
             </StackPanel>
 
             <!-- Languages Table -->
@@ -100,7 +100,7 @@
                         IsEnabled="{Binding !IsSaving}"
                         Width="120">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🔒" Margin="0,0,5,0" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="🔒" Margin="0,0,5,0" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="LƯU" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>

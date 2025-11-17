@@ -9,6 +9,7 @@ using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
+using GradeRequest = UCode.Desktop.Services.GradeSubmissionRequest;
 
 namespace UCode.Desktop.ViewModels
 {
@@ -268,8 +269,8 @@ namespace UCode.Desktop.ViewModels
                                 {
                                     ProblemId = problem.ProblemId,
                                     Title = problem.Title,
-                                    PassedTestCases = studentSubmission.PassedTestCases ?? 0,
-                                    TotalTestCases = studentSubmission.TotalTestCases ?? 0,
+                                    PassedTestCases = studentSubmission.PassedTestcase,
+                                    TotalTestCases = studentSubmission.TotalTestcase,
                                     Status = studentSubmission.Status,
                                     StatusColor = GetStatusColor(studentSubmission.Status)
                                 });
@@ -310,9 +311,9 @@ namespace UCode.Desktop.ViewModels
             IsLoading = true;
             try
             {
-                SourceCode = CurrentSubmission.SolutionCode ?? "// Source code không khả dụng";
-                Score = CurrentSubmission.Score ?? 0;
-                Feedback = CurrentSubmission.TeacherFeedback ?? string.Empty;
+                SourceCode = CurrentSubmission.SourceCode ?? "// Source code không khả dụng";
+                Score = CurrentSubmission.Score;
+                Feedback = CurrentSubmission.ErrorMessage ?? string.Empty;
             }
             catch (Exception ex)
             {
@@ -337,10 +338,10 @@ namespace UCode.Desktop.ViewModels
 
             try
             {
-                var request = new GradeSubmissionRequest
+                var request = new GradeRequest
                 {
                     Score = Score,
-                    TeacherFeedback = string.IsNullOrWhiteSpace(Feedback) ? null : Feedback
+                    TeacherFeedback = string.IsNullOrWhiteSpace(Feedback) ? string.Empty : Feedback
                 };
 
                 var response = await _assignmentService.GradeSubmissionAsync(

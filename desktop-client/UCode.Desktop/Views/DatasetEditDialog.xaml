@@ -57,17 +57,17 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Tên Dataset *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                        <TextBlock Text="Tên Dataset *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
                         <TextBox Text="{Binding DatasetName, UpdateSourceTrigger=PropertyChanged}"
                                  mah:TextBoxHelper.Watermark="VD: Sample Test Cases, Edge Cases..."
-                                 Height="40" FontSize="14" Padding="10"/>
+                                 Height="40" FontSize="16" Padding="10"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Loại Dataset *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                        <TextBlock Text="Loại Dataset *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
                         <ComboBox SelectedItem="{Binding DatasetKind, Mode=TwoWay}"
                                   ItemsSource="{Binding DatasetKindOptions}"
-                                  Height="40" FontSize="14"/>
+                                  Height="40" FontSize="16"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -95,7 +95,7 @@
                             </TextBlock>
                             <Border Background="#0071E3" CornerRadius="12" Padding="8,4" Margin="15,0,0,0"
                                     Visibility="{Binding HasSelectedTestCases, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="11">
+                                <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="12">
                                     <Run Text="{Binding SelectedTestCases.Count, Mode=OneWay}"/>
                                     <Run Text=" đã chọn"/>
                                 </TextBlock>
@@ -223,7 +223,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Chưa có test case nào. Nhấn 'Thêm Test Case' để bắt đầu." 
-                                           Foreground="#1976D2" FontSize="14" TextWrapping="Wrap"/>
+                                           Foreground="#1976D2" FontSize="16" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
@@ -257,7 +257,7 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border Background="#0071E3" CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding IndexNo, StringFormat='#{0}'}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                                <TextBlock Text="{Binding IndexNo, StringFormat='#{0}'}" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -267,7 +267,7 @@
                                         <DataTemplate>
                                             <TextBlock Text="{Binding InputPreview}" 
                                                        FontFamily="Consolas" 
-                                                       FontSize="11" 
+                                                       FontSize="12" 
                                                        Foreground="#1D1D1F"
                                                        Background="#F5F5F7"
                                                        Padding="8"
@@ -282,7 +282,7 @@
                                         <DataTemplate>
                                             <TextBlock Text="{Binding OutputPreview}" 
                                                        FontFamily="Consolas" 
-                                                       FontSize="11" 
+                                                       FontSize="12" 
                                                        Foreground="#1D1D1F"
                                                        Background="#F5F5F7"
                                                        Padding="8"

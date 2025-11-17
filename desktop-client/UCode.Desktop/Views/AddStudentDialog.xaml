@@ -66,7 +66,7 @@
                 <!-- Tab 1: Visual Select -->
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="CHỌN TỪ DANH SÁCH" FontWeight="SemiBold" FontSize="13" Foreground="#FACB01"/>
+                        <TextBlock Text="CHỌN TỪ DANH SÁCH" FontWeight="SemiBold" FontSize="15" Foreground="#FACB01"/>
                     </TabItem.Header>
                     <controls:VisualSelectTabControl DataContext="{Binding VisualSelectTab}"/>
                 </TabItem>
@@ -74,7 +74,7 @@
                 <!-- Tab 2: Import Excel -->
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="IMPORT EXCEL" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="IMPORT EXCEL" FontWeight="SemiBold" FontSize="15"/>
                     </TabItem.Header>
                     <controls:ImportExcelTabControl DataContext="{Binding ImportExcelTab}"/>
                 </TabItem>
@@ -85,7 +85,7 @@
                 <Button Content="ĐÓNG" 
                         Background="Transparent" Foreground="#FACB01" 
                         BorderThickness="0"
-                        FontSize="14" FontWeight="Bold"
+                        FontSize="16" FontWeight="Bold"
                         Padding="20,10"
                         Click="Close_Click"
                         Width="100"

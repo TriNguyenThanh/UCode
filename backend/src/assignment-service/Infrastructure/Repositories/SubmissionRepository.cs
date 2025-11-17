@@ -121,7 +121,7 @@ public class SubmissionRepository : ISubmissionRepository
             .OrderByDescending(s => s.Score)
             .ThenBy(s => s.TotalTime)
             .ThenBy(s => s.TotalMemory)
-            .ThenByDescending(s => s.SubmitAt)
+            .ThenByDescending(s => s.SubmittedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -135,7 +135,7 @@ public class SubmissionRepository : ISubmissionRepository
             .OrderByDescending(s => s.Score)
             .ThenBy(s => s.TotalTime)
             .ThenBy(s => s.TotalMemory)
-            .ThenByDescending(s => s.SubmitAt)
+            .ThenByDescending(s => s.SubmittedAt)
             .ToListAsync();
     }
 
@@ -147,7 +147,7 @@ public class SubmissionRepository : ISubmissionRepository
             .OrderByDescending(s => s.Score)
             .ThenBy(s => s.TotalTime)
             .ThenBy(s => s.TotalMemory)
-            .ThenByDescending(s => s.SubmitAt)
+            .ThenByDescending(s => s.SubmittedAt)
             .FirstOrDefaultAsync();
     }
 

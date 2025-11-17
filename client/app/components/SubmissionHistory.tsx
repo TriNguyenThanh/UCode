@@ -32,7 +32,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import CodeIcon from '@mui/icons-material/Code'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { Submission, TestcaseStatus } from '~/types'
 import { getSubmission } from '~/services/submissionService'
 import { TestCaseResultDialog } from './TestCaseResultDialog'
@@ -45,9 +45,9 @@ interface SubmissionHistoryProps {
   onPageSizeChange?: (size: number) => void
 }
 
-interface SubmissionDetail extends Submission {
-  sourceCode?: string
-}
+// interface SubmissionDetail extends Submission {
+//   sourceCode?: string
+// }
 
 interface TestCaseResult {
   index: number
@@ -166,7 +166,7 @@ export function SubmissionHistory({
   onPageSizeChange 
 }: SubmissionHistoryProps) {
   const [detailDialogOpen, setDetailDialogOpen] = React.useState(false)
-  const [selectedSubmission, setSelectedSubmission] = React.useState<SubmissionDetail | null>(null)
+  const [selectedSubmission, setSelectedSubmission] = React.useState<Submission | null>(null)
   const [loadingDetail, setLoadingDetail] = React.useState(false)
   const [testCaseDialogOpen, setTestCaseDialogOpen] = React.useState(false)
   const [selectedSubmissionForTestCases, setSelectedSubmissionForTestCases] = React.useState<Submission | null>(null)
@@ -183,27 +183,23 @@ export function SubmissionHistory({
 
   const handleViewDetail = async (submission: Submission) => {
     setDetailDialogOpen(true)
-    setSelectedSubmission(submission)
     setLoadingDetail(true)
 
     try {
-      // If sourceCode already exists in submission, use it directly
-      if (submission.sourceCodeRef) {
-        setSelectedSubmission({
-          ...submission,
-          sourceCode: submission.sourceCodeRef,
-        })
+      // sourceCode is already in submission from API response
+      if (submission.sourceCode) {
+        setSelectedSubmission(submission)
         setLoadingDetail(false)
         return
       }
 
-      // Otherwise, fetch full submission details from API
+      // If sourceCode not available, fetch full submission details from API
       const fullSubmission = await getSubmission(submission.submissionId)
       
       setSelectedSubmission({
         ...submission,
         ...fullSubmission,
-        sourceCode: fullSubmission.sourceCodeRef || '// Source code not available',
+        sourceCode: fullSubmission.sourceCode || '// Source code not available',
       })
     } catch (error) {
       console.error('Failed to fetch source code:', error)
@@ -262,7 +258,7 @@ export function SubmissionHistory({
                     {new Date(sub.submittedAt).toLocaleString('vi-VN')}
                   </TableCell>
                   <TableCell>
-                    <Chip label={sub.language} size="small" variant="outlined" />
+                    <Chip label={sub.languageCode} size="small" variant="outlined" />
                   </TableCell>
                   <TableCell>
                     <Chip
@@ -286,7 +282,7 @@ export function SubmissionHistory({
                         },
                       }}
                     >
-                      {sub.passedTestcase}/{sub.totalTestcase}
+                      {sub.score}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">{sub.totalTime}</TableCell>
@@ -374,7 +370,7 @@ export function SubmissionHistory({
                       Ngôn ngữ
                     </Typography>
                     <Typography variant="body2">
-                      <Chip label={selectedSubmission.language} size="small" />
+                      <Chip label={selectedSubmission.languageCode} size="small" />
                     </Typography>
                   </Box>
                   
@@ -391,7 +387,7 @@ export function SubmissionHistory({
                           : 'error.main'
                       }}
                     >
-                      {selectedSubmission.passedTestcase}/{selectedSubmission.totalTestcase} test cases
+                      {selectedSubmission.score}
                     </Typography>
                   </Box>
                   
@@ -438,8 +434,8 @@ export function SubmissionHistory({
                 ) : (
                   <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
                     <SyntaxHighlighter
-                      language={getLanguageForHighlight(selectedSubmission.language)}
-                      style={vscDarkPlus as any}
+                      language={getLanguageForHighlight(selectedSubmission.languageCode)}
+                      style={vs as any}
                       showLineNumbers
                       customStyle={{
                         margin: 0,
@@ -590,4 +586,3 @@ export function SubmissionHistory({
     </>
   )
 }
-

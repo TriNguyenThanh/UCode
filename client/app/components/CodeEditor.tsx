@@ -23,7 +23,7 @@ export function CodeEditor({
   onChange,
   language,
   height = '100%',
-  theme = 'vs-dark',
+  theme = 'light',
   readOnly = false,
 }: CodeEditorProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)

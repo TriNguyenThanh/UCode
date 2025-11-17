@@ -4,6 +4,7 @@ import type {
   Assignment,
   AssignmentProblemDetail,
   AssignmentStatistics,
+  AssignmentType,
   AssignmentUser,
   BestSubmission,
 } from '../types'
@@ -12,7 +13,7 @@ import { handleApiError, unwrapApiResponse } from './utils'
 // ==================== REQUEST TYPES ====================
 
 export interface CreateAssignmentRequest {
-  assignmentType: 'HOMEWORK' | 'EXAMINATION' | 'PRACTICE'
+  assignmentType: AssignmentType
   classId: string
   title: string
   description?: string

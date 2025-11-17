@@ -62,7 +62,7 @@ public class SubmissionService : ISubmissionService
             }
             
             submission.SubmissionId = Guid.NewGuid();
-            submission.SubmittedAt = DateTime.Now;
+            submission.SubmittedAt = DateTime.UtcNow;
 
             var assignment = await _assignmentService.GetAssignmentByIdAsync(submission.AssignmentId ?? Guid.Empty);
             if (assignment != null)
@@ -76,7 +76,7 @@ public class SubmissionService : ISubmissionService
                     submission.isSubmitLate = false;
                 }
 
-                if (!assignment.AllowLateSubmission)
+                if (!assignment.AllowLateSubmission && submission.isSubmitLate)
                 {
                     submission.Status = SubmissionStatus.Failed;
                     submission.ErrorMessage = "Late submissions are not allowed for this assignment.";
@@ -172,12 +172,40 @@ public class SubmissionService : ISubmissionService
         try
         {
             var BestSubmission = await _repository.GetBestSubmission(submission.AssignmentId ?? Guid.Empty, submission.ProblemId, submission.UserId);
-            if (BestSubmission == null || submission.Score > BestSubmission.Score)
+
+            // if (BestSubmission == null || submission.Score > BestSubmission.Score)
+            // {
+            //     var score = submission.Score - (BestSubmission?.Score ?? 0);
+            //     if (submission.AssignmentId != null)
+            //     {
+            //         await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, score);
+            //     }
+            //     Console.WriteLine($"[x] Added/Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+            // }
+
+            if (BestSubmission == null)
             {
-                var score = submission.Score - (BestSubmission?.Score ?? 0);
-                await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, score);
-                Console.WriteLine($"[x] Added/Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+                var score = submission.Score;
+                if (submission.AssignmentId != null)
+                {
+                    await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, score);
+                }
+                Console.WriteLine($"[x] Added best submission for user {submission.UserId} on problem {submission.ProblemId}");
             }
+            else
+            {
+                var previousScore = BestSubmission.Score;
+                if (submission.Score > previousScore)
+                {
+                    var scoreDifference = submission.Score - previousScore;
+                    if (submission.AssignmentId != null)
+                    {
+                        await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, scoreDifference);
+                    }
+                    Console.WriteLine($"[x] Updated best submission for user {submission.UserId} on problem {submission.ProblemId}");
+                }
+            }
+
 
             return await _repository.UpdateSubmission(submission);
         }
@@ -198,11 +226,20 @@ public class SubmissionService : ISubmissionService
         {
             int score = 0;
             if (submission.TotalTestcase == 0) return score;
-            Guid assignmentId = submission.AssignmentId ?? Guid.Empty;
-            var assignment = await _assignmentService.GetAssignmentProblemAsync(assignmentId, submission.ProblemId);
-            if (assignment == null) return score;
 
-            score = (int)Math.Round((double)(submission.PassedTestcase * assignment.Points) / submission.TotalTestcase);
+            var datasetKind = await _datasetService.GetDatasetByIdAsync(submission.DatasetId);
+            if (datasetKind?.Kind == DatasetKind.SAMPLE)
+            {
+                // Nếu là dataset mẫu, không tính điểm
+                return score;
+            }
+
+            Guid assignmentId = submission.AssignmentId ?? Guid.Empty;
+            if (assignmentId == Guid.Empty) return score;
+            var assignmentProblem = await _assignmentService.GetAssignmentProblemAsync(assignmentId, submission.ProblemId);
+            if (assignmentProblem == null) return score;
+
+            score = (int)Math.Round((double)(submission.PassedTestcase * assignmentProblem.Points) / submission.TotalTestcase);
             return score;
         }
         catch (Exception ex)
@@ -218,5 +255,18 @@ public class SubmissionService : ISubmissionService
     public async Task<BestSubmission?> GetBestSubmission(Guid assignmentId, Guid problemId, Guid userId)
     {
         return await _repository.GetBestSubmission(assignmentId, problemId, userId);
+    }
+
+    public Task UpdateSubmissionByTeacher(Submission submission)
+    {
+        try
+        {
+            var assignmentService = _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, submission.Score);
+            return _repository.UpdateSubmission(submission);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
 }

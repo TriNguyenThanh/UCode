@@ -15,7 +15,7 @@ export interface CreateSubmissionResponse {
   submissionId: string
   problemId: string
   userId: string
-  language: string
+  languageCode: string
   status: SubmissionStatus
   submittedAt: string
 }
@@ -160,6 +160,24 @@ export async function getSubmissionCountPerProblem(
   try {
     const response = await API.get<ApiResponse<number>>(
       `/api/v1/submissions/assignment/${assignmentId}/problem/${problemId}/count`,
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+/**
+ * Get best submission for a specific student for a problem in an assignment (Teacher only)
+ */
+export async function getBestSubmissionForStudent(
+  assignmentId: string,
+  problemId: string,
+  userId: string,
+): Promise<BestSubmission> {
+  try {
+    const response = await API.get<ApiResponse<BestSubmission>>(
+      `/api/v1/submissions/assignment/${assignmentId}/problem/${problemId}/student/${userId}/best`,
     )
     return unwrapApiResponse(response.data)
   } catch (error) {

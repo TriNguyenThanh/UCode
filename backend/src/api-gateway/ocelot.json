@@ -34,7 +34,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -57,7 +59,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -80,7 +84,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -103,7 +109,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -126,7 +134,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -149,7 +159,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -172,7 +184,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -195,7 +209,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -218,7 +234,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -241,7 +259,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {
@@ -264,7 +284,9 @@
       "AddClaimsToRequest": {
         "X-User-Id": "sub",
         "X-Role": "role",
-        "X-User-Name": "name"
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     }
   ],

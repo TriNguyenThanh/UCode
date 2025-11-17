@@ -110,7 +110,6 @@ public class ResultConsumer : BackgroundService
                     }
                 }
                 var submission = await submissionService.GetSubmission(results_message.SubmissionId);
-                submission.Score = await submissionService.Getscore(submission);
                 submission.PassedTestcase = testcasePassed;
                 submission.TotalTime = results_message.TotalTime;
                 submission.TotalMemory = results_message.TotalMemory;
@@ -118,6 +117,7 @@ public class ResultConsumer : BackgroundService
                 submission.ErrorCode = results_message.ErrorCode;
                 submission.ErrorMessage = results_message.ErrorMessage;
                 submission.CompareResult = results_message.CompileResult;
+                submission.Score = await submissionService.Getscore(submission);
 
                 if (await submissionService.UpdateSubmission(submission))
                 {

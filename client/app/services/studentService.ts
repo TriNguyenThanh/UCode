@@ -16,6 +16,10 @@ export interface GetStudentsParams {
   pageSize?: number
   search?: string
   classId?: string
+  year?: number
+  major?: string
+  status?: string
+  excludeClassId?: string
 }
 
 export interface ImportStudentsRequest {
@@ -64,7 +68,7 @@ export async function getAllStudents(
     const result = unwrapApiResponse(response.data)
     
     return {
-      data: result.items || [],
+      items: result.items || [],
       page: result.pageNumber,
       pageSize: result.pageSize,
       totalCount: result.totalCount,
@@ -283,7 +287,7 @@ export async function getAvailableStudents(
     const result = unwrapApiResponse(response.data)
     
     return {
-      data: result.items || [],
+      items: result.items || [],
       page: result.pageNumber,
       pageSize: result.pageSize,
       totalCount: result.totalCount,

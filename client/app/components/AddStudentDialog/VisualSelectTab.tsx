@@ -80,10 +80,10 @@ export default function VisualSelectTab({ classId, onSuccess }: VisualSelectTabP
       })
 
       console.log('✅ API Response:', result)
-      console.log('📊 Students data:', result.data)
+      console.log('📊 Students data:', result.items)
       console.log('📈 Total count:', result.totalCount)
 
-      setStudents(result.data || [])
+      setStudents(result.items || [])
       setTotalCount(result.totalCount)
     } catch (err) {
       console.error('❌ Failed to load students:', err)
@@ -144,8 +144,9 @@ export default function VisualSelectTab({ classId, onSuccess }: VisualSelectTabP
         }, 1500) // Delay to show success message
       }
 
-      if (result.errors && result.errors.length > 0) {
-        const errorMsg = result.errors.map((e) => e.errorMessage).join(', ')
+      if (result.failureCount > 0 && result.results) {
+        const failedResults = result.results.filter(r => !r.success)
+        const errorMsg = failedResults.map((e) => e.errorMessage || 'Unknown error').join(', ')
         setError(`Có lỗi: ${errorMsg}`)
       }
     } catch (err) {

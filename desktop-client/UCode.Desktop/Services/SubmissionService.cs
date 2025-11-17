@@ -20,6 +20,13 @@ namespace UCode.Desktop.Services
             );
         }
 
+        public async Task<ApiResponse<BestSubmission>> GetBestSubmissionForStudentAsync(string assignmentId, string problemId, string userId)
+        {
+            return await _apiService.GetAsync<BestSubmission>(
+                $"/api/v1/submissions/assignment/{assignmentId}/problem/{problemId}/student/{userId}/best"
+            );
+        }
+
         public async Task<ApiResponse<Submission>> GetSubmissionAsync(string submissionId)
         {
             return await _apiService.GetAsync<Submission>($"/api/v1/submissions/{submissionId}");

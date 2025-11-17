@@ -264,4 +264,108 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+
+    public class StatusToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string status)
+            {
+                var colorString = status switch
+                {
+                    "Passed" => "#28a745",
+                    "Failed" => "#dc3545",
+                    "CompilationError" => "#dc3545",
+                    "RuntimeError" => "#dc3545",
+                    "TimeLimitExceeded" => "#ffc107",
+                    "MemoryLimitExceeded" => "#ffc107",
+                    _ => "#6c757d"
+                };
+                return (SolidColorBrush)new BrushConverter().ConvertFromString(colorString);
+            }
+            return Brushes.Gray;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BytesToKBConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int bytes)
+            {
+                return (bytes / 1024).ToString("N0");
+            }
+            return "0";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class RowNumberConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is System.Windows.Controls.DataGridRow row)
+            {
+                var dataGrid = System.Windows.Media.VisualTreeHelper.GetParent(row);
+                while (dataGrid != null && !(dataGrid is System.Windows.Controls.DataGrid))
+                {
+                    dataGrid = System.Windows.Media.VisualTreeHelper.GetParent(dataGrid);
+                }
+
+                if (dataGrid is System.Windows.Controls.DataGrid grid)
+                {
+                    return grid.Items.IndexOf(row.Item) + 1;
+                }
+            }
+            return 0;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class PageStartConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] is int page && values[1] is int rowsPerPage)
+            {
+                return page * rowsPerPage + 1;
+            }
+            return 1;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class PageEndConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 3 && values[0] is int page && values[1] is int rowsPerPage && values[2] is int totalCount)
+            {
+                return Math.Min((page + 1) * rowsPerPage, totalCount);
+            }
+            return 0;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

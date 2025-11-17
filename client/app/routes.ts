@@ -22,6 +22,8 @@ export default [
   route('teacher/assignment/:id', 'routes/teacher.assignment.$id.tsx'),
   route('teacher/assignment/:id/edit', 'routes/teacher.assignment.$id.edit.tsx'),
   route('teacher/grading/:assignmentId', 'routes/teacher.grading.$assignmentId.tsx'),
+  route('teacher/grading/:assignmentId/:problemId', 'routes/teacher.grading.$assignmentId.$problemId.tsx'),
+  route('teacher/grading/:assignmentId/:problemId/:submissionId', 'routes/teacher.grading.$assignmentId.$problemId.$submissionId.tsx'),
   route('teacher/problem/create', 'routes/teacher.problem.create.tsx'),
   route('teacher/problem/:id/edit', 'routes/teacher.problem.$id.edit.tsx'),
   // Admin routes
