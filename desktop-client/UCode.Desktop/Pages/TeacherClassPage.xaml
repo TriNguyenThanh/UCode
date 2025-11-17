@@ -36,11 +36,11 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{Binding CurrentClass.ClassName}" Foreground="#FACB01" FontSize="28" FontWeight="Bold"/>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <TextBlock Text="Mã lớp: " Foreground="White" FontSize="14" Opacity="0.8"/>
-                            <TextBlock Text="{Binding CurrentClass.ClassCode}" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
-                            <TextBlock Text=" • " Foreground="White" FontSize="14" Margin="10,0"/>
-                            <TextBlock Text="Học kỳ: " Foreground="White" FontSize="14" Opacity="0.8"/>
-                            <TextBlock Text="{Binding CurrentClass.Semester}" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text="Mã lớp: " Foreground="White" FontSize="16" Opacity="0.8"/>
+                            <TextBlock Text="{Binding CurrentClass.ClassCode}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text=" • " Foreground="White" FontSize="16" Margin="10,0"/>
+                            <TextBlock Text="Học kỳ: " Foreground="White" FontSize="16" Opacity="0.8"/>
+                            <TextBlock Text="{Binding CurrentClass.Semester}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -137,7 +137,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                         Padding="12" FontSize="14" VerticalContentAlignment="Center">
+                                         Padding="12" FontSize="16" VerticalContentAlignment="Center">
                                     <TextBox.Style>
                                         <Style TargetType="TextBox">
                                             <Setter Property="BorderBrush" Value="#E0E0E0"/>
@@ -239,7 +239,7 @@
                                            Foreground="#00275e" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                                 <Button Content="+ TẠO BÀI TẬP MỚI" 
                                         Background="#00275e" Foreground="White" BorderThickness="0"
-                                        FontWeight="Bold" FontSize="12" Padding="20,12"
+                                        FontWeight="Bold" FontSize="13" Padding="20,12"
                                         Command="{Binding CreateAssignmentCommand}"
                                         HorizontalAlignment="Right" Cursor="Hand"/>
                             </Grid>
@@ -255,15 +255,15 @@
                                 </Grid.ColumnDefinitions>
                                 
                                 <TextBlock Grid.Column="0" Text="Tên bài tập" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="14" Padding="20,15" VerticalAlignment="Center"/>
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="Hạn nộp" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="14" Padding="20,15" VerticalAlignment="Center"/>
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="2" Text="Số bài" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="14" Padding="20,15" VerticalAlignment="Center"/>
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="3" Text="Trạng thái" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="14" Padding="20,15" VerticalAlignment="Center"/>
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="4" Text="Thao tác" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="14" Padding="20,15" VerticalAlignment="Center"/>
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
                             </Grid>
 
                             <!-- Assignments List -->
@@ -283,7 +283,7 @@
 
                                                     <!-- Tên bài tập -->
                                                     <TextBlock Grid.Column="0" Text="{Binding Title}" 
-                                                               FontSize="14" Foreground="#00275e" 
+                                                               FontSize="16" Foreground="#00275e" 
                                                                Padding="20,15" VerticalAlignment="Center" TextWrapping="Wrap"
                                                                Cursor="Hand" TextDecorations="Underline">
                                                         <TextBlock.InputBindings>
@@ -295,16 +295,16 @@
 
                                                     <!-- Hạn nộp -->
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,10">
-                                                        <TextBlock FontSize="13" Foreground="#333">
+                                                        <TextBlock FontSize="15" Foreground="#333">
                                                             <Run Text="{Binding EndTime, StringFormat='dd/MM/yyyy', TargetNullValue='Không giới hạn'}"/>
                                                         </TextBlock>
-                                                        <TextBlock FontSize="11" Foreground="#666">
+                                                        <TextBlock FontSize="12" Foreground="#666">
                                                             <Run Text="{Binding EndTime, StringFormat='Còn {0:dd} ngày', TargetNullValue=''}"/>
                                                         </TextBlock>
                                                     </StackPanel>
 
                                                     <!-- Số bài -->
-                                                    <TextBlock Grid.Column="2" FontSize="13" Foreground="#333"
+                                                    <TextBlock Grid.Column="2" FontSize="15" Foreground="#333"
                                                                Padding="20,15" VerticalAlignment="Center">
                                                         <Run Text="{Binding TotalProblems}"/>
                                                         <Run Text=" bài"/>
@@ -316,7 +316,7 @@
                                                             CornerRadius="20" Padding="15,8" Margin="20,10"
                                                             HorizontalAlignment="Left" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Status, Converter={StaticResource AssignmentStatusConverter}}" 
-                                                                   Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                                                   Foreground="White" FontSize="12" FontWeight="SemiBold"/>
                                                     </Border>
 
                                                     <!-- Thao tác -->

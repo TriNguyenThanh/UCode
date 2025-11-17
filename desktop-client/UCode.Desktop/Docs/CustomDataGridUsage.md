@@ -96,7 +96,7 @@ Badge đẹp cho hiển thị trạng thái.
                         <TextBlock Text="Active" 
                                    Foreground="#4CAF50"
                                    FontWeight="SemiBold"
-                                   FontSize="11"/>
+                                   FontSize="12"/>
                     </Border>
                 </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>

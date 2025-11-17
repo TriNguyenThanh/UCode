@@ -11,7 +11,7 @@ export function formatDateTime(
   if (!isoString) return ''
 
   try {
-    const date = new Date(isoString)
+    const date = new Date(isoString + 'Z')
 
     // Check if date is valid
     if (isNaN(date.getTime())) {

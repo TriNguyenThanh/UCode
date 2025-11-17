@@ -23,38 +23,38 @@
                 <!-- Header -->
                 <TextBlock Text="Tạo bài toán mới" FontSize="28" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,5"/>
                 <TextBlock Text="Tạo thông tin cơ bản, sau đó chuyển sang trang chỉnh sửa để thêm chi tiết" 
-                           FontSize="14" Foreground="#666" Margin="0,0,0,30"/>
+                           FontSize="16" Foreground="#666" Margin="0,0,0,30"/>
 
                 <!-- Form -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <!-- Title -->
-                        <TextBlock Text="Tên bài toán *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Tên bài toán *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="40" FontSize="14" Padding="10" Margin="0,0,0,20"/>
+                                 Height="40" FontSize="16" Padding="10" Margin="0,0,0,20"/>
                         <TextBlock Text="VD: Two Sum, Binary Search, Merge Sort..." 
-                                   FontSize="12" Foreground="#999" Margin="0,-15,0,20"/>
+                                   FontSize="13" Foreground="#999" Margin="0,-15,0,20"/>
 
                         <!-- Code -->
-                        <TextBlock Text="Mã bài toán (tùy chọn)" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Mã bài toán (tùy chọn)" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="40" FontSize="14" Padding="10" Margin="0,0,0,20"/>
+                                 Height="40" FontSize="16" Padding="10" Margin="0,0,0,20"/>
                         <TextBlock Text="VD: P001. Để trống để tự động tạo từ title" 
-                                   FontSize="12" Foreground="#999" Margin="0,-15,0,20"/>
+                                   FontSize="13" Foreground="#999" Margin="0,-15,0,20"/>
 
                         <!-- Difficulty -->
-                        <TextBlock Text="Độ khó *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Độ khó *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <ComboBox SelectedItem="{Binding Difficulty}"
-                                  Height="40" FontSize="14" Margin="0,0,0,20">
+                                  Height="40" FontSize="16" Margin="0,0,0,20">
                             <ComboBoxItem Content="Dễ" Tag="EASY" IsSelected="True"/>
                             <ComboBoxItem Content="Trung bình" Tag="MEDIUM"/>
                             <ComboBoxItem Content="Khó" Tag="HARD"/>
                         </ComboBox>
 
                         <!-- Visibility -->
-                        <TextBlock Text="Hiển thị *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Hiển thị *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <ComboBox SelectedItem="{Binding Visibility}"
-                                  Height="40" FontSize="14" Margin="0,0,0,20">
+                                  Height="40" FontSize="16" Margin="0,0,0,20">
                             <ComboBoxItem Content="Riêng tư" Tag="PRIVATE" IsSelected="True"/>
                             <ComboBoxItem Content="Công khai" Tag="PUBLIC"/>
                         </ComboBox>

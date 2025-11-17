@@ -52,8 +52,12 @@ namespace UCode.Desktop.Services
 
         public async Task<ApiResponse<ProblemLanguage>> AddOrUpdateProblemLanguagesAsync(string problemId, List<ProblemLanguageRequest> requests)
         {
-            
             return await _apiService.PostAsync<ProblemLanguage>($"/api/v1/problems/{problemId}/languages", requests);
+        }
+
+        public async Task<ApiResponse<List<ProblemLanguage>>> AddOrUpdateProblemLanguageAsync(string problemId, IEnumerable<ProblemLanguageRequest> requests)
+        {
+            return await _apiService.PostAsync<List<ProblemLanguage>>($"/api/v1/problems/{problemId}/languages", requests);
         }
     }
 

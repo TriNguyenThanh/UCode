@@ -9,6 +9,13 @@ namespace AssignmentService.Domain.Entities;
 public class BestSubmissionResponse
 {
     public Guid SubmissionId { get; set; }
+
+    public Guid AssignmentId { get; set; }
+
+    public Guid ProblemId { get; set; }
+
+    public Guid UserId { get; set; }
+
     /// <summary>
     /// User name của người nộp bài
     /// </summary>

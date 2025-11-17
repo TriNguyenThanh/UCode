@@ -44,25 +44,25 @@
                 </Grid.RowDefinitions>
 
                 <!-- Input -->
-                <TextBlock Grid.Row="0" Text="Input *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="0" Text="Input *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
                 <TextBox Grid.Row="1"
                          Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
                          FontFamily="Consolas"
-                         FontSize="12"
+                         FontSize="13"
                          Padding="10"/>
 
                 <!-- Output -->
-                <TextBlock Grid.Row="3" Text="Expected Output *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="3" Text="Expected Output *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
                 <TextBox Grid.Row="4"
                          Text="{Binding OutputText, UpdateSourceTrigger=PropertyChanged}"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
                          FontFamily="Consolas"
-                         FontSize="12"
+                         FontSize="13"
                          Padding="10"/>
             </Grid>
         </Border>

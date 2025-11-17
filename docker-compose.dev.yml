@@ -27,6 +27,7 @@ services:
       - MSSQL_SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=Developer
       - MSSQL_AGENT_ENABLED=true
+      - TZ=Asia/Ho_Chi_Minh
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:

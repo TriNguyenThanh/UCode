@@ -6,6 +6,7 @@ import { Navigation } from '~/components/Navigation'
 import { Loading } from '~/components/Loading'
 import { getAssignment, updateAssignment } from '~/services/assignmentService'
 import { getClassById } from '~/services/classService'
+import { formatDateTime } from '~/utils/dateUtils'
 import type { Assignment, Class, AssignmentType, AssignmentStatus } from '~/types'
 import {
   Box,
@@ -65,12 +66,23 @@ export default function EditAssignment() {
   const [description, setDescription] = useState(assignment.description || '')
   const [assignmentType, setAssignmentType] = useState<AssignmentType>(assignment.assignmentType)
   const [status, setStatus] = useState<AssignmentStatus>(assignment.status)
-  const [startTime, setStartTime] = useState<Date | null>(
-    assignment.startTime ? new Date(assignment.startTime) : new Date()
-  )
-  const [endTime, setEndTime] = useState<Date | null>(
-    assignment.endTime ? new Date(assignment.endTime) : null
-  )
+  
+  const [startTime, setStartTime] = useState<Date | null>(() => {
+    if (!assignment.startTime) return new Date()
+    const utcString = assignment.startTime.endsWith('Z') 
+      ? assignment.startTime 
+      : assignment.startTime + 'Z'
+    return new Date(utcString)
+  })
+  
+  const [endTime, setEndTime] = useState<Date | null>(() => {
+    if (!assignment.endTime) return null
+    const utcString = assignment.endTime.endsWith('Z') 
+      ? assignment.endTime 
+      : assignment.endTime + 'Z'
+    return new Date(utcString)
+  })
+  
   const [noEndTime, setNoEndTime] = useState(!assignment.endTime)
   const [allowLateSubmission, setAllowLateSubmission] = useState(
     assignment.allowLateSubmission || false

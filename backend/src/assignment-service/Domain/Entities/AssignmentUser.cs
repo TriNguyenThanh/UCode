@@ -48,12 +48,12 @@ public class AssignmentUser
     /// <summary>
     /// Điểm số (nếu đã chấm)
     /// </summary>
-    public int? Score { get; set; }
+    public int? Score { get; set; } = 0;
     
     /// <summary>
     /// Điểm tối đa
     /// </summary>
-    public int? MaxScore { get; set; }
+    public int? MaxScore { get; set; } = 0;
 
 
     // Navigation properties

@@ -401,15 +401,34 @@ namespace UCode.Desktop.ViewModels
         {
             if (language == null) return;
 
-            await GetMetroWindow()?.ShowMessageAsync(
-                "Chỉnh sửa cấu hình ngôn ngữ",
-                $"Edit Language: {language.LanguageDisplayName}\n\n" +
-                $"Time Factor: {language.TimeFactor}x\n" +
-                $"Memory: {language.MemoryKb} KB\n\n" +
-                "Language Detail Dialog - To be implemented");
+            try
+            {
+                // Find default language info
+                var defaultLanguage = AllLanguages.FirstOrDefault(l => l.LanguageId == language.LanguageId);
+                if (defaultLanguage == null)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không tìm thấy thông tin ngôn ngữ");
+                    return;
+                }
 
-            // TODO: Implement LanguageDetailDialog
-            // Allow editing timeFactor, memoryKb, head, body, tail
+                // Create ViewModel and Dialog - pass all current languages
+                var viewModel = new LanguageDetailViewModel(ProblemId, language.LanguageId, _problemService, ProblemLanguages.ToList(), AllLanguages.ToList());
+                viewModel.Initialize(language, defaultLanguage);
+
+                var dialog = new Views.LanguageDetailDialog(viewModel);
+                dialog.Owner = Application.Current.MainWindow;
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Reload problem languages
+                    await LoadLanguagesAsync();
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Cập nhật cấu hình ngôn ngữ thành công!");
+                }
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể cập nhật: {ex.Message}");
+            }
         }
 
         private async Task LoadDatasetsAsync()

@@ -7,15 +7,34 @@ namespace UCode.Desktop.Models
         public string SubmissionId { get; set; } = string.Empty;
         public string ProblemId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public string UserFullName { get; set; } = string.Empty;
+        public string UserCode { get; set; } = string.Empty;
         public string LanguageCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public string SolutionCode { get; set; } = string.Empty;
+        public string SourceCode { get; set; } = string.Empty;
+        public string CompareResult { get; set; } = string.Empty;
+        public string ErrorCode { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
+        public string Comment { get; set; } = string.Empty;
+        public string ResultFileRef { get; set; } = string.Empty;
         public DateTime SubmittedAt { get; set; }
-        public double? Score { get; set; }
-        public int? ExecutionTime { get; set; }
-        public int? MemoryUsed { get; set; }
-        public int? TotalTestCases { get; set; }
-        public int? PassedTestCases { get; set; }
+        public double Score { get; set; }
+        public int TotalTime { get; set; }
+        public int TotalMemory { get; set; }
+        public int TotalTestcase { get; set; }
+        public int PassedTestcase { get; set; }
+        
+        // Display properties
+        public string StatusDisplay => Status switch
+        {
+            "Passed" => "Đạt",
+            "Failed" => "Không đạt",
+            "CompilationError" => "Lỗi biên dịch",
+            "RuntimeError" => "Lỗi runtime",
+            "TimeLimitExceeded" => "Quá thời gian",
+            "MemoryLimitExceeded" => "Quá bộ nhớ",
+            _ => Status
+        };
     }
 }
 

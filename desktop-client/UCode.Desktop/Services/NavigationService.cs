@@ -90,6 +90,46 @@ namespace UCode.Desktop.Services
             {
                 _ = problemsViewModel.LoadProblemsAsync();
             }
+            else if (page.DataContext is ViewModels.TeacherProblemSubmissionsViewModel submissionsViewModel)
+            {
+                // Handle anonymous type parameter with assignmentId and problemId
+                var paramType = parameter?.GetType();
+                if (paramType != null)
+                {
+                    var assignmentIdProp = paramType.GetProperty("assignmentId");
+                    var problemIdProp = paramType.GetProperty("problemId");
+                    if (assignmentIdProp != null && problemIdProp != null)
+                    {
+                        var submAssignmentId = assignmentIdProp.GetValue(parameter)?.ToString();
+                        var submProblemId = problemIdProp.GetValue(parameter)?.ToString();
+                        if (!string.IsNullOrEmpty(submAssignmentId) && !string.IsNullOrEmpty(submProblemId))
+                        {
+                            _ = submissionsViewModel.InitializeAsync(submAssignmentId, submProblemId);
+                        }
+                    }
+                }
+            }
+            else if (page.DataContext is ViewModels.SubmissionDetailViewModel detailViewModel)
+            {
+                // Handle anonymous type parameter with assignmentId, problemId, and submissionId
+                var paramType = parameter?.GetType();
+                if (paramType != null)
+                {
+                    var assignmentIdProp = paramType.GetProperty("assignmentId");
+                    var problemIdProp = paramType.GetProperty("problemId");
+                    var submissionIdProp = paramType.GetProperty("submissionId");
+                    if (assignmentIdProp != null && problemIdProp != null && submissionIdProp != null)
+                    {
+                        var detailAssignmentId = assignmentIdProp.GetValue(parameter)?.ToString();
+                        var detailProblemId = problemIdProp.GetValue(parameter)?.ToString();
+                        var detailSubmissionId = submissionIdProp.GetValue(parameter)?.ToString();
+                        if (!string.IsNullOrEmpty(detailAssignmentId) && !string.IsNullOrEmpty(detailProblemId) && !string.IsNullOrEmpty(detailSubmissionId))
+                        {
+                            _ = detailViewModel.InitializeAsync(detailAssignmentId, detailProblemId, detailSubmissionId);
+                        }
+                    }
+                }
+            }
             
             // Initialize Page types
             if (page.GetType().Name == "ProblemEditPage" && parameter is string problemId)

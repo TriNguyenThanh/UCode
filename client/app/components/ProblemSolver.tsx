@@ -19,6 +19,7 @@ import {
   TableHead,
   TableRow
 } from '@mui/material'
+import 'easymde/dist/easymde.min.css'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import SendIcon from '@mui/icons-material/Send'
@@ -50,6 +51,86 @@ function TabPanel(props: TabPanelProps) {
     <div role='tabpanel' hidden={value !== index} {...other}>
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
+  )
+}
+
+// Simple markdown renderer component
+function MarkdownContent({ content }: { content: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (containerRef.current && content) {
+      // Simple markdown parsing
+      let html = content
+        // Headers
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        // Bold
+        .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+        // Code blocks
+        .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/gim, '<code>$1</code>')
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+        // Images
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;" />')
+        // Line breaks
+        .replace(/\n\n/gim, '</p><p>')
+        .replace(/\n/gim, '<br />')
+        // Lists
+        .replace(/^\* (.*$)/gim, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+
+      containerRef.current.innerHTML = `<p>${html}</p>`
+    }
+  }, [content])
+
+  return (
+    <Box
+      ref={containerRef}
+      sx={{
+        '& h1': { fontSize: '2rem', fontWeight: 700, mb: 2, mt: 2 },
+        '& h2': { fontSize: '1.5rem', fontWeight: 600, mb: 1.5, mt: 2 },
+        '& h3': { fontSize: '1.25rem', fontWeight: 600, mb: 1, mt: 1.5 },
+        '& p': { mb: 2, lineHeight: 1.7 },
+        '& code': {
+          bgcolor: '#f5f5f7',
+          color: '#d14',
+          px: 0.5,
+          py: 0.25,
+          borderRadius: 0.5,
+          fontFamily: 'monospace',
+          fontSize: '0.875rem',
+        },
+        '& pre': {
+          bgcolor: '#1e1e1e',
+          color: '#d4d4d4',
+          p: 2,
+          borderRadius: 1,
+          overflow: 'auto',
+          mb: 2,
+        },
+        '& pre code': {
+          bgcolor: 'transparent',
+          color: 'inherit',
+          px: 0,
+          py: 0,
+        },
+        '& a': {
+          color: 'primary.main',
+          textDecoration: 'none',
+          '&:hover': { textDecoration: 'underline' },
+        },
+        '& ul': { pl: 3, mb: 2 },
+        '& li': { mb: 0.5 },
+        '& strong': { fontWeight: 600 },
+        '& img': { maxWidth: '100%', height: 'auto', borderRadius: 1, my: 2 },
+      }}
+    />
   )
 }
 
@@ -236,7 +317,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
           
           setTimeout(() => poll(), 2000)
         } else {
-          let resultText = isSubmit ? '🎉 Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
+          let resultText = isSubmit ? 'Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
           resultText += `Submission ID: ${submission.submissionId}\n`
           resultText += `Status: ${submission.status}\n`
           resultText += `Thời gian: ${submission.totalTime}ms\n`
@@ -438,9 +519,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Mô tả
               </Typography>
-              <Typography variant='body1' sx={{ mb: 3, whiteSpace: 'pre-line' }}>
-                {problem.statement || 'Chưa có đề bài chi tiết'}
-              </Typography>
+              <MarkdownContent content={problem.statement || 'Chưa có đề bài chi tiết'} />
 
               {(problem.inputFormat || problem.outputFormat) && (
                 <Box sx={{ mb: 3 }}>
@@ -449,9 +528,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                       <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                         Định dạng Input
                       </Typography>
-                      <Typography variant='body2' sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-                        {problem.inputFormat}
-                      </Typography>
+                      <MarkdownContent content={problem.inputFormat} />
                     </>
                   )}
                   {problem.outputFormat && (
@@ -459,9 +536,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                       <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                         Định dạng Output
                       </Typography>
-                      <Typography variant='body2' sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-                        {problem.outputFormat}
-                      </Typography>
+                      <MarkdownContent content={problem.outputFormat} />
                     </>
                   )}
                 </Box>
@@ -486,9 +561,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                   />
                 </Box>
                 {problem.constraints && (
-                  <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
-                    {problem.constraints}
-                  </Typography>
+                  <MarkdownContent content={problem.constraints} />
                 )}
               </Box>
 
@@ -569,9 +642,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                 Hướng dẫn giải
               </Typography>
               {problem.solution ? (
-                <Typography variant='body2' sx={{ whiteSpace: 'pre-line' }}>
-                  {problem.solution}
-                </Typography>
+                <MarkdownContent content={problem.solution} />
               ) : (
                 <Typography variant='body2' color='text.secondary'>
                   Nội dung hướng dẫn sẽ được cập nhật sau...
@@ -701,7 +772,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
               height: '200px',
               borderTop: '2px solid',
               borderColor: 'primary.main',
-              bgcolor: '#252526',
+              bgcolor: '#ffffff',
               borderRadius: 0,
               overflow: 'auto',
               position: 'relative'
@@ -718,7 +789,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: 'rgba(37, 37, 38, 0.95)',
+                  bgcolor: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(2px)',
                   zIndex: 1,
                 }}
@@ -739,7 +810,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                 variant='body2'
                 sx={{
                   fontFamily: 'monospace',
-                  color: '#d4d4d4',
+                  color: '#1d1d1f',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word'
                 }}

@@ -40,7 +40,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Chưa có tag nào được gán cho bài toán này. Nhấn 'Quản lý Tags' để thêm tags." 
-                               Foreground="#1976D2" FontSize="14" TextWrapping="Wrap"/>
+                               Foreground="#1976D2" FontSize="16" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
@@ -57,7 +57,7 @@
                         <DataTemplate>
                             <Border Background="#FACB01" CornerRadius="15" Padding="12,6" Margin="0,0,8,8">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding}" Foreground="White" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding}" Foreground="White" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center"/>
                                     <Button Content="×" Foreground="White" Background="Transparent" 
                                             BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"
                                             FontSize="18" FontWeight="Bold"
