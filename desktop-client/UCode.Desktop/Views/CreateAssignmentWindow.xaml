@@ -31,7 +31,7 @@
             <StackPanel Margin="40">
                 <!-- Header -->
                 <TextBlock Text="Tạo bài tập mới" FontSize="28" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,5"/>
-                <TextBlock FontSize="14" Foreground="#666" Margin="0,0,0,30">
+                <TextBlock FontSize="16" Foreground="#666" Margin="0,0,0,30">
                     <Run Text="Lớp: "/>
                     <Run Text="{Binding ClassData.ClassName}" FontWeight="SemiBold"/>
                     <Run Text=" ("/>
@@ -43,10 +43,10 @@
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <!-- Assignment Type -->
-                        <TextBlock Text="Loại bài tập *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Loại bài tập *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <ComboBox ItemsSource="{Binding AssignmentTypes}"
                                   SelectedItem="{Binding AssignmentType}"
-                                  Height="40" FontSize="14" Margin="0,0,0,20">
+                                  Height="40" FontSize="16" Margin="0,0,0,20">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Converter={StaticResource AssignmentTypeDisplayConverter}}"/>
@@ -55,44 +55,44 @@
                         </ComboBox>
 
                         <!-- Title -->
-                        <TextBlock Text="Tên bài tập *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Tên bài tập *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="40" FontSize="14" Padding="10" Margin="0,0,0,20"/>
+                                 Height="40" FontSize="16" Padding="10" Margin="0,0,0,20"/>
 
                         <!-- Description -->
-                        <TextBlock Text="Mô tả" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Mô tả" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="120" FontSize="14" Padding="10" TextWrapping="Wrap"
+                                 Height="120" FontSize="16" Padding="10" TextWrapping="Wrap"
                                  AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
 
                         <!-- Start Time -->
-                        <TextBlock Text="Thời gian bắt đầu *" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
+                        <TextBlock Text="Thời gian bắt đầu *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <DatePicker SelectedDate="{Binding StartTime}"
-                                    Height="40" FontSize="14" Margin="0,0,0,20"/>
+                                    Height="40" FontSize="16" Margin="0,0,0,20"/>
 
                         <!-- No End Date -->
                         <CheckBox IsChecked="{Binding NoEndDate}"
                                   Content="Không có thời gian kết thúc"
-                                  FontSize="14" Foreground="#191970" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                                  FontSize="16" Foreground="#191970" FontWeight="SemiBold" Margin="0,0,0,15"/>
 
                         <!-- End Time -->
-                        <TextBlock Text="Thời gian kết thúc" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"
+                        <TextBlock Text="Thời gian kết thúc" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"
                                    Visibility="{Binding IsEndDateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <DatePicker SelectedDate="{Binding EndTime}"
-                                    Height="40" FontSize="14" Margin="0,0,0,20"
+                                    Height="40" FontSize="16" Margin="0,0,0,20"
                                     IsEnabled="{Binding IsEndDateEnabled}"
                                     Visibility="{Binding IsEndDateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                         <!-- Allow Late Submission -->
                         <CheckBox IsChecked="{Binding AllowLateSubmission}"
                                   Content="Cho phép nộp bài muộn"
-                                  FontSize="14" Foreground="#191970" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                                  FontSize="16" Foreground="#191970" FontWeight="SemiBold" Margin="0,0,0,20"/>
 
                         <!-- Info Alert -->
                         <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" CornerRadius="4" Padding="15" Margin="0,0,0,20">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Top"/>
-                                <TextBlock TextWrapping="Wrap" Foreground="#1976D2" FontSize="13">
+                                <TextBlock TextWrapping="Wrap" Foreground="#1976D2" FontSize="15">
                                     Sau khi tạo bài tập, bạn sẽ được chuyển đến trang quản lý bài tập để thêm các bài toán.
                                 </TextBlock>
                             </StackPanel>

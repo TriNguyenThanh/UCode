@@ -16,7 +16,7 @@
 
         <!-- Description -->
         <TextBlock Grid.Row="0" Text="Chọn sinh viên từ danh sách để thêm vào lớp" 
-                   Foreground="#666" FontSize="13" Margin="0,0,0,15"/>
+                   Foreground="#666" FontSize="15" Margin="0,0,0,15"/>
 
         <!-- Filters -->
         <Grid Grid.Row="1" Margin="0,0,0,15">
@@ -32,10 +32,10 @@
 
             <Grid Grid.Column="0">
                 <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="30,8,8,8" FontSize="13" Height="36"
+                         Padding="30,8,8,8" FontSize="15" Height="36"
                          x:Name="SearchTextBox"/>
                 <TextBlock IsHitTestVisible="False" Text="🔍 Tên, MSSV, hoặc Email" 
-                           Foreground="#999" Padding="10,10,0,0" FontSize="13"
+                           Foreground="#999" Padding="10,10,0,0" FontSize="15"
                            Visibility="{Binding ElementName=SearchTextBox, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </Grid>
 
@@ -44,21 +44,21 @@
                       ItemsSource="{Binding Years}"
                       DisplayMemberPath="Label"
                       SelectedValuePath="Value"
-                      FontSize="13" Height="36"/>
+                      FontSize="15" Height="36"/>
 
             <Grid Grid.Column="4">
                 <TextBox Text="{Binding MajorFilter, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="30,8,8,8" FontSize="13" Height="36"
+                         Padding="30,8,8,8" FontSize="15" Height="36"
                          x:Name="MajorTextBox"/>
                 <TextBlock IsHitTestVisible="False" Text="Ngành học" 
-                           Foreground="#999" Padding="10,10,0,0" FontSize="13"
+                           Foreground="#999" Padding="10,10,0,0" FontSize="15"
                            Visibility="{Binding ElementName=MajorTextBox, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </Grid>
 
             <ComboBox Grid.Column="6" 
                       SelectedValue="{Binding StatusFilter, Mode=TwoWay}"
                       SelectedValuePath="Tag"
-                      FontSize="13" Height="36">
+                      FontSize="15" Height="36">
                 <ComboBoxItem Content="Tất cả" Tag="" IsSelected="True"/>
                 <ComboBoxItem Content="✓ Active" Tag="Active"/>
                 <ComboBoxItem Content="○ Inactive" Tag="Inactive"/>
@@ -82,7 +82,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
-                    <TextBlock Text="Đang tải..." FontSize="14" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Đang tải..." FontSize="16" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Empty State -->
@@ -90,7 +90,7 @@
                            Visibility="{Binding HasNoStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <TextBlock Text="Không có sinh viên available" 
-                               Foreground="#999" FontSize="14" 
+                               Foreground="#999" FontSize="16" 
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
@@ -176,7 +176,7 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock FontWeight="SemiBold" FontSize="11">
+                                        <TextBlock FontWeight="SemiBold" FontSize="12">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
@@ -211,14 +211,14 @@
 
             <!-- Pagination Info -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Hiển thị:" Foreground="#666" FontSize="13" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="Hiển thị:" Foreground="#666" FontSize="15" VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <ComboBox SelectedValue="{Binding PageSize, Mode=TwoWay}" 
-                          SelectedValuePath="Tag" Width="70" Height="36" FontSize="13">
+                          SelectedValuePath="Tag" Width="70" Height="36" FontSize="15">
                     <ComboBoxItem Content="10" Tag="10" IsSelected="True"/>
                     <ComboBoxItem Content="25" Tag="25"/>
                     <ComboBoxItem Content="50" Tag="50"/>
                 </ComboBox>
-                <TextBlock VerticalAlignment="Center" Margin="15,0,15,0" Foreground="#666" FontSize="13">
+                <TextBlock VerticalAlignment="Center" Margin="15,0,15,0" Foreground="#666" FontSize="15">
                     <Run Text="{Binding PaginationText, Mode=OneWay}"/>
                 </TextBlock>
                 <Button Content="❮" 
@@ -235,9 +235,9 @@
             <!-- Action -->
             <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Border Background="#F0F7FF" CornerRadius="6" Padding="12,8" Margin="0,0,15,0">
-                    <TextBlock VerticalAlignment="Center" Foreground="#1976D2" FontSize="13">
+                    <TextBlock VerticalAlignment="Center" Foreground="#1976D2" FontSize="15">
                         <Run Text="Đã chọn:"/>
-                        <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="Bold" FontSize="14"/>
+                        <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="Bold" FontSize="16"/>
                         <Run Text=" sinh viên"/>
                     </TextBlock>
                 </Border>

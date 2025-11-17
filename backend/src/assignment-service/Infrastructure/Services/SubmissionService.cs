@@ -62,7 +62,7 @@ public class SubmissionService : ISubmissionService
             }
             
             submission.SubmissionId = Guid.NewGuid();
-            submission.SubmittedAt = DateTime.Now;
+            submission.SubmittedAt = DateTime.UtcNow;
 
             var assignment = await _assignmentService.GetAssignmentByIdAsync(submission.AssignmentId ?? Guid.Empty);
             if (assignment != null)
@@ -76,7 +76,7 @@ public class SubmissionService : ISubmissionService
                     submission.isSubmitLate = false;
                 }
 
-                if (!assignment.AllowLateSubmission)
+                if (!assignment.AllowLateSubmission && submission.isSubmitLate)
                 {
                     submission.Status = SubmissionStatus.Failed;
                     submission.ErrorMessage = "Late submissions are not allowed for this assignment.";

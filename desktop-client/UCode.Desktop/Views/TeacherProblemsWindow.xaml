@@ -80,7 +80,7 @@
 
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Quản lý đề bài" Foreground="#FACB01" FontSize="28" FontWeight="Bold"/>
-                        <TextBlock Text="Tạo và quản lý các đề bài của bạn" Foreground="White" FontSize="14" Opacity="0.8" Margin="0,5,0,0"/>
+                        <TextBlock Text="Tạo và quản lý các đề bài của bạn" Foreground="White" FontSize="16" Opacity="0.8" Margin="0,5,0,0"/>
                     </StackPanel>
 
                     <Button Grid.Column="1" Content="+ Tạo đề bài mới" Style="{StaticResource PrimaryButtonStyle}" 
@@ -106,7 +106,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                                 Padding="10" FontSize="14" VerticalContentAlignment="Center"
+                                 Padding="10" FontSize="16" VerticalContentAlignment="Center"
                                  Margin="0,0,10,0">
                             <TextBox.Style>
                                 <Style TargetType="TextBox">
@@ -123,11 +123,11 @@
 
                         <ComboBox Grid.Column="1" ItemsSource="{Binding Difficulties}" 
                                   SelectedItem="{Binding SelectedDifficulty}"
-                                  Padding="10" FontSize="14" Margin="0,0,10,0"/>
+                                  Padding="10" FontSize="16" Margin="0,0,10,0"/>
 
                         <ComboBox Grid.Column="2" ItemsSource="{Binding Statuses}" 
                                   SelectedItem="{Binding SelectedStatus}"
-                                  Padding="10" FontSize="14" Margin="0,0,10,0"/>
+                                  Padding="10" FontSize="16" Margin="0,0,10,0"/>
 
                         <Button Grid.Column="3" Content="⟳ Làm mới" Style="{StaticResource PrimaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"/>
@@ -193,7 +193,7 @@
                                         <Border Background="{Binding DifficultyColor, Converter={StaticResource ColorToBrushConverter}}" 
                                                 CornerRadius="4" Padding="8,4">
                                             <TextBlock Text="{Binding Difficulty}" Foreground="White" 
-                                                       FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center"/>
+                                                       FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -205,7 +205,7 @@
                                         <Border Background="{Binding StatusColor, Converter={StaticResource ColorToBrushConverter}}" 
                                                 CornerRadius="4" Padding="8,4">
                                             <TextBlock Text="{Binding Status}" Foreground="White" 
-                                                       FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center"/>
+                                                       FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -255,10 +255,10 @@
                             Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
                     <Border Background="#F8F9FA" CornerRadius="4" Padding="15,8" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Trang " FontSize="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                            <TextBlock Text=" / " FontSize="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TotalPages}" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Trang " FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text=" / " FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TotalPages}" FontSize="16" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Button Content="Trang sau ▶" Command="{Binding NextPageCommand}" 

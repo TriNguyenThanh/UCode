@@ -1,17 +1,23 @@
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using UCode.Desktop.Services;
+using UCode.Desktop.Helpers;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+
 namespace UCode.Desktop.Views
 {
     public partial class TeacherHomeWindow : MetroWindow
     {
         private readonly NavigationService _navigationService;
+        private readonly AuthService _authService;
 
-        public TeacherHomeWindow(NavigationService navigationService)
+        public TeacherHomeWindow(NavigationService navigationService, AuthService authService)
         {
             InitializeComponent();
             
             _navigationService = navigationService;
+            _authService = authService;
             
             // Set up navigation frame
             _navigationService.SetFrame(NavigationFrame);
@@ -28,15 +34,63 @@ namespace UCode.Desktop.Views
                 var homePage = App.ServiceProvider?.GetService(typeof(Pages.TeacherHomePage)) as Pages.TeacherHomePage;
                 if (homePage != null)
                 {
-                    // Set user name from ViewModel
+                    // Set user name and email from ViewModel
                     if (homePage.DataContext is ViewModels.TeacherHomeViewModel viewModel)
                     {
                         UserNameText.Text = viewModel.TeacherName;
+                        UserEmailText.Text = _authService.CurrentUser?.Email ?? "teacher@ucode.io.vn";
                     }
                     
                     _navigationService.NavigateTo(homePage);
                 }
             };
+        }
+
+        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.IsOpen = !UserMenuPopup.IsOpen;
+        }
+
+        private void ProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.IsOpen = false;
+            // TODO: Navigate to profile page
+            this.ShowMessageAsync("Hồ sơ", "Tính năng Hồ sơ đang được phát triển.");
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.IsOpen = false;
+            // TODO: Navigate to settings page
+            this.ShowMessageAsync("Cài đặt", "Tính năng Cài đặt đang được phát triển.");
+        }
+
+        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.IsOpen = false;
+            
+            var result = await this.ShowMessageAsync(
+                "Đăng xuất",
+                "Bạn có chắc chắn muốn đăng xuất?",
+                MessageDialogStyle.AffirmativeAndNegative,
+                new MetroDialogSettings
+                {
+                    AffirmativeButtonText = "Đăng xuất",
+                    NegativeButtonText = "Hủy",
+                    DefaultButtonFocus = MessageDialogResult.Negative
+                });
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                // Clear user session
+                _authService.Logout();
+                
+                // Close this window and show login
+                var loginViewModel = App.ServiceProvider?.GetService(typeof(ViewModels.LoginViewModel)) as ViewModels.LoginViewModel;
+                var loginWindow = new LoginWindow(loginViewModel, _authService);
+                loginWindow.Show();
+                this.Close();
+            }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

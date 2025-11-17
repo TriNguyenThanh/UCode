@@ -295,7 +295,7 @@ public class SubmissionController : ControllerBase
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
     /// chỉ dành cho student xem best submission của mình thôi
-    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best")]
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/my-best")]
     [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]

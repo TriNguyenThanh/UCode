@@ -32,7 +32,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import CodeIcon from '@mui/icons-material/Code'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { Submission, TestcaseStatus } from '~/types'
 import { getSubmission } from '~/services/submissionService'
 import { TestCaseResultDialog } from './TestCaseResultDialog'
@@ -183,37 +183,33 @@ export function SubmissionHistory({
 
   const handleViewDetail = async (submission: Submission) => {
     setDetailDialogOpen(true)
-    setSelectedSubmission(submission)
     setLoadingDetail(true)
 
-  //   try {
-  //     If sourceCode already exists in submission, use it directly
-  //     if (submission.sourceCodeRef) {
-  //       setSelectedSubmission({
-  //         ...submission,
-  //         sourceCode: submission.sourceCodeRef,
-  //       })
-  //       setLoadingDetail(false)
-  //       return
-  //     }
+    try {
+      // sourceCode is already in submission from API response
+      if (submission.sourceCode) {
+        setSelectedSubmission(submission)
+        setLoadingDetail(false)
+        return
+      }
 
-  //     // Otherwise, fetch full submission details from API
-  //     const fullSubmission = await getSubmission(submission.submissionId)
+      // If sourceCode not available, fetch full submission details from API
+      const fullSubmission = await getSubmission(submission.submissionId)
       
-  //     setSelectedSubmission({
-  //       ...submission,
-  //       ...fullSubmission,
-  //       sourceCode: fullSubmission.sourceCodeRef || '// Source code not available',
-  //     })
-  //   } catch (error) {
-  //     console.error('Failed to fetch source code:', error)
-  //     setSelectedSubmission({
-  //       ...submission,
-  //       sourceCode: '// Failed to load source code',
-  //     })
-  //   } finally {
-  //     setLoadingDetail(false)
-  //   }
+      setSelectedSubmission({
+        ...submission,
+        ...fullSubmission,
+        sourceCode: fullSubmission.sourceCode || '// Source code not available',
+      })
+    } catch (error) {
+      console.error('Failed to fetch source code:', error)
+      setSelectedSubmission({
+        ...submission,
+        sourceCode: '// Failed to load source code',
+      })
+    } finally {
+      setLoadingDetail(false)
+    }
   }
 
   const handleCloseDetail = () => {
@@ -286,7 +282,7 @@ export function SubmissionHistory({
                         },
                       }}
                     >
-                      {sub.passedTestcase}/{sub.totalTestcase}
+                      {sub.score}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">{sub.totalTime}</TableCell>
@@ -391,7 +387,7 @@ export function SubmissionHistory({
                           : 'error.main'
                       }}
                     >
-                      {selectedSubmission.passedTestcase}/{selectedSubmission.totalTestcase} test cases
+                      {selectedSubmission.score}
                     </Typography>
                   </Box>
                   
@@ -439,7 +435,7 @@ export function SubmissionHistory({
                   <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
                     <SyntaxHighlighter
                       language={getLanguageForHighlight(selectedSubmission.languageCode)}
-                      style={vscDarkPlus as any}
+                      style={vs as any}
                       showLineNumbers
                       customStyle={{
                         margin: 0,

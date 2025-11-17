@@ -106,7 +106,7 @@ export interface ResetPasswordRequest {
 
 export interface Class {
   classId: string // Backend: ClassId (Guid)
-  className: string // Backend: ClassName
+  className: string 
   classCode: string // Backend: ClassCode
   teacherId: string
   teacherName: string
@@ -119,6 +119,7 @@ export interface Class {
   isArchived?: boolean
   archivedAt?: string
   archiveReason?: string
+  name?: string // Backend: Name
 }
 
 export interface CreateClassRequest {

@@ -37,7 +37,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="⚠" Foreground="#FF9500" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Chưa có dataset nào. Nhấn 'Thêm Dataset' để tạo test cases." 
-                               Foreground="#856404" FontSize="14" TextWrapping="Wrap"/>
+                               Foreground="#856404" FontSize="16" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
@@ -94,7 +94,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="11">
+                                                <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="12">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
@@ -120,14 +120,14 @@
 
                                     <!-- Test Case Count -->
                                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-                                        <TextBlock Text="✓" Foreground="#34C759" FontSize="14" Margin="0,0,5,0" VerticalAlignment="Center">
+                                        <TextBlock Text="✓" Foreground="#34C759" FontSize="16" Margin="0,0,5,0" VerticalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="#34C759"/>
                                                 </Style>
                                             </TextBlock.Style>
                                         </TextBlock>
-                                        <TextBlock Foreground="#666" FontSize="13">
+                                        <TextBlock Foreground="#666" FontSize="15">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="#666"/>

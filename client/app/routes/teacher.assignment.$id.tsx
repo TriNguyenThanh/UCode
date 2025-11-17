@@ -296,7 +296,7 @@ export default function TeacherAssignmentDetail() {
                   <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Tên bài</TableCell>
                   <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Độ khó</TableCell>
                   <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Điểm</TableCell>
-                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Submission</TableCell>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Bài nộp</TableCell>
                   <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="center">Thao tác</TableCell>
                 </TableRow>
               </TableHead>

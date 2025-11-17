@@ -16,7 +16,7 @@
 
         <!-- Description -->
         <TextBlock Grid.Row="0" Text="Import sinh viên từ file Excel. Tải xuống file mẫu để bắt đầu." 
-                   Foreground="#666" FontSize="14" Margin="0,0,0,15"/>
+                   Foreground="#666" FontSize="16" Margin="0,0,0,15"/>
 
         <!-- Stepper -->
         <Grid Grid.Row="1" Margin="0,0,0,30">
@@ -51,7 +51,7 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Tải file" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Tải file" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Step 2 -->
@@ -76,7 +76,7 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Kiểm tra dữ liệu" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Kiểm tra dữ liệu" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Step 3 -->
@@ -98,7 +98,7 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Xác nhận và Import" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Xác nhận và Import" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
@@ -120,7 +120,7 @@
                     <Button Content="TẢI XUỐNG FILE MẪU" 
                             Background="White" Foreground="#FACB01" 
                             BorderBrush="#FACB01" BorderThickness="2"
-                            FontSize="14" FontWeight="Bold"
+                            FontSize="16" FontWeight="Bold"
                             Padding="20,12"
                             Command="{Binding DownloadTemplateCommand}"
                             Margin="0,0,0,15"
@@ -129,7 +129,7 @@
                     <Button Content="TẢI LÊN FILE EXCEL" 
                             Background="#FACB01" Foreground="#003A70" 
                             BorderThickness="0"
-                            FontSize="14" FontWeight="Bold"
+                            FontSize="16" FontWeight="Bold"
                             Padding="20,12"
                             Command="{Binding UploadFileCommand}"
                             Height="45" Cursor="Hand"/>
@@ -138,7 +138,7 @@
                     <StackPanel HorizontalAlignment="Center" Margin="0,30,0,0"
                                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
-                        <TextBlock Text="Đang xử lý..." FontSize="14" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Đang xử lý..." FontSize="16" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -146,7 +146,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                            Visibility="{Binding IsStep1, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
-                    <TextBlock FontSize="14" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center">
+                    <TextBlock FontSize="16" Foreground="#666" Margin="0,15,0,0" HorizontalAlignment="Center">
                         <Run Text="Đang kiểm tra"/>
                         <Run Text="{Binding TotalStudents, Mode=OneWay}"/>
                         <Run Text=" sinh viên..."/>
@@ -223,7 +223,7 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -244,7 +244,7 @@
             <Button Grid.Column="0" Content="Làm lại" 
                     Background="White" Foreground="#666" 
                     BorderBrush="#E0E0E0" BorderThickness="1"
-                    FontSize="13" FontWeight="SemiBold"
+                    FontSize="15" FontWeight="SemiBold"
                     Padding="15,10"
                     Command="{Binding ResetCommand}"
                     Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -255,7 +255,7 @@
                     Content="{Binding ImportButtonText}" 
                     Background="#FACB01" Foreground="#003A70" 
                     BorderThickness="0"
-                    FontSize="14" FontWeight="Bold"
+                    FontSize="16" FontWeight="Bold"
                     Padding="20,12"
                     Command="{Binding ImportCommand}"
                     IsEnabled="{Binding CanImport}"

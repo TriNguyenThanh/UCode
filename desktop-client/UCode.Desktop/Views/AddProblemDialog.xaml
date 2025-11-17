@@ -45,7 +45,7 @@
                         <TextBlock Text="Thêm bài vào assignment" Foreground="#FACB01" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                         <Border Background="#FACB01" CornerRadius="12" Padding="10,5" Margin="15,0,0,0"
                                 Visibility="{Binding HasSelectedProblems, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Foreground="#003A70" FontWeight="SemiBold" FontSize="12">
+                            <TextBlock Foreground="#003A70" FontWeight="SemiBold" FontSize="13">
                                 <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
                                 <Run Text=" bài được chọn"/>
                             </TextBlock>
@@ -102,14 +102,14 @@
                         <TextBox Grid.Column="0" 
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  mah:TextBoxHelper.Watermark="🔍 Tìm kiếm theo tên, code, hoặc ID..."
-                                 FontSize="14"
+                                 FontSize="16"
                                  Padding="10"/>
 
                         <ComboBox Grid.Column="2" 
                                   SelectedItem="{Binding DifficultyFilter, Mode=TwoWay}"
                                   DisplayMemberPath="Label"
                                   SelectedValuePath="Value"
-                                  FontSize="14">
+                                  FontSize="16">
                             <ComboBox.ItemsSource>
                                 <x:Array Type="{x:Type local:FilterOption}">
                                     <local:FilterOption Label="Tất cả" Value="all"/>
@@ -127,7 +127,7 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Chọn các bài cần thêm vào assignment. Mặc định điểm tối đa là 100 điểm, bạn có thể chỉnh sửa sau." 
-                                       Foreground="#1976D2" FontSize="13" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                       Foreground="#1976D2" FontSize="15" TextWrapping="Wrap" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -189,7 +189,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock Text="{Binding Difficulty}" Foreground="White" FontWeight="SemiBold" FontSize="11"/>
+                                                <TextBlock Text="{Binding Difficulty}" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -207,7 +207,7 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border BorderBrush="#D2D2D7" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,3,3">
-                                                            <TextBlock Text="{Binding}" FontSize="10" Foreground="#666"/>
+                                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#666"/>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -225,7 +225,7 @@
                                                            Visibility="{Binding IsEditingPoints, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <TextBox Text="{Binding Points, UpdateSourceTrigger=PropertyChanged}" 
                                                              Width="60" 
-                                                             FontSize="12"
+                                                             FontSize="13"
                                                              Padding="5,2"
                                                              VerticalContentAlignment="Center"/>
                                                     <Button Content="✓" 
@@ -259,7 +259,7 @@
                                                             Foreground="#007bff"
                                                             Background="Transparent"
                                                             BorderThickness="0"
-                                                            FontSize="14"
+                                                            FontSize="16"
                                                             Padding="5"
                                                             Cursor="Hand"
                                                             IsEnabled="{Binding IsSelected}"

@@ -22,10 +22,11 @@ namespace UCode.Desktop.ViewModels
         public string DifficultyColor { get; set; } = string.Empty;
     }
 
-    public class AssignmentStudentItem
+    public class AssignmentUserItem
     {
         public string UserId { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public string StudentCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public DateTime? StartedAt { get; set; }
@@ -41,6 +42,7 @@ namespace UCode.Desktop.ViewModels
         private readonly AssignmentService _assignmentService;
         private readonly ClassService _classService;
         private readonly ProblemService _problemService;
+        private readonly NavigationService _navigationService;
         private bool _isLoading;
         private string _error = string.Empty;
         private string _assignmentId = string.Empty;
@@ -81,7 +83,7 @@ namespace UCode.Desktop.ViewModels
         }
 
         public ObservableCollection<AssignmentProblemItem> Problems { get; } = new();
-        public ObservableCollection<AssignmentStudentItem> Students { get; } = new();
+        public ObservableCollection<AssignmentUserItem> Students { get; } = new();
 
         public int ProblemsCount
         {
@@ -105,21 +107,27 @@ namespace UCode.Desktop.ViewModels
         public ICommand GradeAssignmentCommand { get; }
         public ICommand ViewProblemCommand { get; }
         public ICommand ViewStudentCommand { get; }
+        public ICommand ViewSubmissionsCommand { get; }
+        public ICommand DeleteProblemCommand { get; }
 
         public TeacherAssignmentViewModel(
             AssignmentService assignmentService,
             ClassService classService,
-            ProblemService problemService)
+            ProblemService problemService,
+            NavigationService navigationService)
         {
             _assignmentService = assignmentService;
             _classService = classService;
             _problemService = problemService;
+            _navigationService = navigationService;
 
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             EditAssignmentCommand = new RelayCommand(_ => ExecuteEditAssignment());
             GradeAssignmentCommand = new RelayCommand(_ => ExecuteGradeAssignment());
             ViewProblemCommand = new RelayCommand(param => ExecuteViewProblem(param as string ?? ""));
             ViewStudentCommand = new RelayCommand(param => ExecuteViewStudent(param as string ?? ""));
+            ViewSubmissionsCommand = new RelayCommand(param => ExecuteViewSubmissions(param as string ?? ""));
+            DeleteProblemCommand = new RelayCommand(async param => await ExecuteDeleteProblem(param as string ?? ""));
         }
 
         public async Task InitializeAsync(string assignmentId)
@@ -211,22 +219,45 @@ namespace UCode.Desktop.ViewModels
 
             try
             {
-                var response = await _assignmentService.GetAssignmentStudentsAsync(_assignmentId);
-                if (response?.Success == true && response.Data != null)
+                if (Assignment == null) return;
+
+                var classStudentsResponse = await _classService.GetClassStudentsAsync(Assignment.ClassId);
+                
+                var assignmentStudentsResponse = await _assignmentService.GetAssignmentStudentsAsync(_assignmentId);
+
+                if (classStudentsResponse?.Success == true && classStudentsResponse.Data != null)
                 {
-                    foreach (var student in response.Data)
+                    var assignmentStudentsDict = new System.Collections.Generic.Dictionary<string, AssignmentUser>();
+                    if (assignmentStudentsResponse?.Success == true && assignmentStudentsResponse.Data != null)
                     {
-                        Students.Add(new AssignmentStudentItem
+                        foreach (var assignmentStudent in assignmentStudentsResponse.Data)
                         {
-                            UserId = student.UserId,
-                            FullName = student.User?.FullName ?? "N/A",
-                            StudentCode = student.User?.StudentCode ?? "N/A",
-                            Status = GetUserStatusDisplay(student.Status.ToString()),
-                            StartedAt = student.StartedAt,
-                            SubmittedAt = null, // Can be derived from status
-                            Score = student.Score,
-                            MaxScore = student.MaxScore,
-                            StatusColor = GetUserStatusColor(student.Status.ToString())
+                            assignmentStudentsDict[assignmentStudent.UserId] = assignmentStudent;
+                        }
+                    }
+
+                    foreach (var classStudent in classStudentsResponse.Data)
+                    {
+                        var assignmentStudent = assignmentStudentsDict.ContainsKey(classStudent.UserId) 
+                            ? assignmentStudentsDict[classStudent.UserId] 
+                            : null;
+
+                        Students.Add(new AssignmentUserItem
+                        {
+                            UserId = classStudent.UserId,
+                            FullName = classStudent.FullName ?? "N/A",
+                            Email = classStudent.Email ?? "N/A",
+                            StudentCode = classStudent.StudentCode ?? "N/A",
+                            Status = assignmentStudent != null
+                                ? GetUserStatusDisplay(assignmentStudent.Status.ToString())
+                                : "Chưa tham gia",
+                            StartedAt = assignmentStudent?.StartedAt,
+                            SubmittedAt = null,
+                            Score = assignmentStudent?.Score,
+                            MaxScore = assignmentStudent?.MaxScore,
+                            StatusColor = assignmentStudent != null
+                                ? GetUserStatusColor(assignmentStudent.Status.ToString())
+                                : "#6c757d"
                         });
                     }
 
@@ -280,6 +311,52 @@ namespace UCode.Desktop.ViewModels
                 await GetMetroWindow()?.ShowMessageAsync(
                     "Thông báo",
                     $"Xem chi tiết sinh viên: {userId}\n\nChức năng đang được phát triển.");
+            }
+        }
+
+        private void ExecuteViewSubmissions(string problemId)
+        {
+            if (string.IsNullOrEmpty(problemId) || string.IsNullOrEmpty(_assignmentId))
+            {
+                return;
+            }
+
+            // Navigate to TeacherProblemSubmissionsPage
+            var submissionsViewModel = new TeacherProblemSubmissionsViewModel(
+                _assignmentService,
+                App.ServiceProvider.GetService(typeof(SubmissionService)) as SubmissionService,
+                _problemService,
+                _classService,
+                _navigationService);
+
+            var submissionsPage = new Pages.TeacherProblemSubmissionsPage(submissionsViewModel);
+            var parameters = new { assignmentId = _assignmentId, problemId = problemId };
+            _navigationService.NavigateTo(submissionsPage, parameters);
+        }
+
+        private async Task ExecuteDeleteProblem(string problemId)
+        {
+            if (string.IsNullOrEmpty(problemId))
+            {
+                return;
+            }
+
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận xóa",
+                "Bạn có chắc chắn muốn xóa bài này khỏi assignment?",
+                MessageDialogStyle.AffirmativeAndNegative,
+                new MetroDialogSettings
+                {
+                    AffirmativeButtonText = "Xóa",
+                    NegativeButtonText = "Hủy",
+                    DefaultButtonFocus = MessageDialogResult.Negative
+                });
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                await GetMetroWindow()?.ShowMessageAsync(
+                    "Thông báo",
+                    "Chức năng xóa bài đang được phát triển.");
             }
         }
 
