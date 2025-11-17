@@ -334,13 +334,15 @@ public class SubmissionController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetBestSubmissionByUser(Guid assignmentId, Guid problemId, Guid userId)
     {
-        var bestSubmission = await _submissionService.GetBestSubmission(assignmentId, problemId, userId);
-        
-        if (bestSubmission == null)
-            return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Best submission not found"));
+        var submission = await _submissionService.GetSubmission(request.SubmissionId);
 
-        var response = _mapper.Map<BestSubmissionResponse>(bestSubmission);
-        return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Best submission retrieved successfully"));
+        if (submission == null)
+            return NotFound(ApiResponse<Submission>.ErrorResponse("Best submission not found"));
+        submission.Score = request.NewScore;
+        submission.Comment = request.Comment;
+        await _submissionService.UpdateSubmissionByTeacher(submission);
+        var response = _mapper.Map<Submission>(submission);
+        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission retrieved successfully"));
     }
 
 }

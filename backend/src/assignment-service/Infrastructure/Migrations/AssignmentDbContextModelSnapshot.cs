@@ -855,6 +855,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(4000)")
                         .HasColumnName("language_code");
 
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("language_code");
+
                     b.Property<Guid>("LanguageId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("language_id");
