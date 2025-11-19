@@ -133,6 +133,7 @@ public partial class App : Application
         services.AddSingleton<DatasetService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<NavigationService>();
+        services.AddSingleton<AIDetectorService>();
 
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
@@ -154,6 +155,7 @@ public partial class App : Application
         services.AddTransient<TestCaseEditViewModel>();
         services.AddTransient<AddProblemDialogViewModel>();
         services.AddTransient<AddStudentDialogViewModel>();
+        services.AddTransient<CreateClassViewModel>();
         services.AddTransient<VisualSelectTabViewModel>();
         services.AddTransient<ImportExcelTabViewModel>();
 
@@ -169,6 +171,7 @@ public partial class App : Application
         // services.AddTransient<TeacherAssignmentWindow>(); // ← Đã chuyển sang Page
         services.AddTransient<TeacherAssignmentEditWindow>();
         services.AddTransient<CreateAssignmentWindow>();
+        services.AddTransient<CreateClassDialog>();
         // services.AddTransient<ProblemCreateWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<ProblemEditWindow>(); // ← Đã chuyển sang Page
 

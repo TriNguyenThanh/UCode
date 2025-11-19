@@ -4,39 +4,104 @@ config:
 ---
 erDiagram
     %% ================================
-    %% 1️⃣ ASSIGNMENT & STUDENT FLOW
+    %% EXISTING RELATIONSHIPS
     %% ================================
+    users ||--|| admins : "is_admin"
+    users ||--|| students : "is_student"
+    users ||--|| teachers : "is_teacher"
+    users ||--o{ refresh_tokens : "has_tokens"
+    teachers ||--o{ classes : "owns_class"
+    classes ||--o{ user_classes : "enrollment"
+    students ||--o{ user_classes : "enrolled_in"
+    classes ||--o{ Assignment : "has_assignments"
     Assignment ||--o{ AssignmentProblem : "contains"
     Assignment ||--o{ AssignmentUser : "assigned_to"
+    users ||--o{ AssignmentUser : "participates_in"
+    users ||--o{ Assignment : "created_by"
+    users ||--o{ Problem : "owns_problem"
     Problem ||--o{ AssignmentProblem : "included_in"
-
-
-    %% ================================
-    %% 2️⃣ CHẤM CODE & TESTCASE
-    %% ================================
+    Problem ||--o{ ProblemAsset : "has_asset"
+    Problem ||--o{ ProblemTag : "tagged"
+    Tag ||--o{ ProblemTag : "used_in"
+    Problem ||--o{ ProblemLanguage : "has_language_override"
+    Language ||--o{ ProblemLanguage : "overridden_in"
     Problem ||--o{ Dataset : "has_dataset"
-    Dataset ||--o{ TestCaseFile : "stored_in_file"
-    %% ================================
-    %% 3️⃣ BEST SUBMISSION & SUBMISSIONS
-    %% ================================
-    AssignmentUser ||--o{ Submission : "has_submissions"
+    Dataset ||--o{ TestCase : "stored_in_file"
+    Assignment ||--o{ Submission : "has_submissions"
+    users ||--o{ Submission : "submitted_by"
     Problem ||--o{ Submission : "submitted_for"
     Dataset ||--o{ Submission : "tested_against"
 
     %% ================================
-    %% 4️⃣ PROBLEM META
+    %% 🆕 NEW RELATIONSHIPS (ATTENDANCE)
     %% ================================
-    Problem ||--o{ ProblemAsset : "has_asset"
-    Problem ||--o{ ProblemLanguage : "has_language_override"
-    Language ||--o{ ProblemLanguage : "overridden_in"
-    Problem ||--o{ ProblemTag : "tagged"
-    Tag ||--o{ ProblemTag : "used_in"
+    classes ||--o{ AttendanceSession : "has_sessions"
+    AttendanceSession ||--o{ AttendanceRecord : "contains_records"
+    users ||--o{ AttendanceRecord : "performs_attendance"
 
     %% ================================
     %% ENTITY DEFINITIONS
     %% ================================
+    users {
+        UUID user_id PK
+        nvarchar_50_ username
+        nvarchar_100_ email
+        nvarchar_500_ password_hash
+        nvarchar_100_ full_name
+        int role
+        int status
+        datetime2 created_at
+        datetime2 updated_at
+        datetime2 last_login_at
+    }
+    students {
+        UUID user_id PK, FK
+        nvarchar_20_ student_code
+        int enrollment_year
+        nvarchar_100_ major
+        int class_year
+    }
+    teachers {
+        UUID user_id PK, FK
+        nvarchar_20_ teacher_code
+        nvarchar_100_ department
+        nvarchar_50_ title
+        nvarchar_15_ phone
+    }
+    admins {
+        UUID user_id PK, FK
+    }
+    classes {
+        UUID class_id PK
+        nvarchar_100_ name
+        nvarchar_500_ description
+        nvarchar_10_ class_code
+        bit is_active
+        bit is_archived
+        nvarchar_500_ archive_reason
+        datetime2 created_at
+        datetime2 updated_at
+        datetime2 archived_at
+        UUID teacher_id FK
+    }
+    user_classes {
+        UUID student_id PK, FK
+        UUID class_id PK, FK
+        datetime2 joined_at
+        bit is_active
+    }
+    refresh_tokens {
+        UUID refresh_token_id PK
+        nvarchar_500_ token
+        UUID user_id FK
+        datetime2 created_at
+        datetime2 expires_at
+        int status
+    }
     Assignment {
         UUID id PK
+        UUID class_id FK "Links to classes table"
+        UUID assigned_by FK "Links to users/teachers"
         nvarchar_50_ assignment_type
         nvarchar_200_ title
         nvarchar_2000_ description
@@ -45,139 +110,131 @@ erDiagram
         int total_points
         bit allow_late_submission
         nvarchar_50_ status
-        UUID class_id FK
-        UUID assigned_by FK
         datetime2 created_at
         datetime2 assigned_at
     }
-
     AssignmentUser {
         UUID id PK
         UUID assignment_id FK
-        UUID user_id FK
+        UUID user_id FK "Links to users table"
         nvarchar_50_ status
-        datetime2 assigned_at
-        datetime2 started_at
-        int tab_switch_count "Default 0"
-        int captured_ai_count "Default 0"
         int score
         int max_score
+        datetime2 started_at
+        int tab_switch_count
+        int capture_ai_count
+        string ai_detection_details
     }
-
     AssignmentProblem {
         UUID assignment_id PK, FK
         UUID problem_id PK, FK
         int points
         int order_index
     }
-
     Problem {
         UUID id PK
-        nvarchar50 code
-        nvarchar255 slug
-        nvarchar500 title
-        nvarchar16 difficulty
-        nvarchar16 visibility
-        nvarchar16 status
-        nvarchar1000 statement_md_ref
-        nvarchar50 input_format
-        nvarchar50 output_format
-        nvarchar50 constraints
-        nvarchar1000 description
-        nvarchar1000 solution
+        UUID owner_id FK "Links to users/teachers"
+        nvarchar_50_ code
+        nvarchar_255_ slug
+        nvarchar_500_ title
+        nvarchar_16_ difficulty
+        nvarchar_16_ visibility
+        nvarchar_1000_ statement_md_ref
         int max_score
         int time_limit_ms
         int memory_limit_kb
-        int source_limit_kb
-        int stack_limit_kb
         bit is_locked
         datetime2 created_at
         datetime2 updated_at
-        UUID owner_id FK
     }
-
-    ProblemTag {
-        UUID problem_id PK, FK
-        UUID tag_id PK, FK
-    }
-
-    Tag {
+    Submission {
         UUID id PK
-        nvarchar_64_ name
-        nvarchar_16_ category
-    }
-
-    ProblemAsset {
-        UUID id PK
+        UUID assignment_id FK
+        UUID user_id FK "Links to users table"
         UUID problem_id FK
-        nvarchar_16_ type "IMAGE, VIDEO, PDF, STATEMENT, SOLUTION, TUTORIAL, HINT"
-        nvarchar_1000_ object_ref "S3/Blob URL or markdown content"
-        nvarchar_100_ checksum
-        nvarchar_255_ title "Optional: tên hiển thị"
-        nvarchar_16_ format "MARKDOWN, HTML, URL, TEXT"
-        int order_index "Thứ tự hiển thị"
-        datetime2 created_at
+        UUID dataset_id FK
+        nvarchar_50_ source_code_ref
+        nvarchar_50_ language
+        nvarchar_50_ status
+        int passed_testcase
+        int total_testcase
+        int score
+        bigint total_time
+        bigint total_memory
+        datetime2 submitted_at
     }
-
     Dataset {
         UUID id PK
         UUID problem_id FK
         nvarchar_100_ name
         nvarchar_16_ kind
     }
-
-    TestCaseFile {
+    TestCase {
         UUID id PK
         UUID dataset_id FK
         nvarchar_500_ input_ref
         nvarchar_500_ output_ref
         nvarchar_100_ score
     }
-
+    ProblemAsset {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_16_ type
+        nvarchar_1000_ object_ref
+        nvarchar_16_ format
+    }
+    ProblemTag {
+        UUID problem_id PK, FK
+        UUID tag_id PK, FK
+    }
+    Tag {
+        UUID id PK
+        nvarchar_64_ name
+        nvarchar_16_ category
+    }
     Language {
         UUID id PK
-        nvarchar_50_ code "cpp, java, python, javascript, csharp, rust, go..."
-        nvarchar_100_ display_name "C++17, Java 17, Python 3..."
-        decimal_5_2_ default_time_factor "Multiplier for time limit (Python=2.5, C++=1.0)"
-        int default_memory_kb "Default memory override (NULL = use problem default)"
-        nvarchar_max_ default_head "Default code template - imports/setup"
-        nvarchar_max_ default_body "Default code template - main function"
-        nvarchar_max_ default_tail "Default code template - test runner"
-        bit is_enabled "Admin can disable languages"
-        int display_order "Display order in UI"
-        datetime2 created_at
+        nvarchar_50_ code
+        nvarchar_100_ display_name
+        decimal_5_2_ default_time_factor
     }
-
     ProblemLanguage {
-        UUID problem_id PK, FK "Composite PK with language_id"
-        UUID language_id PK, FK "Composite PK with problem_id"
-        decimal_5_2_ time_factor_override "NULL = use Language.default_time_factor"
-        int memory_kb_override "NULL = use Language.default_memory_kb"
-        nvarchar_max_ head_override "NULL = use Language.default_head"
-        nvarchar_max_ body_override "NULL = use Language.default_body"
-        nvarchar_max_ tail_override "NULL = use Language.default_tail"
-        bit is_allowed 
+        UUID problem_id PK, FK
+        UUID language_id PK, FK
+        decimal_5_2_ time_factor_override
+        bit is_allowed
+    }
+
+    %% ================================
+    %% 🆕 ATTENDANCE ENTITIES
+    %% ================================
+    
+    AttendanceSession {
+        UUID id PK
+        UUID class_id FK "Lop duoc diem danh"
+        nvarchar_100_ title "VD: Diem danh tuan 1"
+        nvarchar_50_ session_code "Ma unique de tao URL diem danh"
+        datetime2 start_time "Thoi gian bat dau mo link"
+        datetime2 end_time "Thoi gian link het han"
+        bit require_ip_check "Cau hinh: Bat buoc check IP"
+        nvarchar_50_ allowed_ip_subnet "IP/Subnet cho phep (VD: 192.168.1.1/24)"
+        bit require_gps_check "Cau hinh: Bat buoc check GPS"
+        decimal_9_6_ allowed_latitude "Vi do cho phep"
+        decimal_9_6_ allowed_longitude "Kinh do cho phep"
+        int allowed_radius_meters "Ban kinh cho phep (met)"
+        bit is_active
         datetime2 created_at
     }
 
-    Submission {
+    AttendanceRecord {
         UUID id PK
-        UUID assignment_id FK
-        UUID user_id FK
-        UUID problem_id FK
-        UUID dataset_id FK
-        nvarchar_50_ source_code_ref
-        nvarchar_50_ language
-        nvarchar_255 compare_result
-        nvarchar_50_ status
-        nvarchar_255_ error_code
-        nvarchar_1000_ error_message
-        int total_testcase
-        int passed_testcase
-        int score
-        bigint total_time
-        bigint total_memory
-        datetime2 submitted_at
+        UUID session_id FK "Link toi phien diem danh"
+        UUID user_id FK "Sinh vien diem danh"
+        datetime2 attended_at "Thoi gian thuc hien"
+        nvarchar_50_ ip_address "IP thuc te cua SV"
+        decimal_9_6_ latitude "Vi do thuc te cua SV"
+        decimal_9_6_ longitude "Kinh do thuc te cua SV"
+        nvarchar_500_ user_agent "Thiet bi su dung"
+        bit is_valid "Ket qua so sanh voi Config (True/False)"
+        nvarchar_200_ invalid_reason "Ly do fail (VD: Wrong IP, Too far)"
     }
-
-   

@@ -337,6 +337,6 @@ public class SubmissionController : ControllerBase
         submission.Comment = request.Comment;
         await _submissionService.UpdateSubmissionByTeacher(submission);
         var response = _mapper.Map<Submission>(submission);
-        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission retrieved successfully"));
+        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission score updated successfully"));
     }
 }

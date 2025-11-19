@@ -31,6 +31,8 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
 
         builder.Property(au => au.CapturedAICount)
             .HasDefaultValue(0);
+        builder.Property(au => au.AIDetectionDetails)
+            .HasColumnType("nvarchar(max)");
 
         // Relationships
         builder.HasOne(au => au.Assignment)

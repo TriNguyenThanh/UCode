@@ -33,9 +33,8 @@
 
                 <!-- Back Button & Logo -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BackButton" Foreground="White" Background="Transparent" 
-                            BorderThickness="0" FontSize="16" FontWeight="SemiBold" 
-                            Padding="15,0,20,0" Cursor="Hand" Height="60"
+                    <Button x:Name="BackButton" 
+                            Style="{StaticResource BackButton}"
                             Click="BackButton_Click"
                             Visibility="Collapsed"
                             ToolTip="Quay lại">
@@ -51,19 +50,18 @@
                 <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
                     <Button x:Name="DashboardTab" Content="DASHBOARD" 
-                            Foreground="#FACB01" Background="Transparent" BorderThickness="0,0,0,3" BorderBrush="#FACB01"
-                            FontSize="15" FontWeight="Bold" Padding="20,0" Height="60" Cursor="Hand"
+                            Style="{StaticResource TabButtonActive}"
                             Click="DashboardTab_Click"/>
                     <Button x:Name="ProblemsTab" Content="NGÂN HÀNG BÀI" 
-                            Foreground="White" Background="Transparent" BorderThickness="0" 
-                            FontSize="15" FontWeight="Bold" Padding="20,0" Height="60" Cursor="Hand" Margin="20,0,0,0"
+                            Style="{StaticResource TabButton}"
+                            Margin="20,0,0,0"
                             Click="ProblemsTab_Click"/>
                 </StackPanel>
 
                 <!-- User Info with Dropdown -->
                 <Grid Grid.Column="2" VerticalAlignment="Center">
-                    <Button x:Name="UserMenuButton" Background="Transparent" BorderThickness="0" 
-                            Padding="10,0" Height="60" Cursor="Hand"
+                    <Button x:Name="UserMenuButton" 
+                            Style="{StaticResource UserMenuButton}"
                             Click="UserMenuButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="👤" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
@@ -97,94 +95,22 @@
                                 
                                 <!-- Menu Items -->
                                 <Button x:Name="ProfileButton" 
-                                        Background="Transparent" 
-                                        BorderThickness="0"
-                                        HorizontalContentAlignment="Left"
-                                        Padding="15,12"
-                                        Cursor="Hand"
+                                        Style="{StaticResource DropdownMenuItem}"
                                         Click="ProfileButton_Click">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
                                     <TextBlock Text="Hồ sơ" FontSize="16" Foreground="#333"/>
                                 </Button>
                                 
                                 <Button x:Name="SettingsButton" 
-                                        Background="Transparent" 
-                                        BorderThickness="0"
-                                        HorizontalContentAlignment="Left"
-                                        Padding="15,12"
-                                        Cursor="Hand"
+                                        Style="{StaticResource DropdownMenuItem}"
                                         Click="SettingsButton_Click">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
                                     <TextBlock Text="Cài đặt" FontSize="16" Foreground="#333"/>
                                 </Button>
                                 
                                 <Separator Margin="0" Background="#E0E0E0"/>
                                 
                                 <Button x:Name="LogoutButton" 
-                                        Background="Transparent" 
-                                        BorderThickness="0"
-                                        HorizontalContentAlignment="Left"
-                                        Padding="15,12"
-                                        Cursor="Hand"
+                                        Style="{StaticResource DropdownMenuItem}"
                                         Click="LogoutButton_Click">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#F5F5F5"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
                                     <TextBlock Text="Đăng xuất" FontSize="16" Foreground="#dc3545" FontWeight="SemiBold"/>
                                 </Button>
                             </StackPanel>

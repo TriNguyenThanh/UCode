@@ -59,6 +59,9 @@ namespace UCode.Desktop.ViewModels
         private string _teacherName = string.Empty;
         private string _teacherEmail = string.Empty;
 
+        // test nhé/:
+        private readonly AIDetectorService _aiDetectorService;
+
         public bool IsLoading
         {
             get => _isLoading;
@@ -102,17 +105,22 @@ namespace UCode.Desktop.ViewModels
             AuthService authService,
             ClassService classService,
             AssignmentService assignmentService,
-            ProblemService problemService)
+            ProblemService problemService,
+            AIDetectorService tokenStorage)
         {
             _authService = authService;
             _classService = classService;
             _assignmentService = assignmentService;
             _problemService = problemService;
 
+            //test
+            _aiDetectorService = tokenStorage;
+            //
+
             CreateClassCommand = new RelayCommand(_ => ExecuteCreateClass());
             CreateProblemCommand = new RelayCommand(_ => ExecuteCreateProblem());
             ViewClassCommand = new RelayCommand(param => ExecuteViewClass(param as string));
-            ViewAssignmentCommand = new RelayCommand(param => ExecuteViewAssignment(param as string));
+            ViewAssignmentCommand = new RelayCommand(async param => await ExecuteViewAssignment(param as string));
             ViewProblemCommand = new RelayCommand(param => ExecuteViewProblem(param as string));
             GradeAssignmentCommand = new RelayCommand(param => ExecuteGradeAssignment(param as string));
             ViewReportCommand = new RelayCommand(param => ExecuteViewReport(param as string));
@@ -162,7 +170,7 @@ namespace UCode.Desktop.ViewModels
                         Classes.Add(new TeacherClassItem
                         {
                             ClassId = cls.ClassId,
-                            Name = cls.ClassName,
+                            Name = cls.Name,
                             Code = cls.ClassCode,
                             Semester = cls.Semester,
                             StudentCount = cls.StudentCount,
@@ -256,11 +264,28 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private async void ExecuteCreateClass()
+        private void ExecuteCreateClass()
         {
-            await GetMetroWindow()?.ShowMessageAsync(
-                "Thông báo",
-                "Chức năng tạo lớp học đang được phát triển.\n\nVui lòng sử dụng trang web để tạo lớp học mới.");
+            var dialog = App.ServiceProvider.GetService(typeof(Views.CreateClassDialog)) as Views.CreateClassDialog;
+            if (dialog != null)
+            {
+                // Set owner to keep dialog with parent window
+                var mainWindow = GetMetroWindow();
+                if (mainWindow != null)
+                {
+                    dialog.Owner = mainWindow;
+                }
+                
+                var result = dialog.ShowDialog();
+                if (result == true && !string.IsNullOrEmpty(dialog.CreatedClassId))
+                {
+                    // Navigate to the newly created class
+                    ExecuteViewClass(dialog.CreatedClassId);
+                    
+                    // Refresh data
+                    _ = LoadDataAsync();
+                }
+            }
         }
 
         private void ExecuteCreateProblem()
@@ -284,10 +309,32 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteViewAssignment(string assignmentId)
+        private async Task ExecuteViewAssignment(string assignmentId)
         {
             if (!string.IsNullOrEmpty(assignmentId) && _navigationService != null)
-            {
+            {   
+                // Cái này để test bên teacher, sau đó chuyển sang student nhé///////////////////////////
+                var response = await _assignmentService.GetAssignmentAsync(assignmentId);
+
+                if (response.Success && response.Data != null)
+                {
+                    var assignment = response.Data;
+
+                    if (assignment.AssignmentType == AssignmentType.EXAMINATION)
+                    {
+                        if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
+                        {
+                            return;
+                        }
+                        _aiDetectorService.StartAutoMonitor();
+                    }
+                    //else
+                    //{
+                    //    //return;
+                    //}
+                }
+                  ///////////////////////////// test ////////////////////////////// 
+
                 var assignmentPage = App.ServiceProvider.GetService(typeof(Pages.TeacherAssignmentPage)) as Pages.TeacherAssignmentPage;
                 if (assignmentPage != null)
                 {
@@ -323,9 +370,7 @@ namespace UCode.Desktop.ViewModels
         {
             if (!string.IsNullOrEmpty(assignmentId))
             {
-                await GetMetroWindow()?.ShowMessageAsync(
-                    "Thông báo",
-                    $"Xem báo cáo bài tập: {assignmentId}\n\nChức năng đang được phát triển.");
+                await ExecuteViewAssignment(assignmentId);
             }
         }
 
