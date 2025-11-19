@@ -48,7 +48,15 @@ namespace UCode.Desktop.Services
                 _frame.Content = previousPage;
                 
                 // Re-initialize the page if needed (refresh data)
-                if (previousPage.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
+                if (previousPage.DataContext is ViewModels.Admin.AdminHomeViewModel adminHomeViewModel)
+                {
+                    _ = adminHomeViewModel.LoadStatisticsAsync();
+                }
+                else if (previousPage.DataContext is ViewModels.Admin.AdminUsersViewModel adminUsersViewModel)
+                {
+                    _ = adminUsersViewModel.LoadUsersAsync();
+                }
+                else if (previousPage.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
                 {
                     _ = homeViewModel.LoadDataAsync();
                 }
@@ -72,8 +80,17 @@ namespace UCode.Desktop.Services
 
         private void InitializePage(UserControl page, object? parameter)
         {
-            // Initialize ViewModels that have async initialization
-            if (page.DataContext is ViewModels.TeacherClassViewModel classViewModel && parameter is string classId)
+            // Initialize Admin ViewModels
+            if (page.DataContext is ViewModels.Admin.AdminHomeViewModel adminHomeViewModel)
+            {
+                _ = adminHomeViewModel.LoadStatisticsAsync();
+            }
+            else if (page.DataContext is ViewModels.Admin.AdminUsersViewModel adminUsersViewModel)
+            {
+                _ = adminUsersViewModel.LoadUsersAsync();
+            }
+            // Initialize Teacher ViewModels that have async initialization
+            else if (page.DataContext is ViewModels.TeacherClassViewModel classViewModel && parameter is string classId)
             {
                 classViewModel.SetNavigationService(this);
                 _ = classViewModel.InitializeAsync(classId);

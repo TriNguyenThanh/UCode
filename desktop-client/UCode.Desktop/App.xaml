@@ -30,6 +30,8 @@
             <helpers:SavingTextConverter x:Key="SavingTextConverter"/>
             <helpers:CreateButtonTextConverter x:Key="CreateButtonTextConverter"/>
             <helpers:SavingButtonTextConverter x:Key="SavingButtonTextConverter"/>
+            <helpers:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
+            <helpers:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->
