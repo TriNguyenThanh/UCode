@@ -51,6 +51,8 @@ namespace UCode.Desktop.ViewModels
         private AssignmentStatistics? _statistics;
         private int _problemsCount;
         private int _studentsCount;
+        private string _searchText = string.Empty;
+        private ObservableCollection<AssignmentUserItem> _allStudents = new();
 
         public bool IsLoading
         {
@@ -95,6 +97,18 @@ namespace UCode.Desktop.ViewModels
         {
             get => _studentsCount;
             set => SetProperty(ref _studentsCount, value);
+        }
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    FilterStudents();
+                }
+            }
         }
 
         public string AssignmentTypeDisplay => GetAssignmentTypeDisplay(Assignment?.AssignmentType.ToString() ?? "");
@@ -236,13 +250,14 @@ namespace UCode.Desktop.ViewModels
                         }
                     }
 
+                    _allStudents.Clear();
                     foreach (var classStudent in classStudentsResponse.Data)
                     {
                         var assignmentStudent = assignmentStudentsDict.ContainsKey(classStudent.UserId) 
                             ? assignmentStudentsDict[classStudent.UserId] 
                             : null;
 
-                        Students.Add(new AssignmentUserItem
+                        _allStudents.Add(new AssignmentUserItem
                         {
                             UserId = classStudent.UserId,
                             FullName = classStudent.FullName ?? "N/A",
@@ -261,6 +276,7 @@ namespace UCode.Desktop.ViewModels
                         });
                     }
 
+                    FilterStudents();
                     StudentsCount = Students.Count;
                 }
             }
@@ -270,11 +286,40 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
+        private void FilterStudents()
+        {
+            Students.Clear();
+
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                foreach (var student in _allStudents)
+                {
+                    Students.Add(student);
+                }
+            }
+            else
+            {
+                var searchLower = SearchText.ToLower();
+                foreach (var student in _allStudents)
+                {
+                    if (student.StudentCode.ToLower().Contains(searchLower) ||
+                        student.FullName.ToLower().Contains(searchLower) ||
+                        student.Email.ToLower().Contains(searchLower))
+                    {
+                        Students.Add(student);
+                    }
+                }
+            }
+
+            StudentsCount = Students.Count;
+        }
+
         private void ExecuteEditAssignment()
         {
             var editWindow = App.ServiceProvider.GetService(typeof(Views.TeacherAssignmentEditWindow)) as Views.TeacherAssignmentEditWindow;
             if (editWindow != null)
             {
+                editWindow.Owner = Application.Current.MainWindow;
                 editWindow.Initialize(_assignmentId);
                 editWindow.ShowDialog();
                 

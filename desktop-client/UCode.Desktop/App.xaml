@@ -31,6 +31,9 @@
             <helpers:SavingTextConverter x:Key="SavingTextConverter"/>
             <helpers:CreateButtonTextConverter x:Key="CreateButtonTextConverter"/>
             <helpers:SavingButtonTextConverter x:Key="SavingButtonTextConverter"/>
+            <helpers:BooleanToYesNoConverter x:Key="BooleanToYesNoConverter"/>
+            <helpers:ValidStatusConverter x:Key="ValidStatusConverter"/>
+            <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->

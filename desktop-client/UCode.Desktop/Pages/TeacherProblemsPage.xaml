@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1200"
              Background="White">
@@ -170,18 +171,9 @@
                     <iconPacks:PackIconMaterial Grid.Column="0" Kind="Magnify" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.5" Foreground="#999"/>
                     <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"
-                             FontSize="16">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Setter Property="Foreground" Value="Black"/>
-                                <Style.Triggers>
-                                    <Trigger Property="Text" Value="">
-                                        <Setter Property="Foreground" Value="#6C757D"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                             FontSize="16"
+                             mah:TextBoxHelper.Watermark="Tìm kiếm theo mã bài, tiêu đề..."
+                             Foreground="Black"/>
                 </Grid>
             </Border>
 

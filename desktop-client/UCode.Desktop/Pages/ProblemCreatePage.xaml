@@ -45,18 +45,18 @@
 
                         <!-- Difficulty -->
                         <TextBlock Text="Độ khó *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
-                        <ComboBox SelectedItem="{Binding Difficulty}"
-                                  Height="40" FontSize="16" Margin="0,0,0,20">
-                            <ComboBoxItem Content="Dễ" Tag="EASY" IsSelected="True"/>
+                        <ComboBox SelectedValue="{Binding Difficulty}" SelectedValuePath="Tag"
+                                  Height="40" FontSize="16" Margin="0,0,0,20" Cursor="Hand">
+                            <ComboBoxItem Content="Dễ" Tag="EASY"/>
                             <ComboBoxItem Content="Trung bình" Tag="MEDIUM"/>
                             <ComboBoxItem Content="Khó" Tag="HARD"/>
                         </ComboBox>
 
                         <!-- Visibility -->
                         <TextBlock Text="Hiển thị *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
-                        <ComboBox SelectedItem="{Binding Visibility}"
-                                  Height="40" FontSize="16" Margin="0,0,0,20">
-                            <ComboBoxItem Content="Riêng tư" Tag="PRIVATE" IsSelected="True"/>
+                        <ComboBox SelectedValue="{Binding Visibility}" SelectedValuePath="Tag"
+                                  Height="40" FontSize="16" Margin="0,0,0,20" Cursor="Hand">
+                            <ComboBoxItem Content="Riêng tư" Tag="PRIVATE"/>
                             <ComboBoxItem Content="Công khai" Tag="PUBLIC"/>
                         </ComboBox>
 

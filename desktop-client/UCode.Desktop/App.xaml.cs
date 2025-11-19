@@ -134,6 +134,7 @@ public partial class App : Application
         services.AddSingleton<TagService>();
         services.AddSingleton<NavigationService>();
         services.AddSingleton<AIDetectorService>();
+        services.AddSingleton<AttendanceService>();
 
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
@@ -158,6 +159,8 @@ public partial class App : Application
         services.AddTransient<CreateClassViewModel>();
         services.AddTransient<VisualSelectTabViewModel>();
         services.AddTransient<ImportExcelTabViewModel>();
+        services.AddTransient<CreateAttendanceSessionViewModel>();
+        services.AddTransient<AttendanceDetailViewModel>();
 
         // Views - Student
         services.AddTransient<LoginWindow>();
@@ -182,6 +185,18 @@ public partial class App : Application
         services.AddTransient<Pages.TeacherProblemsPage>();
         services.AddTransient<Pages.ProblemCreatePage>();
         services.AddTransient<Pages.ProblemEditPage>();
+        services.AddTransient<Pages.CreateAttendanceSessionPage>(sp =>
+        {
+            var page = new Pages.CreateAttendanceSessionPage();
+            page.DataContext = sp.GetRequiredService<CreateAttendanceSessionViewModel>();
+            return page;
+        });
+        services.AddTransient<Pages.AttendanceDetailPage>(sp =>
+        {
+            var page = new Pages.AttendanceDetailPage();
+            page.DataContext = sp.GetRequiredService<AttendanceDetailViewModel>();
+            return page;
+        });
     }
 }
 

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1200"
              Background="#F5F5F5">
@@ -249,8 +250,23 @@
                 </Grid>
 
                 <!-- Bảng điểm Tab Content -->
-                <Border x:Name="SubmissionsTabContent" Style="{StaticResource RoundedDataGridContainer}" Visibility="Collapsed">
-                    <DataGrid ItemsSource="{Binding Students}"
+                <Grid x:Name="SubmissionsTabContent" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Search Box -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <TextBlock Text="Tìm kiếm sinh viên" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
+                                 mah:TextBoxHelper.Watermark="🔍 Nhập MSSV, họ tên hoặc email..."
+                                 mah:ControlsHelper.CornerRadius="10"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="1" Style="{StaticResource RoundedDataGridContainer}">
+                        <DataGrid ItemsSource="{Binding Students}"
                               Style="{StaticResource ModernDataGrid}"
                               RowStyle="{StaticResource ModernDataGridRow}"
                               CellStyle="{StaticResource ModernDataGridCell}"
@@ -272,10 +288,9 @@
                             <DataGridTextColumn Header="Điểm" Binding="{Binding ScoreDisplay}" Width="150" Foreground="Red" FontWeight="Bold"/>
 
                         </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-
-         
+                        </DataGrid>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

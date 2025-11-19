@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1400"
              Background="#F5F5F5">
@@ -46,10 +47,23 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="⟳ Làm mới" Style="{StaticResource PrimaryButtonStyle}" 
-                                Command="{Binding RefreshCommand}" Margin="0,0,10,0"/>
-                        <Button Content="✎ Chỉnh sửa" Style="{StaticResource PrimaryButtonStyle}" 
-                                Command="{Binding EditClassCommand}"/>
+                        <Button Style="{StaticResource YellowButtonStyle}" 
+                                Command="{Binding RefreshCommand}" 
+                                Margin="0,0,10,0"
+                                Padding="12,8">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Làm mới" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource YellowButtonStyle}" 
+                                Command="{Binding EditClassCommand}"
+                                Padding="12,8">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Chỉnh sửa" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -137,19 +151,24 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                         Padding="12" FontSize="16" VerticalContentAlignment="Center">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                                            <Setter Property="BorderThickness" Value="1"/>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
+                                <StackPanel Grid.Column="0" >
+                                    <!-- TextBlock Text="Tìm kiếm sinh viên" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/ -->
+                                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
+                                             mah:TextBoxHelper.Watermark="🔍 Nhập MSSV, họ tên hoặc email..."
+                                             mah:ControlsHelper.CornerRadius="10"/>                                  
+                                </StackPanel >
 
-                                <Button Grid.Column="1" Content="+ Thêm sinh viên" 
+                                <Button Grid.Column="1" 
                                         Style="{StaticResource PrimaryButtonStyle}" 
-                                        Command="{Binding AddStudentCommand}" Margin="10,0,0,0"/>
+                                        Command="{Binding AddStudentCommand}" 
+                                        Margin="20,0,0,0"
+                                        Padding="12,8">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Plus" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Thêm sinh viên" FontSize="14" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </Grid>
 
                             <!-- Students DataGrid -->
@@ -224,6 +243,91 @@
                     </Border>
                 </TabItem>
 
+                <!-- Attendance Tab -->
+                <TabItem Header="Điểm danh">
+                    <Border Style="{StaticResource CardStyle}" Margin="0,1,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Toolbar -->
+                            <Grid Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Text="Quản lý điểm danh" FontSize="24" FontWeight="Bold" 
+                                           Foreground="#191970" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <Button Style="{StaticResource YellowButton}"
+                                        Command="{Binding CreateAttendanceSessionCommand}"
+                                        HorizontalAlignment="Right"
+                                        Padding="15,10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Plus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="TẠO PHIÊN ĐIỂM DANH" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Attendance Sessions DataGrid -->
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding AttendanceSessions}"
+                                      Style="{StaticResource ModernDataGrid}"
+                                      RowStyle="{StaticResource ModernDataGridRow}"
+                                      CellStyle="{StaticResource ModernDataGridCell}"
+                                      ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*"/>
+                                    <DataGridTextColumn Header="Mã phiên" Binding="{Binding SessionCode}" Width="120"/>
+                                    <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
+                                    <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
+                                    <DataGridTextColumn Header="Đã điểm danh" Binding="{Binding AttendedCount}" Width="120"/>
+                                    
+                                    <DataGridTemplateColumn Header="Trạng thái" Width="120">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                                    <Setter Property="Background" Value="#34C759"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                    <Setter Property="Background" Value="#999"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Thao tác" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Button Content="Chi tiết" 
+                                                            Style="{StaticResource SecondaryButton}"
+                                                            Command="{Binding DataContext.ViewAttendanceDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding SessionId}"
+                                                            Padding="12,6"
+                                                            Margin="0,0,5,0"/>
+                                                    <Button Content="Xóa" 
+                                                            Style="{StaticResource DangerButton}"
+                                                            Command="{Binding DataContext.DeleteAttendanceSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding SessionId}"
+                                                            Padding="12,6"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </TabItem>
+
                 <!-- Assignments Tab -->
                 <TabItem Header="Bài tập">
                     <Border Style="{StaticResource CardStyle}" Margin="0,1,0,0">
@@ -238,11 +342,15 @@
                             <Grid Grid.Row="0" Margin="0,0,0,20">
                                 <TextBlock Text="Danh sách bài tập" FontSize="24" FontWeight="Bold" 
                                            Foreground="#00275e" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <Button Content="+ TẠO BÀI TẬP MỚI" 
-                                        Background="#00275e" Foreground="White" BorderThickness="0"
-                                        FontWeight="Bold" FontSize="13" Padding="20,12"
+                                <Button Background="#00275e" Foreground="White" BorderThickness="0"
+                                        Padding="15,10"
                                         Command="{Binding CreateAssignmentCommand}"
-                                        HorizontalAlignment="Right" Cursor="Hand"/>
+                                        HorizontalAlignment="Right" Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Plus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="TẠO BÀI TẬP MỚI" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </Grid>
 
                             <!-- Table Header -->

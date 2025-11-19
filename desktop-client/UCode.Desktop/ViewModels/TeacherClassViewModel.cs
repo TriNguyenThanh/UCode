@@ -26,6 +26,7 @@ namespace UCode.Desktop.ViewModels
     {
         private readonly ClassService _classService;
         private readonly AssignmentService _assignmentService;
+        private readonly AttendanceService _attendanceService;
         private NavigationService? _navigationService;
         private bool _isLoading;
         private string _error = string.Empty;
@@ -73,6 +74,7 @@ namespace UCode.Desktop.ViewModels
         public ObservableCollection<ClassStudentItem> Students { get; } = new();
         public ObservableCollection<ClassStudentItem> FilteredStudents { get; } = new();
         public ObservableCollection<Assignment> Assignments { get; } = new();
+        public ObservableCollection<AttendanceSessionItem> AttendanceSessions { get; } = new();
 
         public int TotalStudents => Students.Count;
         public int TotalAssignments => Assignments.Count;
@@ -84,13 +86,18 @@ namespace UCode.Desktop.ViewModels
         public ICommand CreateAssignmentCommand { get; }
         public ICommand ViewAssignmentCommand { get; }
         public ICommand EditClassCommand { get; }
+        public ICommand CreateAttendanceSessionCommand { get; }
+        public ICommand ViewAttendanceDetailCommand { get; }
+        public ICommand DeleteAttendanceSessionCommand { get; }
 
         public TeacherClassViewModel(
             ClassService classService,
-            AssignmentService assignmentService)
+            AssignmentService assignmentService,
+            AttendanceService attendanceService)
         {
             _classService = classService;
             _assignmentService = assignmentService;
+            _attendanceService = attendanceService;
 
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
             AddStudentCommand = new RelayCommand(_ => ExecuteAddStudent());
@@ -98,6 +105,9 @@ namespace UCode.Desktop.ViewModels
             CreateAssignmentCommand = new RelayCommand(_ => ExecuteCreateAssignment());
             ViewAssignmentCommand = new RelayCommand(param => ExecuteViewAssignment(param as string ?? string.Empty));
             EditClassCommand = new RelayCommand(_ => ExecuteEditClass());
+            CreateAttendanceSessionCommand = new RelayCommand(_ => ExecuteCreateAttendanceSession());
+            ViewAttendanceDetailCommand = new RelayCommand(param => ExecuteViewAttendanceDetail(param as string ?? string.Empty));
+            DeleteAttendanceSessionCommand = new RelayCommand(param => ExecuteDeleteAttendanceSession(param as string ?? string.Empty));
         }
 
         public async Task InitializeAsync(string classId)
@@ -116,7 +126,8 @@ namespace UCode.Desktop.ViewModels
                 await Task.WhenAll(
                     LoadClassInfoAsync(),
                     LoadStudentsAsync(),
-                    LoadAssignmentsAsync()
+                    LoadAssignmentsAsync(),
+                    LoadAttendanceSessionsAsync()
                 );
 
                 OnPropertyChanged(nameof(TotalStudents));
@@ -389,6 +400,89 @@ namespace UCode.Desktop.ViewModels
                 _ => "#6c757d"
             };
         }
+
+        private async Task LoadAttendanceSessionsAsync()
+        {
+            try
+            {
+                // Add sample data for this class (only for demo, remove when API is ready)
+                _attendanceService.AddSampleSessionsForClass(_classId);
+                
+                var response = await _attendanceService.GetAttendanceSessionsAsync(_classId);
+                AttendanceSessions.Clear();
+
+                if (response?.Success == true && response.Data != null)
+                {
+                    foreach (var session in response.Data)
+                    {
+                        AttendanceSessions.Add(session);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading attendance sessions: {ex.Message}");
+            }
+        }
+
+        private void ExecuteCreateAttendanceSession()
+        {
+            if (string.IsNullOrEmpty(_classId) || _navigationService == null) return;
+
+            var page = App.ServiceProvider?.GetService(typeof(Pages.CreateAttendanceSessionPage)) as Pages.CreateAttendanceSessionPage;
+            if (page != null)
+            {
+                var viewModel = page.DataContext as CreateAttendanceSessionViewModel;
+                viewModel?.Initialize(_classId);
+                _navigationService.NavigateTo(page);
+            }
+        }
+
+        private void ExecuteViewAttendanceDetail(string sessionId)
+        {
+            if (string.IsNullOrEmpty(sessionId) || _navigationService == null) return;
+
+            var page = App.ServiceProvider?.GetService(typeof(Pages.AttendanceDetailPage)) as Pages.AttendanceDetailPage;
+            if (page != null)
+            {
+                var viewModel = page.DataContext as AttendanceDetailViewModel;
+                _ = viewModel?.InitializeAsync(sessionId);
+                _navigationService.NavigateTo(page);
+            }
+        }
+
+        private async void ExecuteDeleteAttendanceSession(string sessionId)
+        {
+            var result = await GetMetroWindow()?.ShowMessageAsync(
+                "Xác nhận",
+                "Bạn có chắc muốn xóa phiên điểm danh này?",
+                MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                IsLoading = true;
+                try
+                {
+                    var response = await _attendanceService.DeleteAttendanceSessionAsync(sessionId);
+                    if (response?.Success == true)
+                    {
+                        await GetMetroWindow()?.ShowMessageAsync("Thành công", "Đã xóa phiên điểm danh!");
+                        await LoadAttendanceSessionsAsync();
+                    }
+                    else
+                    {
+                        await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Xóa thất bại: {response?.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi xóa phiên điểm danh: {ex.Message}");
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
+            }
+        }
     }
 }
-
