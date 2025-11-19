@@ -170,8 +170,7 @@
                     </Button>
 
                     <!-- Loading Indicator -->
-                    <mah:MetroProgressBar IsIndeterminate="True"
-                                          Height="4"
+                    <mah:ProgressRing Height="40" Width="40"
                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
                                           Margin="0,0,0,20"/>
 

@@ -6,6 +6,7 @@ namespace UCode.Desktop.Models
     {
         public string ClassId { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string ClassCode { get; set; } = string.Empty;
         public string TeacherId { get; set; } = string.Empty;
         public string TeacherName { get; set; } = string.Empty;

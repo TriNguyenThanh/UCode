@@ -673,7 +673,7 @@ public class AssignmentController : ControllerBase
     /// <response code="404">Assignment detail not found</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("{id:guid}/student/increment-ai-detection")]
-    [RequireRole("student")]
+    // [RequireRole("student")]
     [ProducesResponseType(typeof(ApiResponse<AssignmentUserDto>), 200)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -681,11 +681,16 @@ public class AssignmentController : ControllerBase
     public async Task<IActionResult> IncrementAIDetection(Guid id)
     {
         var userId = GetAuthenticatedUserId();
-        var updated = await _assignmentService.IncrementCapturedAICountAsync(id, userId);
-        
+        // Nhận body là JSON động, ví dụ: {"chatgpt": 5, "gemini": 6}
+        using var reader = new StreamReader(Request.Body);
+        var body = await reader.ReadToEndAsync();
+        // if (string.IsNullOrWhiteSpace(body))
+        //     return BadRequest(ApiResponse<AssignmentUserDto>.ErrorResponse("Body must be a JSON object with AI detection details"));
+
+        var updated = await _assignmentService.IncrementCapturedAICountAsync(id, userId, body);
         if (updated == null)
             return NotFound(ApiResponse<AssignmentUserDto>.ErrorResponse("Assignment detail not found"));
-        
+
         var response = _mapper.Map<AssignmentUserDto>(updated);
         return Ok(ApiResponse<AssignmentUserDto>.SuccessResponse(response, "AI detection recorded"));
     }

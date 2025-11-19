@@ -10,9 +10,8 @@
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.BitmapScalingMode="HighQuality"
-        ResizeMode="NoResize"
         ShowMinButton="False"
-        ShowMaxRestoreButton="False">
+        >
 
 
     <Grid>
@@ -21,7 +20,7 @@
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
               Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
                 <TextBlock Text="Đang tải..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
