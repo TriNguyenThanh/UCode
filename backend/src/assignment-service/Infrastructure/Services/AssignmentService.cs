@@ -505,7 +505,7 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId)
+    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId, string? aiDetectionDetails=null)
     {
         try
         {
@@ -513,9 +513,35 @@ public class AssignmentService : IAssignmentService
             if (assignmentUser == null)
                 throw new ApiException("Assignment detail not found", 404);
 
-            assignmentUser.CapturedAICount++;
-            await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
+            // Lưu chi tiết AI detection dạng Dictionary<string, int> và cộng dồn từng loại
+            var existingDetails = string.IsNullOrEmpty(assignmentUser.AIDetectionDetails)
+                ? new Dictionary<string, int>()
+                : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(assignmentUser.AIDetectionDetails)!;
+
+            if (string.IsNullOrEmpty(aiDetectionDetails) || aiDetectionDetails == "{}")
+            {
+                return assignmentUser;
+            }
+
+            // Parse aiDetectionDetails (body mới) thành Dictionary<string, int>
+            var newDetails = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(aiDetectionDetails)!;
+
+            foreach (var kv in newDetails)
+            {
+                if (existingDetails.ContainsKey(kv.Key))
+                {
+                    existingDetails[kv.Key] += kv.Value;
+                }
+                else
+                {
+                    existingDetails[kv.Key] = kv.Value;
+                }
+            }
             
+            assignmentUser.CapturedAICount++;
+            assignmentUser.AIDetectionDetails = System.Text.Json.JsonSerializer.Serialize(existingDetails);
+
+            await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
             return assignmentUser;
         }
         catch (Exception ex)

@@ -18,7 +18,6 @@ namespace UCode.Desktop.Services
     {
         private readonly string _tokenFilePath;
         private const string EncryptionKey = "UCode-Desktop-2024-Secret-Key-32"; // 32 chars for AES-256
-
         public TokenStorageService()
         {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -49,6 +48,25 @@ namespace UCode.Desktop.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error saving token: {ex.Message}");
+            }
+        }
+
+        public void SaveFile(string data, string filename)
+        {
+            try
+            {
+                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var appFolder = Path.Combine(appDataPath, "UCode");
+
+                var path = Path.Combine(appFolder, filename);
+                var encrypted = Encrypt(data);
+
+                File.WriteAllText(path, encrypted);
+
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving file: {e.Message}");
             }
         }
 

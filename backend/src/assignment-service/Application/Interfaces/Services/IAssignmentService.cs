@@ -47,7 +47,7 @@ public interface IAssignmentService
     
     // Tracking methods for exam monitoring
     Task<AssignmentUser> IncrementTabSwitchCountAsync(Guid assignmentId, Guid userId);
-    Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId);
+    Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId, string? aiDetectionDetails=null);
     
     // Activity logging for detailed exam monitoring
     Task<bool> LogExamActivityAsync(Guid assignmentId, Guid userId, ActivityLogRequest activityLog);

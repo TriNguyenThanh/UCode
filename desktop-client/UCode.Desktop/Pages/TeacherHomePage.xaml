@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1600"
              Background="#F5F5F5">
@@ -13,7 +14,7 @@
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
               Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FACB01"/>
+                <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
                 <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
@@ -47,7 +48,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <!--ColumnDefinition Width="*"/-->
                         </Grid.ColumnDefinitions>
 
                         <!-- Classes Card -->
@@ -68,7 +69,7 @@
                         </Border>
 
                         <!-- Students Card -->
-                        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
+                        <!-- Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
                             <Border.Effect>
                                 <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
                             </Border.Effect>
@@ -82,10 +83,10 @@
                                            Foreground="#17a2b8" Margin="0,0,0,5"/>
                                 <TextBlock Text="Tổng số sinh viên" FontSize="16" Foreground="#666"/>
                             </StackPanel>
-                        </Border>
+                        </Border -->
 
                         <!-- Assignments Card -->
-                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
+                        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
                             <Border.Effect>
                                 <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
                             </Border.Effect>
@@ -102,7 +103,7 @@
                         </Border>
 
                         <!-- Pending Grading Card -->
-                        <Border Grid.Column="3" Background="White" CornerRadius="8" Padding="25" Margin="12,0,0,0">
+                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="25" Margin="12,0,0,0">
                             <Border.Effect>
                                 <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
                             </Border.Effect>
@@ -127,13 +128,13 @@
                                 <TextBlock Text="Lớp học của tôi" FontSize="22" FontWeight="Bold" 
                                            Foreground="#191970" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Button Command="{Binding CreateClassCommand}" HorizontalAlignment="Right"
-                                    Background="#FACB01" Foreground="#191970" BorderThickness="0"
-                                    FontWeight="Bold" FontSize="16" Padding="20,12" Cursor="Hand">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="➕ " FontSize="16" Margin="0,0,5,0"/>
-                                    <TextBlock Text="TẠO LỚP MỚI"/>
-                                </StackPanel>
+                            <Button Command="{Binding CreateClassCommand}" 
+                                    Style="{StaticResource YellowButton}"
+                                    HorizontalAlignment="Right">
+                                <TextBlock VerticalAlignment="Center" FontSize="16">
+                                    <Run Text="➕ " />
+                                    <Run Text="TẠO LỚP MỚI"/>
+                                </TextBlock>
                             </Button>
                         </Grid>
 
@@ -190,6 +191,9 @@
 
                                             <!-- Class Info -->
                                             <StackPanel Margin="20">
+                                                <Border Background="Transparent"  BorderThickness="1" CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" Foreground="#666"/>
+                                                </Border>
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                     <TextBlock Text="👥" FontSize="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                                     <TextBlock FontSize="16" Foreground="#666" VerticalAlignment="Center">
@@ -197,10 +201,7 @@
                                                         <Run Text=" SV"/>
                                                     </TextBlock>
                                                 </StackPanel>
-                                                <Border Background="Transparent" BorderBrush="#E0E0E0" BorderThickness="1" 
-                                                        CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
-                                                    <TextBlock Text="5 bài tập" FontSize="13" Foreground="#666"/>
-                                                </Border>
+                                                
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
@@ -217,10 +218,10 @@
                                 <TextBlock Text="Bài tập gần đây" FontSize="22" FontWeight="Bold" 
                                            Foreground="#191970" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Button Content="→" Command="{Binding ViewAllAssignmentsCommand}" 
+                            <!-- <Button Content="→" Command="{Binding ViewAllAssignmentsCommand}" 
                                     Background="White" Foreground="#191970" BorderThickness="1" BorderBrush="#E0E0E0"
                                     Width="40" Height="40" Padding="0" FontSize="20"
-                                    HorizontalAlignment="Right" Cursor="Hand"/>
+                                    HorizontalAlignment="Right" Cursor="Hand"/> -->
                         </Grid>
 
                         <ItemsControl ItemsSource="{Binding RecentAssignments}">
@@ -273,24 +274,15 @@
 
                                             <!-- Actions -->
                                             <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
-                                                <Button Command="{Binding DataContext.GradeAssignmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding AssignmentId}"
-                                                        Background="#FACB01" Foreground="#191970" BorderThickness="0"
-                                                        FontWeight="Bold" FontSize="15" Padding="18,10"
-                                                        Cursor="Hand" Margin="0,0,12,0">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="📝 " FontSize="16" Margin="0,0,5,0"/>
-                                                        <TextBlock Text="CHẤM BÀI"/>
-                                                    </StackPanel>
-                                                </Button>
+                                                
                                                 <Button Command="{Binding DataContext.ViewReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding AssignmentId}"
-                                                        Background="Transparent" Foreground="#191970" BorderThickness="0"
-                                                        FontWeight="SemiBold" FontSize="15" Padding="18,10" 
-                                                        Cursor="Hand">
+                                                        Style="{StaticResource NavyTransparentButton}">
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="👁 " FontSize="16" Margin="0,0,5,0"/>
-                                                        <TextBlock Text="XEM BÁO CÁO"/>
+                                                        <TextBlock Margin="0,0,5,0">
+                                                            <Run Text="👁 "></Run>
+                                                            <Run Text="XEM CHI TIẾT" ></Run>
+                                                        </TextBlock>
                                                     </StackPanel>
                                                 </Button>
                                             </StackPanel>

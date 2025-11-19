@@ -41,6 +41,11 @@ public class AssignmentUser
     public int CapturedAICount { get; set; } = 0;
 
     /// <summary>
+    /// Chi tiết về các lần phát hiện sử dụng AI (AI detection details)
+    /// </summary>
+    public string? AIDetectionDetails { get; set; }
+
+    /// <summary>
     /// Thời gian bắt đầu làm
     /// </summary>
     public DateTime? StartedAt { get; set; }

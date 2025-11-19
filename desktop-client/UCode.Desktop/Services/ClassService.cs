@@ -7,10 +7,12 @@ namespace UCode.Desktop.Services
     public class ClassService
     {
         private readonly ApiService _apiService;
+        private readonly AuthService _authService;
 
-        public ClassService(ApiService apiService)
+        public ClassService(ApiService apiService, AuthService authService)
         {
             _apiService = apiService;
+            _authService = authService;
         }
 
         public async Task<ApiResponse<Class>> GetClassByIdAsync(string classId)
@@ -26,6 +28,18 @@ namespace UCode.Desktop.Services
         public async Task<ApiResponse<Class>> CreateClassAsync(CreateClassRequest request)
         {
             return await _apiService.PostAsync<Class>("/api/v1/classes/create", request);
+        }
+
+        public async Task<ApiResponse<Class>> CreateClassAsync(string name, string classCode, string description)
+        {
+            var request = new CreateClassRequest
+            {
+                Name = name,
+                ClassCode = classCode,
+                Description = description,
+                TeacherId = _authService.CurrentUser.UserId
+            };
+            return await CreateClassAsync(request);
         }
 
         public async Task<ApiResponse<Class>> UpdateClassAsync(string classId, UpdateClassRequest request)

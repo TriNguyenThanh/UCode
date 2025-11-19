@@ -1,5 +1,6 @@
 using AssignmentService.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 
 namespace AssignmentService.Application.DTOs.Common;
 
@@ -30,4 +31,9 @@ public class AssignmentUserDto
     /// Number of times AI usage was detected during examination
     /// </summary>
     public int CapturedAICount { get; set; }
+
+    /// <summary>
+    /// Details of AI detection incidents
+    /// </summary>
+    public string? AIDetectionDetails { get; set; }
 }
