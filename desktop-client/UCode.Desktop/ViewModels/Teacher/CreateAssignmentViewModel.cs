@@ -160,14 +160,42 @@ namespace UCode.Desktop.ViewModels
             // Validation
             if (string.IsNullOrWhiteSpace(Title))
             {
-                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tên bài tập");
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Vui lòng nhập tên bài tập");
                 return;
             }
 
-            if (!NoEndDate && EndTime <= StartTime)
+            if (Title.Length < 3)
             {
-                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian kết thúc phải sau thời gian bắt đầu");
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Tên bài tập phải có ít nhất 3 ký tự");
                 return;
+            }
+
+            if (StartTime < DateTime.Now.AddMinutes(-5))
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian bắt đầu không thể ở quá khứ");
+                return;
+            }
+
+            if (!NoEndDate)
+            {
+                if (EndTime <= StartTime)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian kết thúc phải sau thời gian bắt đầu");
+                    return;
+                }
+
+                var duration = EndTime - StartTime;
+                if (duration.TotalMinutes < 15)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian làm bài phải ít nhất 15 phút");
+                    return;
+                }
+
+                if (duration.TotalDays > 365)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian làm bài không được quá 1 năm");
+                    return;
+                }
             }
 
             IsSaving = true;
@@ -181,8 +209,8 @@ namespace UCode.Desktop.ViewModels
                     Title = Title.Trim(),
                     Description = Description?.Trim() ?? string.Empty,
                     AssignmentType = AssignmentType,
-                    StartTime = StartTime.ToString("o"),
-                    EndTime = NoEndDate ? string.Empty : EndTime.ToString("o"),
+                    StartTime = StartTime,
+                    EndTime = NoEndDate ? null : EndTime,
                     AllowLateSubmission = AllowLateSubmission,
                     Status = "DRAFT",
                     Problems = new System.Collections.Generic.List<Models.AssignmentProblem>()

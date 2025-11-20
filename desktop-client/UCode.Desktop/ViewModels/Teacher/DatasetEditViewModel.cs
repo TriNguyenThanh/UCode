@@ -117,13 +117,16 @@ namespace UCode.Desktop.ViewModels
                 TestCases.Clear();
                 foreach (var tc in dataset.TestCases.OrderBy(t => t.IndexNo))
                 {
-                    TestCases.Add(new TestCaseItemViewModel
+                    var testCase = new TestCaseItemViewModel
                     {
                         InputRef = tc.InputRef,
                         OutputRef = tc.OutputRef,
                         IndexNo = tc.IndexNo,
                         IsSelected = false
-                    });
+                    };
+                    
+                    testCase.PropertyChanged += TestCase_PropertyChanged;
+                    TestCases.Add(testCase);
                 }
             }
             else
@@ -148,16 +151,28 @@ namespace UCode.Desktop.ViewModels
 
             if (dialog.ShowDialog() == true)
             {
-                TestCases.Add(new TestCaseItemViewModel
+                var testCase = new TestCaseItemViewModel
                 {
                     InputRef = viewModel.InputText,
                     OutputRef = viewModel.OutputText,
                     IndexNo = TestCases.Count + 1,
                     IsSelected = false
-                });
+                };
+                
+                testCase.PropertyChanged += TestCase_PropertyChanged;
+                TestCases.Add(testCase);
 
                 OnPropertyChanged(nameof(HasNoTestCases));
                 OnPropertyChanged(nameof(HasTestCases));
+            }
+        }
+
+        private void TestCase_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(TestCaseItemViewModel.IsSelected))
+            {
+                OnPropertyChanged(nameof(HasSelectedTestCases));
+                OnPropertyChanged(nameof(SelectedTestCases));
             }
         }
 
@@ -237,40 +252,126 @@ namespace UCode.Desktop.ViewModels
 
         private async void DownloadTemplate()
         {
-            // TODO: Implement Excel template download using ClosedXML
-            // See web implementation for reference (downloadExcelTemplate)
-            await GetMetroWindow()?.ShowMessageAsync(
-                "Feature Not Implemented",
-                "Excel Template Download\n\n" +
-                "TODO: Implement using ClosedXML NuGet package\n\n" +
-                "Template should have 2 columns:\n" +
-                "- Input\n" +
-                "- Output\n\n" +
-                "See: client/app/utils/excelImport.ts (downloadExcelTemplate)");
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Lưu template Excel",
+                    FileName = "test_cases_template.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var workbook = new ClosedXML.Excel.XLWorkbook())
+                    {
+                        var worksheet = workbook.Worksheets.Add("Test Cases");
+
+                        // Header row with styling
+                        worksheet.Cell(1, 1).Value = "Input";
+                        worksheet.Cell(1, 2).Value = "Output";
+                        worksheet.Cell(1, 3).Value = "Score";
+
+                        // Style header
+                        var headerRange = worksheet.Range(1, 1, 1, 3);
+                        headerRange.Style.Font.Bold = true;
+                        headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#0071E3");
+                        headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                        headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+                        // Sample data
+                        worksheet.Cell(2, 1).Value = "0";
+                        worksheet.Cell(2, 2).Value = "0";
+                        worksheet.Cell(2, 3).Value = 100;
+
+                        worksheet.Cell(3, 1).Value = "1";
+                        worksheet.Cell(3, 2).Value = "1";
+                        worksheet.Cell(3, 3).Value = 100;
+
+                        // Auto-fit columns
+                        worksheet.Columns().AdjustToContents();
+
+                        workbook.SaveAs(saveFileDialog.FileName);
+                    }
+
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", "Đã tải template Excel thành công!");
+                }
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải template: {ex.Message}");
+            }
         }
 
         private async void ImportExcel()
         {
-            // TODO: Implement Excel import using ClosedXML
-            // See web implementation for reference (importExcelFile)
-            
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Excel Files|*.xlsx;*.xls;*.csv|All Files|*.*",
+                Filter = "Excel Files|*.xlsx;*.xls|All Files|*.*",
                 Title = "Chọn file Excel để import test cases"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                await GetMetroWindow()?.ShowMessageAsync(
-                    "Feature Not Implemented",
-                    $"Excel Import\n\n" +
-                    $"File: {openFileDialog.FileName}\n\n" +
-                    "TODO: Implement using ClosedXML NuGet package\n\n" +
-                    "Should parse Excel file and add test cases to TestCases collection\n" +
-                    "Expected columns: Input, Output\n\n" +
-                    "See: client/app/utils/excelImport.ts (importExcelFile)\n" +
-                    "and client/app/components/DatasetManagement.tsx (handleImportExcel)");
+                try
+                {
+                    using (var workbook = new ClosedXML.Excel.XLWorkbook(openFileDialog.FileName))
+                    {
+                        var worksheet = workbook.Worksheet(1);
+                        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                        int importedCount = 0;
+                        int startIndex = TestCases.Count + 1;
+
+                        foreach (var row in rows)
+                        {
+                            var input = row.Cell(1).GetString().Trim();
+                            var output = row.Cell(2).GetString().Trim();
+
+                            // Skip empty rows
+                            if (string.IsNullOrWhiteSpace(input) && string.IsNullOrWhiteSpace(output))
+                                continue;
+
+                            var testCase = new TestCaseItemViewModel
+                            {
+                                InputRef = input,
+                                OutputRef = output,
+                                IndexNo = startIndex + importedCount,
+                                IsSelected = false
+                            };
+
+                            testCase.PropertyChanged += TestCase_PropertyChanged;
+                            TestCases.Add(testCase);
+                            importedCount++;
+                        }
+
+                        OnPropertyChanged(nameof(HasNoTestCases));
+                        OnPropertyChanged(nameof(HasTestCases));
+
+                        if (importedCount > 0)
+                        {
+                            await GetMetroWindow()?.ShowMessageAsync(
+                                "Thành công", 
+                                $"Đã import {importedCount} test case(s) từ Excel!");
+                        }
+                        else
+                        {
+                            await GetMetroWindow()?.ShowMessageAsync(
+                                "Thông báo", 
+                                "Không tìm thấy test case nào trong file Excel.\n\n" +
+                                "Đảm bảo file có định dạng:\n" +
+                                "- Dòng 1: Header (Input, Output)\n" +
+                                "- Các dòng tiếp theo: Dữ liệu test cases");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync(
+                        "Lỗi", 
+                        $"Không thể đọc file Excel: {ex.Message}\n\n" +
+                        "Đảm bảo file Excel có định dạng đúng với 2 cột: Input và Output");
+                }
             }
         }
 

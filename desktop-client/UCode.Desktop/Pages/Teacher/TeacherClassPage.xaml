@@ -40,9 +40,12 @@
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="Mã lớp: " Foreground="White" FontSize="16" Opacity="0.8"/>
                             <TextBlock Text="{Binding CurrentClass.ClassCode}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                            <!--
                             <TextBlock Text=" • " Foreground="White" FontSize="16" Margin="10,0"/>
+                            
                             <TextBlock Text="Học kỳ: " Foreground="White" FontSize="16" Opacity="0.8"/>
                             <TextBlock Text="{Binding CurrentClass.Semester}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                            -->
                         </StackPanel>
                     </StackPanel>
 

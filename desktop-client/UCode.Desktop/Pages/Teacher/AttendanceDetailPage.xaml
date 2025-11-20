@@ -79,37 +79,61 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Total Attendance -->
-                        <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                        <Border Grid.Column="0" 
+                                Background="#FFF9E6" 
+                                BorderBrush="#FACB01" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,0,10,0">
                             <StackPanel>
-                                <TextBlock Text="📋 Tổng số điểm danh" FontSize="14" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,8"/>
+                                <TextBlock Text="📋 Tổng số điểm danh" FontSize="14" FontWeight="SemiBold" Foreground="#856404" Margin="0,0,0,8"/>
                                 <TextBlock Text="{Binding Session.AttendedCount}" 
-                                       FontSize="24" FontWeight="Bold" Foreground="#191970"/>
+                                       FontSize="24" FontWeight="Bold" Foreground="#856404"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Valid Count -->
-                        <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="5,0">
+                        <Border Grid.Column="1" 
+                                Background="#E8F5E9" 
+                                BorderBrush="#34C759" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="5,0">
                             <StackPanel>
-                                <TextBlock Text="✓ Hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,8"/>
+                                <TextBlock Text="✓ Hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#2E7D32" Margin="0,0,0,8"/>
                                 <TextBlock Text="{Binding ValidCount}" 
-                                       FontSize="24" FontWeight="Bold" Foreground="#34C759"/>
+                                       FontSize="24" FontWeight="Bold" Foreground="#2E7D32"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Invalid Count -->
-                        <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="5,0">
+                        <Border Grid.Column="2" 
+                                Background="#FFEBEE" 
+                                BorderBrush="#FF3B30" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="5,0">
                             <StackPanel>
-                                <TextBlock Text="✗ Không hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,8"/>
+                                <TextBlock Text="✗ Không hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#C62828" Margin="0,0,0,8"/>
                                 <TextBlock Text="{Binding InvalidCount}" 
-                                       FontSize="24" FontWeight="Bold" Foreground="#FF3B30"/>
+                                       FontSize="24" FontWeight="Bold" Foreground="#C62828"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Attendance Rate -->
-                        <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="10,0,0,0">
+                        <Border Grid.Column="3" 
+                                Background="#E3F2FD" 
+                                BorderBrush="#2196F3" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="10,0,0,0">
                             <StackPanel>
-                                <TextBlock Text="📊 Tỷ lệ hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,8"/>
-                                <TextBlock FontSize="24" FontWeight="Bold" Foreground="#191970">
+                                <TextBlock Text="📊 Tỷ lệ hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,8"/>
+                                <TextBlock FontSize="24" FontWeight="Bold" Foreground="#1565C0">
                                 <Run Text="{Binding AttendanceRate, Mode=OneWay, StringFormat='{}{0:F1}'}"/>
                                 <Run Text="%" FontSize="18"/>
                                 </TextBlock>
@@ -181,6 +205,16 @@
                                            FontSize="18" FontWeight="Bold" Foreground="#191970" 
                                            VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="⚙ Cấu hình" 
+                                            Style="{StaticResource SecondaryButton}"
+                                            Command="{Binding EditConfigCommand}"
+                                            Margin="0,0,10,0"
+                                            Padding="15,10"/>
+                                        <Button Content="📱 Hiển thị QR" 
+                                            Style="{StaticResource YellowButtonStyle}"
+                                            Command="{Binding ShowQRCommand}"
+                                            Margin="0,0,10,0"
+                                            Padding="15,10"/>
                                         <Button Content="📥 Xuất Excel" 
                                             Style="{StaticResource SecondaryButton}"
                                             Command="{Binding ExportCommand}"
@@ -212,7 +246,7 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="120"/>
                                         <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="2*"/>
-                                        <DataGridTextColumn Header="Thời gian" Binding="{Binding AttendedAt, StringFormat='dd/MM/yyyy HH:mm:ss'}" Width="150"/>
+                                        <DataGridTextColumn Header="Thời gian" Binding="{Binding AttendedAt, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
                                         <DataGridTextColumn Header="IP Address" Binding="{Binding IpAddress}" Width="140"/>
 
                                         <DataGridTemplateColumn Header="GPS" Width="180">

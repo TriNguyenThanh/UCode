@@ -346,8 +346,8 @@ namespace UCode.Desktop.ViewModels
                         Description = Description,
                         AssignmentType = AssignmentType,
                         Status = Status,
-                        StartTime = StartTime.ToString("o"),
-                        EndTime = EndTime.ToString("o"),
+                        StartTime = StartTime,
+                        EndTime = EndTime,
                         AllowLateSubmission = AllowLateSubmission,
                         Problems = problems
                     };
@@ -372,8 +372,8 @@ namespace UCode.Desktop.ViewModels
                         Description = Description,
                         AssignmentType = AssignmentType,
                         Status = Status,
-                        StartTime = StartTime.ToString("o"),
-                        EndTime = EndTime.ToString("o"),
+                        StartTime = StartTime,
+                        EndTime = EndTime,
                         AllowLateSubmission = AllowLateSubmission,
                         Problems = problems
                     };

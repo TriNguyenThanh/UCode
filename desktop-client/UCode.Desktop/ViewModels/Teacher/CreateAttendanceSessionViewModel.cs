@@ -116,21 +116,17 @@ namespace UCode.Desktop.ViewModels
 
             // Auto-fill IP and GPS when enabled
             PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(RequireIpCheck) && RequireIpCheck)
+            {                
+                if (string.IsNullOrWhiteSpace(AllowedIpSubnet))
                 {
-                    if (string.IsNullOrWhiteSpace(AllowedIpSubnet))
-                    {
-                        AllowedIpSubnet = GetPublicIp();
-                    }
+                    AllowedIpSubnet = GetPublicIp();
                 }
-                else if (e.PropertyName == nameof(RequireGpsCheck) && RequireGpsCheck)
+                
+                if (string.IsNullOrWhiteSpace(AllowedRadiusMeters))
                 {
-                    if (string.IsNullOrWhiteSpace(AllowedRadiusMeters))
-                    {
-                        AllowedRadiusMeters = "20";
-                    }
+                    AllowedRadiusMeters = "20";
                 }
+                
             };
         }
 

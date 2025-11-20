@@ -40,9 +40,12 @@ namespace UCode.Desktop.ViewModels
                 {
                     _isSelected = value;
                     OnPropertyChanged(nameof(IsSelected));
+                    SelectionChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
+
+        public event EventHandler? SelectionChanged;
 
         public bool IsEditingPoints
         {
@@ -205,7 +208,7 @@ namespace UCode.Desktop.ViewModels
                     {
                         var existing = _existingProblems.FirstOrDefault(p => p.ProblemId == problem.ProblemId);
 
-                        AllProblems.Add(new ProblemItemViewModel
+                        var problemItem = new ProblemItemViewModel
                         {
                             ProblemId = problem.ProblemId,
                             Code = problem.Code,
@@ -216,7 +219,18 @@ namespace UCode.Desktop.ViewModels
                             OriginalPoints = existing?.Points ?? 100,
                             IsSelected = existing != null,
                             IsEditingPoints = false
-                        });
+                        };
+
+                        // Subscribe to selection changes
+                        problemItem.SelectionChanged += (s, e) =>
+                        {
+                            OnPropertyChanged(nameof(SelectedCount));
+                            OnPropertyChanged(nameof(HasSelectedProblems));
+                            OnPropertyChanged(nameof(CanSave));
+                            _hasChanges = true;
+                        };
+
+                        AllProblems.Add(problemItem);
                     }
 
                     ApplyFilters();

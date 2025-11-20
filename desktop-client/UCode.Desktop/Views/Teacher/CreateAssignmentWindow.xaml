@@ -67,8 +67,12 @@
 
                         <!-- Start Time -->
                         <TextBlock Text="Thời gian bắt đầu *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
-                        <DatePicker SelectedDate="{Binding StartTime}"
-                                    Height="40" FontSize="16" Margin="0,0,0,20"/>
+                        <mah:DateTimePicker SelectedDateTime="{Binding StartTime}"
+                                            Height="40" FontSize="14" Margin="0,0,0,20"
+                                            Culture="vi-VN"
+                                            PickerVisibility="All"
+                                            HandVisibility="HourMinute"
+                                            mah:TextBoxHelper.UseFloatingWatermark="False"/>
 
                         <!-- No End Date -->
                         <CheckBox IsChecked="{Binding NoEndDate}"
@@ -78,10 +82,14 @@
                         <!-- End Time -->
                         <TextBlock Text="Thời gian kết thúc" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"
                                    Visibility="{Binding IsEndDateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                        <DatePicker SelectedDate="{Binding EndTime}"
-                                    Height="40" FontSize="16" Margin="0,0,0,20"
-                                    IsEnabled="{Binding IsEndDateEnabled}"
-                                    Visibility="{Binding IsEndDateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <mah:DateTimePicker SelectedDateTime="{Binding EndTime}"
+                                            Height="40" FontSize="14" Margin="0,0,0,20"
+                                            Culture="vi-VN"
+                                            IsEnabled="{Binding IsEndDateEnabled}"
+                                            Visibility="{Binding IsEndDateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            PickerVisibility="All"
+                                            HandVisibility="HourMinute"
+                                            mah:TextBoxHelper.UseFloatingWatermark="False"/>
 
                         <!-- Allow Late Submission -->
                         <CheckBox IsChecked="{Binding AllowLateSubmission}"

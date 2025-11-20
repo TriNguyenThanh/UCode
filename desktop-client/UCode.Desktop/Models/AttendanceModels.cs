@@ -41,3 +41,5 @@ namespace UCode.Desktop.Models
         public string StatusText => IsValid ? "Hợp lệ" : "Không hợp lệ";
     }
 }
+
+

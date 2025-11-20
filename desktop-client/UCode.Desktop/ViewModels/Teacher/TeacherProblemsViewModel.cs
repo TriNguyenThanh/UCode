@@ -44,7 +44,7 @@ namespace UCode.Desktop.ViewModels
         public string TimeLimit => $"{_problem.TimeLimitMs}ms / {_problem.MemoryLimitKb}KB";
         
         public DateTime CreatedAt => _problem.CreatedAt;
-        public string CreatedAtDisplay => _problem.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+        public string CreatedAtDisplay => _problem.CreatedAt.ToString("dd/MM/yyyy HH:mm", new System.Globalization.CultureInfo("vi-VN"));
 
         private static string GetDifficultyDisplayText(Models.Enums.Difficulty difficulty)
         {

@@ -5,7 +5,7 @@ namespace UCode.Desktop.Models
     public class Class
     {
         public string ClassId { get; set; } = string.Empty;
-        public string ClassName { get; set; } = string.Empty;
+        public string ClassName { get => Name; }
         public string Name { get; set; } = string.Empty;
         public string ClassCode { get; set; } = string.Empty;
         public string TeacherId { get; set; } = string.Empty;

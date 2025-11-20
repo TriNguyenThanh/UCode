@@ -138,8 +138,8 @@ namespace UCode.Desktop.Models
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string AssignmentType { get; set; } = string.Empty;
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public bool AllowLateSubmission { get; set; }
         public string Status { get; set; } = string.Empty;
         public List<AssignmentProblem> Problems { get; set; } = new();
