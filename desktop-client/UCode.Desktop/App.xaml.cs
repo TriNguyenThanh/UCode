@@ -138,6 +138,9 @@ public partial class App : Application
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
         services.AddTransient<MainViewModel>();
+        services.AddTransient<ClassDetailViewModel>();
+        services.AddTransient<AssignmentDetailViewModel>();
+        services.AddTransient<ProblemSolverViewModel>();
 
         // ViewModels - Teacher
         services.AddTransient<TeacherHomeViewModel>();
@@ -162,6 +165,9 @@ public partial class App : Application
         // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
+        services.AddTransient<ClassDetailWindow>();
+        services.AddTransient<AssignmentDetailWindow>();
+        services.AddTransient<ProblemSolverWindow>();
 
         // Views - Teacher
         services.AddTransient<TeacherHomeWindow>();

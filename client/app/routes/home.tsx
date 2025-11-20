@@ -197,7 +197,7 @@ export default function Home() {
                     <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
                       {classItem.teacherName}
                     </Typography>
-                    <Chip label={classItem.semester} size='small' />
+                    <Chip label={classItem.studentCount} size='small' />
                   </CardContent>
                 </CardActionArea>
               </Card> 

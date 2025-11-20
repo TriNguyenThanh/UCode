@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using UCode.Desktop.Services;
@@ -17,13 +18,41 @@ namespace UCode.Desktop.Views
             _authService = authService;
 
             viewModel.LoginCompleted += OnLoginCompleted;
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LoginViewModel.ShowPassword))
+            {
+                var viewModel = (LoginViewModel)DataContext;
+                // Sync password between TextBox and PasswordBox
+                if (viewModel.ShowPassword)
+                {
+                    // Switching to TextBox, copy from PasswordBox
+                    PasswordTextBox.Text = PasswordBox.Password;
+                }
+                else
+                {
+                    // Switching to PasswordBox, copy from TextBox
+                    PasswordBox.Password = PasswordTextBox.Text;
+                }
+            }
         }
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (DataContext is LoginViewModel viewModel)
+            if (DataContext is LoginViewModel viewModel && !viewModel.ShowPassword)
             {
                 viewModel.Password = ((PasswordBox)sender).Password;
+            }
+        }
+        
+        private void PasswordTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (DataContext is LoginViewModel viewModel && viewModel.ShowPassword)
+            {
+                viewModel.Password = ((System.Windows.Controls.TextBox)sender).Text;
             }
         }
 
