@@ -1,4 +1,5 @@
 using AutoMapper;
+using UserService.Application.DTOs.Requests;
 using UserService.Application.DTOs.Responses;
 using UserService.Domain.Entities;
 
@@ -39,12 +40,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ClassId, opt => opt.MapFrom(src => src.ClassId))
             .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.FullName))
             .ForMember(dest => dest.StudentCount, opt => opt.MapFrom(src => src.UserClasses.Count));
-        
+
         CreateMap<Class, ClassDetailResponse>()
             .ForMember(dest => dest.ClassId, opt => opt.MapFrom(src => src.ClassId))
             .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.FullName))
             .ForMember(dest => dest.StudentCount, opt => opt.MapFrom(src => src.UserClasses.Count))
-            .ForMember(dest => dest.Students, opt => opt.MapFrom(src => 
+            .ForMember(dest => dest.Students, opt => opt.MapFrom(src =>
                 src.UserClasses.Select(uc => uc.Student).ToList()))
             .ForMember(dest => dest.Statistics, opt => opt.MapFrom(src => new ClassStatistics
             {
@@ -52,6 +53,13 @@ public class MappingProfile : Profile
                 ActiveStudents = src.UserClasses.Count(uc => uc.Student.Status == Domain.Enums.UserStatus.Active),
                 InactiveStudents = src.UserClasses.Count(uc => uc.Student.Status == Domain.Enums.UserStatus.Inactive)
             }));
+
+        // Attendance mappings
+        CreateMap<AttendanceRecord, AttendanceRecordResponse>();
+        CreateMap<AttendanceSession, AttendanceSessionResponse>();
+
+        CreateMap<AttendanceSessionRequest, AttendanceSession>();
+        CreateMap<AttendanceRecordRequest, AttendanceRecord>();
     }
 }
 

@@ -22,6 +22,137 @@ namespace UserService.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("AttendedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("attended_at");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("device_id");
+
+                    b.Property<string>("InvalidReason")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("invalid_reason");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_valid");
+
+                    b.Property<decimal?>("Latitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("latitude");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("longitude");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_records");
+
+                    b.HasIndex("SessionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attendance_records_session_id_user_id");
+
+                    b.ToTable("attendance_records", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AllowedIpSubnet")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasColumnName("allowed_ip_subnet");
+
+                    b.Property<decimal?>("AllowedLatitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("allowed_latitude");
+
+                    b.Property<decimal?>("AllowedLongitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("allowed_longitude");
+
+                    b.Property<int?>("AllowedRadiusMeters")
+                        .HasColumnType("int")
+                        .HasColumnName("allowed_radius_meters");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("class_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("RequireGpsCheck")
+                        .HasColumnType("bit")
+                        .HasColumnName("require_gps_check");
+
+                    b.Property<bool>("RequireIpCheck")
+                        .HasColumnType("bit")
+                        .HasColumnName("require_ip_check");
+
+                    b.Property<string>("SessionCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("session_code");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_sessions");
+
+                    b.ToTable("attendance_sessions", (string)null);
+                });
+
             modelBuilder.Entity("UserService.Domain.Entities.Class", b =>
                 {
                     b.Property<Guid>("ClassId")
@@ -347,6 +478,16 @@ namespace UserService.Infrastructure.Migrations
                         .HasFilter("[teacher_code] IS NOT NULL");
 
                     b.ToTable("teachers", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceRecord", b =>
+                {
+                    b.HasOne("UserService.Domain.Entities.AttendanceSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_records_attendance_sessions_session_id");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Class", b =>

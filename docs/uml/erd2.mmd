@@ -1,0 +1,65 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    classes ||--o{ Assignment : "has_assignments"
+    Assignment ||--o{ AssignmentProblem : "contains"
+    Assignment ||--o{ AssignmentUser : "assigned_to"
+    users ||--o{ AssignmentUser : "participates_in"
+    users ||--o{ Assignment : "created_by"
+
+    Assignment ||--o{ Submission : "has_submissions"
+    users ||--o{ Submission : "submitted_by"
+    Problem ||--o{ Submission : "submitted_for"
+    Dataset ||--o{ Submission : "tested_against"
+
+    Assignment {
+        UUID id PK
+        UUID class_id FK "Links to classes table"
+        UUID assigned_by FK "Links to users/teachers"
+        nvarchar_50_ assignment_type
+        nvarchar_200_ title
+        nvarchar_2000_ description
+        datetime2 start_time
+        datetime2 end_time
+        int total_points
+        bit allow_late_submission
+        nvarchar_50_ status
+        datetime2 created_at
+        datetime2 assigned_at
+    }
+    AssignmentUser {
+        UUID id PK
+        UUID assignment_id FK
+        UUID user_id FK "Links to users table"
+        nvarchar_50_ status
+        int score
+        int max_score
+        datetime2 started_at
+        int tab_switch_count
+        int capture_ai_count
+        string ai_detection_details
+    }
+    AssignmentProblem {
+        UUID assignment_id PK, FK
+        UUID problem_id PK, FK
+        int points
+        int order_index
+    }
+    Submission {
+        UUID id PK
+        UUID assignment_id FK
+        UUID user_id FK "Links to users table"
+        UUID problem_id FK
+        UUID dataset_id FK
+        nvarchar_50_ source_code_ref
+        nvarchar_50_ language
+        nvarchar_50_ status
+        int passed_testcase
+        int total_testcase
+        int score
+        bigint total_time
+        bigint total_memory
+        datetime2 submitted_at
+    }
