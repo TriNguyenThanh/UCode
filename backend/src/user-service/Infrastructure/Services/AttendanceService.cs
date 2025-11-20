@@ -185,6 +185,7 @@ public class AttendanceService : IAttendanceService
                 return ApiResponse<AttendanceSessionResponse>.ErrorResponse("Session not found");
 
             var updatedSession = _mapper.Map<AttendanceSession>(attendanceSession);
+            updatedSession.CreatedAt = existingSession.CreatedAt; // Preserve original creation time
             var session = await _attendanceRepository.UpdateSessionAsync(updatedSession);
             var response = _mapper.Map<AttendanceSessionResponse>(session);
 

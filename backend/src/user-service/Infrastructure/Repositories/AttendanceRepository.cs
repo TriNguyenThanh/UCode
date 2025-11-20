@@ -103,7 +103,7 @@ public class AttendanceRepository : IAttendanceRepository
     public async Task<AttendanceSession> UpdateSessionAsync(AttendanceSession attendanceSession)
     {
         try
-        {
+        {        
             _context.AttendanceSessions.Update(attendanceSession);
             await _context.SaveChangesAsync();
             return attendanceSession;
