@@ -15,6 +15,20 @@
       "SwaggerKey": "user-service"
     },
     {
+      "DownstreamPathTemplate": "/api/v1/attendance/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/attendance/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "Key": "attendance",
+      "SwaggerKey": "user-service"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/users/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
