@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 xmlns:local="clr-namespace:UCode.Desktop.Helpers"
                  Title="UCode - Trang chủ"
                  Height="800"
                  Width="1400"
@@ -10,10 +11,53 @@
                  WindowState="Maximized"
                  TitleCharacterCasing="Normal"
                  ShowIconOnTitleBar="True"
-                 GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+                 GlowBrush="#FACB01"
                  TextOptions.TextFormattingMode="Display"
                  TextOptions.TextRenderingMode="ClearType"
                  RenderOptions.BitmapScalingMode="HighQuality">
+
+    <Window.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <local:DaysLeftToBackgroundConverter x:Key="DaysLeftToBackgroundConverter"/>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+
+        <!-- Custom Navigation Button Style - No gray background -->
+        <Style x:Key="NavButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#1000275E"/>
+                    <Setter Property="Foreground"
+                            Value="#00275E"/>
+                </Trigger>
+                <Trigger Property="IsPressed"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#2000275E"/>
+                    <Setter Property="Foreground"
+                            Value="#00275E"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Gradient Brush for Class Cards -->
+        <LinearGradientBrush x:Key="ClassCardGradientBrush"
+                             StartPoint="0,0"
+                             EndPoint="1,1">
+            <GradientStop Color="#667eea"
+                          Offset="0"/>
+            <GradientStop Color="#764ba2"
+                          Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -21,18 +65,18 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Navigation Bar -->
+        <!-- Top Navigation Bar - Màu vàng như Web -->
         <Border Grid.Row="0"
-                Background="#1976D2"
+                Background="#FACB01"
                 Height="64"
                 Panel.ZIndex="10">
             <Border.Effect>
                 <DropShadowEffect Color="Black"
                                   BlurRadius="10"
                                   ShadowDepth="2"
-                                  Opacity="0.2"/>
+                                  Opacity="0.1"/>
             </Border.Effect>
-            <Grid Margin="24,0">
+            <Grid Margin="0,0,24,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -42,23 +86,16 @@
                 <!-- Logo & Title -->
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <Border Background="White"
-                            Width="40"
-                            Height="40"
-                            CornerRadius="8"
-                            Margin="0,0,12,0">
-                        <iconPacks:PackIconMaterial Kind="CodeBraces"
-                                                    Width="24"
-                                                    Height="24"
-                                                    Foreground="#1976D2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"/>
-                    </Border>
+                            VerticalAlignment="Center"
+                            Margin="24,0,0,0">
+                    <TextBlock Text="💻"
+                               FontSize="24"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
                     <TextBlock Text="UCode"
                                FontSize="22"
                                FontWeight="Bold"
-                               Foreground="White"
+                               Foreground="#00275E"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -68,93 +105,98 @@
                             HorizontalAlignment="Left"
                             Margin="60,0,0,0"
                             VerticalAlignment="Center">
-                    <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                            Foreground="White"
+                    <Button Style="{StaticResource NavButtonStyle}"
+                            Foreground="#00275E"
                             FontSize="15"
+                            FontWeight="SemiBold"
+                            FontFamily="Be Vietnam Pro, Segoe UI"
                             Margin="0,0,8,0"
                             Height="40"
                             Padding="16,0"
                             Cursor="Hand">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Home"
-                                                        Width="18"
-                                                        Height="18"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,8,0"/>
-                            <TextBlock Text="Trang chủ"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="Trang chủ"
+                                   VerticalAlignment="Center"/>
                     </Button>
-                    <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                            Foreground="White"
+                    <Button Style="{StaticResource NavButtonStyle}"
+                            Foreground="#00275E"
                             FontSize="15"
+                            FontWeight="SemiBold"
+                            FontFamily="Be Vietnam Pro, Segoe UI"
                             Margin="0,0,8,0"
                             Height="40"
                             Padding="16,0"
                             Cursor="Hand">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="GoogleClassroom"
-                                                        Width="18"
-                                                        Height="18"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,8,0"/>
-                            <TextBlock Text="Lớp học"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                            Foreground="White"
-                            FontSize="15"
-                            Height="40"
-                            Padding="16,0"
-                            Cursor="Hand">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Brain"
-                                                        Width="18"
-                                                        Height="18"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,8,0"/>
-                            <TextBlock Text="Luyện tập"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="Luyện tập"
+                                   VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
 
                 <!-- User Menu -->
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <Border Background="#1565C0"
-                            CornerRadius="20"
-                            Padding="12,6"
-                            Margin="0,0,12,0">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Account"
-                                                        Width="18"
-                                                        Height="18"
-                                                        Foreground="White"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding UserEmail}"
-                                       Foreground="White"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                    <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                            Foreground="White"
-                            FontSize="14"
-                            Command="{Binding LogoutCommand}"
-                            Cursor="Hand">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Logout"
-                                                        Width="18"
-                                                        Height="18"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,6,0"/>
-                            <TextBlock Text="Đăng xuất"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                            VerticalAlignment="Center"
+                            Margin="0,0,24,0">
+                    <TextBlock Text="{Binding UserEmail}"
+                               FontSize="14"
+                               Foreground="#00275E"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"
+                               FontWeight="SemiBold"
+                               Visibility="{Binding UserEmail, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                    <!-- Account Circle Icon with Context Menu -->
+                    <Button Style="{StaticResource NavButtonStyle}"
+                            Foreground="#00275E"
+                            FontSize="24"
+                            Cursor="Hand"
+                            Padding="8"
+                            Name="UserMenuButton">
+                        <iconPacks:PackIconMaterial Kind="AccountCircle"
+                                                    Width="28"
+                                                    Height="28"
+                                                    VerticalAlignment="Center"/>
+                        <Button.ContextMenu>
+                            <ContextMenu Background="White"
+                                         BorderBrush="#E0E0E0"
+                                         BorderThickness="1">
+                                <MenuItem Header="{Binding UserEmail}"
+                                          IsEnabled="False"
+                                          Foreground="#666"
+                                          FontSize="12"
+                                          FontWeight="SemiBold"
+                                          Padding="16,8"/>
+                                <Separator/>
+                                <MenuItem Header="Hồ sơ"
+                                          FontSize="14"
+                                          Padding="16,8">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconMaterial Kind="Account"
+                                                                    Width="18"
+                                                                    Height="18"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Cài đặt"
+                                          FontSize="14"
+                                          Padding="16,8">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconMaterial Kind="Cog"
+                                                                    Width="18"
+                                                                    Height="18"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="Đăng xuất"
+                                          FontSize="14"
+                                          Padding="16,8"
+                                          Command="{Binding LogoutCommand}">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconMaterial Kind="Logout"
+                                                                    Width="18"
+                                                                    Height="18"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -164,316 +206,356 @@
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       Background="#F5F5F5">
-            <StackPanel Margin="40,30">
+            <Grid Margin="0,0,0,40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Welcome Section -->
-                <TextBlock FontSize="32"
-                           FontWeight="Bold"
-                           Margin="0,0,0,5">
-                    <Run Text="Xin chào, "/>
-                    <Run Text="{Binding UserName}"/>
-                    <Run Text="! 👋"/>
-                </TextBlock>
-                <TextBlock Text="Hôm nay bạn muốn học gì?"
-                           FontSize="16"
-                           Foreground="#666"
-                           Margin="0,0,0,30"/>
-
-                <!-- Lớp học của tôi -->
-                <Grid Margin="0,0,0,40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Section Header -->
-                    <StackPanel Grid.Row="0"
-                                Orientation="Horizontal"
-                                Margin="0,0,0,15">
-                        <iconPacks:PackIconMaterial Kind="GoogleClassroom"
-                                                    Width="28"
-                                                    Height="28"
-                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,10,0"/>
-                        <TextBlock Text="Lớp học của tôi"
-                                   FontSize="24"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1"
+                            Margin="0,30,0,0">
+                    <!-- Welcome Section -->
+                    <StackPanel Margin="0,0,0,30">
+                        <TextBlock FontSize="32"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,8">
+                            <Run Text="Xin chào, "/>
+                            <Run Text="{Binding UserName}"/>
+                            <Run Text="! 👋"/>
+                        </TextBlock>
+                        <TextBlock Text="Hôm nay bạn muốn học gì?"
+                                   FontSize="16"
+                                   Foreground="#666"
+                                   Margin="0,0,0,0"/>
                     </StackPanel>
 
-                    <!-- Classes Grid -->
-                    <ItemsControl Grid.Row="1"
-                                  ItemsSource="{Binding Classes}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="3"
-                                             HorizontalAlignment="Left"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="White"
-                                        BorderBrush="#E0E0E0"
-                                        BorderThickness="1"
-                                        CornerRadius="8"
-                                        Margin="0,0,20,20"
-                                        Width="350"
-                                        Height="250"
-                                        Cursor="Hand">
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="#E0E0E0"
-                                                          BlurRadius="10"
-                                                          ShadowDepth="2"
-                                                          Opacity="0.5"/>
-                                    </Border.Effect>
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="120"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
+                    <!-- Lớp học của tôi -->
+                    <StackPanel Margin="0,0,0,40">
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,20">
+                            <iconPacks:PackIconMaterial Kind="GoogleClassroom"
+                                                        Width="28"
+                                                        Height="28"
+                                                        Foreground="#FACB01"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,12,0"/>
+                            <TextBlock Text="Lớp học của tôi"
+                                       FontSize="24"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
 
-                                        <!-- Class Header -->
-                                        <Border Grid.Row="0"
-                                                Background="{DynamicResource MahApps.Brushes.Accent}"
-                                                CornerRadius="8,8,0,0">
-                                            <TextBlock Text="{Binding Code}"
-                                                       FontSize="22"
-                                                       FontWeight="Bold"
-                                                       Foreground="White"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
+                        <!-- Classes Grid -->
+                        <ItemsControl ItemsSource="{Binding Classes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Margin="0,0,24,24"
+                                            Width="350"
+                                            Height="250"
+                                            Cursor="Hand">
+                                        <Border.InputBindings>
+                                            <MouseBinding Gesture="LeftClick"
+                                                          Command="{Binding DataContext.NavigateToClassCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                          CommandParameter="{Binding Id}"/>
+                                        </Border.InputBindings>
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="10"
+                                                              ShadowDepth="2"
+                                                              Opacity="0.1"/>
+                                        </Border.Effect>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="120"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
 
-                                        <!-- Class Info -->
-                                        <StackPanel Grid.Row="1"
-                                                    Margin="20">
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontSize="18"
-                                                       FontWeight="SemiBold"
-                                                       TextWrapping="Wrap"
-                                                       Margin="0,0,0,8"/>
-                                            <TextBlock Text="{Binding TeacherName}"
-                                                       FontSize="14"
-                                                       Foreground="#666"
-                                                       Margin="0,0,0,8"/>
-                                            <Border Background="#E3F2FD"
-                                                    CornerRadius="12"
-                                                    Padding="10,5"
-                                                    HorizontalAlignment="Left">
-                                                <TextBlock Text="{Binding Semester}"
-                                                           FontSize="12"
-                                                           Foreground="#1976D2"/>
+                                            <!-- Class Header with Gradient -->
+                                            <Border Grid.Row="0"
+                                                    Background="{StaticResource ClassCardGradientBrush}"
+                                                    CornerRadius="8,8,0,0">
+                                                <TextBlock Text="{Binding Code}"
+                                                           FontSize="22"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           Padding="10"/>
                                             </Border>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
 
-                <!-- Việc cần làm -->
-                <Grid Margin="0,0,0,40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                                            <!-- Class Info -->
+                                            <StackPanel Grid.Row="1"
+                                                        Margin="20">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,0,0,8"/>
+                                                <TextBlock Text="{Binding TeacherName}"
+                                                           FontSize="14"
+                                                           Foreground="#666"
+                                                           Margin="0,0,0,12"/>
+                                                <Border Background="#E3F2FD"
+                                                        CornerRadius="12"
+                                                        Padding="8,4"
+                                                        HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Semester}"
+                                                               FontSize="12"
+                                                               Foreground="#1976D2"
+                                                               FontWeight="SemiBold"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
 
-                    <!-- Section Header -->
-                    <StackPanel Grid.Row="0"
-                                Orientation="Horizontal"
-                                Margin="0,0,0,15">
-                        <iconPacks:PackIconMaterial Kind="ClockAlertOutline"
-                                                    Width="28"
-                                                    Height="28"
-                                                    Foreground="#F44336"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,10,0"/>
-                        <TextBlock Text="Việc cần làm"
-                                   FontSize="24"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
-                        <Border Background="#FFEBEE"
-                                CornerRadius="12"
-                                Padding="8,4"
-                                Margin="15,0,0,0">
-                            <TextBlock FontSize="12"
-                                       Foreground="#F44336">
-                                <Run Text="{Binding UpcomingAssignmentsCount, Mode=OneWay}"/>
-                                <Run Text=" bài tập"/>
-                            </TextBlock>
+                    <!-- Divider -->
+                    <Border Margin="0,0,0,40"
+                            Background="#E0E0E0"
+                            Height="1"
+                            HorizontalAlignment="Stretch"/>
+
+                    <!-- Việc cần làm (7 ngày tới) -->
+                    <StackPanel Margin="0,0,0,40">
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,20">
+                            <iconPacks:PackIconMaterial Kind="ClockAlertOutline"
+                                                        Width="28"
+                                                        Height="28"
+                                                        Foreground="#F44336"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,12,0"/>
+                            <TextBlock Text="Việc cần làm"
+                                       FontSize="24"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Border Background="#FFEBEE"
+                                    CornerRadius="12"
+                                    Padding="8,4"
+                                    Margin="12,0,0,0">
+                                <TextBlock FontSize="12"
+                                           Foreground="#F44336"
+                                           FontWeight="SemiBold">
+                                    <Run Text="{Binding UpcomingAssignmentsCount, Mode=OneWay}"/>
+                                    <Run Text=" bài tập"/>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Assignments List -->
+                        <ItemsControl ItemsSource="{Binding UpcomingAssignments}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Margin="0,0,0,16"
+                                            Padding="20"
+                                            Cursor="Hand">
+                                        <Border.InputBindings>
+                                            <MouseBinding Gesture="LeftClick"
+                                                          Command="{Binding DataContext.NavigateToAssignmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                          CommandParameter="{Binding Id}"/>
+                                        </Border.InputBindings>
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="10"
+                                                              ShadowDepth="2"
+                                                              Opacity="0.1"/>
+                                        </Border.Effect>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Icon -->
+                                            <Border Grid.Column="0"
+                                                    Background="#FFEBEE"
+                                                    Width="48"
+                                                    Height="48"
+                                                    CornerRadius="8"
+                                                    Margin="0,0,16,0">
+                                                <iconPacks:PackIconMaterial Kind="ClipboardText"
+                                                                            Width="24"
+                                                                            Height="24"
+                                                                            Foreground="#F44336"
+                                                                            HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Info -->
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           Margin="0,0,0,8"/>
+                                                <TextBlock Text="{Binding ClassName}"
+                                                           FontSize="14"
+                                                           Foreground="#666"
+                                                           Margin="0,0,0,12"/>
+                                                <WrapPanel Orientation="Horizontal">
+                                                    <Border Background="{Binding DaysLeft, Converter={StaticResource DaysLeftToBackgroundConverter}}"
+                                                            CornerRadius="12"
+                                                            Padding="8,4"
+                                                            Margin="0,0,8,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                                                        Width="14"
+                                                                                        Height="14"
+                                                                                        Foreground="White"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Margin="0,0,5,0"/>
+                                                            <TextBlock FontSize="12"
+                                                                       Foreground="White"
+                                                                       FontWeight="SemiBold">
+                                                                <Run Text="Còn"/>
+                                                                <Run Text="{Binding DaysLeft}"/>
+                                                                <Run Text="ngày"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <Border BorderBrush="#E0E0E0"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12"
+                                                            Padding="8,4"
+                                                            Margin="0,0,8,0">
+                                                        <TextBlock FontSize="12"
+                                                                   Foreground="#666">
+                                                            <Run Text="{Binding ProblemCount}"/>
+                                                            <Run Text=" bài"/>
+                                                        </TextBlock>
+                                                    </Border>
+                                                    <Border BorderBrush="#E0E0E0"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12"
+                                                            Padding="8,4">
+                                                        <TextBlock FontSize="12"
+                                                                   Foreground="#666">
+                                                            <Run Text="{Binding TotalPoints}"/>
+                                                            <Run Text=" điểm"/>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty State -->
+                        <Border Background="White"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="40"
+                                Visibility="{Binding UpcomingAssignments.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TextBlock Text="Bạn không có bài tập nào sắp đến hạn trong 7 ngày tới 🎉"
+                                       FontSize="16"
+                                       Foreground="#666"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"/>
                         </Border>
                     </StackPanel>
 
-                    <!-- Assignments List -->
-                    <ItemsControl Grid.Row="1"
-                                  ItemsSource="{Binding UpcomingAssignments}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="White"
-                                        BorderBrush="#E0E0E0"
-                                        BorderThickness="1"
-                                        CornerRadius="8"
-                                        Margin="0,0,0,15"
-                                        Padding="20"
-                                        Cursor="Hand">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                    <!-- Divider -->
+                    <Border Margin="0,0,0,40"
+                            Background="#E0E0E0"
+                            Height="1"
+                            HorizontalAlignment="Stretch"/>
 
-                                        <!-- Icon -->
-                                        <Border Grid.Column="0"
-                                                Background="#FFEBEE"
-                                                Width="48"
-                                                Height="48"
-                                                CornerRadius="8"
-                                                Margin="0,0,15,0">
-                                            <iconPacks:PackIconMaterial Kind="ClipboardText"
-                                                                        Width="28"
-                                                                        Height="28"
-                                                                        Foreground="#F44336"
-                                                                        HorizontalAlignment="Center"
-                                                                        VerticalAlignment="Center"/>
-                                        </Border>
+                    <!-- Luyện tập -->
+                    <StackPanel Margin="0,0,0,40">
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,20">
+                            <iconPacks:PackIconMaterial Kind="CodeBraces"
+                                                        Width="28"
+                                                        Height="28"
+                                                        Foreground="#4CAF50"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,12,0"/>
+                            <TextBlock Text="Luyện tập"
+                                       FontSize="24"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
 
-                                        <!-- Info -->
-                                        <StackPanel Grid.Column="1">
-                                            <TextBlock Text="{Binding Title}"
+                        <!-- Practice Categories Grid -->
+                        <ItemsControl ItemsSource="{Binding PracticeCategories}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Margin="0,0,24,24"
+                                            Width="280"
+                                            Padding="20"
+                                            Cursor="Hand">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="10"
+                                                              ShadowDepth="2"
+                                                              Opacity="0.1"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Icon}"
+                                                       FontSize="36"
+                                                       Margin="0,0,0,12"/>
+                                            <TextBlock Text="{Binding Name}"
                                                        FontSize="18"
                                                        FontWeight="SemiBold"
-                                                       Margin="0,0,0,5"/>
-                                            <TextBlock Text="{Binding ClassName}"
-                                                       FontSize="14"
+                                                       Margin="0,0,0,8"/>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="13"
                                                        Foreground="#666"
-                                                       Margin="0,0,0,10"/>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Border Background="#FFEBEE"
-                                                        CornerRadius="12"
-                                                        Padding="8,4"
-                                                        Margin="0,0,10,0">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <iconPacks:PackIconMaterial Kind="ClockOutline"
-                                                                                    Width="14"
-                                                                                    Height="14"
-                                                                                    Foreground="#F44336"
-                                                                                    VerticalAlignment="Center"
-                                                                                    Margin="0,0,5,0"/>
-                                                        <TextBlock FontSize="12"
-                                                                   Foreground="#F44336">
-                                                            <Run Text="Còn"/>
-                                                            <Run Text="{Binding DaysLeft}"/>
-                                                            <Run Text="ngày"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border BorderBrush="#E0E0E0"
-                                                        BorderThickness="1"
-                                                        CornerRadius="12"
-                                                        Padding="8,4"
-                                                        Margin="0,0,10,0">
-                                                    <TextBlock FontSize="12"
-                                                               Foreground="#666">
-                                                        <Run Text="{Binding ProblemCount}"/>
-                                                        <Run Text="bài"/>
-                                                    </TextBlock>
-                                                </Border>
-                                                <Border BorderBrush="#E0E0E0"
-                                                        BorderThickness="1"
-                                                        CornerRadius="12"
-                                                        Padding="8,4">
-                                                    <TextBlock FontSize="12"
-                                                               Foreground="#666">
-                                                        <Run Text="{Binding TotalPoints}"/>
-                                                        <Run Text="điểm"/>
-                                                    </TextBlock>
-                                                </Border>
-                                            </StackPanel>
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,16"/>
+                                            <Border Background="#E8F5E9"
+                                                    BorderBrush="#4CAF50"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="8,4"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock FontSize="12"
+                                                           Foreground="#2E7D32"
+                                                           FontWeight="SemiBold">
+                                                    <Run Text="{Binding ProblemCount}"/>
+                                                    <Run Text=" bài"/>
+                                                </TextBlock>
+                                            </Border>
                                         </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-
-                <!-- Luyện tập -->
-                <Grid Margin="0,0,0,40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Section Header -->
-                    <StackPanel Grid.Row="0"
-                                Orientation="Horizontal"
-                                Margin="0,0,0,15">
-                        <iconPacks:PackIconMaterial Kind="CodeBraces"
-                                                    Width="28"
-                                                    Height="28"
-                                                    Foreground="#4CAF50"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,10,0"/>
-                        <TextBlock Text="Luyện tập"
-                                   FontSize="24"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
-
-                    <!-- Practice Categories Grid -->
-                    <ItemsControl Grid.Row="1"
-                                  ItemsSource="{Binding PracticeCategories}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="4"
-                                             HorizontalAlignment="Left"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="White"
-                                        BorderBrush="#E0E0E0"
-                                        BorderThickness="1"
-                                        CornerRadius="8"
-                                        Margin="0,0,20,20"
-                                        Width="280"
-                                        Padding="20"
-                                        Cursor="Hand">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Icon}"
-                                                   FontSize="36"
-                                                   Margin="0,0,0,10"/>
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontSize="18"
-                                                   FontWeight="SemiBold"
-                                                   Margin="0,0,0,8"/>
-                                        <TextBlock Text="{Binding Description}"
-                                                   FontSize="13"
-                                                   Foreground="#666"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,0,0,15"/>
-                                        <Border Background="#E8F5E9"
-                                                BorderBrush="#4CAF50"
-                                                BorderThickness="1"
-                                                CornerRadius="12"
-                                                Padding="8,4"
-                                                HorizontalAlignment="Left">
-                                            <TextBlock FontSize="12"
-                                                       Foreground="#2E7D32">
-                                                <Run Text="{Binding ProblemCount}"/>
-                                                <Run Text="bài"/>
-                                            </TextBlock>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-
-            </StackPanel>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
 
         <!-- Loading Overlay -->

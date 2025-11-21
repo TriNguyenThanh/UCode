@@ -1,4 +1,4 @@
-<Application x:Class="UCode.Desktop.App"
+﻿<Application x:Class="UCode.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -34,6 +34,8 @@
             <helpers:BooleanToYesNoConverter x:Key="BooleanToYesNoConverter"/>
             <helpers:ValidStatusConverter x:Key="ValidStatusConverter"/>
             <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <helpers:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
+            <helpers:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->

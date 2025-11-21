@@ -16,6 +16,8 @@ public class UserDbContext : DbContext
     public DbSet<Class> Classes { get; set; }
     public DbSet<UserClass> UserClasses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<AttendanceSession> AttendanceSessions { get; set; }
+    public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,5 +37,7 @@ public class UserDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ClassConfiguration());
         modelBuilder.ApplyConfiguration(new UserClassConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new AttendanceSessionConfiguration());
+        modelBuilder.ApplyConfiguration(new AttendanceRecordConfiguration());
     }
 }
