@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:UCode.Desktop.Controls"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Thêm sinh viên vào lớp" 
         Height="700" Width="1000"
         WindowStartupLocation="CenterOwner"
-        Background="#F5F5F5"
+        Background="#F8FAFC"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.BitmapScalingMode="HighQuality"
@@ -34,27 +35,42 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border Grid.Row="0" Background="White" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="20">
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="20,20,20,0">
                 <TextBlock Text="Thêm sinh viên vào lớp" FontSize="20" FontWeight="Bold" Foreground="#191970"/>
             </Border>
 
             <!-- Tab Control -->
-            <TabControl Grid.Row="1" Margin="20" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabControl Grid.Row="1" Margin="20" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                        Background="Transparent" BorderThickness="0">
                 <TabControl.Resources>
                     <Style TargetType="TabItem">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
-                                    <Border Name="Border" BorderThickness="0,0,0,3" BorderBrush="Transparent" Padding="20,10">
+                                    <Border Name="Border" Background="Transparent" CornerRadius="8" Padding="20,10" Margin="0,0,5,0">
                                         <ContentPresenter ContentSource="Header" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="BorderBrush" Value="#FACB01"/>
+                                            <Setter TargetName="Border" Property="Background" Value="#191970"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="White"/>
+                                            <Setter Property="Foreground" Value="#666"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
+                                            <Setter TargetName="Border" Property="Background" Value="#E0E0E0"/>
+                                            <Setter Property="Foreground" Value="#333"/>
                                         </Trigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter TargetName="Border" Property="Background" Value="#191970"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </MultiTrigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -65,7 +81,10 @@
                 <!-- Tab 1: Visual Select -->
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="CHỌN TỪ DANH SÁCH" FontWeight="SemiBold" FontSize="15" Foreground="#FACB01"/>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="AccountMultiplePlus" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="CHỌN TỪ DANH SÁCH" FontWeight="SemiBold" FontSize="15"/>
+                        </StackPanel>
                     </TabItem.Header>
                     <controls:VisualSelectTabControl DataContext="{Binding VisualSelectTab}"/>
                 </TabItem>
@@ -73,7 +92,10 @@
                 <!-- Tab 2: Import Excel -->
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="IMPORT EXCEL" FontWeight="SemiBold" FontSize="15"/>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="FileExcel" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="IMPORT EXCEL" FontWeight="SemiBold" FontSize="15"/>
+                        </StackPanel>
                     </TabItem.Header>
                     <controls:ImportExcelTabControl DataContext="{Binding ImportExcelTab}"/>
                 </TabItem>
@@ -81,14 +103,15 @@
 
             <!-- Footer -->
             <Border Grid.Row="2" Background="White" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="20">
-                <Button Content="ĐÓNG" 
-                        Background="Transparent" Foreground="#FACB01" 
-                        BorderThickness="0"
-                        FontSize="16" FontWeight="Bold"
-                        Padding="20,10"
+                <Button Style="{StaticResource SecondaryButtonStyle}"
                         Click="Close_Click"
-                        Width="100"
-                        HorizontalAlignment="Right" Cursor="Hand"/>
+                        Width="120"
+                        HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Close" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="ĐÓNG" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
             </Border>
         </Grid>
     </Grid>

@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="Chấm bài - UCode" 
         Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
+        Background="#F8FAFC"
         ResizeMode="CanResize"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -86,7 +87,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border Grid.Row="0" Background="#191970" Padding="30,20">
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="15,15,15,7.5">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -94,24 +95,36 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{Binding ClassData.ClassName}" Foreground="White" FontSize="16" Opacity="0.8"/>
-                        <TextBlock Text="{Binding Assignment.Title}" Foreground="#FACB01" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding ClassData.Name}" Foreground="#666" FontSize="16"/>
+                        <TextBlock Text="{Binding Assignment.Title}" Foreground="#191970" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="◀ Sinh viên trước" Command="{Binding PreviousStudentCommand}" 
-                                Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
-                        <Border Background="#FACB01" CornerRadius="6" Padding="15,8" Margin="0,0,10,0">
-                            <TextBlock Text="{Binding CurrentStudentDisplay}" Foreground="#191970" FontWeight="Bold" FontSize="16"/>
+                        <Button Command="{Binding PreviousStudentCommand}" 
+                                Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"
+                                ToolTip="Sinh viên trước" Padding="10">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Trước" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Border Background="#191970" CornerRadius="8" Padding="15,8" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding CurrentStudentDisplay}" Foreground="White" FontWeight="Bold" FontSize="16"/>
                         </Border>
-                        <Button Content="Sinh viên sau ▶" Command="{Binding NextStudentCommand}" 
-                                Style="{StaticResource PrimaryButtonStyle}"/>
+                        <Button Command="{Binding NextStudentCommand}" 
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                ToolTip="Sinh viên sau" Padding="10">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Sau" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="16" Height="16" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Student Info Card -->
-            <Border Grid.Row="1" Background="#FACB01" Padding="30,15">
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="15,7.5,15,7.5">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -121,10 +134,10 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="{Binding CurrentStudent.User.FullName}" Foreground="#191970" FontSize="20" FontWeight="Bold"/>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <TextBlock Text="MSSV: " Foreground="#191970" FontSize="16"/>
+                            <TextBlock Text="MSSV: " Foreground="#666" FontSize="16"/>
                             <TextBlock Text="{Binding CurrentStudent.User.StudentCode}" Foreground="#191970" FontSize="16" FontWeight="SemiBold"/>
-                            <TextBlock Text=" • " Foreground="#191970" FontSize="16" Margin="10,0"/>
-                            <TextBlock Text="{Binding CurrentStudent.User.Email}" Foreground="#191970" FontSize="16"/>
+                            <TextBlock Text=" • " Foreground="#666" FontSize="16" Margin="10,0"/>
+                            <TextBlock Text="{Binding CurrentStudent.User.Email}" Foreground="#666" FontSize="16"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -152,7 +165,7 @@
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border Background="{TemplateBinding Background}"
-                                                                CornerRadius="20"
+                                                                CornerRadius="16"
                                                                 Padding="{TemplateBinding Padding}">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="Bài " VerticalAlignment="Center"/>

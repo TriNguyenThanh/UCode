@@ -183,6 +183,7 @@
                             <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40" FontSize="16" Padding="10"
                                      BorderBrush="#d2d2d7" BorderThickness="1"
+                                     mah:ControlsHelper.CornerRadius="8"
                                      Margin="0,0,0,20"/>
 
                             <!-- Code -->
@@ -190,6 +191,7 @@
                             <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40" FontSize="16" Padding="10"
                                      BorderBrush="#d2d2d7" BorderThickness="1"
+                                     mah:ControlsHelper.CornerRadius="8"
                                      Margin="0,0,0,5"/>
                             <TextBlock Text="Code dùng để định danh bài toán, nếu để trống sẽ tự động tạo từ title" 
                                        FontSize="13" Foreground="#86868b" Margin="0,5,0,20"/>
@@ -208,7 +210,8 @@
                                     <TextBlock Text="Độ khó" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <ComboBox SelectedValue="{Binding Difficulty}" SelectedValuePath="Tag"
                                               Height="40" FontSize="16" Cursor="Hand"
-                                              BorderBrush="#d2d2d7" BorderThickness="1">
+                                              BorderBrush="#d2d2d7" BorderThickness="1"
+                                              mah:ControlsHelper.CornerRadius="8">
                                         <ComboBoxItem Content="Dễ" Tag="EASY"/>
                                         <ComboBoxItem Content="Trung bình" Tag="MEDIUM"/>
                                         <ComboBoxItem Content="Khó" Tag="HARD"/>
@@ -220,7 +223,8 @@
                                     <TextBlock Text="Trạng thái" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <ComboBox SelectedValue="{Binding Status}" SelectedValuePath="Tag"
                                               Height="40" FontSize="16" Cursor="Hand"
-                                              BorderBrush="#d2d2d7" BorderThickness="1">
+                                              BorderBrush="#d2d2d7" BorderThickness="1"
+                                              mah:ControlsHelper.CornerRadius="8">
                                         <ComboBoxItem Content="Nháp" Tag="DRAFT"/>
                                         <ComboBoxItem Content="Đã xuất bản" Tag="PUBLISHED"/>
                                         <ComboBoxItem Content="Lưu trữ" Tag="ARCHIVED"/>
@@ -232,7 +236,8 @@
                                     <TextBlock Text="Hiển thị" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <ComboBox SelectedValue="{Binding Visibility}" SelectedValuePath="Tag"
                                               Height="40" FontSize="16" Cursor="Hand"
-                                              BorderBrush="#d2d2d7" BorderThickness="1">
+                                              BorderBrush="#d2d2d7" BorderThickness="1"
+                                              mah:ControlsHelper.CornerRadius="8">
                                         <ComboBoxItem Content="Riêng tư" Tag="PRIVATE"/>
                                         <ComboBoxItem Content="Khóa học" Tag="COURSE"/>
                                         <ComboBoxItem Content="Công khai" Tag="PUBLIC"/>
@@ -248,34 +253,42 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
                         <StackPanel>
                             <!-- Statement -->
-                            <TextBlock Text="Đề bài" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding Statement, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="200" FontSize="16" Padding="10" TextWrapping="Wrap"
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                            <TextBlock Text="Đề bài" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <controls:MarkdownEditorControl 
+                                Value="{Binding Statement, Mode=TwoWay}"
+                                Margin="0,0,0,20"
+                                Height="300"/>
 
                             <!-- Input Format -->
                             <TextBlock Text="Input Format" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding InputFormat, UpdateSourceTrigger=PropertyChanged}"
                                      Height="80" FontSize="16" Padding="10" TextWrapping="Wrap"
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
+                                     mah:ControlsHelper.CornerRadius="8"
+                                     Margin="0,0,0,20"/>
 
                             <!-- Output Format -->
                             <TextBlock Text="Output Format" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding OutputFormat, UpdateSourceTrigger=PropertyChanged}"
                                      Height="80" FontSize="16" Padding="10" TextWrapping="Wrap"
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
+                                     mah:ControlsHelper.CornerRadius="8"
+                                     Margin="0,0,0,20"/>
 
                             <!-- Constraints -->
                             <TextBlock Text="Constraints (Ràng buộc)" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding Constraints, UpdateSourceTrigger=PropertyChanged}"
                                      Height="100" FontSize="16" Padding="10" TextWrapping="Wrap"
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
+                                     mah:ControlsHelper.CornerRadius="8"
+                                     Margin="0,0,0,20"/>
 
                             <!-- Solution -->
-                            <TextBlock Text="Solution (Lời giải)" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding Solution, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="200" FontSize="16" Padding="10" TextWrapping="Wrap"
-                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                            <TextBlock Text="Solution (Lời giải)" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <controls:MarkdownEditorControl 
+                                Value="{Binding Solution, Mode=TwoWay}"
+                                Margin="0,0,0,20"
+                                Height="250"/>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
@@ -295,11 +308,12 @@
 
                                 <!-- Time Limit -->
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Time Limit (ms)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Giới hạn thời gian (ms)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
                                         <TextBox Text="{Binding TimeLimitMs, UpdateSourceTrigger=PropertyChanged}"
                                                  Height="40" FontSize="16" Padding="10,10,50,10"
-                                                 BorderBrush="#d2d2d7" BorderThickness="1"/>
+                                                 BorderBrush="#d2d2d7" BorderThickness="1"
+                                                 mah:ControlsHelper.CornerRadius="8"/>
                                         <TextBlock Text="ms" FontSize="16" Foreground="#86868b" 
                                                    VerticalAlignment="Center" HorizontalAlignment="Right" 
                                                    Margin="0,0,15,0" IsHitTestVisible="False"/>
@@ -308,11 +322,12 @@
 
                                 <!-- Memory Limit -->
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Memory Limit (KB)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Giới hạn bộ nhớ (KB)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
                                         <TextBox Text="{Binding MemoryLimitKb, UpdateSourceTrigger=PropertyChanged}"
                                                  Height="40" FontSize="16" Padding="10,10,50,10"
-                                                 BorderBrush="#d2d2d7" BorderThickness="1"/>
+                                                 BorderBrush="#d2d2d7" BorderThickness="1"
+                                                 mah:ControlsHelper.CornerRadius="8"/>
                                         <TextBlock Text="KB" FontSize="16" Foreground="#86868b" 
                                                    VerticalAlignment="Center" HorizontalAlignment="Right" 
                                                    Margin="0,0,15,0" IsHitTestVisible="False"/>
@@ -321,20 +336,22 @@
                             </Grid>
 
                             <!-- I/O Mode -->
+                            <!--
                             <TextBlock Text="I/O Mode" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,20,0,8"/>
                             <ComboBox SelectedValue="{Binding IoMode}" SelectedValuePath="Tag"
                                       Height="40" FontSize="16" Cursor="Hand"
                                       BorderBrush="#d2d2d7" BorderThickness="1"
+                                      mah:ControlsHelper.CornerRadius="8"
                                       Margin="0,0,0,20">
                                 <ComboBoxItem Content="Standard I/O" Tag="STDIO"/>
                                 <ComboBoxItem Content="File I/O" Tag="FILE"/>
                             </ComboBox>
-
+                            -->
                             <Border Background="#E8F4FD" BorderBrush="#0066CC" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,10,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="ℹ️" Foreground="#0066CC" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Top"/>
                                     <TextBlock TextWrapping="Wrap" Foreground="#1d1d1f" FontSize="15" LineHeight="20">
-                                        Time limit áp dụng cho mỗi test case. Memory limit áp dụng cho toàn bộ quá trình chạy.
+                                        Giới hạn thời gian áp dụng cho mỗi test case. Giới hạn bộ nhớ áp dụng cho toàn bộ quá trình chạy.
                                     </TextBlock>
                                 </StackPanel>
                             </Border>

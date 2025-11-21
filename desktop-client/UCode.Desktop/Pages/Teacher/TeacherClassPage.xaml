@@ -59,14 +59,14 @@
                                 <TextBlock Text="Làm mới" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource YellowButtonStyle}" 
+                        <!-- Button Style="{StaticResource YellowButtonStyle}" 
                                 Command="{Binding EditClassCommand}"
                                 Padding="12,8">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Chỉnh sửa" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Button>
+                        </Button -->
                     </StackPanel>
                 </Grid>
             </Border>
@@ -81,21 +81,30 @@
 
                 <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
-                        <TextBlock Text="👥 Sinh viên" FontSize="16" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <iconPacks:PackIconMaterial Kind="AccountGroup" Width="20" Height="20" Foreground="#666" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sinh viên" FontSize="16" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock Text="{Binding TotalStudents}" FontSize="32" FontWeight="Bold" Foreground="#191970"/>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="5,0">
                     <StackPanel>
-                        <TextBlock Text="📚 Bài tập" FontSize="16" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <iconPacks:PackIconMaterial Kind="BookOpenPageVariant" Width="20" Height="20" Foreground="#666" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bài tập" FontSize="16" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock Text="{Binding TotalAssignments}" FontSize="32" FontWeight="Bold" Foreground="#191970"/>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="10,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="✓ Đang hoạt động" FontSize="16" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <iconPacks:PackIconMaterial Kind="CheckCircle" Width="20" Height="20" Foreground="#28a745" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Đang hoạt động" FontSize="16" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock Text="{Binding ActiveAssignments}" FontSize="32" FontWeight="Bold" Foreground="#28a745"/>
                     </StackPanel>
                 </Border>
@@ -137,7 +146,133 @@
                         <Setter Property="Foreground" Value="#191970"/>
                     </Style>
                 </TabControl.Resources>
+                <!-- Assignments Tab -->
+                <TabItem Header="Bài tập">
+                    <Border Style="{StaticResource CardStyle}" Margin="0,1,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
+                            <!-- Title and Create Button -->
+                            <Grid Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Text="Danh sách bài tập" FontSize="24" FontWeight="Bold" 
+                                           Foreground="#00275e" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <Button  BorderThickness="0"
+                                        Padding="15,10"
+                                        Command="{Binding CreateAssignmentCommand}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Right" Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Plus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="TẠO BÀI TẬP MỚI" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Table Header -->
+                            <Grid Grid.Row="1" Background="#00275e" Margin="0,0,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0" Text="Tên bài tập" Foreground="#FACB01" FontWeight="Bold" 
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="Hạn nộp" Foreground="#FACB01" FontWeight="Bold" 
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Số bài" Foreground="#FACB01" FontWeight="Bold" 
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="Trạng thái" Foreground="#FACB01" FontWeight="Bold" 
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="Thao tác" Foreground="#FACB01" FontWeight="Bold" 
+                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Assignments List -->
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Assignments}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                                                <Grid MinHeight="60">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="2*"/>
+                                                        <ColumnDefinition Width="1.5*"/>
+                                                        <ColumnDefinition Width="1*"/>
+                                                        <ColumnDefinition Width="1*"/>
+                                                        <ColumnDefinition Width="1*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Tên bài tập -->
+                                                    <TextBlock Grid.Column="0" Text="{Binding Title}" 
+                                                               FontSize="16" Foreground="#00275e" 
+                                                               Padding="20,15" VerticalAlignment="Center" TextWrapping="Wrap"
+                                                               Cursor="Hand" TextDecorations="Underline">
+                                                        <TextBlock.InputBindings>
+                                                            <MouseBinding MouseAction="LeftClick" 
+                                                                          Command="{Binding DataContext.ViewAssignmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                          CommandParameter="{Binding AssignmentId}"/>
+                                                        </TextBlock.InputBindings>
+                                                    </TextBlock>
+
+                                                    <!-- Hạn nộp -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,10">
+                                                        <TextBlock FontSize="15" Foreground="#333">
+                                                            <Run Text="{Binding EndTime, StringFormat='dd/MM/yyyy HH:mm', TargetNullValue='Không giới hạn'}"/>
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="12" Foreground="#666">
+                                                            <Run Text="{Binding EndTime, StringFormat='Còn {0:dd} ngày', TargetNullValue=''}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+
+                                                    <!-- Số bài -->
+                                                    <TextBlock Grid.Column="2" FontSize="15" Foreground="#333"
+                                                               Padding="30,15" VerticalAlignment="Center">
+                                                        <Run Text="{Binding TotalProblems}"/>
+                                                        <Run Text=" bài"/>
+                                                    </TextBlock>
+
+                                                    <!-- Trạng thái -->
+                                                    <Border Grid.Column="3" 
+                                                            Background="{Binding Status, Converter={StaticResource AssignmentStatusToColorConverter}}"
+                                                            CornerRadius="20" Padding="15,8" Margin="35,10"
+                                                            HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Status, Converter={StaticResource AssignmentStatusConverter}}" 
+                                                                   Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                                    </Border>
+
+                                                    <!-- Thao tác -->
+                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" 
+                                                                VerticalAlignment="Center" Margin="10">
+                                                        <Button ToolTip="Chỉnh sửa"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Padding="8" Margin="20,0,5,0" Cursor="Hand"
+                                                                Command="{Binding DataContext.ViewAssignmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding AssignmentId}">
+                                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="18" Height="18" Foreground="#00275e"/>
+                                                        </Button>
+                                                        <Button ToolTip="Xóa"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Padding="8" Cursor="Hand">
+                                                            <iconPacks:PackIconMaterial Kind="Delete" Width="18" Height="18" Foreground="#dc3545"/>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </TabItem>
+                
                 <!-- Students Tab -->
                 <TabItem Header="Sinh viên">
                     <Border Style="{StaticResource CardStyle}" Margin="0,1,0,0">
@@ -158,8 +293,12 @@
                                     <!-- TextBlock Text="Tìm kiếm sinh viên" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/ -->
                                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                              Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
-                                             mah:TextBoxHelper.Watermark="🔍 Nhập MSSV, họ tên hoặc email..."
-                                             mah:ControlsHelper.CornerRadius="10"/>                                  
+                                             mah:TextBoxHelper.Watermark="Nhập MSSV, họ tên hoặc email..."
+                                             mah:ControlsHelper.CornerRadius="10">
+                                        <mah:TextBoxHelper.ButtonContent>
+                                            <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
+                                        </mah:TextBoxHelper.ButtonContent>
+                                    </TextBox>                                  
                                 </StackPanel >
 
                                 <Button Grid.Column="1" 
@@ -169,7 +308,7 @@
                                         Padding="12,8">
                                     <StackPanel Orientation="Horizontal">
                                         <iconPacks:PackIconMaterial Kind="Plus" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Thêm sinh viên" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="THÊM SINH VIÊN" FontSize="14" VerticalAlignment="Center" FontWeight="Bold"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -287,7 +426,7 @@
                                     <DataGridTemplateColumn Header="Trạng thái" Width="120">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
+                                                <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Style.Triggers>
@@ -309,7 +448,7 @@
                                     <DataGridTemplateColumn Header="Thao tác" Width="200">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal" >
                                                     <Button Content="Chi tiết" 
                                                             Style="{StaticResource SecondaryButton}"
                                                             Command="{Binding DataContext.ViewAttendanceDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -331,130 +470,8 @@
                     </Border>
                 </TabItem>
 
-                <!-- Assignments Tab -->
-                <TabItem Header="Bài tập">
-                    <Border Style="{StaticResource CardStyle}" Margin="0,1,0,0">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Title and Create Button -->
-                            <Grid Grid.Row="0" Margin="0,0,0,20">
-                                <TextBlock Text="Danh sách bài tập" FontSize="24" FontWeight="Bold" 
-                                           Foreground="#00275e" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <Button Background="#00275e" Foreground="White" BorderThickness="0"
-                                        Padding="15,10"
-                                        Command="{Binding CreateAssignmentCommand}"
-                                        HorizontalAlignment="Right" Cursor="Hand">
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="Plus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="TẠO BÀI TẬP MỚI" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
-
-                            <!-- Table Header -->
-                            <Grid Grid.Row="1" Background="#00275e" Margin="0,0,0,2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
-                                    <ColumnDefinition Width="1.5*"/>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="1*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <TextBlock Grid.Column="0" Text="Tên bài tập" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="Hạn nộp" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="Số bài" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="3" Text="Trạng thái" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="4" Text="Thao tác" Foreground="#FACB01" FontWeight="Bold" 
-                                           FontSize="16" Padding="20,15" VerticalAlignment="Center"/>
-                            </Grid>
-
-                            <!-- Assignments List -->
-                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                                <ItemsControl ItemsSource="{Binding Assignments}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                                <Grid MinHeight="60">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="2*"/>
-                                                        <ColumnDefinition Width="1.5*"/>
-                                                        <ColumnDefinition Width="1*"/>
-                                                        <ColumnDefinition Width="1*"/>
-                                                        <ColumnDefinition Width="1*"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- Tên bài tập -->
-                                                    <TextBlock Grid.Column="0" Text="{Binding Title}" 
-                                                               FontSize="16" Foreground="#00275e" 
-                                                               Padding="20,15" VerticalAlignment="Center" TextWrapping="Wrap"
-                                                               Cursor="Hand" TextDecorations="Underline">
-                                                        <TextBlock.InputBindings>
-                                                            <MouseBinding MouseAction="LeftClick" 
-                                                                          Command="{Binding DataContext.ViewAssignmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                          CommandParameter="{Binding AssignmentId}"/>
-                                                        </TextBlock.InputBindings>
-                                                    </TextBlock>
-
-                                                    <!-- Hạn nộp -->
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,10">
-                                                        <TextBlock FontSize="15" Foreground="#333">
-                                                            <Run Text="{Binding EndTime, StringFormat='dd/MM/yyyy', TargetNullValue='Không giới hạn'}"/>
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="12" Foreground="#666">
-                                                            <Run Text="{Binding EndTime, StringFormat='Còn {0:dd} ngày', TargetNullValue=''}"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
-
-                                                    <!-- Số bài -->
-                                                    <TextBlock Grid.Column="2" FontSize="15" Foreground="#333"
-                                                               Padding="20,15" VerticalAlignment="Center">
-                                                        <Run Text="{Binding TotalProblems}"/>
-                                                        <Run Text=" bài"/>
-                                                    </TextBlock>
-
-                                                    <!-- Trạng thái -->
-                                                    <Border Grid.Column="3" 
-                                                            Background="{Binding Status, Converter={StaticResource AssignmentStatusToColorConverter}}"
-                                                            CornerRadius="20" Padding="15,8" Margin="20,10"
-                                                            HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Status, Converter={StaticResource AssignmentStatusConverter}}" 
-                                                                   Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                                    </Border>
-
-                                                    <!-- Thao tác -->
-                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" 
-                                                                VerticalAlignment="Center" Margin="10">
-                                                        <Button Content="✏" ToolTip="Chỉnh sửa"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Foreground="#00275e" FontSize="16" 
-                                                                Padding="8" Margin="0,0,5,0" Cursor="Hand"
-                                                                Command="{Binding DataContext.ViewAssignmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding AssignmentId}"/>
-                                                        <Button Content="🗑" ToolTip="Xóa"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Foreground="#dc3545" FontSize="16" 
-                                                                Padding="8" Cursor="Hand"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Grid>
-                    </Border>
-                </TabItem>
             </TabControl>
         </Grid>
     </Grid>
 </UserControl>
+

@@ -73,7 +73,7 @@
                             <TextBlock Foreground="White" FontSize="17" Opacity="0.8">
                                 <Hyperlink Foreground="White" TextDecorations="None">
                                     <Run Text="Chấm bài: "/>
-                                    <Run Text="{Binding ClassData.ClassName, Mode=OneWay}"/>
+                                    <Run Text="{Binding ClassData.Name, Mode=OneWay}"/>
                                     <Run Text=" ("/>
                                     <Run Text="{Binding ClassData.ClassCode, Mode=OneWay}"/>
                                     <Run Text=")"/>

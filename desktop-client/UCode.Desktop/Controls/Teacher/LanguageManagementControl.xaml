@@ -34,9 +34,8 @@
                     CornerRadius="4" Padding="20" 
                     Visibility="{Binding HasNoLanguages, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="⚠" Foreground="#FF9500" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Chưa có ngôn ngữ nào được kích hoạt. Nhấn 'Quản lý ngôn ngữ' để thêm." 
-                               Foreground="#856404" FontSize="16" TextWrapping="Wrap"/>
+                    <TextBlock Text="⚠Chưa có ngôn ngữ nào được kích hoạt. Nhấn 'Quản lý ngôn ngữ' để thêm." 
+                               Foreground="#856404" FontSize="16" TextWrapping="Wrap" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
 
@@ -61,7 +60,7 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Time Factor" Width="120">
+                        <DataGridTextColumn Header="Hệ số thời gian" Width="120">
                             <DataGridTextColumn.Binding>
                                 <Binding Path="TimeFactor" StringFormat="{}{0:0.00}x"/>
                             </DataGridTextColumn.Binding>

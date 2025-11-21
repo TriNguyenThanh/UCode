@@ -20,7 +20,7 @@
                    Foreground="#666" FontSize="16" Margin="0,0,0,15"/>
 
         <!-- Stepper -->
-        <Grid Grid.Row="1" Margin="0,0,0,30">
+        <Grid Margin="0,36,0,30" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -52,11 +52,11 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Tải file" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Tải file" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="Black"/>
             </StackPanel>
 
             <!-- Step 2 -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Grid Width="40" Height="40" Margin="0,0,10,0">
                     <Ellipse>
                         <Ellipse.Style>
@@ -77,11 +77,11 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Kiểm tra dữ liệu" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Kiểm tra dữ liệu" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="Black"/>
             </StackPanel>
 
             <!-- Step 3 -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="88,0,0,0">
                 <Grid Width="40" Height="40" Margin="0,0,10,0">
                     <Ellipse>
                         <Ellipse.Style>
@@ -99,7 +99,7 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Panel.ZIndex="1"/>
                 </Grid>
-                <TextBlock Text="Xác nhận và Import" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="Xác nhận và Import" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="Black"/>
             </StackPanel>
         </Grid>
 
@@ -120,9 +120,10 @@
                 <StackPanel Visibility="{Binding IsStep0, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Button Content="TẢI XUỐNG FILE MẪU" 
                             Background="White" Foreground="#FACB01" 
-                            BorderBrush="#FACB01" BorderThickness="2"
+                            BorderBrush="#FACB09" BorderThickness="2"
                             FontSize="16" FontWeight="Bold"
-                            Padding="20,12"
+                            Padding="20,0"
+                            Style="{StaticResource SecondaryButton}"
                             Command="{Binding DownloadTemplateCommand}"
                             Margin="0,0,0,15"
                             Height="45" Cursor="Hand"/>
@@ -131,7 +132,8 @@
                             Background="#FACB01" Foreground="#003A70" 
                             BorderThickness="0"
                             FontSize="16" FontWeight="Bold"
-                            Padding="20,12"
+                            Padding="20,0"
+                            Style="{StaticResource SecondaryButton}"
                             Command="{Binding UploadFileCommand}"
                             Height="45" Cursor="Hand"/>
 
@@ -155,83 +157,83 @@
                 </StackPanel>
 
                 <!-- Step 2: Confirm & Import -->
-            <Grid Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <Grid Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Summary Alerts -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                    <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
+                    <!-- Summary Alerts -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                        <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
                             CornerRadius="4" Padding="10" Margin="0,0,10,0"
                             Visibility="{Binding HasNewStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Foreground="#1976D2">
+                            <TextBlock Foreground="#1976D2">
                             <Run Text="{Binding NewCount, Mode=OneWay}" FontWeight="Bold"/>
                             <Run Text=" sinh viên mới sẽ được tạo"/>
-                        </TextBlock>
-                    </Border>
+                            </TextBlock>
+                        </Border>
 
-                    <Border Background="#E8F5E9" BorderBrush="#34C759" BorderThickness="1" 
+                        <Border Background="#E8F5E9" BorderBrush="#34C759" BorderThickness="1" 
                             CornerRadius="4" Padding="10" Margin="0,0,10,0"
                             Visibility="{Binding HasExistingStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Foreground="#2E7D32">
+                            <TextBlock Foreground="#2E7D32">
                             <Run Text="{Binding ExistsCount, Mode=OneWay}" FontWeight="Bold"/>
                             <Run Text=" sinh viên đã tồn tại"/>
-                        </TextBlock>
-                    </Border>
+                            </TextBlock>
+                        </Border>
 
-                    <Border Background="#FFEBE9" BorderBrush="#FF3B30" BorderThickness="1" 
+                        <Border Background="#FFEBE9" BorderBrush="#FF3B30" BorderThickness="1" 
                             CornerRadius="4" Padding="10"
                             Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Foreground="#C62828">
+                            <TextBlock Foreground="#C62828">
                             <Run Text="{Binding ErrorCount, Mode=OneWay}" FontWeight="Bold"/>
                             <Run Text=" lỗi"/>
-                        </TextBlock>
-                    </Border>
-                </StackPanel>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
 
-                <!-- Validation Results Table -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding ValidationResults}"
+                    <!-- Validation Results Table -->
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding ValidationResults}"
                           Style="{StaticResource ModernDataGrid}"
                           RowStyle="{StaticResource ModernDataGridRow}"
                           CellStyle="{StaticResource ModernDataGridCell}"
                           ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
                           MaxHeight="300" SelectionChanged="DataGrid_SelectionChanged">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Dòng" Binding="{Binding RowNumber}" Width="60"/>
-                        <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100"/>
-                        <DataGridTextColumn Header="Họ tên" Binding="{Binding FullName}" Width="*"/>
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
-                        <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="150"/>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Dòng" Binding="{Binding RowNumber}" Width="60"/>
+                            <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100"/>
+                            <DataGridTextColumn Header="Họ tên" Binding="{Binding FullName}" Width="*"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                            <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="150"/>
 
                             <DataGridTemplateColumn Header="Trạng thái" Width="120">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="12" Padding="8,4">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Status}" Value="new">
-                                                        <Setter Property="Background" Value="#2196F3"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Status}" Value="exists">
-                                                        <Setter Property="Background" Value="#34C759"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Status}" Value="error">
-                                                        <Setter Property="Background" Value="#FF3B30"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="12" Padding="8,4">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="new">
+                                                            <Setter Property="Background" Value="#2196F3"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="exists">
+                                                            <Setter Property="Background" Value="#34C759"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="error">
+                                                            <Setter Property="Background" Value="#FF3B30"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Grid>
         </Border>
 

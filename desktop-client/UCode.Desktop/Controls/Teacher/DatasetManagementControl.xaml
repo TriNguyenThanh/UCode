@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="20">
@@ -21,11 +22,16 @@
             <TextBlock Grid.Column="0" Text="Datasets &amp; Test Cases" 
                        FontSize="18" FontWeight="Bold" Foreground="#191970" VerticalAlignment="Center"/>
 
-            <Button Grid.Column="1" Content="+ Thêm Dataset" 
+            <Button Grid.Column="1" 
                     Style="{StaticResource PrimaryButtonStyle}"
                     Command="{Binding OpenDatasetDialogCommand}"
                     CommandParameter="{x:Null}"
-                    Padding="15,8"/>
+                    Padding="15,8">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Plus" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Thêm Dataset" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- Datasets Display -->
@@ -35,7 +41,7 @@
                     CornerRadius="4" Padding="20" 
                     Visibility="{Binding HasNoDatasets, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="⚠" Foreground="#FF9500" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <iconPacks:PackIconMaterial Kind="AlertCircle" Width="20" Height="20" Foreground="#FF9500" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Chưa có dataset nào. Nhấn 'Thêm Dataset' để tạo test cases." 
                                Foreground="#856404" FontSize="16" TextWrapping="Wrap"/>
                 </StackPanel>
@@ -120,19 +126,8 @@
 
                                     <!-- Test Case Count -->
                                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-                                        <TextBlock Text="✓" Foreground="#34C759" FontSize="16" Margin="0,0,5,0" VerticalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#34C759"/>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                        <iconPacks:PackIconMaterial Kind="CheckCircle" Width="16" Height="16" Foreground="#34C759" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                         <TextBlock Foreground="#666" FontSize="15">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#666"/>
-                                                </Style>
-                                            </TextBlock.Style>
                                             <Run Text="{Binding TestCases.Count, Mode=OneWay}"/>
                                             <Run Text=" test case(s)"/>
                                         </TextBlock>
@@ -140,14 +135,17 @@
 
                                     <!-- Actions -->
                                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <Button Content="✏ Sửa" 
-                                                Foreground="#007bff"
+                                        <Button Foreground="#007bff"
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 Cursor="Hand"
                                                 Padding="0,5,15,5"
                                                 Command="{Binding DataContext.OpenDatasetDialogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" Width="14" Height="14" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Sửa" VerticalAlignment="Center"/>
+                                            </StackPanel>
                                             <Button.Style>
                                                 <Style TargetType="Button">
                                                     <Setter Property="Template">
@@ -167,14 +165,17 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                        <Button Content="🗑 Xóa" 
-                                                Foreground="#FF3B30"
+                                        <Button Foreground="#FF3B30"
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 Cursor="Hand"
                                                 Padding="0,5,0,5"
                                                 Command="{Binding DataContext.DeleteDatasetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding DatasetId}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Delete" Width="14" Height="14" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Xóa" VerticalAlignment="Center"/>
+                                            </StackPanel>
                                             <Button.Style>
                                                 <Style TargetType="Button">
                                                     <Setter Property="Template">

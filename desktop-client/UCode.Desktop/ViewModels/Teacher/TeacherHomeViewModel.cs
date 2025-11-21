@@ -90,14 +90,12 @@ namespace UCode.Desktop.ViewModels
         public int PendingGrading { get; private set; }
 
         public ICommand CreateClassCommand { get; }
-        public ICommand CreateProblemCommand { get; }
         public ICommand ViewClassCommand { get; }
         public ICommand ViewAssignmentCommand { get; }
         public ICommand ViewProblemCommand { get; }
         public ICommand GradeAssignmentCommand { get; }
         public ICommand ViewReportCommand { get; }
         public ICommand ViewAllAssignmentsCommand { get; }
-        public ICommand ViewAllProblemsCommand { get; }
         public ICommand LogoutCommand { get; }
         public ICommand RefreshCommand { get; }
 
@@ -118,14 +116,12 @@ namespace UCode.Desktop.ViewModels
             //
 
             CreateClassCommand = new RelayCommand(_ => ExecuteCreateClass());
-            CreateProblemCommand = new RelayCommand(_ => ExecuteCreateProblem());
             ViewClassCommand = new RelayCommand(param => ExecuteViewClass(param as string));
             ViewAssignmentCommand = new RelayCommand(async param => await ExecuteViewAssignment(param as string));
             ViewProblemCommand = new RelayCommand(param => ExecuteViewProblem(param as string));
             GradeAssignmentCommand = new RelayCommand(param => ExecuteGradeAssignment(param as string));
             ViewReportCommand = new RelayCommand(param => ExecuteViewReport(param as string));
             ViewAllAssignmentsCommand = new RelayCommand(_ => ExecuteViewAllAssignments());
-            ViewAllProblemsCommand = new RelayCommand(_ => ExecuteViewAllProblems());
             LogoutCommand = new RelayCommand(_ => ExecuteLogout());
             RefreshCommand = new RelayCommand(async _ => await LoadDataAsync());
 
@@ -288,14 +284,7 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteCreateProblem()
-        {
-            var problemsWindow = App.ServiceProvider.GetService(typeof(Views.TeacherProblemsWindow)) as Views.TeacherProblemsWindow;
-            if (problemsWindow != null)
-            {
-                problemsWindow.Show();
-            }
-        }
+
 
         private void ExecuteViewClass(string classId)
         {
@@ -381,14 +370,7 @@ namespace UCode.Desktop.ViewModels
                 "Trang danh sách tất cả bài tập đang được phát triển.\n\nHiện tại bạn có thể xem bài tập từ trang chủ.");
         }
 
-        private void ExecuteViewAllProblems()
-        {
-            var problemsWindow = App.ServiceProvider.GetService(typeof(Views.TeacherProblemsWindow)) as Views.TeacherProblemsWindow;
-            if (problemsWindow != null)
-            {
-                problemsWindow.Show();
-            }
-        }
+
 
         private async void ExecuteLogout()
         {

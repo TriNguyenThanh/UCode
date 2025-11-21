@@ -4,7 +4,8 @@
     <!-- Modern DataGrid Style -->
     <Style x:Key="ModernDataGrid" TargetType="DataGrid">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
         <Setter Property="GridLinesVisibility" Value="None"/>
         <Setter Property="HeadersVisibility" Value="Column"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
@@ -19,6 +20,58 @@
         <Setter Property="RowHeight" Value="52"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="AlternationCount" Value="2"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGrid">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="0"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="DG_ScrollViewer" Focusable="false">
+                            <ScrollViewer.Template>
+                                <ControlTemplate TargetType="ScrollViewer">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <DataGridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter"
+                                                                        Grid.Column="1"
+                                                                        Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
+                                                               Grid.Row="1" Grid.ColumnSpan="2"
+                                                               CanContentScroll="{TemplateBinding CanContentScroll}"/>
+                                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                                  Grid.Column="2" Grid.Row="1"
+                                                  Orientation="Vertical"
+                                                  Maximum="{TemplateBinding ScrollableHeight}"
+                                                  ViewportSize="{TemplateBinding ViewportHeight}"
+                                                  Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                        <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                                  Grid.Row="2" Grid.Column="1"
+                                                  Orientation="Horizontal"
+                                                  Maximum="{TemplateBinding ScrollableWidth}"
+                                                  ViewportSize="{TemplateBinding ViewportWidth}"
+                                                  Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </ScrollViewer.Template>
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- DataGrid Row Style with Hover Effect -->
@@ -113,11 +166,11 @@
 
     <!-- DataGrid Column Header Style -->
     <Style x:Key="ModernDataGridColumnHeader" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="#FAFAFA"/>
-        <Setter Property="Foreground" Value="#666"/>
+        <Setter Property="Background" Value="#F8F9FA"/>
+        <Setter Property="Foreground" Value="#495057"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Height" Value="44"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Height" Value="50"/>
         <Setter Property="Padding" Value="12,0"/>
         <Setter Property="BorderThickness" Value="0,0,0,2"/>
         <Setter Property="BorderBrush" Value="#E0E0E0"/>
@@ -186,13 +239,13 @@
     <!-- Rounded DataGrid Container -->
     <Style x:Key="RoundedDataGridContainer" TargetType="Border">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="CornerRadius" Value="16"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="ClipToBounds" Value="True"/>
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                <DropShadowEffect ShadowDepth="4" BlurRadius="20" Opacity="0.08" Color="#191970"/>
             </Setter.Value>
         </Setter>
     </Style>

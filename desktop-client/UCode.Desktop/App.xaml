@@ -63,7 +63,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="6"
+                                    CornerRadius="8"
                                     Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
@@ -84,11 +84,11 @@
             <!-- Card Style -->
             <Style x:Key="CardStyle" TargetType="Border">
                 <Setter Property="Background" Value="White"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Padding" Value="20"/>
+                <Setter Property="CornerRadius" Value="16"/>
+                <Setter Property="Padding" Value="15"/>
                 <Setter Property="Effect">
                     <Setter.Value>
-                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="20" Opacity="0.08" Color="#191970"/>
                     </Setter.Value>
                 </Setter>
             </Style>

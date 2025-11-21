@@ -4,9 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:helpers="clr-namespace:UCode.Desktop.Helpers"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1600"
              Background="#F5F5F5">
+
+    <UserControl.Resources>
+        <helpers:ClassIdToGradientConverter x:Key="ClassIdToGradientConverter"/>
+    </UserControl.Resources>
 
     <!-- Loading Overlay -->
     <Grid>
@@ -52,10 +57,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Classes Card -->
-                        <Border Grid.Column="0" Background="#FACB01" CornerRadius="8" Padding="25" Margin="0,0,12,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.15"/>
-                            </Border.Effect>
+                        <Border Grid.Column="0" Style="{StaticResource CardStyle}" Background="#FACB01" Margin="0,0,12,0">
                             <StackPanel>
                                 <Grid Margin="0,0,0,15">
                                     <TextBlock Text="Lớp học" FontSize="16" FontWeight="SemiBold" 
@@ -68,28 +70,8 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Students Card -->
-                        <!-- Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                            </Border.Effect>
-                            <StackPanel>
-                                <Grid Margin="0,0,0,15">
-                                    <TextBlock Text="Sinh viên" FontSize="16" FontWeight="SemiBold" 
-                                               Foreground="#666" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="👥" FontSize="28" Foreground="#17a2b8" HorizontalAlignment="Right"/>
-                                </Grid>
-                                <TextBlock Text="{Binding TotalStudents}" FontSize="56" FontWeight="Bold" 
-                                           Foreground="#17a2b8" Margin="0,0,0,5"/>
-                                <TextBlock Text="Tổng số sinh viên" FontSize="16" Foreground="#666"/>
-                            </StackPanel>
-                        </Border -->
-
                         <!-- Assignments Card -->
-                        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="25" Margin="6,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                            </Border.Effect>
+                        <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="6,0">
                             <StackPanel>
                                 <Grid Margin="0,0,0,15">
                                     <TextBlock Text="Bài tập" FontSize="16" FontWeight="SemiBold" 
@@ -103,10 +85,7 @@
                         </Border>
 
                         <!-- Pending Grading Card -->
-                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="25" Margin="12,0,0,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                            </Border.Effect>
+                        <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="12,0,0,0">
                             <StackPanel>
                                 <Grid Margin="0,0,0,15">
                                     <TextBlock Text="Chờ chấm" FontSize="16" FontWeight="SemiBold" 
@@ -146,16 +125,12 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White" CornerRadius="8" Margin="0,0,15,15" 
-                                            BorderThickness="1" BorderBrush="#E0E0E0" Cursor="Hand">
-                                        <Border.Effect>
-                                            <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                                        </Border.Effect>
+                                    <Border Margin="0,0,15,15" 
+                                            Padding="0" Cursor="Hand">
                                         <Border.Style>
-                                            <Style TargetType="Border">
+                                            <Style TargetType="Border" BasedOn="{StaticResource CardStyle}">
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#003d8f"/>
                                                         <Setter Property="RenderTransform">
                                                             <Setter.Value>
                                                                 <TranslateTransform Y="-4"/>
@@ -163,7 +138,7 @@
                                                         </Setter>
                                                         <Setter Property="Effect">
                                                             <Setter.Value>
-                                                                <DropShadowEffect ShadowDepth="4" BlurRadius="12" Opacity="0.2"/>
+                                                                <DropShadowEffect ShadowDepth="8" BlurRadius="25" Opacity="0.15" Color="#191970"/>
                                                             </Setter.Value>
                                                         </Setter>
                                                     </Trigger>
@@ -177,15 +152,10 @@
                                         </Border.InputBindings>
                                         <StackPanel>
                                             <!-- Class Code Header -->
-                                            <Border Height="150" CornerRadius="8,8,0,0">
-                                                <Border.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                        <GradientStop Color="#001f54" Offset="0"/>
-                                                        <GradientStop Color="#003d8f" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Border.Background>
+                                            <Border Height="150" CornerRadius="8,8,0,0"
+                                                    Background="{Binding ClassId, Converter={StaticResource ClassIdToGradientConverter}}">
                                                 <TextBlock Text="{Binding Code}" FontSize="32" FontWeight="Bold" 
-                                                           Foreground="#FACB01" HorizontalAlignment="Center" 
+                                                           Foreground="White" HorizontalAlignment="Center" 
                                                            VerticalAlignment="Center" TextAlignment="Center"/>
                                             </Border>
 
@@ -227,19 +197,20 @@
                         <ItemsControl ItemsSource="{Binding RecentAssignments}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White" CornerRadius="8" Margin="0,0,0,15" 
-                                            BorderThickness="1" BorderBrush="#E0E0E0" Cursor="Hand">
-                                        <Border.Effect>
-                                            <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                                        </Border.Effect>
+                                    <Border Margin="0,0,0,15" 
+                                            Cursor="Hand">
                                         <Border.Style>
-                                            <Style TargetType="Border">
+                                            <Style TargetType="Border" BasedOn="{StaticResource CardStyle}">
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#003d8f"/>
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <TranslateTransform Y="-2"/>
+                                                            </Setter.Value>
+                                                        </Setter>
                                                         <Setter Property="Effect">
                                                             <Setter.Value>
-                                                                <DropShadowEffect ShadowDepth="3" BlurRadius="10" Opacity="0.15"/>
+                                                                <DropShadowEffect ShadowDepth="6" BlurRadius="20" Opacity="0.12" Color="#191970"/>
                                                             </Setter.Value>
                                                         </Setter>
                                                     </Trigger>

@@ -4,15 +4,31 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="Chỉnh sửa bài tập - UCode" 
         Height="750" Width="1195"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
+        Background="#F8FAFC"
         ResizeMode="NoResize"
         ShowMinButton="False"
         ShowMaxRestoreButton="False"
-        WindowStyle="ToolWindow">
+        WindowStyle="ToolWindow"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        RenderOptions.BitmapScalingMode="HighQuality"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <mah:MetroWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/DataGridStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <DropShadowEffect x:Key="DropShadowEffect" ShadowDepth="2" BlurRadius="8" Opacity="0.1" Color="#191970"/>
+        </ResourceDictionary>
+    </mah:MetroWindow.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -54,16 +70,18 @@
                     <!-- Left Column: Form Fields -->
                     <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,14,-21">
                         <StackPanel>
-                            <!-- Class -->
-
                             <!-- Title -->
                             <TextBlock Text="Tiêu đề *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" 
+                                     mah:TextBoxHelper.Watermark="Nhập tiêu đề bài tập"
+                                     mah:ControlsHelper.CornerRadius="8"
                                      Height="40" FontSize="16" Padding="10" Margin="0,0,0,20"/>
 
                             <!-- Description -->
                             <TextBlock Text="Mô tả" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                                     mah:TextBoxHelper.Watermark="Nhập mô tả bài tập"
+                                     mah:ControlsHelper.CornerRadius="8"
                                      Height="100" FontSize="16" Padding="10" 
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
@@ -71,6 +89,7 @@
                             <!-- Assignment Type -->
                             <TextBlock Text="Loại bài tập *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <ComboBox SelectedValue="{Binding AssignmentType}" SelectedValuePath="Tag"
+                                      mah:ControlsHelper.CornerRadius="8"
                                       Height="40" FontSize="16" Margin="0,0,0,20">
                                 <ComboBoxItem Content="Bài tập về nhà" Tag="HOMEWORK"/>
                                 <ComboBoxItem Content="Kiểm tra" Tag="EXAMINATION"/>
@@ -80,6 +99,7 @@
                             <!-- Status -->
                             <TextBlock Text="Trạng thái *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <ComboBox SelectedValue="{Binding Status}" SelectedValuePath="Tag"
+                                      mah:ControlsHelper.CornerRadius="8"
                                       Height="40" FontSize="16" Margin="0,0,0,20">
                                 <ComboBoxItem Content="Nháp" Tag="DRAFT"/>
                                 <ComboBoxItem Content="Đã xuất bản" Tag="PUBLISHED"/>
@@ -89,6 +109,7 @@
                             <!-- Start Time -->
                             <TextBlock Text="Thời gian bắt đầu" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <mah:DateTimePicker SelectedDateTime="{Binding StartTime}" 
+                                                mah:ControlsHelper.CornerRadius="8"
                                                 Height="40" FontSize="14" Margin="0,0,0,20"
                                                 Culture="vi-VN"
                                                 PickerVisibility="All"
@@ -98,6 +119,7 @@
                             <!-- End Time -->
                             <TextBlock Text="Thời gian kết thúc" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                             <mah:DateTimePicker SelectedDateTime="{Binding EndTime}" 
+                                                mah:ControlsHelper.CornerRadius="8"
                                                 Height="40" FontSize="14" Margin="0,0,0,20"
                                                 Culture="vi-VN"
                                                 PickerVisibility="All"
@@ -132,87 +154,97 @@
                                         Command="{Binding AddProblemCommand}"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         Padding="15,8"
-                                        Cursor="Hand" HorizontalAlignment="Left" Width="107">
+                                        Cursor="Hand" HorizontalAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="+" FontSize="18" Margin="0,0,5,0" VerticalAlignment="Center" RenderTransformOrigin="0.637,0.418" Height="26" Width="13"/>
-                                        <TextBlock Text="THÊM BÀI" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <iconPacks:PackIconMaterial Kind="Plus" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <TextBlock Text="THÊM BÀI" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>
 
                             <!-- Selected Problems List with Scroll -->
-                            <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="6">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto"  MaxHeight="600">
-                                    <Grid Height="Auto">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="300*"/>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition Width="300*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <!-- Empty State 
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left"
-                                                    Visibility="{Binding HasSelectedProblems, Converter={StaticResource InverseBooleanToVisibilityConverter}}" Height="118" Width="299" Grid.ColumnSpan="3" Margin="150,0,0,0">
-                                            <TextBlock Text="📝" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                            <TextBlock Text="Chưa có đề bài nào" FontSize="16" FontWeight="SemiBold" Foreground="#666" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="Nhấn nút 'Thêm bài' để chọn đề bài cho assignment" FontSize="15" Foreground="#999" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                                        </StackPanel> -->
-
-                                        <!-- Problems List -->
-                                        <ItemsControl ItemsSource="{Binding SelectedProblems}"
-                                                      Visibility="{Binding HasSelectedProblems, Converter={StaticResource BooleanToVisibilityConverter}}" Grid.ColumnSpan="3" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,10,10">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Background="White" CornerRadius="4" Padding="8"
-                                                            BorderThickness="1" BorderBrush="#E0E0E0">
+                            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                                    <ItemsControl ItemsSource="{Binding SelectedProblems}"
+                                                  Visibility="{Binding HasSelectedProblems, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                                  Margin="10"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                        <!-- Override ItemsPanel to use modern StackPanel -->
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Background="Transparent"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Clean modern card without shadow -->
+                                                <Border Background="White" 
+                                                        CornerRadius="8" 
+                                                        Padding="12" 
+                                                        Margin="0,0,0,10"
+                                                        BorderBrush="#D1D5DB" 
+                                                        BorderThickness="1"
+                                                        UseLayoutRounding="True"
+                                                        SnapsToDevicePixels="True">
                                                         <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                            <TextBlock Grid.Column="0" Text="{Binding OrderIndex}" 
-                                                                       FontSize="16" FontWeight="Bold" Foreground="#FACB01" 
-                                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                                        <Border Grid.Column="0" Background="#191970" Width="30" Height="30" CornerRadius="15" Margin="0,0,15,0">
+                                                            <TextBlock Text="{Binding OrderIndex}" 
+                                                                       FontSize="14" FontWeight="Bold" Foreground="White" 
+                                                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                        </Border>
 
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
-                                                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                                    <TextBlock Text="{Binding Code}" FontSize="12" Foreground="#666" Margin="0,0,10,0"/>
-                                                                    <TextBlock Text="•" FontSize="12" Foreground="#666" Margin="0,0,5,0"/>
-                                                                    <TextBox Text="{Binding Points, UpdateSourceTrigger=PropertyChanged}" 
-                                                                             Width="50" Height="24" FontSize="12" Padding="5,0"/>
-                                                                    <TextBlock Text=" điểm" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                                                                </StackPanel>
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                                <TextBlock Text="{Binding Code}" FontSize="12" Foreground="#666" Margin="0,0,10,0"/>
+                                                                <TextBlock Text="•" FontSize="12" Foreground="#666" Margin="0,0,5,0"/>
+                                                                <TextBox Text="{Binding Points, UpdateSourceTrigger=PropertyChanged}" 
+                                                                         mah:ControlsHelper.CornerRadius="4"
+                                                                         Width="60" Height="26" FontSize="12" Padding="5,0"
+                                                                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                                                <TextBlock Text=" điểm" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="5,0,0,0"/>
                                                             </StackPanel>
+                                                        </StackPanel>
 
-                                                            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="8,0">
-                                                                <Button Width="30" Height="24" Padding="0" Margin="0,0,0,4"
-                                                                        Command="{Binding DataContext.MoveProblemUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding ProblemId}"
-                                                                        ToolTip="Di chuyển lên">
-                                                                    <Path Data="M7,15 L12,10 L17,15" Stroke="#666" StrokeThickness="2" Width="16" Height="16" Stretch="Uniform"/>
-                                                                </Button>
-                                                                <Button Width="30" Height="24" Padding="0"
-                                                                        Command="{Binding DataContext.MoveProblemDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding ProblemId}"
-                                                                        ToolTip="Di chuyển xuống">
-                                                                    <Path Data="M7,10 L12,15 L17,10" Stroke="#666" StrokeThickness="2" Width="16" Height="16" Stretch="Uniform"/>
-                                                                </Button>
-                                                            </StackPanel>
-
-                                                            <Button Grid.Column="3" Content="✕" Width="30" Height="30" 
-                                                                    FontSize="16" Padding="0" 
-                                                                    Command="{Binding DataContext.RemoveProblemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        <StackPanel Grid.Column="2" Orientation="Vertical" Margin="10,0">
+                                                            <Button Width="28" Height="28" Padding="0" Margin="0,0,0,4"
+                                                                    Command="{Binding DataContext.MoveProblemUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding ProblemId}"
-                                                                    Style="{StaticResource DangerButtonStyle}"/>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
+                                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                                    ToolTip="Di chuyển lên">
+                                                                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="14" Height="14"/>
+                                                            </Button>
+                                                            <Button Width="28" Height="28" Padding="0"
+                                                                    Command="{Binding DataContext.MoveProblemDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding ProblemId}"
+                                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                                    ToolTip="Di chuyển xuống">
+                                                                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="14" Height="14"/>
+                                                            </Button>
+                                                        </StackPanel>
+
+                                                        <Button Grid.Column="3" Width="32" Height="32" 
+                                                                Command="{Binding DataContext.RemoveProblemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding ProblemId}"
+                                                                Style="{StaticResource DangerButtonStyle}"
+                                                                Padding="0"
+                                                                ToolTip="Xóa khỏi bài tập">
+                                                            <iconPacks:PackIconMaterial Kind="Close" Width="16" Height="16"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </ScrollViewer>
                             </Border>
                         </Grid>

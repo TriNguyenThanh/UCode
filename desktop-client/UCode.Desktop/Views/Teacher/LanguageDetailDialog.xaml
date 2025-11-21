@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="Cấu hình chi tiết ngôn ngữ" 
         Height="700" Width="900"
@@ -12,7 +13,11 @@
         ShowTitleBar="True"
         ShowCloseButton="True"
         ShowMinButton="False"
-        ShowMaxRestoreButton="False">
+        ShowMaxRestoreButton="False"
+        Background="#F8FAFC"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -42,7 +47,7 @@
             </StackPanel>
         </Grid>
 
-        <Border Background="White" CornerRadius="8" Margin="20" Padding="30">
+        <Border Style="{StaticResource CardStyle}" Margin="20" Padding="30">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -69,13 +74,14 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Time Factor -->
+                            <!-- Hệ số thời gian -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Time Factor" Style="{StaticResource Label}"/>
+                                <TextBlock Text="Hệ số thời gian" Style="{StaticResource Label}"/>
                                 <Grid>
                                     <TextBox Text="{Binding TimeFactor, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" 
                                              Height="40" FontSize="14" Padding="10,0"
-                                             VerticalContentAlignment="Center"/>
+                                             VerticalContentAlignment="Center"
+                                             mah:ControlsHelper.CornerRadius="8"/>
                                     <TextBlock Text="x" Foreground="#666" FontSize="14" 
                                                IsHitTestVisible="False"
                                                VerticalAlignment="Center" HorizontalAlignment="Right" 
@@ -96,7 +102,8 @@
                                 <Grid>
                                     <TextBox Text="{Binding MemoryKb, UpdateSourceTrigger=PropertyChanged, StringFormat=N0}" 
                                              Height="40" FontSize="14" Padding="10,0"
-                                             VerticalContentAlignment="Center"/>
+                                             VerticalContentAlignment="Center"
+                                             mah:ControlsHelper.CornerRadius="8"/>
                                     <TextBlock Text="KB" Foreground="#666" FontSize="14" 
                                                IsHitTestVisible="False"
                                                VerticalAlignment="Center" HorizontalAlignment="Right" 
@@ -135,7 +142,8 @@
                                  TextWrapping="Wrap" AcceptsReturn="True"
                                  VerticalScrollBarVisibility="Auto"
                                  FontFamily="Consolas"
-                                 Margin="0,0,0,15"/>
+                                 Margin="0,0,0,15"
+                                 mah:ControlsHelper.CornerRadius="8"/>
 
                         <!-- Body -->
                         <TextBlock Text="Body (Code chính - vị trí người dùng viết)" Style="{StaticResource Label}"/>
@@ -144,7 +152,8 @@
                                  TextWrapping="Wrap" AcceptsReturn="True"
                                  VerticalScrollBarVisibility="Auto"
                                  FontFamily="Consolas"
-                                 Margin="0,0,0,15"/>
+                                 Margin="0,0,0,15"
+                                 mah:ControlsHelper.CornerRadius="8"/>
 
                         <!-- Tail -->
                         <TextBlock Text="Tail (Code cuối chương trình)" Style="{StaticResource Label}"/>
@@ -153,13 +162,14 @@
                                  TextWrapping="Wrap" AcceptsReturn="True"
                                  VerticalScrollBarVisibility="Auto"
                                  FontFamily="Consolas"
-                                 Margin="0,0,0,15"/>
+                                 Margin="0,0,0,15"
+                                 mah:ControlsHelper.CornerRadius="8"/>
 
                         <!-- Info -->
                         <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
-                                CornerRadius="4" Padding="15" Margin="0,10,0,0">
+                                CornerRadius="8" Padding="15" Margin="0,10,0,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <iconPacks:PackIconMaterial Kind="Information" Foreground="#2196F3" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Top"/>
                                 <TextBlock TextWrapping="Wrap" Foreground="#1976D2" FontSize="13">
                                     Code template sẽ được sử dụng để tạo khung code mặc định cho người dùng. 
                                     Body là phần người dùng sẽ viết code.
@@ -176,17 +186,27 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Content="HỦY" 
-                            Style="{StaticResource SecondaryButton}"
+                    <Button Grid.Column="0" 
+                            Style="{StaticResource SecondaryButtonStyle}"
                             Command="{Binding CancelCommand}"
                             HorizontalAlignment="Left"
-                            Width="120"/>
+                            Width="120">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Close" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="HỦY" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                    <Button Grid.Column="1" Content="💾 LƯU CẤU HÌNH" 
-                            Style="{StaticResource SuccessButton}"
+                    <Button Grid.Column="1" 
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding SaveCommand}"
                             Width="180"
-                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"/>
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="LƯU CẤU HÌNH" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </Grid>
             </Grid>
         </Border>

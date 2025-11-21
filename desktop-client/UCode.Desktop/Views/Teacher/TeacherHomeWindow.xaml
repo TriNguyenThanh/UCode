@@ -8,7 +8,7 @@
         Title="UCode - Trang Giảng viên" 
         Height="900" Width="1600"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
+        Background="#F8FAFC"
         WindowState="Maximized"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
@@ -79,12 +79,12 @@
                         <Border Background="White" 
                                 BorderBrush="#E0E0E0" 
                                 BorderThickness="1"
-                                CornerRadius="4"
+                                CornerRadius="8"
                                 Padding="0"
                                 Margin="0,5,0,0"
                                 MinWidth="200">
                             <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.2"/>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="15" Opacity="0.15" Color="#191970"/>
                             </Border.Effect>
                             <StackPanel>
                                 <!-- Email Header -->
