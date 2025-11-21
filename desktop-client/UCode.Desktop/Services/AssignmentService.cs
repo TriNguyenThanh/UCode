@@ -57,6 +57,28 @@ namespace UCode.Desktop.Services
         {
             return await _apiService.PutAsync<BestSubmission>($"/api/v1/assignments/{assignmentId}/grade-submission/{submissionId}", request);
         }
+
+        // Student methods
+        public async Task<ApiResponse<AssignmentUser>> GetMyAssignmentDetailAsync(string assignmentId)
+        {
+            return await _apiService.GetAsync<AssignmentUser>($"/api/v1/assignments/{assignmentId}/student/my-detail");
+        }
+
+        public async Task<ApiResponse<AssignmentUser>> StartAssignmentAsync(string assignmentId)
+        {
+            return await _apiService.PostAsync<AssignmentUser>($"/api/v1/assignments/{assignmentId}/student/start", null);
+        }
+
+        public async Task<ApiResponse<List<Assignment>>> GetStudentAssignmentsAsync()
+        {
+            return await _apiService.GetAsync<List<Assignment>>("/api/v1/assignments/student/my-assignments");
+        }
+
+        public async Task<ApiResponse<List<BestSubmission>>> GetBestSubmissionsAsync(string assignmentId, List<string> problemIds)
+        {
+            var problemIdsParam = string.Join(",", problemIds);
+            return await _apiService.GetAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/best?problemIds={problemIdsParam}");
+        }
     }
 
     // public class CreateAssignmentRequest

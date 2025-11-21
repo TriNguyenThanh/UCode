@@ -28,4 +28,9 @@
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Resources\background.png" />
+    <Resource Include="Resources\logo.png" />
+  </ItemGroup>
+
 </Project>
