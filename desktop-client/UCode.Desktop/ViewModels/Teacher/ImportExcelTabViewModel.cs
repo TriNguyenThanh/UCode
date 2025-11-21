@@ -337,6 +337,8 @@ namespace UCode.Desktop.ViewModels
                 var existingStudents = ValidationResults.Where(v => v.Status == "exists").ToList();
 
                 var createdUserIds = new List<string>();
+                
+                var successMsg = $"Thêm sinh viên vào lớp thành công:\n";
 
                 // Step 1: Create new students using bulk create API
                 if (newStudents.Count > 0)
@@ -344,10 +346,12 @@ namespace UCode.Desktop.ViewModels
                     var createRequests = newStudents.Select(s => new CreateStudentRequest
                     {
                         StudentCode = s.StudentCode,
+                        Username = s.StudentCode,
                         FullName = s.FullName,
                         Email = s.Email,
                         Major = s.Major,
-                        ClassYear = s.EnrollmentYear
+                        ClassYear = 1,
+                        EnrollmentYear = s.EnrollmentYear
                     }).ToList();
 
                     var createResponse = await _classService.BulkCreateStudentsAsync(createRequests);
@@ -360,6 +364,10 @@ namespace UCode.Desktop.ViewModels
                             .Select(r => r.UserId)
                             .ToList();
 
+                        successMsg =   $"Đã Import sinh viên thành công " +
+                                       $"- Tạo mới: {createdUserIds.Count} sinh viên\n" +
+                                       $"- Đã tồn tại: {existingStudents.Count} sinh viên\n";
+                                
                         if (createResponse.Data.FailureCount > 0)
                         {
                             var failedStudents = createResponse.Data.Results.Where(r => !r.Success).ToList();
@@ -381,17 +389,8 @@ namespace UCode.Desktop.ViewModels
                 {
                     var enrollResponse = await _classService.BulkEnrollStudentsAsync(_classId, allUserIds);
                     
-                    if (enrollResponse?.Success == true && enrollResponse.Data != null)
-                    {
-                        var successMsg = $"Đã import thành công!\n" +
-                                       $"- Tạo mới: {createdUserIds.Count} sinh viên\n" +
-                                       $"- Đã tồn tại: {existingStudents.Count} sinh viên\n" +
-                                       $"- Đã thêm vào lớp: {enrollResponse.Data.SuccessCount}/{allUserIds.Count}";
-                        
-                        if (enrollResponse.Data.FailureCount > 0)
-                        {
-                            successMsg += $"\n- Lỗi thêm vào lớp: {enrollResponse.Data.FailureCount}";
-                        }
+                    if (enrollResponse?.Success == true)
+                    {       
                         
                         await GetMetroWindow()?.ShowMessageAsync("Thành công", successMsg);
                         Reset();

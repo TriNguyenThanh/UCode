@@ -54,15 +54,21 @@ namespace UCode.Desktop.Views
         private void ProfileButton_Click(object sender, RoutedEventArgs e)
         {
             UserMenuPopup.IsOpen = false;
-            // TODO: Navigate to profile page
-            this.ShowMessageAsync("Hồ sơ", "Tính năng Hồ sơ đang được phát triển.");
+            var profilePage = App.ServiceProvider?.GetService(typeof(Pages.TeacherProfilePage)) as Pages.TeacherProfilePage;
+            if (profilePage != null)
+            {
+                _navigationService.NavigateTo(profilePage);
+            }
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             UserMenuPopup.IsOpen = false;
-            // TODO: Navigate to settings page
-            this.ShowMessageAsync("Cài đặt", "Tính năng Cài đặt đang được phát triển.");
+            var settingsPage = App.ServiceProvider?.GetService(typeof(Pages.SettingsPage)) as Pages.SettingsPage;
+            if (settingsPage != null)
+            {
+                _navigationService.NavigateTo(settingsPage);
+            }
         }
 
         private async void LogoutButton_Click(object sender, RoutedEventArgs e)

@@ -52,7 +52,8 @@
                         <TextBlock Text="Tiêu đề phiên điểm danh *" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                         <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
                                  Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
-                                 mah:TextBoxHelper.Watermark="VD: Điểm danh tuần 1"/>
+                                 mah:TextBoxHelper.Watermark="VD: Điểm danh tuần 1"
+                                 mah:ControlsHelper.CornerRadius="8"/>
                         <TextBlock Text="Tên hiển thị của phiên điểm danh" 
                                    FontSize="12" Foreground="#999" Margin="0,0,0,20"/>
 
@@ -75,13 +76,21 @@
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Thời gian bắt đầu *" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                                 <mah:DateTimePicker SelectedDateTime="{Binding StartTime}"
-                                                    Height="45" FontSize="14"/>
+                                                    Height="45" FontSize="14"
+                                                    mah:ControlsHelper.CornerRadius="8"
+                                                    Culture="vi-VN"
+                                                    PickerVisibility="All"
+                                                    HandVisibility="HourMinute"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Thời gian kết thúc *" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                                 <mah:DateTimePicker SelectedDateTime="{Binding EndTime}"
-                                                    Height="45" FontSize="14"/>
+                                                    Height="45" FontSize="14"
+                                                    mah:ControlsHelper.CornerRadius="8"
+                                                    Culture="vi-VN"
+                                                    PickerVisibility="All"
+                                                    HandVisibility="HourMinute"/>
                             </StackPanel>
                         </Grid>
 
@@ -105,7 +114,8 @@
                             <TextBlock Text="Dải IP cho phép" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding AllowedIpSubnet, UpdateSourceTrigger=PropertyChanged}"
                                      Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
-                                     mah:TextBoxHelper.Watermark="VD: 192.168.1.0/24"/>
+                                     mah:TextBoxHelper.Watermark="VD: 192.168.1.0/24"
+                                     mah:ControlsHelper.CornerRadius="8"/>
                             <TextBlock Text="Chỉ sinh viên trong dải IP này mới được điểm danh" 
                                        FontSize="12" Foreground="#999"/>
                         </StackPanel>
@@ -132,36 +142,43 @@
                                     <TextBlock Text="Vĩ độ (Latitude)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                                     <TextBox Text="{Binding AllowedLatitude, UpdateSourceTrigger=PropertyChanged}"
                                              Height="45" FontSize="14" Padding="12"
-                                             mah:TextBoxHelper.Watermark="VD: 10.762622"/>
+                                             mah:TextBoxHelper.Watermark="VD: 10.762622"
+                                             mah:ControlsHelper.CornerRadius="8"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Kinh độ (Longitude)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                                     <TextBox Text="{Binding AllowedLongitude, UpdateSourceTrigger=PropertyChanged}"
                                              Height="45" FontSize="14" Padding="12"
-                                             mah:TextBoxHelper.Watermark="VD: 106.660172"/>
+                                             mah:TextBoxHelper.Watermark="VD: 106.660172"
+                                             mah:ControlsHelper.CornerRadius="8"/>
                                 </StackPanel>
                             </Grid>
 
                             <TextBlock Text="Bán kính cho phép (mét)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding AllowedRadiusMeters, UpdateSourceTrigger=PropertyChanged}"
                                      Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
-                                     mah:TextBoxHelper.Watermark="VD: 100"/>
+                                     mah:TextBoxHelper.Watermark="VD: 100"
+                                     mah:ControlsHelper.CornerRadius="8"/>
                             <TextBlock Text="Sinh viên phải ở trong bán kính này để điểm danh" 
                                        FontSize="12" Foreground="#999" Margin="0,0,0,15"/>
 
                             <!-- Open Google Maps Button -->
-                            <Button Content="🗺️ Mở Google Maps để lấy tọa độ"
-                                    Style="{StaticResource SecondaryButton}"
+                            <Button Style="{StaticResource SecondaryButton}"
                                     Command="{Binding GetLocationCommand}"
-                                    Height="40" Margin="0,0,0,20"/>
+                                    Height="40" Margin="0,0,0,20">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="MapMarker" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Mở Google Maps để lấy tọa độ" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
 
                         <!-- Info Box -->
                         <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
-                                CornerRadius="6" Padding="15" Margin="0,10,0,20">
+                                CornerRadius="8" Padding="15" Margin="0,10,0,20">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="💡" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <iconPacks:PackIconMaterial Kind="InformationOutline" Width="20" Height="20" Foreground="#2196F3" Margin="0,0,10,0" VerticalAlignment="Top"/>
                                 <TextBlock FontSize="13" Foreground="#0D47A1" TextWrapping="Wrap">
                                     <Run Text="Cách lấy tọa độ từ Google Maps:" FontWeight="SemiBold"/>
                                     <LineBreak/>
@@ -182,10 +199,14 @@
                                     Style="{StaticResource SecondaryButton}"
                                     Command="{Binding CancelCommand}"
                                     Width="120" Margin="0,0,15,0"/>
-                            <Button Content="✓ TẠO PHIÊN ĐIỂM DANH" 
-                                    Style="{StaticResource YellowButton}"
+                            <Button Style="{StaticResource YellowButton}"
                                     Command="{Binding CreateCommand}"
-                                    Width="200"/>
+                                    Width="220">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Check" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="TẠO PHIÊN ĐIỂM DANH" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </StackPanel>
                 </Border>

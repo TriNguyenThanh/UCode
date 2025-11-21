@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router'
 import { getAttendanceSessionByCode, checkInAttendance, checkAttendanceStatus } from '~/services/attendanceService'
 import type { AttendanceSession, AttendanceRecord, GeolocationPosition } from '~/types'
 import { auth } from '~/auth'
+import { formatDateTime} from '~/utils/dateUtils'
 
 export default function AttendanceCheckIn() {
   const { sessionCode } = useParams()
@@ -30,11 +31,12 @@ export default function AttendanceCheckIn() {
     const loadSession = async () => {
       try {
         setLoading(true)
-        const [sessionData, statusData] = await Promise.all([
-          getAttendanceSessionByCode(sessionCode),
-          checkAttendanceStatus(sessionCode)
-        ])
+        // First, get session by code to get the sessionId
+        const sessionData = await getAttendanceSessionByCode(sessionCode)
         setSession(sessionData)
+
+        // Then check status using sessionId
+        const statusData = await checkAttendanceStatus(sessionData.id)
         setAttendanceRecord(statusData)
 
         // Lấy IP address
@@ -163,6 +165,7 @@ export default function AttendanceCheckIn() {
 
       const record = await checkInAttendance({
         sessionCode,
+        sessionId: session.id,
         latitude: location?.latitude,
         longitude: location?.longitude
       })
@@ -212,7 +215,7 @@ export default function AttendanceCheckIn() {
     )
   }
 
-  const isExpired = new Date(session.endTime) < new Date()
+  const isExpired = new Date(formatDateTime(session.endTime)) < new Date()
   const hasCheckedIn = !!attendanceRecord
 
   return (
@@ -241,13 +244,13 @@ export default function AttendanceCheckIn() {
               <div>
                 <label className="text-sm font-medium text-gray-500">Bắt đầu</label>
                 <p className="text-gray-900">
-                  {new Date(session.startTime).toLocaleString('vi-VN')}
+                  {formatDateTime(session.startTime)}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Kết thúc</label>
                 <p className="text-gray-900">
-                  {new Date(session.endTime).toLocaleString('vi-VN')}
+                  {formatDateTime(session.endTime)}
                 </p>
               </div>
             </div>
@@ -312,7 +315,7 @@ export default function AttendanceCheckIn() {
                 Đã điểm danh thành công
               </h2>
               <p className="text-green-700">
-                Thời gian: {new Date(attendanceRecord.attendedAt).toLocaleString('vi-VN')}
+                Thời gian: {formatDateTime(attendanceRecord.attendedAt)}
               </p>
               {!attendanceRecord.isValid && attendanceRecord.invalidReason && (
                 <p className="text-red-600 mt-2">

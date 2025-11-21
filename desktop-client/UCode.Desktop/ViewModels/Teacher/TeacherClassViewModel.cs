@@ -405,8 +405,6 @@ namespace UCode.Desktop.ViewModels
         {
             try
             {
-                // Add sample data for this class (only for demo, remove when API is ready)
-                _attendanceService.AddSampleSessionsForClass(_classId);
                 
                 var response = await _attendanceService.GetAttendanceSessionsAsync(_classId);
                 AttendanceSessions.Clear();

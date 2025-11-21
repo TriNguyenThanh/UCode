@@ -8,6 +8,11 @@ public class AttendanceRecordRequest
     /// ID phiên điểm danh (link tới AttendanceSession)
     /// </summary>
     public Guid SessionId { get; set; }
+
+    /// <summary>
+    /// Mã  điểm danh
+    /// </summary>
+    public string SessionCode { get; set; } = string.Empty;
     
     /// <summary>
     /// ID sinh viên điểm danh

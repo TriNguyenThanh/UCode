@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class addColunminAssginmentUser : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -401,6 +401,12 @@ namespace Infrastructure.Migrations
                 name: "ix_assignment_user_assignment_id",
                 table: "assignment_user",
                 column: "assignment_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_assignment_user_assignment_id_user_id",
+                table: "assignment_user",
+                columns: new[] { "assignment_id", "user_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_assignment_user_user_id",

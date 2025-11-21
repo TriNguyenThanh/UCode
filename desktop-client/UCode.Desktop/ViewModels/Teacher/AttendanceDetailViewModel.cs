@@ -124,24 +124,16 @@ namespace UCode.Desktop.ViewModels
             {
                 // Load session info
                 // TODO: Add GetSessionByIdAsync to service
-                // For now, we'll use sample data
-                Session = new AttendanceSessionItem
+                var res = await _attendanceService.GetAttendanceSessionByIdAsync(_sessionId);
+
+                if (res?.Success == true && res.Data != null)
                 {
-                    SessionId = _sessionId,
-                    Title = "Điểm danh tuần 1",
-                    SessionCode = "WEEK01",
-                    StartTime = DateTime.Now.AddDays(-7),
-                    EndTime = DateTime.Now.AddDays(-7).AddHours(2),
-                    IsActive = false,
-                    AttendedCount = 45,
-                    RequireIpCheck = true,
-                    AllowedIpSubnet = "192.168.1.0/24",
-                    RequireGpsCheck = true,
-                    AllowedLatitude = 10.762622m,
-                    AllowedLongitude = 106.660172m,
-                    AllowedRadiusMeters = 100,
-                    CreatedAt = DateTime.Now.AddDays(-7)
-                };
+                    Session = res.Data;
+                }
+                else
+                {
+                    throw new Exception("Không tìm thấy phiên điểm danh.");
+                }
 
                 // Load attendance records
                 var response = await _attendanceService.GetAttendanceRecordsAsync(_sessionId);

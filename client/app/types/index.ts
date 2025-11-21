@@ -582,6 +582,7 @@ export interface AttendanceRecord {
 
 export interface AttendanceCheckInRequest {
   sessionCode: string
+  sessionId?: string
   latitude?: number
   longitude?: number
 }

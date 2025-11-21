@@ -21,6 +21,7 @@ namespace UCode.Desktop.ViewModels
         private DateTime? _startTime;
         private DateTime? _endDate;
         private DateTime? _endTime;
+        private bool _isActive;
 
         // IP settings
         private bool _requireIpCheck;
@@ -104,6 +105,12 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _allowedRadiusMeters, value);
         }
 
+        public bool IsActive
+        {
+            get => _isActive;
+            set => SetProperty(ref _isActive, value);
+        }
+
         public ICommand SaveCommand { get; }
         public ICommand OpenMapCommand { get; }
 
@@ -117,6 +124,7 @@ namespace UCode.Desktop.ViewModels
 
             // Initialize from session
             SessionTitle = session.Title;
+            IsActive = session.IsActive;
             StartDate = session.StartTime.Date;
             StartTime = new DateTime(session.StartTime.Year, session.StartTime.Month, session.StartTime.Day, 
                                      session.StartTime.Hour, session.StartTime.Minute, 0);
@@ -131,11 +139,37 @@ namespace UCode.Desktop.ViewModels
             AllowedLatitude = session.AllowedLatitude?.ToString() ?? string.Empty;
             AllowedLongitude = session.AllowedLongitude?.ToString() ?? string.Empty;
             AllowedRadiusMeters = session.AllowedRadiusMeters?.ToString() ?? string.Empty;
+
+            // Auto-fill IP and GPS defaults when enabled
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(RequireIpCheck) && RequireIpCheck)
+                {
+                    if (string.IsNullOrWhiteSpace(AllowedIpSubnet))
+                    {
+                        AllowedIpSubnet = GetPublicIp();
+                    }
+                }
+
+                if (e.PropertyName == nameof(RequireGpsCheck) && RequireGpsCheck)
+                {
+                    if (string.IsNullOrWhiteSpace(AllowedRadiusMeters))
+                    {
+                        AllowedRadiusMeters = "20";
+                    }
+                }
+            };
         }
 
         private async Task SaveConfigAsync()
         {
             // Validation
+            if (string.IsNullOrWhiteSpace(SessionTitle))
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập tiêu đề phiên điểm danh");
+                return;
+            }
+
             if (!StartDate.HasValue || !StartTime.HasValue || !EndDate.HasValue || !EndTime.HasValue)
             {
                 await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Vui lòng nhập đầy đủ thời gian bắt đầu và kết thúc");
@@ -182,6 +216,8 @@ namespace UCode.Desktop.ViewModels
             {
                 var request = new Services.UpdateAttendanceSessionRequest
                 {
+                    Title = SessionTitle?.Trim(),
+                    IsActive = IsActive,
                     StartTime = startDateTime,
                     EndTime = endDateTime,
                     RequireIpCheck = RequireIpCheck,
@@ -224,16 +260,77 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void OpenMap()
+        private async void OpenMap()
         {
-            // TODO: Open Google Maps picker dialog
-            // Similar to CreateAttendanceSessionPage
-            MessageBox.Show(
-                "Tính năng chọn vị trí trên bản đồ sẽ được thêm vào.\n\n" +
-                "Hiện tại vui lòng nhập tọa độ GPS thủ công.",
-                "Thông báo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            try
+            {
+                // Open Google Maps to get coordinates
+                var url = "https://www.google.com/maps/@?api=1&map_action=map";
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+
+                await GetMetroWindow()?.ShowMessageAsync(
+                    "Hướng dẫn lấy tọa độ từ Google Maps",
+                    "1. Click chuột phải vào vị trí bạn muốn trên bản đồ\n" +
+                    "2. Click vào tọa độ đầu tiên trong menu (dạng: 10.762622, 106.660172)\n" +
+                    "3. Tọa độ sẽ được copy vào clipboard\n" +
+                    "4. Paste vào ô 'Vĩ độ, Kinh độ' bên dưới\n\n" +
+                    "Hoặc xem tọa độ trong URL: @10.762622,106.660172");
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync(
+                    "Lỗi",
+                    $"Không thể mở Google Maps: {ex.Message}");
+            }
+        }
+
+        private string GetPublicIp()
+        {
+            try
+            {
+                // Get public IP from external service
+                using (var client = new System.Net.WebClient())
+                {
+                    var publicIp = client.DownloadString("https://api.ipify.org").Trim();
+                    if (!string.IsNullOrWhiteSpace(publicIp))
+                    {
+                        return publicIp;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting public IP: {ex.Message}");
+                
+                // Fallback: Try to get local network IP (WiFi/Ethernet)
+                try
+                {
+                    var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+                    foreach (var ip in host.AddressList)
+                    {
+                        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            var ipString = ip.ToString();
+                            // Skip loopback
+                            if (!ipString.StartsWith("127."))
+                            {
+                                return ipString;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error getting local IP: {ex2.Message}");
+                }
+            }
+
+            // Default fallback
+            return "";
         }
     }
 }

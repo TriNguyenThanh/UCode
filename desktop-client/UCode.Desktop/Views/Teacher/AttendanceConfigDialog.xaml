@@ -52,11 +52,21 @@
                                FontWeight="Bold"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                <TextBlock Text="{Binding SessionTitle}" 
-                           Foreground="#666" 
-                           FontSize="14" 
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0"/>
+                
+                <!-- Editable Title -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+                    <iconPacks:PackIconMaterial Kind="Pencil" Width="14" Height="14" Foreground="#666" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding SessionTitle, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="14"
+                             Foreground="#666"
+                             BorderThickness="0,0,0,1"
+                             BorderBrush="#E0E0E0"
+                             Background="Transparent"
+                             Padding="4,2"
+                             MinWidth="200"
+                             HorizontalContentAlignment="Center"
+                             VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
@@ -70,6 +80,11 @@
                             <iconPacks:PackIconMaterial Kind="ClockOutline" Width="20" Height="20" Foreground="#191970" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Thời gian" FontSize="18" FontWeight="Bold" Foreground="#191970" VerticalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- Active Status -->
+                        <CheckBox IsChecked="{Binding IsActive}" Margin="0,0,0,15">
+                            <TextBlock Text="Kích hoạt phiên điểm danh" FontSize="14" FontWeight="SemiBold"/>
+                        </CheckBox>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -209,16 +224,25 @@
                                     HorizontalAlignment="Left"
                                     Margin="0,15,0,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Kind="Map" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Chọn vị trí trên bản đồ" VerticalAlignment="Center"/>
+                                    <iconPacks:PackIconMaterial Kind="MapMarker" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Mở Google Maps để lấy tọa độ" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
+                            <!-- Info Box -->
                             <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,15,0,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Kind="Information" Foreground="#2196F3" Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <iconPacks:PackIconMaterial Kind="InformationOutline" Foreground="#2196F3" Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Top"/>
                                     <TextBlock TextWrapping="Wrap" Foreground="#1976D2" FontSize="13">
-                                        Sinh viên chỉ có thể điểm danh khi ở trong bán kính cho phép từ vị trí đã chọn
+                                        <Run Text="Cách lấy tọa độ từ Google Maps:" FontWeight="SemiBold"/>
+                                        <LineBreak/>
+                                        <Run Text="1. Click nút 'Mở Google Maps' ở trên"/>
+                                        <LineBreak/>
+                                        <Run Text="2. Click chuột phải vào vị trí bạn muốn trên bản đồ"/>
+                                        <LineBreak/>
+                                        <Run Text="3. Click vào tọa độ đầu tiên (dạng: 10.762622, 106.660172)"/>
+                                        <LineBreak/>
+                                        <Run Text="4. Tọa độ sẽ được copy, paste vào ô Vĩ độ và Kinh độ"/>
                                     </TextBlock>
                                 </StackPanel>
                             </Border>

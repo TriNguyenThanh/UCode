@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251118085111_addColunminAssginmentUser")]
-    partial class addColunminAssginmentUser
+    [Migration("20251121145834_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -203,6 +203,10 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_assignment_user_user_id");
+
+                    b.HasIndex("AssignmentId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_assignment_user_assignment_id_user_id");
 
                     b.ToTable("assignment_user", (string)null);
                 });

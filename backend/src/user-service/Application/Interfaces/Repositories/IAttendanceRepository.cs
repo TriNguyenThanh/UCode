@@ -6,6 +6,7 @@ public interface IAttendanceRepository
 {
     Task<List<AttendanceSession>> GetSessionsAsync(Guid classId, int pageNumber, int pageSize);
     Task<AttendanceSession?> GetSessionByIdAsync(Guid id);
+    Task<AttendanceSession?> GetSessionByCodeAsync(string code);
     Task<AttendanceSession> CreateSessionAsync(AttendanceSession attendanceSession);
     Task<AttendanceSession> UpdateSessionAsync(AttendanceSession attendanceSession);
     Task<bool> DeleteSessionAsync(Guid id);

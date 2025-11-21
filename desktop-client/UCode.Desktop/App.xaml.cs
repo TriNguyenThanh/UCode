@@ -141,6 +141,9 @@ public partial class App : Application
         // Services
         services.AddSingleton<TokenStorageService>();
         services.AddSingleton<AuthService>();
+        services.AddSingleton<UserService>();
+        services.AddSingleton<StudentService>();
+        services.AddSingleton<TeacherService>();
         services.AddSingleton<ProblemService>();
         services.AddSingleton<AssignmentService>();
         services.AddSingleton<ClassService>();
@@ -188,6 +191,8 @@ public partial class App : Application
         services.AddTransient<ClassDetailViewModel>();
         services.AddTransient<AssignmentDetailViewModel>();
         services.AddTransient<ProblemSolverViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<TeacherProfileViewModel>();
 
         // ViewModels - Teacher
         services.AddTransient<TeacherHomeViewModel>();
@@ -264,6 +269,10 @@ public partial class App : Application
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
+        
+        // Pages - Common
+        services.AddTransient<Pages.SettingsPage>();
+        services.AddTransient<Pages.TeacherProfilePage>();
     }
 }
 

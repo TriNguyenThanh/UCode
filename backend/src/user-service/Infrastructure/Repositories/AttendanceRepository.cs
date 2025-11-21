@@ -113,4 +113,11 @@ public class AttendanceRepository : IAttendanceRepository
             throw new Exception("An error occurred while updating the session.", ex);
         }
     }
+
+    public async Task<AttendanceSession?> GetSessionByCodeAsync(string code)
+    {
+        return await _context.AttendanceSessions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(session => session.SessionCode == code);
+    }
 }
