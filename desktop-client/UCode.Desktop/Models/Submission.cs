@@ -24,17 +24,20 @@ namespace UCode.Desktop.Models
         public int TotalTestcase { get; set; }
         public int PassedTestcase { get; set; }
         
-        // Display properties
-        public string StatusDisplay => Status switch
+        // Display property
+        public string StatusDisplay
         {
-            "Passed" => "Đạt",
-            "Failed" => "Không đạt",
-            "CompilationError" => "Lỗi biên dịch",
-            "RuntimeError" => "Lỗi runtime",
-            "TimeLimitExceeded" => "Quá thời gian",
-            "MemoryLimitExceeded" => "Quá bộ nhớ",
-            _ => Status
-        };
+            get => Status switch
+            {
+                "Passed" => "Đạt",
+                "Failed" => "Không đạt",
+                "CompilationError" => "Lỗi biên dịch",
+                "RuntimeError" => "Lỗi runtime",
+                "TimeLimitExceeded" => "Quá thời gian",
+                "MemoryLimitExceeded" => "Quá bộ nhớ",
+                _ => Status
+            };
+        }
     }
 }
 

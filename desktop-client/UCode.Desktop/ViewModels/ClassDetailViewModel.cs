@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MahApps.Metro.Controls.Dialogs;
@@ -13,17 +14,19 @@ namespace UCode.Desktop.ViewModels
         private readonly ClassService _classService;
         private readonly AssignmentService _assignmentService;
         private readonly AuthService _authService;
+        private readonly NavigationService _navigationService;
         private Class _classData;
         private bool _isLoading;
         private string _classId;
 
-        public ClassDetailViewModel(ClassService classService, AssignmentService assignmentService, AuthService authService)
+        public ClassDetailViewModel(ClassService classService, AssignmentService assignmentService, AuthService authService, NavigationService navigationService)
         {
             _classService = classService;
             _assignmentService = assignmentService;
             _authService = authService;
+            _navigationService = navigationService;
             _classData = new Class();
-            
+
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
         }
@@ -94,14 +97,40 @@ namespace UCode.Desktop.ViewModels
         {
             try
             {
-                var response = await _assignmentService.GetAssignmentsByClassAsync(_classId);
+                var currentUser = _authService.CurrentUser;
+                ApiResponse<System.Collections.Generic.List<Assignment>> response = null;
+
+                if (currentUser?.Role.ToString().ToLower() == "student")
+                {
+                    // Student: Get all student assignments and filter by class
+                    response = await _assignmentService.GetStudentAssignmentsAsync();
+                }
+                else
+                {
+                    // Teacher/Admin: Get assignments for this class
+                    response = await _assignmentService.GetAssignmentsByClassAsync(_classId);
+                }
+
                 if (response?.Success == true && response.Data != null)
                 {
                     Assignments.Clear();
                     foreach (var assignment in response.Data)
                     {
-                        Assignments.Add(assignment);
+                        // For students, we need to filter by classId
+                        if (currentUser?.Role.ToString().ToLower() == "student")
+                        {
+                            if (assignment.ClassId == _classId)
+                            {
+                                Assignments.Add(assignment);
+                            }
+                        }
+                        else
+                        {
+                            Assignments.Add(assignment);
+                        }
                     }
+                    OnPropertyChanged(nameof(TotalPoints));
+                    OnPropertyChanged(nameof(PublishedCount));
                 }
             }
             catch (System.Exception ex)
@@ -110,32 +139,49 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void NavigateToAssignment(string assignmentId)
+        private async void NavigateToAssignment(string assignmentId)
         {
-            if (string.IsNullOrEmpty(assignmentId)) return;
-
-            var assignmentWindow = App.ServiceProvider.GetService(typeof(Views.AssignmentDetailWindow)) as Views.AssignmentDetailWindow;
-            if (assignmentWindow != null)
+            try
             {
-                var viewModel = assignmentWindow.DataContext as AssignmentDetailViewModel;
-                if (viewModel != null)
+                if (string.IsNullOrEmpty(assignmentId)) return;
+
+                var assignment = Assignments.FirstOrDefault(a => a.AssignmentId == assignmentId);
+                if (assignment != null && assignment.AssignmentType == AssignmentType.EXAMINATION)
                 {
-                    _ = viewModel.InitializeAsync(assignmentId);
-                    assignmentWindow.Show();
+                    var result = await GetMetroWindow()?.ShowMessageAsync(
+                       "Bài kiểm tra - Lưu ý quan trọng",
+                       "Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:\n" +
+                       "- Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài\n" +
+                       "- Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên\n" +
+                       "- Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn\n\n" +
+                       "Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?",
+                       MessageDialogStyle.AffirmativeAndNegative,
+                       new MetroDialogSettings
+                       {
+                           AffirmativeButtonText = "Xác nhận và bắt đầu",
+                           NegativeButtonText = "Hủy",
+                           DefaultButtonFocus = MessageDialogResult.Affirmative
+                       });
+
+                    if (result != MessageDialogResult.Affirmative)
+                    {
+                        return;
+                    }
                 }
+
+                // Sử dụng Navigation thay vì mở window mới
+                var assignmentDetailPage = new Views.Students.AssignmentDetailPage();
+                _navigationService.NavigateTo(assignmentDetailPage, assignmentId);
+            }
+            catch (System.Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Đã xảy ra lỗi khi mở bài tập: {ex.Message}\n\nChi tiết:\n{ex.StackTrace}");
             }
         }
 
         private void NavigateBack()
         {
-            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
-            {
-                if (window is Views.ClassDetailWindow)
-                {
-                    window.Close();
-                    break;
-                }
-            }
+            _navigationService.GoBack();
         }
 
         public int GetDaysUntilDue(DateTime? endTime)

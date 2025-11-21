@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 using UCode.Desktop.Views;
+using UCode.Desktop.Views.Students;
 
 namespace UCode.Desktop;
 
@@ -55,7 +56,7 @@ public partial class App : Application
             // Try auto-login first
             var authService = ServiceProvider.GetRequiredService<AuthService>();
             bool autoLoginSuccess = false;
-            
+
             try
             {
                 var autoLoginTask = authService.TryAutoLoginAsync();
@@ -67,16 +68,16 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
                 autoLoginSuccess = false;
             }
-            
+
             if (autoLoginSuccess)
             {
                 System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
                 // Auto-login successful, open main window based on user role
                 var user = authService.CurrentUser;
-                
+
                 // Change shutdown mode to close when main window closes
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
-                
+
                 if (user?.Role.ToString().ToLower() == "teacher")
                 {
                     var teacherWindow = ServiceProvider.GetRequiredService<TeacherHomeWindow>();
@@ -165,8 +166,8 @@ public partial class App : Application
         // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
-        services.AddTransient<ClassDetailWindow>();
-        services.AddTransient<AssignmentDetailWindow>();
+        // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
+        // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
         services.AddTransient<ProblemSolverWindow>();
 
         // Views - Teacher
@@ -188,6 +189,9 @@ public partial class App : Application
         services.AddTransient<Pages.TeacherProblemsPage>();
         services.AddTransient<Pages.ProblemCreatePage>();
         services.AddTransient<Pages.ProblemEditPage>();
+
+        // Pages - Student (for navigation)
+        services.AddTransient<Views.Students.ClassDetailPage>();
+        services.AddTransient<Views.Students.AssignmentDetailPage>();
     }
 }
-
