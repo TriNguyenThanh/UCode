@@ -43,5 +43,7 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         // Indexes
         builder.HasIndex(au => au.AssignmentId);
         builder.HasIndex(au => au.UserId);
+        builder.HasIndex(au => new { au.AssignmentId, au.UserId })
+            .IsUnique();
     }
 }

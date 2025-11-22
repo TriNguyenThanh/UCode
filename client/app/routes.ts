@@ -33,5 +33,7 @@ export default [
   route('admin/settings', 'routes/admin.settings.tsx'),
   route('admin/logs', 'routes/admin.logs.tsx'),
   //student route
-  route('student/assignment/:assignmentId/problem/:problemId', 'routes/student.assignment.$assignmentId.problem.$problemId.tsx')
+  route('student/assignment/:assignmentId/problem/:problemId', 'routes/student.assignment.$assignmentId.problem.$problemId.tsx'),
+  // Attendance route
+  route('attendance/:sessionCode', 'routes/attendance.$sessionCode.tsx')
 ] satisfies RouteConfig

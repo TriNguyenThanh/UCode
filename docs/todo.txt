@@ -1,1 +1,3 @@
-random session code
+random session code (done)
+
+*Nhớ*: Rà soát lại bảo mật của tất cả API của user-service  (Trí đừng xóa cái này nhé)

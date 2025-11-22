@@ -26,7 +26,7 @@ namespace UCode.Desktop.Services
         
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
-            Converters = { new UtcToLocalDateTimeConverter() }
+            Converters = { new VietnamDateTimeConverter() }
         };
 
         protected BaseApiService(HttpClient httpClient, IDialogCoordinator dialogCoordinator, TokenStorageService? tokenStorage = null, AuthService? authService = null)

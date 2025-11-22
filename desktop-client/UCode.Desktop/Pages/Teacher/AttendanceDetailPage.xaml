@@ -1,0 +1,340 @@
+<UserControl x:Class="UCode.Desktop.Pages.AttendanceDetailPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1400"
+             Background="#F5F5F5">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <!-- <Grid Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid> -->
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#191970" Padding="30,20">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Session.Title}" Foreground="#FACB01" FontSize="28" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="Mã phiên: " Foreground="White" FontSize="16" Opacity="0.8"/>
+                            <TextBlock Text="{Binding Session.SessionCode}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text=" • " Foreground="White" FontSize="16" Margin="10,0"/>
+                            <Border CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Session.IsActive}" Value="True">
+                                                <Setter Property="Background" Value="#34C759"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Session.IsActive}" Value="False">
+                                                <Setter Property="Background" Value="#999"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding Session.StatusText}" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Style="{StaticResource SecondaryButton}"
+                            Command="{Binding BackCommand}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Padding="12,10"
+                            ToolTip="Quay lại">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Quay lại" FontSize="14" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel  Margin="1">
+                    <!-- Session Info Cards -->
+                    <Grid Grid.Row="1" Margin="30,20,30,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Total Attendance -->
+                        <Border Grid.Column="0" 
+                                Background="#FFF9E6" 
+                                BorderBrush="#FACB01" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,0,10,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <iconPacks:PackIconMaterial Kind="ClipboardText" Width="16" Height="16" Foreground="#856404" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Tổng số điểm danh" FontSize="14" FontWeight="SemiBold" Foreground="#856404" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Session.AttendedCount}" 
+                                       FontSize="24" FontWeight="Bold" Foreground="#856404"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Valid Count -->
+                        <Border Grid.Column="1" 
+                                Background="#E8F5E9" 
+                                BorderBrush="#34C759" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="5,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <iconPacks:PackIconMaterial Kind="CheckCircle" Width="16" Height="16" Foreground="#2E7D32" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ValidCount}" 
+                                       FontSize="24" FontWeight="Bold" Foreground="#2E7D32"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Invalid Count -->
+                        <Border Grid.Column="2" 
+                                Background="#FFEBEE" 
+                                BorderBrush="#FF3B30" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="5,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <iconPacks:PackIconMaterial Kind="CloseCircle" Width="16" Height="16" Foreground="#C62828" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Không hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#C62828" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding InvalidCount}" 
+                                       FontSize="24" FontWeight="Bold" Foreground="#C62828"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Attendance Rate -->
+                        <Border Grid.Column="3" 
+                                Background="#E3F2FD" 
+                                BorderBrush="#2196F3" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="10,0,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <iconPacks:PackIconMaterial Kind="ChartBar" Width="16" Height="16" Foreground="#1565C0" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Tỷ lệ hợp lệ" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock FontSize="24" FontWeight="Bold" Foreground="#1565C0">
+                                <Run Text="{Binding AttendanceRate, Mode=OneWay, StringFormat='{}{0:F1}'}"/>
+                                <Run Text="%" FontSize="18"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Main Content -->
+                    <Grid Grid.Row="2" Margin="30,20,30,30">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Session Details - Compact -->
+                        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,15" Padding="15">
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Time Info -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
+                                    <iconPacks:PackIconMaterial Kind="ClockOutline" Width="14" Height="14" Foreground="#666" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Session.StartTime, StringFormat='dd/MM/yyyy HH:mm'}" 
+                                               FontSize="13" Foreground="#191970" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text=" → " FontSize="13" Foreground="#666" Margin="5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Session.EndTime, StringFormat='dd/MM/yyyy HH:mm'}" 
+                                               FontSize="13" Foreground="#191970" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- IP Check -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
+                                    <iconPacks:PackIconMaterial Kind="Web" Width="14" Height="14" Foreground="#666" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="IP: " FontSize="13" Foreground="#666" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Session.RequireIpCheck, Converter={StaticResource BooleanToYesNoConverter}}" 
+                                           FontSize="13" Foreground="#191970" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Session.AllowedIpSubnet, StringFormat=' ({0})'}" 
+                                           FontSize="12" Foreground="#666" Margin="5,0,0,0" VerticalAlignment="Center"
+                                           Visibility="{Binding Session.RequireIpCheck, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                </StackPanel>
+
+                                <!-- GPS Check -->
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="MapMarker" Width="14" Height="14" Foreground="#666" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="GPS: " FontSize="13" Foreground="#666" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Session.RequireGpsCheck, Converter={StaticResource BooleanToYesNoConverter}}" 
+                                           FontSize="13" Foreground="#191970" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock FontSize="12" Foreground="#666" Margin="5,0,0,0" VerticalAlignment="Center"
+                                           Visibility="{Binding Session.RequireGpsCheck, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Run Text="("/>
+                                    <Run Text="{Binding Session.AllowedLatitude, StringFormat='{}{0:F4}'}"/>
+                                    <Run Text=", "/>
+                                    <Run Text="{Binding Session.AllowedLongitude, StringFormat='{}{0:F4}'}"/>
+                                    <Run Text=", "/>
+                                    <Run Text="{Binding Session.AllowedRadiusMeters}"/>
+                                    <Run Text="m)"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Attendance Records -->
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Title and Actions -->
+                                <Grid Grid.Row="0" Margin="0,0,0,20">
+                                    <TextBlock Text="DANH SÁCH SINH VIÊN ĐÃ ĐIỂM DANH" 
+                                           FontSize="18" FontWeight="Bold" Foreground="#191970" 
+                                           VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Style="{StaticResource SecondaryButton}"
+                                            Command="{Binding EditConfigCommand}"
+                                            Margin="0,0,10,0"
+                                            Padding="15,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Cog" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Cấu hình" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Style="{StaticResource YellowButtonStyle}"
+                                            Command="{Binding ShowQRCommand}"
+                                            Margin="0,0,10,0"
+                                            Padding="15,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Qrcode" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Hiển thị QR" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Style="{StaticResource SecondaryButton}"
+                                            Command="{Binding ExportCommand}"
+                                            Margin="0,0,10,0"
+                                            Padding="15,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="FileExcel" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Xuất Excel" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Style="{StaticResource PrimaryButtonStyle}"
+                                            Command="{Binding RefreshCommand}"
+                                            Padding="15,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Làm mới" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Search -->
+                                <TextBox Grid.Row="1" 
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="12" FontSize="14" Height="45"
+                                     Margin="0,0,0,15"
+                                     mah:TextBoxHelper.Watermark="Tìm kiếm theo MSSV, tên, email..."
+                                     mah:ControlsHelper.CornerRadius="8">
+                                    <mah:TextBoxHelper.ButtonContent>
+                                        <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
+                                    </mah:TextBoxHelper.ButtonContent>
+                                </TextBox>
+
+                                <!-- Records DataGrid -->
+                                <DataGrid Grid.Row="2" 
+                                      ItemsSource="{Binding FilteredRecords}"
+                                      Style="{StaticResource ModernDataGrid}"
+                                      RowStyle="{StaticResource ModernDataGridRow}"
+                                      CellStyle="{StaticResource ModernDataGridCell}"
+                                      ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                                      MinHeight="400"
+                                      MaxHeight="600">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="120"/>
+                                        <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="2*"/>
+                                        <DataGridTextColumn Header="Thời gian" Binding="{Binding AttendedAt, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
+                                        <DataGridTextColumn Header="IP Address" Binding="{Binding IpAddress}" Width="140"/>
+
+                                        <DataGridTemplateColumn Header="GPS" Width="180">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Visibility="{Binding Latitude, Converter={StaticResource NullToVisibilityConverter}}">
+                                                    <Run Text="{Binding Latitude, StringFormat='{}{0:F6}'}"/>
+                                                    <Run Text=", "/>
+                                                    <Run Text="{Binding Longitude, StringFormat='{}{0:F6}'}"/>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTemplateColumn Header="Trạng thái" Width="120">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsValid}" Value="True">
+                                                                        <Setter Property="Background" Value="#34C759"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsValid}" Value="False">
+                                                                        <Setter Property="Background" Value="#FF3B30"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding IsValid, Converter={StaticResource ValidStatusConverter}}" 
+                                                               Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTemplateColumn Header="Ghi chú" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ValidationMessage}" 
+                                                           FontSize="13" Foreground="#666" 
+                                                           TextWrapping="Wrap"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

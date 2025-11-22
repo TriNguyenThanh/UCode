@@ -4,6 +4,7 @@ using AssignmentService.Domain.Enums;
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Infrastructure.EF;
 using System.Threading.Tasks;
+using AssignmentService.Application.DTOs.Common;
 
 namespace AssignmentService.Infrastructure.Repositories;
 
@@ -33,7 +34,7 @@ public class SubmissionRepository : ISubmissionRepository
         // First, try to find if the entity is already being tracked
         var trackedEntity = _context.ChangeTracker.Entries<Submission>()
             .FirstOrDefault(e => e.Entity.SubmissionId == submissionId);
-        
+
         if (trackedEntity != null)
         {
             // If it's already tracked, just remove it directly
@@ -41,7 +42,7 @@ public class SubmissionRepository : ISubmissionRepository
             Console.WriteLine($"[x] Deleted tracked submission {submissionId} from database");
             return await _context.SaveChangesAsync() > 0;
         }
-        
+
         // If not tracked, fetch without tracking and remove
         var submission = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(p => p.SubmissionId == submissionId);
         if (submission != null)
@@ -181,7 +182,7 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<Submission> GetRunningSubmissionByUserAndProblem(Guid userId, Guid problemId)
     {
-        var submission =  await _context.Submissions
+        var submission = await _context.Submissions
             .AsNoTracking()
             .Where(s => s.UserId == userId && s.ProblemId == problemId && s.Status == SubmissionStatus.Running)
             .FirstOrDefaultAsync();
@@ -196,15 +197,23 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<bool> UpdateSubmission(Submission submission)
     {
-        var _submisison = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submission.SubmissionId);
-        if (_submisison != null)
+        // var _submisison = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submission.SubmissionId);
+        // if (_submisison != null)
+        // {
+
+        // }
+        try
         {
             _context.Submissions.Update(submission);
             Console.WriteLine($"[x] Updated submission {submission.SubmissionId} in database");
             return await _context.SaveChangesAsync() > 0;
         }
-        Console.WriteLine($"[x] Submission {submission.SubmissionId} not found in database");
-        return false;
+        catch (System.Exception ex)
+        {
+            throw new Exception($"Failed to update submission {submission.SubmissionId} in database: ", ex);
+        }
+        // Console.WriteLine($"[x] Submission {submission.SubmissionId} not found in database");
+        // return false;
     }
 
     // public async Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
