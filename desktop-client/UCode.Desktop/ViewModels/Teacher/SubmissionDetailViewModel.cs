@@ -30,7 +30,7 @@ namespace UCode.Desktop.ViewModels
         private Problem _problem;
         private Submission _submission;
         private string _sourceCode = string.Empty;
-        private double _score;
+        private int _score;
         private string _feedback = string.Empty;
         private string _error = string.Empty;
 
@@ -82,7 +82,7 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _sourceCode, value);
         }
 
-        public double Score
+        public int Score
         {
             get => _score;
             set => SetProperty(ref _score, value);
@@ -176,7 +176,7 @@ namespace UCode.Desktop.ViewModels
                 {
                     Submission = submissionResponse.Data;
                     SourceCode = Submission.SourceCode ?? "// Source code không khả dụng";
-                    Score = Submission.Score;
+                    Score = (int)Submission.Score;          
                     Feedback = Submission.Comment ?? string.Empty;
 
                     OnPropertyChanged(nameof(StudentName));
@@ -214,8 +214,9 @@ namespace UCode.Desktop.ViewModels
             {
                 var request = new GradeRequest
                 {
-                    Score = Score,
-                    TeacherFeedback = string.IsNullOrWhiteSpace(Feedback) ? string.Empty : Feedback
+                    SubmissionId = Submission.SubmissionId,
+                    NewScore = Score,
+                    Comment = string.IsNullOrWhiteSpace(Feedback) ? string.Empty : Feedback
                 };
 
                 var response = await _assignmentService.GradeSubmissionAsync(

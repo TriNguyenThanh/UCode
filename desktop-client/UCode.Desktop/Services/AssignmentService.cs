@@ -55,7 +55,7 @@ namespace UCode.Desktop.Services
 
         public async Task<ApiResponse<BestSubmission>> GradeSubmissionAsync(string assignmentId, string submissionId, GradeSubmissionRequest request)
         {
-            return await _apiService.PutAsync<BestSubmission>($"/api/v1/assignments/{assignmentId}/grade-submission/{submissionId}", request);
+            return await _apiService.PutAsync<BestSubmission>($"/api/v1/submissions/update-score", request);
         }
 
         // Student methods
@@ -111,8 +111,9 @@ namespace UCode.Desktop.Services
 
     public class GradeSubmissionRequest
     {
-        public double? Score { get; set; }
-        public string TeacherFeedback { get; set; } = string.Empty;
+        public string SubmissionId { get; set; }
+        public int NewScore { get; set; }
+        public string Comment { get; set; } = string.Empty;
     }
 
     public class AssignmentProblemDetail

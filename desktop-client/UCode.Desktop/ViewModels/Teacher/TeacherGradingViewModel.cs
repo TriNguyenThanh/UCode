@@ -340,8 +340,9 @@ namespace UCode.Desktop.ViewModels
             {
                 var request = new GradeRequest
                 {
-                    Score = Score,
-                    TeacherFeedback = string.IsNullOrWhiteSpace(Feedback) ? string.Empty : Feedback
+                    SubmissionId = CurrentSubmission.SubmissionId,
+                    NewScore = (int)Score,
+                    Comment = string.IsNullOrWhiteSpace(Feedback) ? string.Empty : Feedback
                 };
 
                 var response = await _assignmentService.GradeSubmissionAsync(
