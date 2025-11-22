@@ -22,6 +22,20 @@ export const meta: Route.MetaFunction = () => [
   { name: 'description', content: 'Sign in to UCode dashboard.' },
 ]
 
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  // Nếu đã đăng nhập, redirect về home
+  if (auth.isAuthenticated()) {
+    const user = auth.getUser()
+    if (user?.role === 'admin') {
+      return redirect('/admin/home')
+    } else if (user?.role === 'teacher') {
+      return redirect('/teacher/home')
+    }
+    return redirect('/home')
+  }
+  return null
+}
+
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const form = await request.formData()
   const email = String(form.get('email') ?? '').trim()
@@ -33,6 +47,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   try {
     const user = await auth.login(email, password)
+    
+    // Kiểm tra returnUrl từ query params
+    const url = new URL(request.url)
+    const returnUrl = url.searchParams.get('returnUrl')
+    
+    if (returnUrl) {
+      return redirect(returnUrl)
+    }
+    
     // Redirect based on role
     if (user.role === 'admin') {
       return redirect('/admin/home')
@@ -125,7 +148,7 @@ export default function Login() {
         </Typography>
 
         {/* Form */}
-        <Box component={Form} method='post' replace sx={{ mt: 1, width: '100%' }}>
+        <Box component={Form} method='post' sx={{ mt: 1, width: '100%' }}>
           <TextField
             margin='normal'
             required

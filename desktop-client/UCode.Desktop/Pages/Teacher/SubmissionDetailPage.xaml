@@ -1,0 +1,318 @@
+<UserControl x:Class="UCode.Desktop.Pages.SubmissionDetailPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        Background="#F5F5F5"
+        d:DesignHeight="900" d:DesignWidth="1600">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/ButtonStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:ColorToBrushConverter x:Key="ColorToBrushConverter" xmlns:local="clr-namespace:UCode.Desktop.Helpers"/>
+            <local:BytesToKBConverter x:Key="BytesToKBConverter" xmlns:local="clr-namespace:UCode.Desktop.Helpers"/>
+            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" xmlns:local="clr-namespace:UCode.Desktop.Helpers"/>
+
+            <Style x:Key="CardStyle" TargetType="Border">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="20"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Saving Overlay -->
+        <Grid x:Name="SavingOverlay" Background="#80000000" 
+              Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="999">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
+                <TextBlock Text="Đang lưu điểm..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#191970" Padding="30,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Foreground="White" FontSize="17" Opacity="0.8">
+                                <Hyperlink Foreground="White" TextDecorations="None">
+                                    <Run Text="Chấm bài: "/>
+                                    <Run Text="{Binding ClassData.Name, Mode=OneWay}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{Binding ClassData.ClassCode, Mode=OneWay}"/>
+                                    <Run Text=")"/>
+                                </Hyperlink>
+                            </TextBlock>
+                            <TextBlock Text=" / " Foreground="White" FontSize="17" Opacity="0.8" Margin="5,0"/>
+                            <TextBlock Foreground="White" FontSize="17" Opacity="0.8">
+                                <Hyperlink Foreground="White" TextDecorations="None">
+                                    <Run Text="{Binding Assignment.Title, Mode=OneWay}"/>
+                                </Hyperlink>
+                            </TextBlock>
+                            <TextBlock Text=" / " Foreground="White" FontSize="17" Opacity="0.8" Margin="5,0"/>
+                            <TextBlock Foreground="White" FontSize="17" Opacity="0.8">
+                                <Hyperlink Foreground="White" Command="{Binding BackCommand}" TextDecorations="None">
+                                    <Run Text="{Binding Problem.Title, Mode=OneWay}"/>
+                                </Hyperlink>
+                            </TextBlock>
+                            <TextBlock Text=" / " Foreground="White" FontSize="17" Opacity="0.8" Margin="5,0"/>
+                            <TextBlock Text="Chi tiết bài nộp" Foreground="White" FontSize="17" Opacity="0.8"/>
+                        </StackPanel>
+                        <TextBlock Foreground="#FACB01" FontSize="24" FontWeight="Bold" Margin="0,5,0,0">
+                            <Run Text="Chi tiết bài nộp - "/>
+                            <Run Text="{Binding StudentName, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Content="Quay lại danh sách" 
+                            Style="{StaticResource YellowButtonStyle}"
+                            Command="{Binding BackCommand}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Student Info Card -->
+            <Border Grid.Row="1" Background="#FACB01" Padding="30,15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,50,0">
+                        <TextBlock Text="{Binding StudentName, Mode=OneWay}" FontSize="20" FontWeight="Bold" Foreground="#191970"/>
+                        <TextBlock Text="{Binding Submission.UserCode}" FontSize="17" Foreground="#191970" Margin="0,5,0,0"/>
+                        <TextBlock FontSize="17" Foreground="#191970" Margin="0,5,0,0">
+                            <Run Text="Nộp lúc: "/>
+                            <Run Text="{Binding Submission.SubmittedAt, StringFormat='HH:mm dd/MM/yyyy'}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border Background="{Binding StatusColor}" CornerRadius="8" Padding="20,10" Margin="0,0,15,0">
+                            <TextBlock Text="{Binding Submission.Status}" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Background="White" CornerRadius="8" Padding="20,10" Margin="0,0,15,0">
+                            <StackPanel>
+                                <TextBlock Text="Test cases" FontSize="11" Foreground="#666" HorizontalAlignment="Center"/>
+                                <TextBlock FontSize="16" FontWeight="Bold" Foreground="#191970" HorizontalAlignment="Center">
+                                    <Run Text="{Binding Submission.PassedTestcase, Mode=OneWay}"/>
+                                    <Run Text="/"/>
+                                    <Run Text="{Binding Submission.TotalTestcase, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="White" CornerRadius="8" Padding="20,10" Margin="0,0,15,0">
+                            <StackPanel>
+                                <TextBlock Text="Thời gian" FontSize="11" Foreground="#666" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Submission.TotalTime, StringFormat='{}{0}ms'}" FontSize="16" FontWeight="Bold" Foreground="#191970" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="White" CornerRadius="8" Padding="20,10">
+                            <StackPanel>
+                                <TextBlock Text="Bộ nhớ" FontSize="11" Foreground="#666" HorizontalAlignment="Center"/>
+                                <TextBlock FontSize="16" FontWeight="Bold" Foreground="#191970" HorizontalAlignment="Center">
+                                    <Run Text="{Binding Submission.TotalMemory}"/>
+                                    <Run Text="KB"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content - 3 Columns -->
+            <Grid Grid.Row="2" Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="380"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Problem Description -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,7.5,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Đề bài" FontSize="18" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,15"/>
+                            
+                            <TextBlock Text="{Binding Problem.Title}" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,10"/>
+                            
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <Border Background="#FACB01" CornerRadius="4" Padding="8,4" Margin="0,0,10,0">
+                                    <TextBlock Text="{Binding Problem.Difficulty}" FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
+                                </Border>
+                                <Border Background="#E3F2FD" CornerRadius="4" Padding="8,4">
+                                    <TextBlock Text="{Binding Submission.LanguageCode}" FontSize="15" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Text="Mô tả:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding Problem.Statement}" FontSize="15" Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Định dạng Input:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding Problem.InputFormat}" FontSize="15" Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Định dạng Output:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding Problem.OutputFormat}" FontSize="15" Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Ràng buộc:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding Problem.Constraints}" FontSize="15" Foreground="#666" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Middle: Source Code -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="7.5,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="Code của sinh viên" FontSize="18" FontWeight="Bold" Foreground="#191970" VerticalAlignment="Center"/>
+                            
+                            <Border Grid.Column="1" Background="#E3F2FD" CornerRadius="4" Padding="10,5">
+                                <TextBlock Text="{Binding Submission.LanguageCode}" FontSize="17" FontWeight="SemiBold" Foreground="#1976D2"/>
+                            </Border>
+                        </Grid>
+
+                        <Border Grid.Row="1" Background="#F5F5F5" CornerRadius="4" Padding="15" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <TextBox Text="{Binding SourceCode, Mode=OneWay}" 
+                                         IsReadOnly="True"
+                                         FontFamily="Consolas"
+                                         FontSize="15"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         TextWrapping="NoWrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Disabled"
+                                         HorizontalScrollBarVisibility="Disabled"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Right: Test Results & Grading Panel -->
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="7.5,0,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Test Results Card -->
+                            <!-- Border CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{Binding StatusColor, Converter={StaticResource ColorToBrushConverter}}"/>
+                                </Border.Background>
+                                <StackPanel>
+                                    <TextBlock Text="Kết quả chạy test" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="Trạng thái:" FontSize="15" Foreground="White" Width="100"/>
+                                        <TextBlock Text="{Binding Submission.Status}" FontSize="15" FontWeight="SemiBold" Foreground="White"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="Test cases:" FontSize="15" Foreground="White" Width="100"/>
+                                        <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="White">
+                                            <Run Text="{Binding Submission.PassedTestcase, Mode=OneWay}"/>
+                                            <Run Text="/"/>
+                                            <Run Text="{Binding Submission.TotalTestcase, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="Thời gian:" FontSize="15" Foreground="White" Width="100"/>
+                                        <TextBlock Text="{Binding Submission.TotalTime, StringFormat='{}{0}ms'}" FontSize="15" FontWeight="SemiBold" Foreground="White"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Bộ nhớ:" FontSize="15" Foreground="White" Width="100"/>
+                                        <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="White">
+                                            <Run Text="{Binding Submission.TotalMemory}"/>
+                                            <Run Text="KB"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border> -->
+
+                            <!-- Grading Panel -->
+                            <TextBlock Text="Chấm điểm" FontSize="18" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,15"/>
+                            
+                            <TextBlock Text="Điểm số:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Score, UpdateSourceTrigger=PropertyChanged}" 
+                                     FontSize="17"
+                                     Padding="10"
+                                     Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Nhận xét của giáo viên:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Feedback, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="17"
+                                     Padding="10"
+                                     MinHeight="120"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Margin="0,0,0,20"/>
+
+                            <Button Content="Lưu điểm" 
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding SaveGradeCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    Height="45"
+                                    FontSize="16"/>
+
+                            <!-- Error Message -->
+                            <TextBlock Text="{Binding Error}" 
+                                       Foreground="#dc3545" 
+                                       FontSize="15" 
+                                       Margin="0,15,0,0"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding Error, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -138,10 +138,12 @@ namespace UCode.Desktop.Services
     public class CreateStudentRequest
     {
         public string StudentCode { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Major { get; set; } = string.Empty;
         public int? ClassYear { get; set; }
+        public int EnrollmentYear { get; set; }
     }
 
     public class BulkEnrollResult
@@ -155,6 +157,8 @@ namespace UCode.Desktop.Services
     public class BulkEnrollStudentResult
     {
         public string StudentId { get; set; } = string.Empty;
+        public string StudentCode { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public bool Success { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
     }

@@ -168,7 +168,8 @@
                                 <Separator/>
                                 <MenuItem Header="Hồ sơ"
                                           FontSize="14"
-                                          Padding="16,8">
+                                          Padding="16,8"
+                                          Click="ProfileMenuItem_Click">
                                     <MenuItem.Icon>
                                         <iconPacks:PackIconMaterial Kind="Account"
                                                                     Width="18"
@@ -177,7 +178,8 @@
                                 </MenuItem>
                                 <MenuItem Header="Cài đặt"
                                           FontSize="14"
-                                          Padding="16,8">
+                                          Padding="16,8"
+                                          Click="SettingsMenuItem_Click">
                                     <MenuItem.Icon>
                                         <iconPacks:PackIconMaterial Kind="Cog"
                                                                     Width="18"

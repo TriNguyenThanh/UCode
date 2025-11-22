@@ -257,12 +257,21 @@ public class SubmissionService : ISubmissionService
         return await _repository.GetBestSubmission(assignmentId, problemId, userId);
     }
 
-    public Task UpdateSubmissionByTeacher(Submission submission)
+    public async Task<bool> UpdateSubmissionByTeacher(Submission submission)
     {
         try
         {
-            var assignmentService = _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, submission.Score);
-            return _repository.UpdateSubmission(submission);
+            var checkAssignmentEnd = await _assignmentService.GetAssignmentByIdAsync(submission.AssignmentId ?? Guid.Empty);
+            if (checkAssignmentEnd != null && checkAssignmentEnd.EndTime != null)
+            {
+                if (DateTime.UtcNow < checkAssignmentEnd.EndTime)
+                {
+                    throw new Exception("Only allowed to update submission after assignment deadline.");
+                }
+            }
+
+            var assignmentService = await _assignmentService.UpdateAssignmentUserScoreAsync(submission.AssignmentId ?? Guid.Empty, submission.UserId, submission.Score);
+            return await _repository.UpdateSubmission(submission);
         }
         catch (Exception ex)
         {

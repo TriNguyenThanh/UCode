@@ -4,5 +4,6 @@
     },
     "chat.promptFilesRecommendations": {
         
-    }
+    },
+    "typescript.autoClosingTags": false
 }

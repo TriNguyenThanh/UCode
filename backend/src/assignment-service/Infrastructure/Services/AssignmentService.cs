@@ -26,6 +26,7 @@ public class AssignmentService : IAssignmentService
         {
             assignment.AssignmentId = Guid.NewGuid();
             assignment.AssignedAt = DateTime.UtcNow;
+            assignment.TotalPoints = 0;
 
             var createdAssignment = await _assignmentRepository.AddAsync(assignment);
 

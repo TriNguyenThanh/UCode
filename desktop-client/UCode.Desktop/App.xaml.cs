@@ -142,6 +142,9 @@ public partial class App : Application
         // Services
         services.AddSingleton<TokenStorageService>();
         services.AddSingleton<AuthService>();
+        services.AddSingleton<UserService>();
+        services.AddSingleton<StudentService>();
+        services.AddSingleton<TeacherService>();
         services.AddSingleton<ProblemService>();
         services.AddSingleton<AssignmentService>();
         services.AddSingleton<ClassService>();
@@ -151,6 +154,7 @@ public partial class App : Application
         services.AddSingleton<TagService>();
         services.AddSingleton<NavigationService>();
         services.AddSingleton<AIDetectorService>();
+        services.AddSingleton<AttendanceService>();
 
         // Admin Services
         services.AddSingleton<IDialogCoordinator, DialogCoordinator>();
@@ -188,6 +192,8 @@ public partial class App : Application
         services.AddTransient<ClassDetailViewModel>();
         services.AddTransient<AssignmentDetailViewModel>();
         services.AddTransient<ProblemSolverViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<TeacherProfileViewModel>();
 
         // ViewModels - Teacher
         services.AddTransient<TeacherHomeViewModel>();
@@ -208,6 +214,8 @@ public partial class App : Application
         services.AddTransient<CreateClassViewModel>();
         services.AddTransient<VisualSelectTabViewModel>();
         services.AddTransient<ImportExcelTabViewModel>();
+        services.AddTransient<CreateAttendanceSessionViewModel>();
+        services.AddTransient<AttendanceDetailViewModel>();
 
         // ViewModels - Admin
         services.AddTransient<AdminHomeViewModel>();
@@ -246,6 +254,18 @@ public partial class App : Application
         services.AddTransient<Pages.TeacherProblemsPage>();
         services.AddTransient<Pages.ProblemCreatePage>();
         services.AddTransient<Pages.ProblemEditPage>();
+        services.AddTransient<Pages.CreateAttendanceSessionPage>(sp =>
+        {
+            var page = new Pages.CreateAttendanceSessionPage();
+            page.DataContext = sp.GetRequiredService<CreateAttendanceSessionViewModel>();
+            return page;
+        });
+        services.AddTransient<Pages.AttendanceDetailPage>(sp =>
+        {
+            var page = new Pages.AttendanceDetailPage();
+            page.DataContext = sp.GetRequiredService<AttendanceDetailViewModel>();
+            return page;
+        });
 
         // Pages - Student (for navigation)
         services.AddTransient<Views.Students.ClassDetailPage>();
@@ -253,5 +273,9 @@ public partial class App : Application
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
+        
+        // Pages - Common
+        services.AddTransient<Pages.SettingsPage>();
+        services.AddTransient<Pages.TeacherProfilePage>();
     }
 }
