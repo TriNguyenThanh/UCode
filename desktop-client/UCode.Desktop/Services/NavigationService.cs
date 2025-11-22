@@ -46,7 +46,7 @@ namespace UCode.Desktop.Services
             if (_frame != null)
             {
                 _frame.Content = previousPage;
-                
+
                 // Re-initialize the page if needed (refresh data)
                 if (previousPage.DataContext is ViewModels.Admin.AdminHomeViewModel adminHomeViewModel)
                 {
@@ -80,8 +80,35 @@ namespace UCode.Desktop.Services
 
         private void InitializePage(UserControl page, object? parameter)
         {
+            // Initialize ViewModels that have async initialization
+            if (page.DataContext is ViewModels.ClassDetailViewModel studentClassViewModel && parameter is string studentClassId)
+            {
+                _ = studentClassViewModel.InitializeAsync(studentClassId);
+            }
+            else if (page.DataContext is ViewModels.AssignmentDetailViewModel assignmentDetailViewModel && parameter is string studentAssignmentId)
+            {
+                _ = assignmentDetailViewModel.InitializeAsync(studentAssignmentId);
+            }
+            else if (page.DataContext is ViewModels.ProblemSolverViewModel problemSolverViewModel)
+            {
+                var paramType = parameter?.GetType();
+                if (paramType != null)
+                {
+                    var assignmentIdProp = paramType.GetProperty("assignmentId");
+                    var problemIdProp = paramType.GetProperty("problemId");
+                    if (assignmentIdProp != null && problemIdProp != null)
+                    {
+                        var assignId = assignmentIdProp.GetValue(parameter)?.ToString();
+                        var probId = problemIdProp.GetValue(parameter)?.ToString();
+                        if (!string.IsNullOrEmpty(assignId) && !string.IsNullOrEmpty(probId))
+                        {
+                            _ = problemSolverViewModel.InitializeAsync(assignId, probId);
+                        }
+                    }
+                }
+            }
             // Initialize Admin ViewModels
-            if (page.DataContext is ViewModels.Admin.AdminHomeViewModel adminHomeViewModel)
+            else if (page.DataContext is ViewModels.Admin.AdminHomeViewModel adminHomeViewModel)
             {
                 _ = adminHomeViewModel.LoadStatisticsAsync();
             }
@@ -95,9 +122,9 @@ namespace UCode.Desktop.Services
                 classViewModel.SetNavigationService(this);
                 _ = classViewModel.InitializeAsync(classId);
             }
-            else if (page.DataContext is ViewModels.TeacherAssignmentViewModel assignmentViewModel && parameter is string assignmentId)
+            else if (page.DataContext is ViewModels.TeacherAssignmentViewModel assignmentViewModel && parameter is string teacherAssignmentId)
             {
-                _ = assignmentViewModel.InitializeAsync(assignmentId);
+                _ = assignmentViewModel.InitializeAsync(teacherAssignmentId);
             }
             else if (page.DataContext is ViewModels.TeacherHomeViewModel homeViewModel)
             {
@@ -147,7 +174,7 @@ namespace UCode.Desktop.Services
                     }
                 }
             }
-            
+
             // Initialize Page types
             if (page.GetType().Name == "ProblemEditPage" && parameter is string problemId)
             {

@@ -76,8 +76,8 @@ namespace UCode.Desktop.Services
 
         public async Task<ApiResponse<List<BestSubmission>>> GetBestSubmissionsAsync(string assignmentId, List<string> problemIds)
         {
-            var problemIdsParam = string.Join(",", problemIds);
-            return await _apiService.GetAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/best?problemIds={problemIdsParam}");
+            var requestBody = new { problemIds = problemIds };
+            return await _apiService.PostAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/problem/list-my-best", requestBody);
         }
     }
 

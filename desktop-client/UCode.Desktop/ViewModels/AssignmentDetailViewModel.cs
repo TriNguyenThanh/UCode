@@ -14,19 +14,21 @@ namespace UCode.Desktop.ViewModels
         private readonly AuthService _authService;
         private readonly ProblemService _problemService;
         private readonly SubmissionService _submissionService;
+        private readonly NavigationService _navigationService;
         private Assignment _assignment;
         private AssignmentUser _assignmentUser;
         private bool _isLoading;
         private string _assignmentId;
 
-        public AssignmentDetailViewModel(AssignmentService assignmentService, AuthService authService, ProblemService problemService, SubmissionService submissionService)
+        public AssignmentDetailViewModel(AssignmentService assignmentService, AuthService authService, ProblemService problemService, SubmissionService submissionService, NavigationService navigationService)
         {
             _assignmentService = assignmentService;
             _authService = authService;
             _problemService = problemService;
             _submissionService = submissionService;
+            _navigationService = navigationService;
             _assignment = new Assignment();
-            
+
             NavigateToProblemCommand = new RelayCommand<string>(NavigateToProblem);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
             StartAssignmentCommand = new RelayCommand(_ => StartAssignment(), _ => _assignmentUser?.Status == AssignmentUserStatus.NOT_STARTED);
@@ -141,6 +143,9 @@ namespace UCode.Desktop.ViewModels
                         {
                             ProblemSubmissions.Add(submission);
                         }
+                        OnPropertyChanged(nameof(CompletedProblemsCount));
+                        OnPropertyChanged(nameof(ProgressPercentage));
+                        OnPropertyChanged(nameof(UserScore));
                     }
                 }
             }
@@ -171,32 +176,50 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void NavigateToProblem(string problemId)
+        private async void NavigateToProblem(string problemId)
         {
-            if (string.IsNullOrEmpty(problemId)) return;
-
-            var problemWindow = App.ServiceProvider.GetService(typeof(Views.ProblemSolverWindow)) as Views.ProblemSolverWindow;
-            if (problemWindow != null)
+            try
             {
-                var viewModel = problemWindow.DataContext as ProblemSolverViewModel;
-                if (viewModel != null)
+                if (string.IsNullOrEmpty(problemId))
                 {
-                    _ = viewModel.InitializeAsync(_assignmentId, problemId);
-                    problemWindow.Show();
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Problem ID không hợp lệ");
+                    return;
                 }
+
+                if (string.IsNullOrEmpty(_assignmentId))
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Assignment ID không hợp lệ");
+                    return;
+                }
+
+                // Note: ProblemSolverPage chưa được tạo, tạm thời giữ window cho problem solver
+                // TODO: Chuyển sang ProblemSolverPage khi có yêu cầu
+                var problemWindow = App.ServiceProvider.GetService(typeof(Views.Students.ProblemSolverWindow)) as Views.Students.ProblemSolverWindow;
+                if (problemWindow == null)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverWindow. Vui lòng kiểm tra DI configuration.");
+                    return;
+                }
+
+                var viewModel = problemWindow.DataContext as ProblemSolverViewModel;
+                if (viewModel == null)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "ProblemSolverViewModel không tồn tại trong DataContext");
+                    return;
+                }
+
+                await viewModel.InitializeAsync(_assignmentId, problemId);
+                problemWindow.Show();
+            }
+            catch (System.Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi khi mở Problem Solver: {ex.Message}\n\nStack trace:\n{ex.StackTrace}");
             }
         }
 
         private void NavigateBack()
         {
-            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
-            {
-                if (window is Views.AssignmentDetailWindow)
-                {
-                    window.Close();
-                    break;
-                }
-            }
+            _navigationService.GoBack();
         }
 
         public BestSubmission GetBestSubmissionForProblem(string problemId)
@@ -237,6 +260,19 @@ namespace UCode.Desktop.ViewModels
             {
                 if (Problems.Count == 0) return 0;
                 return (double)CompletedProblemsCount / Problems.Count * 100;
+            }
+        }
+
+        public double UserScore
+        {
+            get
+            {
+                double totalScore = 0;
+                foreach (var submission in ProblemSubmissions)
+                {
+                    totalScore += submission.Score;
+                }
+                return totalScore;
             }
         }
     }

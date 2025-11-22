@@ -20,7 +20,7 @@
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:DaysLeftToBackgroundConverter x:Key="DaysLeftToBackgroundConverter"/>
-        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <local:InverseCountToVisibilityConverter x:Key="InverseCountToVisibilityConverter"/>
 
         <!-- Custom Navigation Button Style - No gray background -->
         <Style x:Key="NavButtonStyle"
@@ -204,8 +204,14 @@
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
+        <!-- Main Content Area - Navigation Frame -->
+        <ContentControl x:Name="NavigationFrame"
+                Grid.Row="1"
+                Background="#F5F5F5"/>
+
+        <!-- Default Home Content (will be replaced by navigation) -->
         <ScrollViewer Grid.Row="1"
+                      x:Name="HomeScrollViewer"
                       VerticalScrollBarVisibility="Auto"
                       Background="#F5F5F5">
             <Grid Margin="0,0,0,40">
@@ -224,7 +230,7 @@
                                    Margin="0,0,0,8">
                             <Run Text="Xin chào, "/>
                             <Run Text="{Binding UserName}"/>
-                            <Run Text="! 👋"/>
+                            <Run Text="!"/>
                         </TextBlock>
                         <TextBlock Text="Hôm nay bạn muốn học gì?"
                                    FontSize="16"
@@ -258,69 +264,75 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White"
-                                            BorderBrush="#E0E0E0"
-                                            BorderThickness="1"
-                                            CornerRadius="8"
-                                            Margin="0,0,24,24"
-                                            Width="350"
-                                            Height="250"
-                                            Cursor="Hand">
-                                        <Border.InputBindings>
-                                            <MouseBinding Gesture="LeftClick"
-                                                          Command="{Binding DataContext.NavigateToClassCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          CommandParameter="{Binding Id}"/>
-                                        </Border.InputBindings>
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="Black"
-                                                              BlurRadius="10"
-                                                              ShadowDepth="2"
-                                                              Opacity="0.1"/>
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="120"/>
-                                                <RowDefinition Height="*"/>
-                                            </Grid.RowDefinitions>
+                                    <Button Command="{Binding DataContext.NavigateToClassCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding Id}"
+                                            Cursor="Hand"
+                                            Margin="0,0,24,24">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="White"
+                                                        BorderBrush="#E0E0E0"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Width="350"
+                                                        Height="250">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="Black"
+                                                                          BlurRadius="10"
+                                                                          ShadowDepth="2"
+                                                                          Opacity="0.1"/>
+                                                    </Border.Effect>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="120"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
 
-                                            <!-- Class Header with Gradient -->
-                                            <Border Grid.Row="0"
-                                                    Background="{StaticResource ClassCardGradientBrush}"
-                                                    CornerRadius="8,8,0,0">
-                                                <TextBlock Text="{Binding Code}"
-                                                           FontSize="22"
-                                                           FontWeight="Bold"
-                                                           Foreground="White"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"
-                                                           TextAlignment="Center"
-                                                           Padding="10"/>
-                                            </Border>
+                                                        <!-- Class Header with Gradient -->
+                                                        <Border Grid.Row="0"
+                                                                Background="{StaticResource ClassCardGradientBrush}"
+                                                                CornerRadius="8,8,0,0">
+                                                            <TextBlock Text="{Binding Code}"
+                                                                       FontSize="22"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="White"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       TextAlignment="Center"
+                                                                       Padding="10"/>
+                                                        </Border>
 
-                                            <!-- Class Info -->
-                                            <StackPanel Grid.Row="1"
-                                                        Margin="20">
-                                                <TextBlock Text="{Binding Name}"
-                                                           FontSize="18"
-                                                           FontWeight="SemiBold"
-                                                           TextWrapping="Wrap"
-                                                           Margin="0,0,0,8"/>
-                                                <TextBlock Text="{Binding TeacherName}"
-                                                           FontSize="14"
-                                                           Foreground="#666"
-                                                           Margin="0,0,0,12"/>
-                                                <Border Background="#E3F2FD"
-                                                        CornerRadius="12"
-                                                        Padding="8,4"
-                                                        HorizontalAlignment="Left">
-                                                    <TextBlock Text="{Binding Semester}"
-                                                               FontSize="12"
-                                                               Foreground="#1976D2"
-                                                               FontWeight="SemiBold"/>
+                                                        <!-- Class Info -->
+                                                        <StackPanel Grid.Row="1"
+                                                                    Margin="20">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="18"
+                                                                       FontWeight="SemiBold"
+                                                                       TextWrapping="Wrap"
+                                                                       Margin="0,0,0,8"
+                                                                       HorizontalAlignment="Left"/>
+                                                            <TextBlock Text="{Binding TeacherName}"
+                                                                       FontSize="14"
+                                                                       Foreground="#666"
+                                                                       Margin="0,0,0,12"
+                                                                       HorizontalAlignment="Left"/>
+                                                            <Border Background="#E3F2FD"
+                                                                    CornerRadius="12"
+                                                                    Padding="8,4"
+                                                                    HorizontalAlignment="Left">
+                                                                <TextBlock FontSize="12"
+                                                                           Foreground="#1976D2"
+                                                                           FontWeight="SemiBold">
+                                                                    <Run Text="{Binding StudentCount}"/>
+                                                                    <Run Text=" học viên"/>
+                                                                </TextBlock>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </Grid>
                                                 </Border>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -364,101 +376,105 @@
                         <ItemsControl ItemsSource="{Binding UpcomingAssignments}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White"
-                                            BorderBrush="#E0E0E0"
-                                            BorderThickness="1"
-                                            CornerRadius="8"
-                                            Margin="0,0,0,16"
-                                            Padding="20"
-                                            Cursor="Hand">
-                                        <Border.InputBindings>
-                                            <MouseBinding Gesture="LeftClick"
-                                                          Command="{Binding DataContext.NavigateToAssignmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          CommandParameter="{Binding Id}"/>
-                                        </Border.InputBindings>
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="Black"
-                                                              BlurRadius="10"
-                                                              ShadowDepth="2"
-                                                              Opacity="0.1"/>
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
+                                    <Button Command="{Binding DataContext.NavigateToAssignmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding Id}"
+                                            Cursor="Hand"
+                                            Margin="0,0,0,16">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="White"
+                                                        BorderBrush="#E0E0E0"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="20">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="Black"
+                                                                          BlurRadius="10"
+                                                                          ShadowDepth="2"
+                                                                          Opacity="0.1"/>
+                                                    </Border.Effect>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                            <!-- Icon -->
-                                            <Border Grid.Column="0"
-                                                    Background="#FFEBEE"
-                                                    Width="48"
-                                                    Height="48"
-                                                    CornerRadius="8"
-                                                    Margin="0,0,16,0">
-                                                <iconPacks:PackIconMaterial Kind="ClipboardText"
-                                                                            Width="24"
-                                                                            Height="24"
-                                                                            Foreground="#F44336"
-                                                                            HorizontalAlignment="Center"
-                                                                            VerticalAlignment="Center"/>
-                                            </Border>
+                                                        <!-- Icon -->
+                                                        <Border Grid.Column="0"
+                                                                Background="#FFEBEE"
+                                                                Width="48"
+                                                                Height="48"
+                                                                CornerRadius="8"
+                                                                Margin="0,0,16,0">
+                                                            <iconPacks:PackIconMaterial Kind="ClipboardText"
+                                                                                        Width="24"
+                                                                                        Height="24"
+                                                                                        Foreground="#F44336"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Center"/>
+                                                        </Border>
 
-                                            <!-- Info -->
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding Title}"
-                                                           FontSize="18"
-                                                           FontWeight="SemiBold"
-                                                           Margin="0,0,0,8"/>
-                                                <TextBlock Text="{Binding ClassName}"
-                                                           FontSize="14"
-                                                           Foreground="#666"
-                                                           Margin="0,0,0,12"/>
-                                                <WrapPanel Orientation="Horizontal">
-                                                    <Border Background="{Binding DaysLeft, Converter={StaticResource DaysLeftToBackgroundConverter}}"
-                                                            CornerRadius="12"
-                                                            Padding="8,4"
-                                                            Margin="0,0,8,0">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <iconPacks:PackIconMaterial Kind="ClockOutline"
-                                                                                        Width="14"
-                                                                                        Height="14"
-                                                                                        Foreground="White"
-                                                                                        VerticalAlignment="Center"
-                                                                                        Margin="0,0,5,0"/>
-                                                            <TextBlock FontSize="12"
-                                                                       Foreground="White"
-                                                                       FontWeight="SemiBold">
-                                                                <Run Text="Còn"/>
-                                                                <Run Text="{Binding DaysLeft}"/>
-                                                                <Run Text="ngày"/>
-                                                            </TextBlock>
+                                                        <!-- Info -->
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="{Binding Title}"
+                                                                       FontSize="18"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,8"
+                                                                       HorizontalAlignment="Left"/>
+                                                            <TextBlock Text="{Binding AssignmentType}"
+                                                                       FontSize="14"
+                                                                       Foreground="#666"
+                                                                       Margin="0,0,0,12"
+                                                                       HorizontalAlignment="Left"/>
+                                                            <WrapPanel Orientation="Horizontal">
+                                                                <Border Background="{Binding DaysLeft, Converter={StaticResource DaysLeftToBackgroundConverter}}"
+                                                                        CornerRadius="12"
+                                                                        Padding="8,4"
+                                                                        Margin="0,0,8,0">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                                                                    Width="14"
+                                                                                                    Height="14"
+                                                                                                    Foreground="White"
+                                                                                                    VerticalAlignment="Center"
+                                                                                                    Margin="0,0,5,0"/>
+                                                                        <TextBlock FontSize="12"
+                                                                                   Foreground="White"
+                                                                                   FontWeight="SemiBold">
+                                                                            <Run Text="Còn"/>
+                                                                            <Run Text="{Binding DaysLeft}"/>
+                                                                            <Run Text="ngày"/>
+                                                                        </TextBlock>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                                <Border BorderBrush="#E0E0E0"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8,4"
+                                                                        Margin="0,0,8,0">
+                                                                    <TextBlock FontSize="12"
+                                                                               Foreground="#666">
+                                                                        <Run Text="{Binding ProblemCount}"/>
+                                                                        <Run Text=" bài"/>
+                                                                    </TextBlock>
+                                                                </Border>
+                                                                <Border BorderBrush="#E0E0E0"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8,4">
+                                                                    <TextBlock FontSize="12"
+                                                                               Foreground="#666">
+                                                                        <Run Text="{Binding TotalPoints}"/>
+                                                                        <Run Text=" điểm"/>
+                                                                    </TextBlock>
+                                                                </Border>
+                                                            </WrapPanel>
                                                         </StackPanel>
-                                                    </Border>
-                                                    <Border BorderBrush="#E0E0E0"
-                                                            BorderThickness="1"
-                                                            CornerRadius="12"
-                                                            Padding="8,4"
-                                                            Margin="0,0,8,0">
-                                                        <TextBlock FontSize="12"
-                                                                   Foreground="#666">
-                                                            <Run Text="{Binding ProblemCount}"/>
-                                                            <Run Text=" bài"/>
-                                                        </TextBlock>
-                                                    </Border>
-                                                    <Border BorderBrush="#E0E0E0"
-                                                            BorderThickness="1"
-                                                            CornerRadius="12"
-                                                            Padding="8,4">
-                                                        <TextBlock FontSize="12"
-                                                                   Foreground="#666">
-                                                            <Run Text="{Binding TotalPoints}"/>
-                                                            <Run Text=" điểm"/>
-                                                        </TextBlock>
-                                                    </Border>
-                                                </WrapPanel>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -469,7 +485,7 @@
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Padding="40"
-                                Visibility="{Binding UpcomingAssignments.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                                Visibility="{Binding UpcomingAssignments.Count, Converter={StaticResource InverseCountToVisibilityConverter}}">
                             <TextBlock Text="Bạn không có bài tập nào sắp đến hạn trong 7 ngày tới 🎉"
                                        FontSize="16"
                                        Foreground="#666"
@@ -525,13 +541,17 @@
                                                               Opacity="0.1"/>
                                         </Border.Effect>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Icon}"
-                                                       FontSize="36"
-                                                       Margin="0,0,0,12"/>
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontSize="18"
-                                                       FontWeight="SemiBold"
-                                                       Margin="0,0,0,8"/>
+                                            <StackPanel Orientation="Horizontal"
+                                                    Margin="0,0,0,12">
+                                                <TextBlock Text="{Binding Icon}"
+                                                           FontSize="36"
+                                                           Margin="0,0,12,0"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
                                             <TextBlock Text="{Binding Description}"
                                                        FontSize="13"
                                                        Foreground="#666"
