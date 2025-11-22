@@ -1,0 +1,68 @@
+---
+config:
+  layout: dagre
+---
+erDiagram
+    users ||--|| admins : "is_admin"
+    users ||--|| students : "is_student"
+    users ||--|| teachers : "is_teacher"
+    users ||--o{ refresh_tokens : "has_tokens"
+    teachers ||--o{ classes : "owns_class"
+    classes ||--o{ user_classes : "enrollment"
+    students ||--o{ user_classes : "enrolled_in"
+    users {
+        UUID user_id PK
+        nvarchar_50_ username
+        nvarchar_100_ email
+        nvarchar_500_ password_hash
+        nvarchar_100_ full_name
+        int role
+        int status
+        datetime2 created_at
+        datetime2 updated_at
+        datetime2 last_login_at
+    }
+    students {
+        UUID user_id PK, FK
+        nvarchar_20_ student_code
+        int enrollment_year
+        nvarchar_100_ major
+        int class_year
+    }
+    teachers {
+        UUID user_id PK, FK
+        nvarchar_20_ teacher_code
+        nvarchar_100_ department
+        nvarchar_50_ title
+        nvarchar_15_ phone
+    }
+    admins {
+        UUID user_id PK, FK
+    }
+    classes {
+        UUID class_id PK
+        nvarchar_100_ name
+        nvarchar_500_ description
+        nvarchar_10_ class_code
+        bit is_active
+        bit is_archived
+        nvarchar_500_ archive_reason
+        datetime2 created_at
+        datetime2 updated_at
+        datetime2 archived_at
+        UUID teacher_id FK
+    }
+    user_classes {
+        UUID student_id PK, FK
+        UUID class_id PK, FK
+        datetime2 joined_at
+        bit is_active
+    }
+    refresh_tokens {
+        UUID refresh_token_id PK
+        nvarchar_500_ token
+        UUID user_id FK
+        datetime2 created_at
+        datetime2 expires_at
+        int status
+    }

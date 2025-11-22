@@ -1,0 +1,511 @@
+<UserControl x:Class="UCode.Desktop.Pages.Admin.AdminClassesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             Dialog:DialogParticipation.Register="{Binding}">
+    
+    <Grid Background="#f8f9fa">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" Padding="30,25" BorderBrush="#e9ecef" BorderThickness="0,0,0,1">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.08"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="GoogleClassroom" Width="40" Height="40" 
+                                               Foreground="#191970" VerticalAlignment="Center"/>
+                    <StackPanel Margin="15,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Quản lý lớp học" FontSize="24" FontWeight="Bold" Foreground="#191970"/>
+                        <TextBlock Text="{Binding TotalClasses, StringFormat='Tổng số: {0} lớp'}" 
+                                   FontSize="14" Foreground="#6c757d" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Button Grid.Column="2" Command="{Binding RefreshCommand}"
+                        Background="#191970" Foreground="White" BorderThickness="0"
+                        Padding="20,12" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0d1a4d"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18" 
+                                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Làm mới" FontSize="14" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="30">
+            <StackPanel>
+                <!-- Search & Filter Section -->
+                <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Search Bar -->
+                        <TextBox Grid.Row="0" Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Tìm kiếm theo tên lớp, mã lớp, giáo viên..."
+                                 FontSize="14" Padding="12" Margin="0,0,0,15">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox" BasedOn="{StaticResource MahApps.Styles.TextBox}">
+                                    <Setter Property="mah:TextBoxHelper.ClearTextButton" Value="True"/>
+                                    <Setter Property="mah:TextBoxHelper.UseFloatingWatermark" Value="False"/>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <!-- Filters -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox Grid.Column="0" 
+                                      ItemsSource="{Binding StatusFilters}"
+                                      SelectedItem="{Binding SelectedStatusFilter}"
+                                      FontSize="14" Padding="12"/>
+
+                            <Button Grid.Column="2" Command="{Binding SearchCommand}"
+                                    Background="#007bff" Foreground="White" BorderThickness="0"
+                                    Padding="25,10" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" 
+                                                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#0056b3"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Magnify" Width="18" Height="18" 
+                                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Tìm kiếm" FontSize="14" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Bulk Actions -->
+                <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Command="{Binding BulkArchiveCommand}" 
+                                Background="#ffc107" Foreground="White" BorderThickness="0"
+                                Padding="15,12" Margin="0,0,10,0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#e0a800"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                            <Setter Property="Cursor" Value="Arrow"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Archive" Width="16" Height="16" 
+                                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Lưu trữ" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding BulkUnarchiveCommand}" 
+                                Background="#28a745" Foreground="White" BorderThickness="0"
+                                Padding="15,12" Margin="0,0,10,0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#218838"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                            <Setter Property="Cursor" Value="Arrow"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ArchiveArrowUp" Width="16" Height="16" 
+                                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Khôi phục" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding BulkDeleteCommand}" 
+                                Background="#dc3545" Foreground="White" BorderThickness="0"
+                                Padding="15,12" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#c82333"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                            <Setter Property="Cursor" Value="Arrow"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16" 
+                                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Xóa" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Classes DataGrid -->
+                <Border Background="White" CornerRadius="8" Padding="0" Margin="0,0,0,20">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <DataGrid ItemsSource="{Binding Classes}" 
+                              AutoGenerateColumns="False" 
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              GridLinesVisibility="None"
+                              HeadersVisibility="Column"
+                              RowHeight="60"
+                              BorderThickness="0"
+                              Background="White"
+                              EnableRowVirtualization="False"
+                              VirtualizingPanel.IsVirtualizing="False">
+                        
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#f8f9fa"/>
+                                <Setter Property="Foreground" Value="#191970"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="Padding" Value="15,12"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#e9ecef"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#f8f9fa"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="15,0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.CellStyle>
+
+                        <DataGrid.Columns>
+                            <!-- Checkbox -->
+                            <DataGridTemplateColumn Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Class Name -->
+                            <DataGridTextColumn Header="Tên lớp" Binding="{Binding Name}" Width="250"/>
+
+                            <!-- Class Code -->
+                            <DataGridTextColumn Header="Mã lớp" Binding="{Binding ClassCode}" Width="120"/>
+
+                            <!-- Teacher Name -->
+                            <DataGridTextColumn Header="Giáo viên" Binding="{Binding TeacherName}" Width="180"/>
+
+                            <!-- Student Count -->
+                            <DataGridTextColumn Header="Sinh viên" Binding="{Binding StudentCount}" Width="100"/>
+
+                            <!-- Assignment Count -->
+                            <DataGridTextColumn Header="Bài tập" Binding="{Binding AssignmentCount}" Width="100"/>
+
+                            <!-- Status -->
+                            <DataGridTemplateColumn Header="Trạng thái" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsArchived}" Value="True">
+                                                            <Setter Property="Background" Value="#6c757d"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsArchived}" Value="False">
+                                                            <Setter Property="Background" Value="#28a745"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding StatusDisplay}" Foreground="White" 
+                                                       FontSize="12" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Created Date -->
+                            <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedAtDisplay}" Width="120"/>
+
+                            <!-- Actions -->
+                            <DataGridTemplateColumn Header="Thao tác" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#17a2b8" Foreground="White" BorderThickness="0"
+                                                    Width="35" Height="35" Cursor="Hand" Margin="0,0,5,0"
+                                                    ToolTip="Xem chi tiết">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#138496"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16"/>
+                                            </Button>
+
+                                            <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#dc3545" Foreground="White" BorderThickness="0"
+                                                    Width="35" Height="35" Cursor="Hand"
+                                                    ToolTip="Xóa lớp học">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#c82333"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- Pagination -->
+                <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Command="{Binding PreviousPageCommand}"
+                                HorizontalAlignment="Left" Background="#6c757d" Foreground="White"
+                                BorderThickness="0" Padding="15,10" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#5a6268"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="Trang trước" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Trang" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding CurrentPage}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text=" / " FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TotalPages}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2" Command="{Binding NextPageCommand}"
+                                HorizontalAlignment="Right" Background="#6c757d" Foreground="White"
+                                BorderThickness="0" Padding="15,10" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#5a6268"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Trang sau" FontSize="14" Margin="0,0,5,0"/>
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="16" Height="16" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Loading Overlay -->
+                <Grid Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Background="#80000000" CornerRadius="8">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <mah:ProgressRing IsActive="True" Foreground="White" Width="60" Height="60"/>
+                            <TextBlock Text="Đang tải..." Foreground="White" FontSize="16" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

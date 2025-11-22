@@ -12,25 +12,165 @@ using UserService.Infrastructure.Data;
 namespace UserService.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251024103911_AddRefreshTokenTable")]
-    partial class AddRefreshTokenTable
+    [Migration("20251120153824_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("UserService.Domain.Entities.Class", b =>
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id");
+
+                    b.Property<DateTime>("AttendedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("attended_at");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("device_id");
+
+                    b.Property<string>("InvalidReason")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("invalid_reason");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_valid");
+
+                    b.Property<decimal?>("Latitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("latitude");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("longitude");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_records");
+
+                    b.HasIndex("SessionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attendance_records_session_id_user_id");
+
+                    b.ToTable("attendance_records", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AllowedIpSubnet")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasColumnName("allowed_ip_subnet");
+
+                    b.Property<decimal?>("AllowedLatitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("allowed_latitude");
+
+                    b.Property<decimal?>("AllowedLongitude")
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("allowed_longitude");
+
+                    b.Property<int?>("AllowedRadiusMeters")
+                        .HasColumnType("int")
+                        .HasColumnName("allowed_radius_meters");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("class_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("RequireGpsCheck")
+                        .HasColumnType("bit")
+                        .HasColumnName("require_gps_check");
+
+                    b.Property<bool>("RequireIpCheck")
+                        .HasColumnType("bit")
+                        .HasColumnName("require_ip_check");
+
+                    b.Property<string>("SessionCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("session_code");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_sessions");
+
+                    b.ToTable("attendance_sessions", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.Class", b =>
+                {
+                    b.Property<Guid>("ClassId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("class_id");
+
+                    b.Property<string>("ArchiveReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("archive_reason");
+
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("archived_at");
 
                     b.Property<string>("ClassCode")
                         .IsRequired()
@@ -54,6 +194,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_archived");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -64,7 +208,11 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("teacher_id");
 
-                    b.HasKey("Id")
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ClassId")
                         .HasName("pk_classes");
 
                     b.HasIndex("ClassCode")
@@ -79,10 +227,10 @@ namespace UserService.Infrastructure.Migrations
 
             modelBuilder.Entity("UserService.Domain.Entities.RefreshToken", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("RefreshTokenId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
+                        .HasColumnName("refresh_token_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -144,7 +292,7 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("user_id");
 
-                    b.HasKey("Id")
+                    b.HasKey("RefreshTokenId")
                         .HasName("pk_refresh_tokens");
 
                     b.HasIndex("ExpiresAt")
@@ -165,10 +313,10 @@ namespace UserService.Infrastructure.Migrations
 
             modelBuilder.Entity("UserService.Domain.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
+                        .HasColumnName("user_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -214,7 +362,7 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
                     b.HasIndex("Email")
                         .IsUnique()
@@ -285,16 +433,16 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("major");
 
-                    b.Property<string>("StudentId")
+                    b.Property<string>("StudentCode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
-                        .HasColumnName("student_id");
+                        .HasColumnName("student_code");
 
-                    b.HasIndex("StudentId")
+                    b.HasIndex("StudentCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_students_student_id")
-                        .HasFilter("[student_id] IS NOT NULL");
+                        .HasDatabaseName("ix_students_student_code")
+                        .HasFilter("[student_code] IS NOT NULL");
 
                     b.ToTable("students", (string)null);
                 });
@@ -309,17 +457,17 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("department");
 
-                    b.Property<string>("EmployeeId")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("employee_id");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)")
                         .HasColumnName("phone");
+
+                    b.Property<string>("TeacherCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("teacher_code");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -327,12 +475,22 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("title");
 
-                    b.HasIndex("EmployeeId")
+                    b.HasIndex("TeacherCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_teachers_employee_id")
-                        .HasFilter("[employee_id] IS NOT NULL");
+                        .HasDatabaseName("ix_teachers_teacher_code")
+                        .HasFilter("[teacher_code] IS NOT NULL");
 
                     b.ToTable("teachers", (string)null);
+                });
+
+            modelBuilder.Entity("UserService.Domain.Entities.AttendanceRecord", b =>
+                {
+                    b.HasOne("UserService.Domain.Entities.AttendanceSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_records_attendance_sessions_session_id");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Class", b =>
@@ -384,30 +542,30 @@ namespace UserService.Infrastructure.Migrations
                 {
                     b.HasOne("UserService.Domain.Entities.User", null)
                         .WithOne()
-                        .HasForeignKey("UserService.Domain.Entities.Admin", "Id")
+                        .HasForeignKey("UserService.Domain.Entities.Admin", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_admins_users_id");
+                        .HasConstraintName("fk_admins_users_user_id");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Student", b =>
                 {
                     b.HasOne("UserService.Domain.Entities.User", null)
                         .WithOne()
-                        .HasForeignKey("UserService.Domain.Entities.Student", "Id")
+                        .HasForeignKey("UserService.Domain.Entities.Student", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_students_users_id");
+                        .HasConstraintName("fk_students_users_user_id");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Teacher", b =>
                 {
                     b.HasOne("UserService.Domain.Entities.User", null)
                         .WithOne()
-                        .HasForeignKey("UserService.Domain.Entities.Teacher", "Id")
+                        .HasForeignKey("UserService.Domain.Entities.Teacher", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_teachers_users_id");
+                        .HasConstraintName("fk_teachers_users_user_id");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Class", b =>

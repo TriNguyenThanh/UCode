@@ -30,6 +30,7 @@ namespace UCode.Desktop.Services
 
         public User CurrentUser => _currentUser;
         public bool IsAuthenticated => _currentUser != null && !string.IsNullOrEmpty(_accessToken);
+        public string AccessToken => _accessToken;
 
         public event EventHandler<User> UserChanged;
 

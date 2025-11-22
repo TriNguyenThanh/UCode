@@ -392,6 +392,7 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+    
     public class CountToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -409,6 +410,33 @@ namespace UCode.Desktop.Helpers
         }
     }
 
+    /// <summary>
+    /// Converts user role to brush color for display
+    /// Admin -> Red, Teacher -> Blue, Student -> Green
+    /// </summary>
+    public class RoleToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string role)
+            {
+                return role.ToUpper() switch
+                {
+                    "ADMIN" => new SolidColorBrush(Color.FromRgb(220, 38, 38)),    // Red
+                    "TEACHER" => new SolidColorBrush(Color.FromRgb(59, 130, 246)), // Blue
+                    "STUDENT" => new SolidColorBrush(Color.FromRgb(34, 197, 94)),  // Green
+                    _ => new SolidColorBrush(Color.FromRgb(156, 163, 175))         // Gray
+                };
+            }
+            return new SolidColorBrush(Color.FromRgb(156, 163, 175));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class InverseCountToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -418,6 +446,29 @@ namespace UCode.Desktop.Helpers
                 return count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+    /// <summary>
+    /// Converts active status to brush color for display
+    /// Active -> Green, Inactive -> Red
+    /// </summary>
+    public class StatusToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isActive)
+            {
+                return isActive
+                    ? new SolidColorBrush(Color.FromRgb(34, 197, 94))  // Green
+                    : new SolidColorBrush(Color.FromRgb(220, 38, 38)); // Red
+            }
+            return new SolidColorBrush(Color.FromRgb(156, 163, 175)); // Gray
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

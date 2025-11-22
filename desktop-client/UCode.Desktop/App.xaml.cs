@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Net.Http;
 using System.Windows;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 using UCode.Desktop.Services;
+using UCode.Desktop.Services.Admin;
 using UCode.Desktop.ViewModels;
+using UCode.Desktop.ViewModels.Admin;
 using UCode.Desktop.Views;
 using UCode.Desktop.Views.Students;
 
@@ -74,18 +77,31 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
                 // Auto-login successful, open main window based on user role
                 var user = authService.CurrentUser;
-
+                
+                // Debug logging
+                System.IO.File.AppendAllText(logPath, $"User Role: {user?.Role} (Enum value: {(int?)user?.Role})\n");
+                System.IO.File.AppendAllText(logPath, $"Comparing with UserRole.Admin: {Models.UserRole.Admin} (Enum value: {(int)Models.UserRole.Admin})\n");
+                
                 // Change shutdown mode to close when main window closes
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
-
-                if (user?.Role.ToString().ToLower() == "teacher")
+                
+                if (user?.Role == Models.UserRole.Admin)
                 {
+                    System.IO.File.AppendAllText(logPath, "✅ Opening AdminMainWindow...\n");
+                    var adminWindow = ServiceProvider.GetRequiredService<Views.AdminMainWindow>();
+                    MainWindow = adminWindow;
+                    adminWindow.Show();
+                }
+                else if (user?.Role == Models.UserRole.Teacher)
+                {
+                    System.IO.File.AppendAllText(logPath, "✅ Opening TeacherHomeWindow...\n");
                     var teacherWindow = ServiceProvider.GetRequiredService<TeacherHomeWindow>();
                     MainWindow = teacherWindow;
                     teacherWindow.Show();
                 }
                 else
                 {
+                    System.IO.File.AppendAllText(logPath, "✅ Opening MainWindow (Student)...\n");
                     var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                     MainWindow = mainWindow;
                     mainWindow.Show();
@@ -136,6 +152,36 @@ public partial class App : Application
         services.AddSingleton<NavigationService>();
         services.AddSingleton<AIDetectorService>();
 
+        // Admin Services
+        services.AddSingleton<IDialogCoordinator, DialogCoordinator>();
+        services.AddSingleton<AdminStatisticsService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var dialogCoordinator = sp.GetRequiredService<IDialogCoordinator>();
+            var tokenStorage = sp.GetRequiredService<TokenStorageService>();
+            var authService = sp.GetRequiredService<AuthService>();
+            return new AdminStatisticsService(httpClient, dialogCoordinator, tokenStorage, authService);
+        });
+        services.AddSingleton<AdminUserService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var dialogCoordinator = sp.GetRequiredService<IDialogCoordinator>();
+            var tokenStorage = sp.GetRequiredService<TokenStorageService>();
+            var authService = sp.GetRequiredService<AuthService>();
+            return new AdminUserService(httpClient, dialogCoordinator, tokenStorage, authService);
+        });
+        services.AddSingleton<AdminClassService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var dialogCoordinator = sp.GetRequiredService<IDialogCoordinator>();
+            var tokenStorage = sp.GetRequiredService<TokenStorageService>();
+            var authService = sp.GetRequiredService<AuthService>();
+            return new AdminClassService(httpClient, dialogCoordinator, tokenStorage, authService);
+        });
+
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
         services.AddTransient<MainViewModel>();
@@ -163,12 +209,23 @@ public partial class App : Application
         services.AddTransient<VisualSelectTabViewModel>();
         services.AddTransient<ImportExcelTabViewModel>();
 
+        // ViewModels - Admin
+        services.AddTransient<AdminHomeViewModel>();
+        services.AddTransient<AdminUsersViewModel>();
+        services.AddTransient<AdminClassesViewModel>();
+
         // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
         // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
         services.AddTransient<ProblemSolverWindow>();
+
+        // Views - Admin
+        services.AddTransient<Views.AdminMainWindow>();
+        services.AddTransient<Pages.Admin.AdminHomePage>();
+        services.AddTransient<Pages.Admin.AdminUsersPage>();
+        services.AddTransient<Pages.Admin.AdminClassesPage>();
 
         // Views - Teacher
         services.AddTransient<TeacherHomeWindow>();
@@ -193,5 +250,8 @@ public partial class App : Application
         // Pages - Student (for navigation)
         services.AddTransient<Views.Students.ClassDetailPage>();
         services.AddTransient<Views.Students.AssignmentDetailPage>();
+        // Pages - Admin (for navigation)
+        services.AddTransient<Pages.Admin.AdminHomePage>();
+        services.AddTransient<Pages.Admin.AdminUsersPage>();
     }
 }
