@@ -1,13 +1,16 @@
 using System;
 using System.Windows;
 using MahApps.Metro.Controls;
+using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
     public partial class MainWindow : MetroWindow
     {
-        public MainWindow(MainViewModel viewModel)
+        private readonly NavigationService _navigationService;
+
+        public MainWindow(MainViewModel viewModel, NavigationService navigationService)
         {
             try
             {
@@ -18,14 +21,26 @@ namespace UCode.Desktop.Views
                 System.IO.File.AppendAllText(logPath, "InitializeComponent completed\n");
 
                 DataContext = viewModel;
-                System.IO.File.AppendAllText(logPath, "DataContext set\n");
+                _navigationService = navigationService;
+                System.IO.File.AppendAllText(logPath, "DataContext and NavigationService set\n");
 
                 // Load data when window loads
                 Loaded += async (s, e) =>
                 {
                     try
                     {
-                        System.IO.File.AppendAllText(logPath, "Window Loaded event fired. Loading data...\n");
+                        System.IO.File.AppendAllText(logPath, "Window Loaded event fired. Initializing NavigationService...\n");
+
+                        // Setup NavigationFrame
+                        _navigationService.SetFrame(NavigationFrame);
+
+                        // Hide HomeScrollViewer when navigating
+                        _navigationService.CanGoBackChanged += (sender, canGoBack) =>
+                        {
+                            HomeScrollViewer.Visibility = canGoBack ? Visibility.Collapsed : Visibility.Visible;
+                        };
+
+                        System.IO.File.AppendAllText(logPath, "NavigationService initialized. Loading data...\n");
                         await viewModel.LoadDataAsync();
                         System.IO.File.AppendAllText(logPath, "LoadDataAsync completed\n");
                     }

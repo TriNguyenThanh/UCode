@@ -144,6 +144,30 @@ namespace UCode.Desktop.Helpers
         }
     }
 
+    public class AssignmentTypeToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Models.AssignmentType type)
+            {
+                var colorString = type switch
+                {
+                    Models.AssignmentType.PRACTICE => "#FFC107", // Vàng cho Luyện tập
+                    Models.AssignmentType.HOMEWORK => "#FF9800", // Cam cho Bài tập về nhà  
+                    Models.AssignmentType.EXAMINATION => "#F44336", // Đỏ cho Bài kiểm tra
+                    _ => "#2196F3" // Xanh mặc định
+                };
+                return (SolidColorBrush)new BrushConverter().ConvertFromString(colorString);
+            }
+            return Brushes.Gray;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class AssignmentStatusConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -368,6 +392,23 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+    
+    public class CountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int count)
+            {
+                return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
     /// <summary>
     /// Converts user role to brush color for display
@@ -396,6 +437,23 @@ namespace UCode.Desktop.Helpers
         }
     }
 
+    public class InverseCountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int count)
+            {
+                return count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
     /// <summary>
     /// Converts active status to brush color for display
     /// Active -> Green, Inactive -> Red

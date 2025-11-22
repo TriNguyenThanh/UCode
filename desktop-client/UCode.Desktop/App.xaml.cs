@@ -8,6 +8,7 @@ using UCode.Desktop.Services.Admin;
 using UCode.Desktop.ViewModels;
 using UCode.Desktop.ViewModels.Admin;
 using UCode.Desktop.Views;
+using UCode.Desktop.Views.Students;
 
 namespace UCode.Desktop;
 
@@ -58,7 +59,7 @@ public partial class App : Application
             // Try auto-login first
             var authService = ServiceProvider.GetRequiredService<AuthService>();
             bool autoLoginSuccess = false;
-            
+
             try
             {
                 var autoLoginTask = authService.TryAutoLoginAsync();
@@ -70,7 +71,7 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
                 autoLoginSuccess = false;
             }
-            
+
             if (autoLoginSuccess)
             {
                 System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
@@ -216,8 +217,8 @@ public partial class App : Application
         // Views - Student
         services.AddTransient<LoginWindow>();
         services.AddTransient<MainWindow>();
-        services.AddTransient<ClassDetailWindow>();
-        services.AddTransient<AssignmentDetailWindow>();
+        // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
+        // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
         services.AddTransient<ProblemSolverWindow>();
 
         // Views - Admin
@@ -246,9 +247,11 @@ public partial class App : Application
         services.AddTransient<Pages.ProblemCreatePage>();
         services.AddTransient<Pages.ProblemEditPage>();
 
+        // Pages - Student (for navigation)
+        services.AddTransient<Views.Students.ClassDetailPage>();
+        services.AddTransient<Views.Students.AssignmentDetailPage>();
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
     }
 }
-

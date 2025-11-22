@@ -20,6 +20,11 @@ namespace UCode.Desktop.Services
             return await _apiService.GetAsync<Problem>($"/api/v1/problems/{problemId}");
         }
 
+        public async Task<ApiResponse<Problem>> GetProblemForStudentAsync(string problemId)
+        {
+            return await _apiService.GetAsync<Problem>($"/api/v1/problems/student/get/{problemId}");
+        }
+
         public async Task<ApiResponse<PagedResponse<Problem>>> GetMyProblemsAsync(int page = 1, int pageSize = 20)
         {
             return await _apiService.GetAsync<PagedResponse<Problem>>($"/api/v1/problems/all-problems?page={page}&pageSize={pageSize}");

@@ -26,6 +26,11 @@ namespace UCode.Desktop.Models
         public string Changelog { get; set; } = string.Empty;
         public bool IsLocked { get; set; }
         public List<string> TagNames { get; set; } = new();
+        public List<ProblemLanguage> ProblemLanguages { get; set; } = new();
+        
+        [Newtonsoft.Json.JsonProperty("datasetSample")]
+        public Dataset DatasetSample { get; set; }
+        
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string CreatedBy { get; set; } = string.Empty;

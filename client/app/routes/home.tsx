@@ -153,7 +153,7 @@ export default function Home() {
         {/* Welcome Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-            Xin chào, {userName}! 👋
+            Xin chào, {userName}!
           </Typography>
           <Typography variant='body1' color='text.secondary'>
             Hôm nay bạn muốn học gì?
