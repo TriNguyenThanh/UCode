@@ -69,6 +69,39 @@ public class AssignmentServiceClient : IAssignmentServiceClient
         }
     }
 
+    public async Task<bool> SyncDeleteUserAsync(Guid userId)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(userId);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(
+                "/api/v1/assignments/webhook/sync-delete-user", 
+                content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            _logger.LogWarning(
+                "Failed to sync delete user. UserId: {UserId}, StatusCode: {StatusCode}", 
+                userId, 
+                response.StatusCode);
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex, 
+                "Error syncing delete user. UserId: {UserId}", 
+                userId);
+            return false;
+        }
+    }
+
     private class SyncResponse
     {
         public SyncData? Data { get; set; }

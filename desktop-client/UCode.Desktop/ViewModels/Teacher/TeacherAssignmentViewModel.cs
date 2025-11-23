@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -24,6 +27,8 @@ namespace UCode.Desktop.ViewModels
 
     public class AssignmentUserItem
     {
+        public int RowNumber { get; set; }
+        public string AssignmentUserId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -33,6 +38,9 @@ namespace UCode.Desktop.ViewModels
         public DateTime? SubmittedAt { get; set; }
         public double? Score { get; set; }
         public double? MaxScore { get; set; }
+        public int TabSwitchCount { get; set; }
+        public int CapturedAICount { get; set; }
+        public string? AiDetectionDetails { get; set; }
         public string StatusColor { get; set; } = string.Empty;
         public string ScoreDisplay => Score.HasValue ? $"{Score:F1}/{MaxScore:F1}" : "Chưa làm";
     }
@@ -123,6 +131,7 @@ namespace UCode.Desktop.ViewModels
         public ICommand ViewStudentCommand { get; }
         public ICommand ViewSubmissionsCommand { get; }
         public ICommand DeleteProblemCommand { get; }
+        public ICommand ViewAIDetailsCommand { get; }
 
         public TeacherAssignmentViewModel(
             AssignmentService assignmentService,
@@ -142,6 +151,7 @@ namespace UCode.Desktop.ViewModels
             ViewStudentCommand = new RelayCommand(param => ExecuteViewStudent(param as string ?? ""));
             ViewSubmissionsCommand = new RelayCommand(param => ExecuteViewSubmissions(param as string ?? ""));
             DeleteProblemCommand = new RelayCommand(async param => await ExecuteDeleteProblem(param as string ?? ""));
+            ViewAIDetailsCommand = new RelayCommand(param => ExecuteViewAIDetails(param as AssignmentUserItem));
         }
 
         public async Task InitializeAsync(string assignmentId)
@@ -250,8 +260,13 @@ namespace UCode.Desktop.ViewModels
                         }
                     }
 
+                    var sortedStudents = classStudentsResponse.Data
+                        .OrderBy(s => s.StudentCode)
+                        .ToList();
+
                     _allStudents.Clear();
-                    foreach (var classStudent in classStudentsResponse.Data)
+                    int cnt = 0;
+                    foreach (var classStudent in sortedStudents)
                     {
                         var assignmentStudent = assignmentStudentsDict.ContainsKey(classStudent.UserId) 
                             ? assignmentStudentsDict[classStudent.UserId] 
@@ -259,6 +274,8 @@ namespace UCode.Desktop.ViewModels
 
                         _allStudents.Add(new AssignmentUserItem
                         {
+                            RowNumber = ++cnt,
+                            AssignmentUserId = assignmentStudent?.AssignmentUserId ?? string.Empty,
                             UserId = classStudent.UserId,
                             FullName = classStudent.FullName ?? "N/A",
                             Email = classStudent.Email ?? "N/A",
@@ -270,6 +287,9 @@ namespace UCode.Desktop.ViewModels
                             SubmittedAt = null,
                             Score = assignmentStudent?.Score,
                             MaxScore = assignmentStudent?.MaxScore,
+                            TabSwitchCount = assignmentStudent?.TabSwitchCount ?? 0,
+                            CapturedAICount = assignmentStudent?.CapturedAICount ?? 0,
+                            AiDetectionDetails = assignmentStudent?.AiDetectionDetails,
                             StatusColor = assignmentStudent != null
                                 ? GetUserStatusColor(assignmentStudent.Status.ToString())
                                 : "#6c757d"
@@ -403,6 +423,53 @@ namespace UCode.Desktop.ViewModels
                     "Thông báo",
                     "Chức năng xóa bài đang được phát triển.");
             }
+        }
+
+        private async void ExecuteViewAIDetails(AssignmentUserItem? student)
+        {
+            if (student == null)
+            {
+                return;
+            }
+
+            var message = $"Thông tin AI Detection cho {student.FullName} ({student.StudentCode})\n\n";
+            message += $"Số lần chuyển tab: {student.TabSwitchCount}\n";
+            message += $"Số lần truy cập AI: {student.CapturedAICount}\n\n";
+            
+            if (!string.IsNullOrEmpty(student.AiDetectionDetails))
+            {
+                try
+                {
+                    // Parse JSON string to dictionary
+                    var aiDetails = JsonSerializer.Deserialize<Dictionary<string, int>>(student.AiDetectionDetails);
+                    
+                    if (aiDetails != null && aiDetails.Count > 0)
+                    {
+                        message += "Chi tiết truy cập:\n";
+                        foreach (var aiTool in aiDetails.OrderByDescending(x => x.Value))
+                        {
+                            message += $"  • {aiTool.Key}: {aiTool.Value} lần\n";
+                        }
+                    }
+                    else
+                    {
+                        message += "Chưa có chi tiết truy cập AI.";
+                    }
+                }
+                catch (JsonException)
+                {
+                    // If JSON parsing fails, show raw data
+                    message += $"Chi tiết:\n{student.AiDetectionDetails}";
+                }
+            }
+            else
+            {
+                message += "Chưa có chi tiết truy cập AI.";
+            }
+
+            await GetMetroWindow()?.ShowMessageAsync(
+                "Chi tiết truy cập AI",
+                message);
         }
 
         private string GetAssignmentTypeDisplay(string type)

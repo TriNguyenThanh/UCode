@@ -9,4 +9,11 @@ public interface IAssignmentServiceClient
     /// <param name="studentIds">List of student IDs to sync</param>
     /// <returns>Number of AssignmentUsers created</returns>
     Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds);
+
+    /// <summary>
+    /// Syncs delete user to assignment service
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <returns>Success</returns>
+    Task<bool> SyncDeleteUserAsync(Guid userId);
 }

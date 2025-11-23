@@ -26,9 +26,11 @@ namespace UCode.Desktop.ViewModels
         public string ProblemId => _problem.ProblemId;
         public string Code => _problem.Code;
         public string Title => _problem.Title;
-        public string ShortStament => _problem.Statement.Length > 50
-            ? _problem.Statement.Substring(0, 50) + "..."
-            : _problem.Statement;
+        public string ShortStament => string.IsNullOrEmpty(_problem.Statement) 
+            ? "" 
+            : (_problem.Statement.Length > 50
+                ? _problem.Statement.Substring(0, 50) + "..."
+                : _problem.Statement);
         public string Difficulty => GetDifficultyDisplayText(_problem.Difficulty);
         public string DifficultyColor => GetDifficultyColor(_problem.Difficulty);
         

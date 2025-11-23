@@ -43,7 +43,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <iconPacks:PackIconMaterial Kind="AlertCircle" Width="20" Height="20" Foreground="#FF9500" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Chưa có dataset nào. Nhấn 'Thêm Dataset' để tạo test cases." 
-                               Foreground="#856404" FontSize="16" TextWrapping="Wrap"/>
+                               Foreground="#856404" FontSize="16" TextWrapping="Wrap" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -14,6 +15,7 @@ namespace UCode.Desktop.ViewModels
 {
     public class ClassStudentItem
     {
+        public int RowNumber { get; set; }
         public string UserId { get; set; } = string.Empty;
         public string StudentCode { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
@@ -34,6 +36,7 @@ namespace UCode.Desktop.ViewModels
         private Class? _currentClass;
         private string _searchText = string.Empty;
         private int _selectedTabIndex;
+        private Timer? _searchDebounceTimer;
 
         public bool IsLoading
         {
@@ -60,7 +63,12 @@ namespace UCode.Desktop.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    FilterStudents();
+                    // Debounce search - wait 300ms after user stops typing
+                    _searchDebounceTimer?.Dispose();
+                    _searchDebounceTimer = new Timer(_ =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() => FilterStudents());
+                    }, null, 300, Timeout.Infinite);
                 }
             }
         }
@@ -173,12 +181,16 @@ namespace UCode.Desktop.ViewModels
                 Students.Clear();
                 FilteredStudents.Clear();
 
+                int cnt = 0;
                 if (response?.Success == true && response.Data != null)
                 {
-                    foreach (var student in response.Data)
+                    var sortedStudents = response.Data.OrderBy(s => s.StudentCode).ToList();
+                    
+                    foreach (var student in sortedStudents)
                     {
                         var item = new ClassStudentItem
                         {
+                            RowNumber = ++cnt,
                             UserId = student.UserId,
                             StudentCode = student.StudentCode,
                             FullName = student.FullName,

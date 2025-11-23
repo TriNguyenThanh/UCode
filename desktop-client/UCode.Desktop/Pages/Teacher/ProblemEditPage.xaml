@@ -294,7 +294,7 @@
                 </TabItem>
 
                 <!-- Tab 2: Limits -->
-                <TabItem Header="Giới hạn &amp; Cấu hình">
+                <TabItem Header="Giới hạn">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
                         <StackPanel>
                             <TextBlock Text="Giới hạn tài nguyên" FontSize="18" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,20"/>
@@ -307,7 +307,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Time Limit -->
-                                <StackPanel Grid.Column="0">
+                                <StackPanel Grid.Column="0" Grid.ColumnSpan="3">
                                     <TextBlock Text="Giới hạn thời gian (ms)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
                                         <TextBox Text="{Binding TimeLimitMs, UpdateSourceTrigger=PropertyChanged}"
@@ -320,7 +320,7 @@
                                     </Grid>
                                 </StackPanel>
 
-                                <!-- Memory Limit -->
+                                <!-- Memory Limit 
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Giới hạn bộ nhớ (KB)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
@@ -333,6 +333,7 @@
                                                    Margin="0,0,15,0" IsHitTestVisible="False"/>
                                     </Grid>
                                 </StackPanel>
+                                -->
                             </Grid>
 
                             <!-- I/O Mode -->
@@ -351,7 +352,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="ℹ️" Foreground="#0066CC" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Top"/>
                                     <TextBlock TextWrapping="Wrap" Foreground="#1d1d1f" FontSize="15" LineHeight="20">
-                                        Giới hạn thời gian áp dụng cho mỗi test case. Giới hạn bộ nhớ áp dụng cho toàn bộ quá trình chạy.
+                                        Giới hạn thời gian áp dụng cho mỗi test case.
                                     </TextBlock>
                                 </StackPanel>
                             </Border>
