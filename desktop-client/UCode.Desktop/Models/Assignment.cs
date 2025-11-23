@@ -139,6 +139,7 @@ namespace UCode.Desktop.Models
         public double? Score { get; set; }
         public double? MaxScore { get; set; }
         public UserInfo User { get; set; }
+        public Assignment Assignment { get; set; }
     }
 
     public class UserInfo

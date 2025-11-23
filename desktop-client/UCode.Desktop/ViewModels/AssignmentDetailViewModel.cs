@@ -47,6 +47,7 @@ namespace UCode.Desktop.ViewModels
             {
                 SetProperty(ref _assignmentUser, value);
                 ((RelayCommand)StartAssignmentCommand).RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(UserScore));
             }
         }
 
@@ -85,16 +86,45 @@ namespace UCode.Desktop.ViewModels
                 var currentUser = _authService.CurrentUser;
                 if (currentUser?.Role.ToString().ToLower() == "student")
                 {
+                    // 1. Try GetMyAssignmentDetailAsync
                     var userResponse = await _assignmentService.GetMyAssignmentDetailAsync(_assignmentId);
                     if (userResponse?.Success == true && userResponse.Data != null)
                     {
                         AssignmentUser = userResponse.Data;
+                        
+                        // If Assignment is included in response, use it
+                        if (AssignmentUser.Assignment != null)
+                        {
+                            Assignment = AssignmentUser.Assignment;
+                        }
                     }
 
-                    var assignmentResponse = await _assignmentService.GetAssignmentAsync(_assignmentId);
-                    if (assignmentResponse?.Success == true && assignmentResponse.Data != null)
+                    // 2. If Assignment is still empty, try GetAssignmentAsync
+                    if (Assignment == null || string.IsNullOrEmpty(Assignment.AssignmentId))
                     {
-                        Assignment = assignmentResponse.Data;
+                        var assignmentResponse = await _assignmentService.GetAssignmentAsync(_assignmentId);
+                        if (assignmentResponse?.Success == true && assignmentResponse.Data != null)
+                        {
+                            Assignment = assignmentResponse.Data;
+                        }
+                        else
+                        {
+                            // 3. Fallback to GetStudentAssignmentsAsync list
+                             var listResponse = await _assignmentService.GetStudentAssignmentsAsync();
+                             if (listResponse?.Success == true && listResponse.Data != null)
+                             {
+                                 var found = listResponse.Data.FirstOrDefault(a => a.AssignmentId == _assignmentId);
+                                 if (found != null)
+                                 {
+                                     Assignment = found;
+                                 }
+                             }
+                        }
+                    }
+
+                    // Populate problems if Assignment is loaded
+                    if (Assignment != null && Assignment.Problems != null)
+                    {
                         Problems.Clear();
                         foreach (var problem in Assignment.Problems)
                         {
@@ -109,9 +139,12 @@ namespace UCode.Desktop.ViewModels
                     {
                         Assignment = assignmentResponse.Data;
                         Problems.Clear();
-                        foreach (var problem in Assignment.Problems)
+                        if (Assignment.Problems != null)
                         {
-                            Problems.Add(problem);
+                            foreach (var problem in Assignment.Problems)
+                            {
+                                Problems.Add(problem);
+                            }
                         }
                     }
                 }
@@ -302,6 +335,11 @@ namespace UCode.Desktop.ViewModels
         {
             get
             {
+                if (AssignmentUser != null && AssignmentUser.Score.HasValue)
+                {
+                    return AssignmentUser.Score.Value;
+                }
+
                 double totalScore = 0;
                 foreach (var submission in ProblemSubmissions)
                 {

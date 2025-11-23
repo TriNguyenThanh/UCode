@@ -44,7 +44,7 @@
                             CornerRadius="12"
                             Padding="10,6"
                             HorizontalAlignment="Left">
-                        <TextBlock Text="PRACTICE"
+                        <TextBlock Text="{Binding Assignment.AssignmentType, Converter={StaticResource AssignmentTypeConverter}}"
                                    FontSize="12"
                                    FontWeight="Bold"
                                    FontFamily="Be Vietnam Pro, Segoe UI"
@@ -72,7 +72,7 @@
                                    FontFamily="Be Vietnam Pro, Segoe UI"
                                    Foreground="#000"
                                    Margin="0,0,0,15"/>
-                        <TextBlock Text="Practice session for algorithm problems. No deadline - practice at your own pace."
+                        <TextBlock Text="{Binding Assignment.Description}"
                                    FontSize="14"
                                    FontFamily="Be Vietnam Pro, Segoe UI"
                                    Foreground="#666"
@@ -103,7 +103,8 @@
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            FontWeight="SemiBold"
                                            Foreground="#666">
-                                    <Run Text="Tổng: 250 điểm"/>
+                                    <Run Text="{Binding Assignment.TotalPoints, Mode=OneWay}"/>
+                                    <Run Text=" điểm"/>
                                 </TextBlock>
                             </Border>
                             <Border Background="#4CAF50"
@@ -114,8 +115,9 @@
                                            FontWeight="SemiBold"
                                            Foreground="White">
                                     <Run Text="Điểm của bạn: "/>
-                                    <Run Text="{Binding UserScore, FallbackValue=150, Mode=OneWay}"/>
-                                    <Run Text="/250"/>
+                                    <Run Text="{Binding UserScore, FallbackValue=0, Mode=OneWay}"/>
+                                    <Run Text="/"/>
+                                    <Run Text="{Binding Assignment.TotalPoints, Mode=OneWay}"/>
                                 </TextBlock>
                             </Border>
                         </StackPanel>
@@ -160,7 +162,7 @@
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                Foreground="#666"
                                                Margin="0,0,0,8"/>
-                                    <TextBlock Text="250"
+                                    <TextBlock Text="{Binding Assignment.TotalPoints}"
                                                FontSize="32"
                                                FontWeight="Bold"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
@@ -192,7 +194,7 @@
                                                    FontFamily="Be Vietnam Pro, Segoe UI"
                                                    Foreground="#666"
                                                    Margin="4,0"/>
-                                        <TextBlock Text="250"
+                                        <TextBlock Text="{Binding Assignment.TotalPoints}"
                                                    FontSize="32"
                                                    FontWeight="Bold"
                                                    FontFamily="Be Vietnam Pro, Segoe UI"

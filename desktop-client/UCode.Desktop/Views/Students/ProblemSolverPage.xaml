@@ -82,7 +82,7 @@
               Background="#F8F9FA">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -609,10 +609,11 @@
             </Border>
 
             <GridSplitter Grid.Column="1"
-                          HorizontalAlignment="Stretch"
+                          HorizontalAlignment="Center"
                           VerticalAlignment="Stretch"
                           Background="#00275E"
-                          Width="5"/>
+                          Width="5"
+                          ResizeBehavior="PreviousAndNext"/>
 
             <!-- Right Panel - Code Editor -->
             <Grid Grid.Column="2"
@@ -620,7 +621,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="250"
                                    MinHeight="100"/>
                 </Grid.RowDefinitions>
@@ -745,10 +746,11 @@
                 <!-- Output Splitter -->
                 <GridSplitter Grid.Row="2"
                               HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch"
+                              VerticalAlignment="Center"
                               Background="#00275E"
                               Cursor="SizeNS"
-                              Height="5"/>
+                              Height="5"
+                              ResizeBehavior="PreviousAndNext"/>
 
                 <!-- Output Console -->
                 <Border Grid.Row="3"

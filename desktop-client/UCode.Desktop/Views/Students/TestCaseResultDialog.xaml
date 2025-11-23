@@ -1,17 +1,17 @@
-<mah:MetroWindow x:Class="UCode.Desktop.Views.Students.TestCaseResultDialog"
-                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                 Title="Chi tiết Test Cases"
-                 Height="600"
-                 Width="1000"
-                 WindowStartupLocation="CenterOwner"
-                 ShowInTaskbar="False"
-                 ShowMinButton="False"
-                 ShowMaxRestoreButton="False"
-                 Background="#F5F5F7"
-                 FontFamily="Be Vietnam Pro, Segoe UI">
+<controls:UCodeWindow x:Class="UCode.Desktop.Views.Students.TestCaseResultDialog"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                  xmlns:controls="clr-namespace:UCode.Desktop.Controls"
+                  Title="Chi tiết Test Cases"
+                  Height="600"
+                  Width="1000"
+                  WindowStartupLocation="CenterOwner"
+                  ShowInTaskbar="True"
+                  ResizeMode="CanResize"
+                  Background="#F5F5F7"
+                  FontFamily="Be Vietnam Pro, Segoe UI">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -259,4 +259,4 @@
             </Button.Style>
         </Button>
     </Grid>
-</mah:MetroWindow>
+</controls:UCodeWindow>
