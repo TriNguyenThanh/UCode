@@ -1,23 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using AssignmentService.Infrastructure.EF;
-using AssignmentService.Application.Interfaces.Repositories;
-using AssignmentService.Infrastructure.Repositories;
 using AssignmentService.Infrastructure.Services;
 using AssignmentService.Application.Interfaces.Services;
-using AssignmentService.Api.Controllers;
-using Microsoft.AspNetCore.Authorization.Policy;
 using AssignmentService.Application.Mappings;
 using AssignmentService.Api.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using AssignmentService.Application.DTOs.Common;
-using Scrutor;
 using AssignmentService.Api.Filters;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-
+using Resend;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -126,9 +116,20 @@ builder.Services.AddDbContext<AssignmentDbContext>(options =>
 // Register HttpClient for UserService
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 
+// Register Resend Email Service
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<IResend, ResendClient>();
+builder.Services.Configure<ResendClientOptions>(options =>
+{
+    options.ApiToken = builder.Configuration["Resend:ApiKey"] 
+        ?? throw new InvalidOperationException("Resend:ApiKey configuration is required");
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+
 // Register RabbitMQ Connection Provider as Singleton (connection pooling)
 builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
