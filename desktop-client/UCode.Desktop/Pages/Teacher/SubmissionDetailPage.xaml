@@ -49,7 +49,7 @@
               Panel.ZIndex="999">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <mah:ProgressRing IsActive="True" Width="60" Height="60" Foreground="#FACB01"/>
-                <TextBlock Text="Đang lưu điểm..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+                <TextBlock Text="Đang lưu ..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
@@ -177,9 +177,7 @@
                                 <Border Background="#FACB01" CornerRadius="4" Padding="8,4" Margin="0,0,10,0">
                                     <TextBlock Text="{Binding Problem.Difficulty}" FontSize="15" FontWeight="SemiBold" Foreground="#191970"/>
                                 </Border>
-                                <Border Background="#E3F2FD" CornerRadius="4" Padding="8,4">
-                                    <TextBlock Text="{Binding Submission.LanguageCode}" FontSize="15" FontWeight="SemiBold" Foreground="#1976D2"/>
-                                </Border>
+                                
                             </StackPanel>
 
                             <TextBlock Text="Mô tả:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
@@ -283,7 +281,10 @@
                             <TextBox Text="{Binding Score, UpdateSourceTrigger=PropertyChanged}" 
                                      FontSize="17"
                                      Padding="10"
-                                     Margin="0,0,0,15"/>
+                                     Margin="0,0,0,15"
+                                     IsEnabled="False"
+                                     FontWeight="Bold"
+                                     Foreground="Red"/>
 
                             <TextBlock Text="Nhận xét của giáo viên:" FontSize="17" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding Feedback, UpdateSourceTrigger=PropertyChanged}"
@@ -295,7 +296,7 @@
                                      VerticalScrollBarVisibility="Auto"
                                      Margin="0,0,0,20"/>
 
-                            <Button Content="Lưu điểm" 
+                            <Button Content="Lưu nhận xét" 
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding SaveGradeCommand}"
                                     HorizontalAlignment="Stretch"

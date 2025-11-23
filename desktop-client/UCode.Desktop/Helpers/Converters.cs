@@ -476,4 +476,64 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Multi-value converter that returns true if first value is greater than second value
+    /// Used for pagination "Previous" button (enabled when Page > 1)
+    /// </summary>
+    public class GreaterThanConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] != null && values[1] != null)
+            {
+                try
+                {
+                    var value1 = System.Convert.ToDouble(values[0]);
+                    var value2 = System.Convert.ToDouble(values[1]);
+                    return value1 > value2;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Multi-value converter that returns true if first value is less than second value  
+    /// Used for pagination "Next" button (enabled when Page < TotalPages)
+    /// </summary>
+    public class LessThanConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] != null && values[1] != null)
+            {
+                try
+                {
+                    var value1 = System.Convert.ToDouble(values[0]);
+                    var value2 = System.Convert.ToDouble(values[1]);
+                    return value1 < value2;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

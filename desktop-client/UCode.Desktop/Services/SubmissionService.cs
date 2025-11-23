@@ -48,6 +48,27 @@ namespace UCode.Desktop.Services
                 $"api/v1/submissions/problem/{problemId}?pageNumber={pageNumber}&pageSize={pageSize}"
             );
         }
+
+        public async Task<ApiResponse<PagedResultDto<Submission>>> GetSubmissionsByAssignmentAndProblemAsync(string assignmentId, string problemId, int pageNumber = 1, int pageSize = 10)
+        {
+            return await _apiService.GetAsync<PagedResultDto<Submission>>(
+                $"api/v1/submissions/assignment/{assignmentId}/problem/{problemId}?pageNumber={pageNumber}&pageSize={pageSize}"
+            );
+        }
+
+        public async Task<ApiResponse<int>> GetTotalSubmissionCountAsync(string assignmentId, string problemId)
+        {
+            return await _apiService.GetAsync<int>(
+                $"api/v1/submissions/assignment/{assignmentId}/problem/{problemId}/total-count"
+            );
+        }
+
+        public async Task<ApiResponse<StatsPerProblemResponse>> GetStatsPerProblemAsync(string assignmentId, string problemId)
+        {
+            return await _apiService.GetAsync<StatsPerProblemResponse>(
+                $"api/v1/submissions/assignment/{assignmentId}/problem/{problemId}/stats"
+            );
+        }
     }
 }
 

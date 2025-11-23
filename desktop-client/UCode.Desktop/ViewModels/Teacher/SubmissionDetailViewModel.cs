@@ -228,7 +228,7 @@ namespace UCode.Desktop.ViewModels
                 {
                     await GetMetroWindow()?.ShowMessageAsync(
                         "Thành công",
-                        $"Đã lưu điểm cho sinh viên");
+                        $"Đã lưu nhận xét thành công");
 
                     // Reload submission
                     await LoadDataAsync();

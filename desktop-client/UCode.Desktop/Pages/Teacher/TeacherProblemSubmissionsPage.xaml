@@ -33,6 +33,25 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <!-- Chip Button (Based on GhostButton with rounded corners) -->
+            <Style x:Key="ChipButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Padding" Value="20,6"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    CornerRadius="16" 
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"
+                                                TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -107,7 +126,7 @@
                             <TextBlock Text="{Binding Problem.Difficulty}" FontSize="16" Foreground="#191970" FontWeight="SemiBold"/>
                             <TextBlock Text=" • " FontSize="16" Foreground="#666" Margin="10,0"/>
                             <TextBlock Text="Tổng số bài nộp: " FontSize="16" Foreground="#666"/>
-                            <TextBlock Text="{Binding BestSubmissions.Count, Mode=OneWay}" FontSize="16" Foreground="#191970" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TotalCount, Mode=OneWay}" FontSize="16" Foreground="#191970" FontWeight="SemiBold"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -133,12 +152,53 @@
             <Border Grid.Row="2" Style="{StaticResource RoundedDataGridContainer}" Margin="30,10,30,30">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <DataGrid Grid.Row="0"
-                              ItemsSource="{Binding PaginatedSubmissions}"
+                    <!-- Filter Chips -->
+                    <Border Grid.Row="0" Background="White" Padding="20,15" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Lọc:" FontSize="15" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                            
+                            <!-- Chip: Tất cả -->
+                            <Button Content="Tất cả" 
+                                    Command="{Binding SetFilterCommand}" 
+                                    CommandParameter="all" 
+                                    Margin="0,0,10,0">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ChipButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedFilter}" Value="all">
+                                                <Setter Property="Background" Value="#191970"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <!-- Chip: Tốt nhất -->
+                            <Button Content="Tốt nhất"
+                                    Command="{Binding SetFilterCommand}" 
+                                    CommandParameter="best">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ChipButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedFilter}" Value="best">
+                                                <Setter Property="Background" Value="#191970"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding DisplayedSubmissions}"
                               Style="{StaticResource ModernDataGrid}"
                               CellStyle="{StaticResource ModernDataGridCell}"
                               ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
@@ -154,7 +214,7 @@
                         </DataGrid.RowStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="STT" Width="60" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource RowNumberConverter}}"/>
+                            <DataGridTextColumn Header="STT" Width="60" Binding="{Binding TotalSubmission}"/>
                             <DataGridTextColumn Header="Sinh viên" Width="*" Binding="{Binding UserFullName}"/>
                             <DataGridTextColumn Header="MSSV" Width="120" Binding="{Binding UserStudentCode}"/>
                             
@@ -174,7 +234,7 @@
                             <DataGridTextColumn Header="Bộ nhớ" Width="100" Binding="{Binding MemoryUsedDisplay}"/>
                             <DataGridTextColumn Header="Ngôn ngữ" Width="100" Binding="{Binding LanguageCode}"/>
                             <DataGridTextColumn Header="Ngày nộp" Width="150" Binding="{Binding SubmittedAt, StringFormat='HH:mm dd/MM/yyyy'}"/>
-                            <DataGridTextColumn Header="Điểm" Width="80" Binding="{Binding ScoreDisplay}"/>
+                            <DataGridTextColumn Header="Điểm" Width="80" Binding="{Binding ScoreDisplay}" Foreground="Red" FontWeight="Bold"/>
                             
                             <DataGridTemplateColumn Header="Chi tiết" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -194,7 +254,7 @@
                     </DataGrid>
 
                     <!-- Pagination -->
-                    <Border Grid.Row="1" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="10" Background="White">
+                    <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="10" Background="White">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -216,31 +276,40 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Foreground="#666">
-                                    <TextBlock.Text>
-                                        <MultiBinding Converter="{StaticResource PageStartConverter}">
-                                            <Binding Path="Page"/>
-                                            <Binding Path="RowsPerPage"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                                <TextBlock Text="-" Margin="3,0" Foreground="#666"/>
-                                <TextBlock Foreground="#666">
-                                    <TextBlock.Text>
-                                        <MultiBinding Converter="{StaticResource PageEndConverter}">
-                                            <Binding Path="Page"/>
-                                            <Binding Path="RowsPerPage"/>
-                                            <Binding Path="BestSubmissions.Count"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                                <TextBlock Text=" trong " Margin="3,0" Foreground="#666"/>
-                                <TextBlock Text="{Binding BestSubmissions.Count, Mode=OneWay}" Foreground="#191970" FontWeight="Bold"/>
+                                <TextBlock Text="Trang " Foreground="#666"/>
+                                <TextBlock Text="{Binding Page}" Foreground="#191970" FontWeight="Bold"/>
+                                <TextBlock Text=" / " Foreground="#666" Margin="3,0"/>
+                                <TextBlock Text="{Binding TotalPages}" Foreground="#191970" FontWeight="Bold"/>
+                                <TextBlock Text=" (" Foreground="#666" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding TotalCount}" Foreground="#191970" FontWeight="Bold"/>
+                                <TextBlock Text=" bài nộp)" Foreground="#666"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <Button Content="&lt;" Width="40" Command="{Binding ChangePageCommand}" CommandParameter="prev" Margin="0,0,5,0" Style="{StaticResource SecondaryButtonStyle}"/>
-                                <Button Content="&gt;" Width="40" Command="{Binding ChangePageCommand}" CommandParameter="next" Style="{StaticResource SecondaryButtonStyle}"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="◄ Trước" 
+                                        Width="80" 
+                                        Height="35"
+                                        Command="{Binding ChangePageCommand}" 
+                                        CommandParameter="prev" 
+                                        IsEnabled="{Binding CanGoPrevious}"
+                                        Margin="0,0,10,0"
+                                        Background="#191970"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"/>
+                                        
+                                <Button Content="Sau ►" 
+                                        Width="80" 
+                                        Height="35"
+                                        Command="{Binding ChangePageCommand}" 
+                                        CommandParameter="next"
+                                        IsEnabled="{Binding CanGoNext}"
+                                        Background="#191970"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontWeight="SemiBold"
+                                        Cursor="Hand"/>
                             </StackPanel>
                         </Grid>
                     </Border>
