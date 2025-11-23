@@ -20,7 +20,8 @@ public class AssignmentResponse
     public DateTime CreatedAt { get; set; }
     public DateTime? AssignedAt { get; set; }
 
-    public int? TotalPoints { get; set; }
+    public int? TotalPoints { get => _totalPoints ?? 0; set => _totalPoints = value; }
+    private int? _totalPoints;
     private int? _totalProblems;
     public int? TotalProblems
     {

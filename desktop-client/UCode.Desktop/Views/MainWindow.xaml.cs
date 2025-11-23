@@ -62,13 +62,47 @@ namespace UCode.Desktop.Views
             }
         }
 
-        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as System.Windows.Controls.Button;
-            if (button?.ContextMenu != null)
+            try
             {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
+                // For MainWindow (student), we don't have NavigationService
+                // So we need to show it in a dialog or separate window
+                // Let's create a simple navigation window
+                var settingsWindow = new Window
+                {
+                    Title = "Cài đặt",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
+                };
+                settingsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // For students, show settings page in a window
+                var settingsWindow = new Window
+                {
+                    Title = "Hồ sơ",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
+                };
+                settingsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

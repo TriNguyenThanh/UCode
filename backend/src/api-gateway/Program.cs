@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ApiGateway.Middlewares;
+using Microsoft.AspNetCore.HttpOverrides;
 
 // Custom rate limiting implementation
 
@@ -59,12 +60,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Add Rate Limiting (Custom implementation)
 builder.Services.AddMemoryCache();
 
+// Configure Forwarded Headers để đọc IP thật từ client
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Clear known networks/proxies để chấp nhận tất cả proxy
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // Add Ocelot with multiple configuration files
 // Thay thế phần load multiple files
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
+
+// ⚠️ QUAN TRỌNG: UseForwardedHeaders PHẢI ở đầu tiên để đọc IP thật từ client
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

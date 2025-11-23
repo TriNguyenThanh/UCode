@@ -333,6 +333,7 @@ public class SubmissionController : ControllerBase
 
         if (submission == null)
             return NotFound(ApiResponse<Submission>.ErrorResponse("Best submission not found"));
+        
         submission.Score = request.NewScore;
         submission.Comment = request.Comment;
         await _submissionService.UpdateSubmissionByTeacher(submission);

@@ -1,0 +1,73 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    users ||--o{ Problem : "owns_problem"
+    Problem ||--o{ AssignmentProblem : "included_in"
+
+    Problem ||--o{ ProblemAsset : "has_asset"
+    Problem ||--o{ ProblemTag : "tagged"
+    Tag ||--o{ ProblemTag : "used_in"
+    Problem ||--o{ ProblemLanguage : "has_language_override"
+    Language ||--o{ ProblemLanguage : "overridden_in"
+    Problem ||--o{ Dataset : "has_dataset"
+    Dataset ||--o{ TestCase : "stored_in_file"
+
+    Problem {
+        UUID id PK
+        UUID owner_id FK "Links to users/teachers"
+        nvarchar_50_ code
+        nvarchar_255_ slug
+        nvarchar_500_ title
+        nvarchar_16_ difficulty
+        nvarchar_16_ visibility
+        nvarchar_1000_ statement_md_ref
+        int max_score
+        int time_limit_ms
+        int memory_limit_kb
+        bit is_locked
+        datetime2 created_at
+        datetime2 updated_at
+    }
+    Dataset {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_100_ name
+        nvarchar_16_ kind
+    }
+    TestCase {
+        UUID id PK
+        UUID dataset_id FK
+        nvarchar_500_ input_ref
+        nvarchar_500_ output_ref
+        nvarchar_100_ score
+    }
+    ProblemAsset {
+        UUID id PK
+        UUID problem_id FK
+        nvarchar_16_ type
+        nvarchar_1000_ object_ref
+        nvarchar_16_ format
+    }
+    ProblemTag {
+        UUID problem_id PK, FK
+        UUID tag_id PK, FK
+    }
+    Tag {
+        UUID id PK
+        nvarchar_64_ name
+        nvarchar_16_ category
+    }
+    Language {
+        UUID id PK
+        nvarchar_50_ code
+        nvarchar_100_ display_name
+        decimal_5_2_ default_time_factor
+    }
+    ProblemLanguage {
+        UUID problem_id PK, FK
+        UUID language_id PK, FK
+        decimal_5_2_ time_factor_override
+        bit is_allowed
+    }

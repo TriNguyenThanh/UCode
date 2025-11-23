@@ -139,6 +139,7 @@ builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
 builder.Services.AddScoped<IClassRepository, ClassRepository>();
 builder.Services.AddScoped<IUserClassRepository, UserClassRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Register Services
@@ -151,6 +152,7 @@ builder.Services.AddScoped<IAuthService, AuthAppService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IEmailService, EmailAppService>();
 builder.Services.AddScoped<IExcelService, ExcelAppService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // Register HTTP Clients
 builder.Services.AddHttpClient<IAssignmentServiceClient, AssignmentServiceClient>();
@@ -209,6 +211,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("AllowAll");
+app.UseMiddleware<IpAddressMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

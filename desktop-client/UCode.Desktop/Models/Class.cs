@@ -9,7 +9,7 @@ namespace UCode.Desktop.Models
         public string ClassId { get; set; } = string.Empty;
         
         [JsonProperty("name")]
-        public string ClassName { get; set; } = string.Empty;
+        public string ClassName { get => Name; set => Name = value; }
         public string Name { get; set; } = string.Empty;
         
         [JsonProperty("classCode")]

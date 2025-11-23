@@ -1,0 +1,138 @@
+<UserControl x:Class="UCode.Desktop.Controls.MarkdownEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
+    
+    <UserControl.Resources>
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F5F5F7"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#E8E8EA"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Toolbar Separator Style -->
+        <Style x:Key="ToolbarSeparatorStyle" TargetType="Separator">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Background" Value="#d2d2d7"/>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#d2d2d7" BorderThickness="1,1,1,0" 
+                CornerRadius="8,8,0,0" Padding="8">
+            <WrapPanel>
+                <!-- Bold -->
+                <Button Click="OnBoldClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Bold (Ctrl+B)">
+                    <iconPacks:PackIconMaterial Kind="FormatBold" Width="16" Height="16"/>
+                </Button>
+
+                <!-- Italic -->
+                <Button Click="OnItalicClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Italic (Ctrl+I)">
+                    <iconPacks:PackIconMaterial Kind="FormatItalic" Width="16" Height="16"/>
+                </Button>
+
+                <!-- Strikethrough -->
+                <Button Click="OnStrikethroughClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Strikethrough">
+                    <iconPacks:PackIconMaterial Kind="FormatStrikethrough" Width="16" Height="16"/>
+                </Button>
+
+                <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
+
+                <!-- Heading -->
+                <Button Click="OnHeadingClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Heading">
+                    <iconPacks:PackIconMaterial Kind="FormatHeader1" Width="16" Height="16"/>
+                </Button>
+
+                <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
+
+                <!-- Code -->
+                <Button Click="OnCodeClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Code">
+                    <iconPacks:PackIconMaterial Kind="CodeTags" Width="16" Height="16"/>
+                </Button>
+
+                <!-- Quote -->
+                <Button Click="OnQuoteClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Quote">
+                    <iconPacks:PackIconMaterial Kind="FormatQuoteClose" Width="16" Height="16"/>
+                </Button>
+
+                <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
+
+                <!-- Unordered List -->
+                <Button Click="OnUnorderedListClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Unordered List">
+                    <iconPacks:PackIconMaterial Kind="FormatListBulleted" Width="16" Height="16"/>
+                </Button>
+
+                <!-- Ordered List -->
+                <Button Click="OnOrderedListClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Ordered List">
+                    <iconPacks:PackIconMaterial Kind="FormatListNumbered" Width="16" Height="16"/>
+                </Button>
+
+                <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
+
+                <!-- Image -->
+                <Button Click="OnImageClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Insert Image">
+                    <iconPacks:PackIconMaterial Kind="Image" Width="16" Height="16"/>
+                </Button>
+
+                <!-- Link -->
+                <Button Click="OnLinkClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Insert Link">
+                    <iconPacks:PackIconMaterial Kind="Link" Width="16" Height="16"/>
+                </Button>
+
+                <!-- PDF -->
+                <Button Click="OnPdfClick" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Insert PDF">
+                    <iconPacks:PackIconMaterial Kind="FilePdfBox" Width="16" Height="16"/>
+                </Button>
+            </WrapPanel>
+        </Border>
+
+        <!-- Editor TextBox -->
+        <Border Grid.Row="1" BorderBrush="#d2d2d7" BorderThickness="1,0,1,1" CornerRadius="0,0,8,8">
+            <TextBox x:Name="EditorTextBox"
+                     BorderThickness="0"
+                     Background="White"
+                     Padding="12"
+                     FontFamily="Consolas, Courier New, monospace"
+                     FontSize="14"
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     TextChanged="OnTextChanged"/>
+        </Border>
+    </Grid>
+</UserControl>

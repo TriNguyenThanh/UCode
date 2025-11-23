@@ -68,21 +68,25 @@ namespace UCode.Desktop.Views
                 {
                     // Get current user to check role
                     var currentUser = _authService.CurrentUser;
-                    var userRole = currentUser?.Role.ToString().ToLower() ?? "student";
 
-                    System.IO.File.AppendAllText(logPath, $"User role: {userRole}\n");
+                    System.IO.File.AppendAllText(logPath, $"User role: {currentUser?.Role} (Enum: {(int?)currentUser?.Role})\n");
 
                     Window targetWindow = null;
 
-                    // Redirect based on role
-                    if (userRole == "teacher")
+                    // Redirect based on role - use enum comparison
+                    if (currentUser?.Role == Models.UserRole.Admin)
                     {
-                        System.IO.File.AppendAllText(logPath, "Getting TeacherHomeWindow from ServiceProvider...\n");
+                        System.IO.File.AppendAllText(logPath, "✅ Getting AdminMainWindow from ServiceProvider...\n");
+                        targetWindow = App.ServiceProvider.GetService(typeof(Views.AdminMainWindow)) as Views.AdminMainWindow;
+                    }
+                    else if (currentUser?.Role == Models.UserRole.Teacher)
+                    {
+                        System.IO.File.AppendAllText(logPath, "✅ Getting TeacherHomeWindow from ServiceProvider...\n");
                         targetWindow = App.ServiceProvider.GetService(typeof(TeacherHomeWindow)) as TeacherHomeWindow;
                     }
                     else
                     {
-                        System.IO.File.AppendAllText(logPath, "Getting MainWindow from ServiceProvider...\n");
+                        System.IO.File.AppendAllText(logPath, "✅ Getting MainWindow from ServiceProvider...\n");
                         targetWindow = App.ServiceProvider.GetService(typeof(MainWindow)) as MainWindow;
                     }
 

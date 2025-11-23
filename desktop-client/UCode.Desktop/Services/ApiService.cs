@@ -15,7 +15,7 @@ namespace UCode.Desktop.Services
         private string _accessToken;
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
-            Converters = { new UtcToLocalDateTimeConverter() }
+            Converters = { new VietnamDateTimeConverter() }  // Xử lý cả serialize và deserialize
         };
 
         public ApiService(HttpClient httpClient)
@@ -79,7 +79,7 @@ namespace UCode.Desktop.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(data);
+                var json = JsonConvert.SerializeObject(data, JsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 // Log request
@@ -123,7 +123,7 @@ namespace UCode.Desktop.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(data);
+                var json = JsonConvert.SerializeObject(data, JsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync(endpoint, content);

@@ -165,6 +165,20 @@ services:
     restart: on-failure
     command: dotnet watch run --project file-service.csproj --urls http://0.0.0.0:5073
 
+  
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx-proxy
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - api-gateway
+  #   networks:
+  #     - ucode_network
+  #   restart: unless-stopped
+
 volumes:
   redis-data:
   sqlserver-data:

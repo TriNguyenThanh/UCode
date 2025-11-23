@@ -232,9 +232,10 @@
                                 </MenuItem>
                                 
                                 <Separator/>
-                                
-                                <!-- Profile -->
-                                <MenuItem Header="Hồ sơ">
+                                <MenuItem Header="Hồ sơ"
+                                          FontSize="14"
+                                          Padding="16,8"
+                                          Click="ProfileMenuItem_Click">
                                     <MenuItem.Icon>
                                         <iconPacks:PackIconMaterial Kind="Account"
                                                                     Width="20"
@@ -242,9 +243,10 @@
                                                                     Foreground="#6B7280"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                
-                                <!-- Settings -->
-                                <MenuItem Header="Cài đặt">
+                                <MenuItem Header="Cài đặt"
+                                          FontSize="14"
+                                          Padding="16,8"
+                                          Click="SettingsMenuItem_Click">
                                     <MenuItem.Icon>
                                         <iconPacks:PackIconMaterial Kind="Cog"
                                                                     Width="20"
