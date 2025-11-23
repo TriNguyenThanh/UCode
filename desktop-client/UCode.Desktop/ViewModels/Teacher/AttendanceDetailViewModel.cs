@@ -23,6 +23,7 @@ namespace UCode.Desktop.ViewModels
         private AttendanceSessionItem? _session;
         private string _searchText = string.Empty;
         private Timer? _searchDebounceTimer;
+        private string _selectedStatus = "Tất cả";
 
         public bool IsLoading
         {
@@ -59,6 +60,18 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
+        public string SelectedStatus
+        {
+            get => _selectedStatus;
+            set
+            {
+                if (SetProperty(ref _selectedStatus, value))
+                {
+                    FilterRecords();
+                }
+            }
+        }
+
         public double AttendanceRate
         {
             get
@@ -78,6 +91,13 @@ namespace UCode.Desktop.ViewModels
 
         public ObservableCollection<AttendanceRecord> Records { get; } = new();
         public ObservableCollection<AttendanceRecord> FilteredRecords { get; } = new();
+        public ObservableCollection<string> StatusFilters { get; } = new()
+        {
+            "Tất cả",
+            "Đã điểm danh hợp lệ",
+            "Đã điểm danh không hợp lệ",
+            "Chưa điểm danh"
+        };
 
         public ICommand RefreshCommand { get; }
         public ICommand ExportCommand { get; }
@@ -246,12 +266,22 @@ namespace UCode.Desktop.ViewModels
 
             var query = Records.AsEnumerable();
 
+            // Filter by search text
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 query = query.Where(r =>
                     r.StudentCode.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     r.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
             }
+
+            // Filter by status
+            query = SelectedStatus switch
+            {
+                "Đã điểm danh hợp lệ" => query.Where(r => r.AttendedAt.HasValue && r.IsValid),
+                "Đã điểm danh không hợp lệ" => query.Where(r => r.AttendedAt.HasValue && !r.IsValid),
+                "Chưa điểm danh" => query.Where(r => !r.AttendedAt.HasValue),
+                _ => query // "Tất cả"
+            };
 
             foreach (var record in query)
             {

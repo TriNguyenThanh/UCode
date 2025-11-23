@@ -47,18 +47,18 @@ export interface User {
   fullName: string // Map từ backend FullName
   role: 'Student' | 'Teacher' | 'Admin' // Map từ UserRole enum
   status?: 'Active' | 'Inactive' | 'Banned' // Map từ UserStatus enum
-  
+
   // Student specific
   studentCode?: string // Map từ backend StudentCode
   major?: string
   enrollmentYear?: number
   classYear?: number
-  
+
   // Teacher specific
   teacherCode?: string // Map từ backend TeacherCode
   department?: string
   title?: string
-  
+
   // Common
   phone?: string
   address?: string
@@ -106,7 +106,7 @@ export interface ResetPasswordRequest {
 
 export interface Class {
   classId: string // Backend: ClassId (Guid)
-  className: string 
+  className: string
   classCode: string // Backend: ClassCode
   teacherId: string
   teacherName: string
@@ -299,21 +299,21 @@ export interface ProblemAsset {
   orderIndex: number
   isActive: boolean
   createdAt: string
-  createdBy?: string 
+  createdBy?: string
 }
 
 /// =====================
 /// TESTCASE STATUS
 /// =====================
 export type TestcaseStatus =
-        'Passed' |
-        'TimeLimitExceeded' |
-        'MemoryLimitExceeded' |
-        'RuntimeError' |
-        'InternalError' |
-        'WrongAnswer' |
-        'CompilationError' |
-        'Skipped'
+  'Passed' |
+  'TimeLimitExceeded' |
+  'MemoryLimitExceeded' |
+  'RuntimeError' |
+  'InternalError' |
+  'WrongAnswer' |
+  'CompilationError' |
+  'Skipped'
 
 // ============================================
 // DATASET & TEST CASE
@@ -585,6 +585,7 @@ export interface AttendanceCheckInRequest {
   sessionId?: string
   latitude?: number
   longitude?: number
+  ipAddress?: string // For testing purposes when not deployed on VPS
 }
 
 export interface GeolocationPosition {

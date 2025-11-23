@@ -422,7 +422,6 @@
                                     <DataGridTextColumn Header="Mã phiên" Binding="{Binding SessionCode}" Width="120"/>
                                     <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
                                     <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
-                                    <DataGridTextColumn Header="Đã điểm danh" Binding="{Binding AttendedCount}" Width="120"/>
                                     
                                     <DataGridTemplateColumn Header="Trạng thái" Width="120">
                                         <DataGridTemplateColumn.CellTemplate>

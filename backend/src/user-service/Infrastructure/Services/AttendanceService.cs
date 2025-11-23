@@ -42,6 +42,8 @@ public class AttendanceService : IAttendanceService
                 return ApiResponse<AttendanceRecordResponse>.ErrorResponse("Session is not active or has expired");
             }
 
+            attendanceRecord.IsValid = true;
+
             // Validate IP address if required
             if (session.RequireIpCheck && !string.IsNullOrEmpty(session.AllowedIpSubnet))
             {

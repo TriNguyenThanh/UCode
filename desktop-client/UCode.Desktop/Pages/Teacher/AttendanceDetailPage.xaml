@@ -276,17 +276,39 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <!-- Search -->
-                                <TextBox Grid.Row="1" 
-                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                     Padding="12" FontSize="14" Height="45"
-                                     Margin="0,0,0,15"
-                                     mah:TextBoxHelper.Watermark="Tìm kiếm theo MSSV, tên, email..."
-                                     mah:ControlsHelper.CornerRadius="8">
-                                    <mah:TextBoxHelper.ButtonContent>
-                                        <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
-                                    </mah:TextBoxHelper.ButtonContent>
-                                </TextBox>
+                                <!-- Search and Filter -->
+                                <Grid Grid.Row="1" Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="250"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Search Box -->
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             Padding="12" FontSize="14" Height="45"
+                                             mah:TextBoxHelper.Watermark="Tìm kiếm theo MSSV, tên sinh viên..."
+                                             mah:ControlsHelper.CornerRadius="8">
+                                        <mah:TextBoxHelper.ButtonContent>
+                                            <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
+                                        </mah:TextBoxHelper.ButtonContent>
+                                    </TextBox>
+
+                                    <!-- Status Filter -->
+                                    <ComboBox Grid.Column="2"
+                                              ItemsSource="{Binding StatusFilters}"
+                                              SelectedItem="{Binding SelectedStatus}"
+                                              Height="45"
+                                              FontSize="14"
+                                              mah:ControlsHelper.CornerRadius="8">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Padding="5"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
 
                                 <!-- Records DataGrid -->
                                 <DataGrid Grid.Row="2" 
