@@ -80,14 +80,14 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
                 // Auto-login successful, open main window based on user role
                 var user = authService.CurrentUser;
-                
+
                 // Debug logging
                 System.IO.File.AppendAllText(logPath, $"User Role: {user?.Role} (Enum value: {(int?)user?.Role})\n");
                 System.IO.File.AppendAllText(logPath, $"Comparing with UserRole.Admin: {Models.UserRole.Admin} (Enum value: {(int)Models.UserRole.Admin})\n");
-                
+
                 // Change shutdown mode to close when main window closes
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
-                
+
                 if (user?.Role == Models.UserRole.Admin)
                 {
                     System.IO.File.AppendAllText(logPath, "✅ Opening AdminMainWindow...\n");
@@ -231,7 +231,8 @@ public partial class App : Application
         services.AddTransient<MainWindow>();
         // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
-        services.AddTransient<ProblemSolverWindow>();
+        // services.AddTransient<ProblemSolverWindow>(); // ← Đã chuyển sang Page
+        services.AddTransient<ProblemSolverWindow>(); // ← Giữ lại cho trường hợp cần
 
         // Views - Admin
         services.AddTransient<Views.AdminMainWindow>();
@@ -274,10 +275,11 @@ public partial class App : Application
         // Pages - Student (for navigation)
         services.AddTransient<Views.Students.ClassDetailPage>();
         services.AddTransient<Views.Students.AssignmentDetailPage>();
+        services.AddTransient<Views.Students.ProblemSolverPage>();
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
-        
+
         // Pages - Common
         services.AddTransient<Pages.SettingsPage>();
         services.AddTransient<Pages.TeacherProfilePage>();

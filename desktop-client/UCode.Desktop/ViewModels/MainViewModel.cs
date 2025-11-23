@@ -52,11 +52,18 @@ namespace UCode.Desktop.ViewModels
         private string _userEmail = string.Empty;
         private string _userName = string.Empty;
         private bool _isLoading;
+        private bool _isNavigationBarVisible = true;
 
         public bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
+        }
+
+        public bool IsNavigationBarVisible
+        {
+            get => _isNavigationBarVisible;
+            set => SetProperty(ref _isNavigationBarVisible, value);
         }
 
         public string UserEmail
@@ -91,10 +98,26 @@ namespace UCode.Desktop.ViewModels
             NavigateToClassCommand = new RelayCommand<string>(NavigateToClass);
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
 
+            // Subscribe to navigation events
+            _navigationService.Navigated += OnNavigated;
+
             // Set user info
             var currentUser = authService.CurrentUser;
             UserEmail = currentUser?.Email ?? "user@example.com";
             UserName = currentUser?.Email?.Split('@')[0] ?? "User";
+        }
+
+        private void OnNavigated(object? sender, System.Windows.Controls.UserControl page)
+        {
+            // Hide navigation bar for ProblemSolverPage
+            if (page is Views.Students.ProblemSolverPage)
+            {
+                IsNavigationBarVisible = false;
+            }
+            else
+            {
+                IsNavigationBarVisible = true;
+            }
         }
 
         public async Task LoadDataAsync()
@@ -359,7 +382,7 @@ namespace UCode.Desktop.ViewModels
         {
             var metroWindow = GetMetroWindow();
             MessageDialogResult result;
-            
+
             if (metroWindow != null)
             {
                 result = await metroWindow.ShowMessageAsync(
@@ -377,8 +400,8 @@ namespace UCode.Desktop.ViewModels
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question
                 );
-                result = messageResult == MessageBoxResult.Yes 
-                    ? MessageDialogResult.Affirmative 
+                result = messageResult == MessageBoxResult.Yes
+                    ? MessageDialogResult.Affirmative
                     : MessageDialogResult.Negative;
             }
 

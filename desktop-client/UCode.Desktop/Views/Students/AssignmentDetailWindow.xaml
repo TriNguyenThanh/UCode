@@ -39,6 +39,8 @@
                 <!-- Back Button -->
                 <Button Grid.Column="0"
                         Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
                         Foreground="White"
                         Command="{Binding NavigateBackCommand}"
                         Cursor="Hand"

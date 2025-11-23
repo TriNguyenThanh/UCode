@@ -19,6 +19,8 @@
 
                 <!-- Back Button -->
                 <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
                         Foreground="#00275E"
                         Command="{Binding NavigateBackCommand}"
                         Cursor="Hand"
@@ -327,11 +329,11 @@
                                             <StackPanel Orientation="Horizontal"
                                                         Margin="0,0,15,0">
                                                 <iconPacks:PackIconMaterial Kind="CalendarClock"
-                                                                           Width="16"
-                                                                           Height="16"
-                                                                           Foreground="#666"
-                                                                           VerticalAlignment="Center"
-                                                                           Margin="0,0,6,0"/>
+                                                                            Width="16"
+                                                                            Height="16"
+                                                                            Foreground="#666"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0"/>
                                                 <TextBlock FontSize="12"
                                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                                            Foreground="#666"
@@ -345,11 +347,11 @@
                                             <StackPanel Orientation="Horizontal"
                                                         Visibility="{Binding AllowLateSubmission, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <iconPacks:PackIconMaterial Kind="ClockCheckOutline"
-                                                                           Width="16"
-                                                                           Height="16"
-                                                                           Foreground="#4CAF50"
-                                                                           VerticalAlignment="Center"
-                                                                           Margin="0,0,6,0"/>
+                                                                            Width="16"
+                                                                            Height="16"
+                                                                            Foreground="#4CAF50"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0"/>
                                                 <TextBlock Text="Cho phép nộp muộn"
                                                            FontSize="12"
                                                            FontFamily="Be Vietnam Pro, Segoe UI"

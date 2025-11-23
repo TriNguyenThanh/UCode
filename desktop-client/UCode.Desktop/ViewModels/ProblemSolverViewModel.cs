@@ -39,6 +39,7 @@ namespace UCode.Desktop.ViewModels
             SubmitCodeCommand = new RelayCommand(_ => SubmitCode());
             ResetCodeCommand = new RelayCommand(_ => ResetCode());
             ViewSubmissionDetailCommand = new RelayCommand<Submission>(submission => ViewSubmissionDetail(submission));
+            ViewTestCaseResultsCommand = new RelayCommand<Submission>(submission => ViewTestCaseResults(submission));
         }
 
         public Problem Problem
@@ -122,6 +123,7 @@ namespace UCode.Desktop.ViewModels
         public ICommand SubmitCodeCommand { get; }
         public ICommand ResetCodeCommand { get; }
         public ICommand ViewSubmissionDetailCommand { get; }
+        public ICommand ViewTestCaseResultsCommand { get; }
 
         public async Task InitializeAsync(string assignmentId, string problemId)
         {
@@ -500,6 +502,14 @@ namespace UCode.Desktop.ViewModels
             if (submission == null) return;
 
             var dialog = new Views.Students.SubmissionDetailDialog(submission);
+            dialog.ShowDialog();
+        }
+
+        private void ViewTestCaseResults(Submission submission)
+        {
+            if (submission == null) return;
+
+            var dialog = new Views.Students.TestCaseResultDialog(submission);
             dialog.ShowDialog();
         }
     }

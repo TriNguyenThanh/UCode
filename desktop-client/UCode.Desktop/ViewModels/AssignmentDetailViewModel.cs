@@ -143,6 +143,10 @@ namespace UCode.Desktop.ViewModels
                         {
                             ProblemSubmissions.Add(submission);
                         }
+
+                        // Update problem details with submission info
+                        UpdateProblemDetails();
+
                         OnPropertyChanged(nameof(CompletedProblemsCount));
                         OnPropertyChanged(nameof(ProgressPercentage));
                         OnPropertyChanged(nameof(UserScore));
@@ -152,6 +156,36 @@ namespace UCode.Desktop.ViewModels
             catch (System.Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading submissions: {ex.Message}");
+            }
+        }
+
+        private void UpdateProblemDetails()
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdateProblemDetails: Problems.Count = {Problems.Count}, Submissions.Count = {ProblemSubmissions.Count}");
+
+            foreach (var problem in Problems)
+            {
+                var submission = GetBestSubmissionForProblem(problem.ProblemId);
+                if (submission != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Problem {problem.Code}: Status={submission.Status}, Testcases={submission.PassedTestcase}/{submission.TotalTestcase}, Score={submission.Score}, Submissions={submission.TotalSubmission}");
+
+                    problem.IsCompleted = submission.Status == "Passed";
+                    problem.PassedTestcases = submission.PassedTestcase;
+                    problem.TotalTestcases = submission.TotalTestcase;
+                    problem.EarnedPoints = (int)submission.Score;
+                    problem.SubmissionCount = submission.TotalSubmission;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Problem {problem.Code}: No submission found");
+
+                    problem.IsCompleted = false;
+                    problem.PassedTestcases = 0;
+                    problem.TotalTestcases = 0;
+                    problem.EarnedPoints = 0;
+                    problem.SubmissionCount = 0;
+                }
             }
         }
 
@@ -192,28 +226,29 @@ namespace UCode.Desktop.ViewModels
                     return;
                 }
 
-                // Note: ProblemSolverPage chưa được tạo, tạm thời giữ window cho problem solver
-                // TODO: Chuyển sang ProblemSolverPage khi có yêu cầu
-                var problemWindow = App.ServiceProvider.GetService(typeof(Views.Students.ProblemSolverWindow)) as Views.Students.ProblemSolverWindow;
-                if (problemWindow == null)
+                // Navigate to ProblemSolverPage
+                var problemSolverPage = App.ServiceProvider.GetService(typeof(Views.Students.ProblemSolverPage)) as Views.Students.ProblemSolverPage;
+                if (problemSolverPage == null)
                 {
-                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverWindow. Vui lòng kiểm tra DI configuration.");
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverPage.");
                     return;
                 }
 
-                var viewModel = problemWindow.DataContext as ProblemSolverViewModel;
+                var viewModel = App.ServiceProvider.GetService(typeof(ProblemSolverViewModel)) as ProblemSolverViewModel;
                 if (viewModel == null)
                 {
-                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "ProblemSolverViewModel không tồn tại trong DataContext");
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverViewModel.");
                     return;
                 }
 
+                problemSolverPage.DataContext = viewModel;
                 await viewModel.InitializeAsync(_assignmentId, problemId);
-                problemWindow.Show();
+
+                _navigationService.NavigateTo(problemSolverPage);
             }
             catch (System.Exception ex)
             {
-                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi khi mở Problem Solver: {ex.Message}\n\nStack trace:\n{ex.StackTrace}");
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Lỗi khi mở Problem Solver: {ex.Message}");
             }
         }
 
