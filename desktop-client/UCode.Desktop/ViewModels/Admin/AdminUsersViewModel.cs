@@ -287,13 +287,99 @@ namespace UCode.Desktop.ViewModels.Admin
 
         private async Task CreateUserAsync()
         {
-            // TODO: Show CreateUserDialog
-            await _dialogCoordinator.ShowMessageAsync(
-                this,
-                "Chức năng",
-                "Tính năng tạo người dùng đang được phát triển.",
-                MessageDialogStyle.Affirmative
-            );
+            var dialogViewModel = new AddUserDialogViewModel();
+            bool? result = null;
+
+            dialogViewModel.DialogClosed += (sender, confirmed) =>
+            {
+                result = confirmed;
+            };
+
+            var view = new UCode.Desktop.Views.Admin.AddUserDialog
+            {
+                DataContext = dialogViewModel
+            };
+
+            var customDialog = new CustomDialog
+            {
+                Content = view
+            };
+
+            await _dialogCoordinator.ShowMetroDialogAsync(this, customDialog);
+
+            // Wait for dialog to close
+            while (result == null)
+            {
+                await Task.Delay(100);
+            }
+
+            await _dialogCoordinator.HideMetroDialogAsync(this, customDialog);
+
+            if (result == true)
+            {
+                try
+                {
+                    dialogViewModel.IsSubmitting = true;
+
+                    // Xác định username dựa trên role
+                    string username;
+                    if (dialogViewModel.IsStudentRole)
+                    {
+                        username = dialogViewModel.StudentCode?.Trim() ?? string.Empty;
+                    }
+                    else if (dialogViewModel.IsTeacherRole)
+                    {
+                        username = dialogViewModel.TeacherCode?.Trim() ?? string.Empty;
+                    }
+                    else
+                    {
+                        // Admin: lấy phần trước @ của email làm username
+                        username = dialogViewModel.Email.Split('@')[0];
+                    }
+
+                    var request = new CreateUserByAdminRequest
+                    {
+                        Username = username,
+                        FullName = dialogViewModel.FullName.Trim(),
+                        Email = dialogViewModel.Email.Trim(),
+                        Password = dialogViewModel.Password,
+                        Role = dialogViewModel.SelectedRole?.Value ?? "Student",
+                        IsActive = dialogViewModel.IsActive,
+                        StudentCode = dialogViewModel.IsStudentRole ? dialogViewModel.StudentCode?.Trim() : null,
+                        TeacherCode = dialogViewModel.IsTeacherRole ? dialogViewModel.TeacherCode?.Trim() : null,
+                        PhoneNumber = dialogViewModel.IsTeacherRole ? dialogViewModel.PhoneNumber?.Trim() : null,
+                        Phone = dialogViewModel.IsTeacherRole ? dialogViewModel.PhoneNumber?.Trim() : null
+                    };
+
+                    var createdUser = await _userService.CreateUserAsync(request);
+
+                    if (createdUser != null)
+                    {
+                        await _dialogCoordinator.ShowMessageAsync(
+                            this,
+                            "Thành công",
+                            $"Đã thêm người dùng '{dialogViewModel.FullName}' thành công!",
+                            MessageDialogStyle.Affirmative
+                        );
+
+                        // Refresh list
+                        await LoadUsersAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(
+                        this,
+                        "Lỗi",
+                        $"Không thể tạo người dùng: {ex.Message}",
+                        MessageDialogStyle.Affirmative
+                    );
+                }
+                finally
+                {
+                    dialogViewModel.IsSubmitting = false;
+                }
+            }
         }
 
         private async Task EditUserAsync(UserItem? user)

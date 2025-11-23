@@ -186,15 +186,16 @@ namespace UCode.Desktop.Models.Admin
     /// </summary>
     public class CreateUserByAdminRequest
     {
-        public string Username { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty; // MSSV cho Student, Mã GV cho Teacher
+        public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = "Student"; // Student, Teacher, Admin
+        public bool IsActive { get; set; } = true;
         public string? StudentCode { get; set; }
-        public string? Major { get; set; }
-        public int? ClassYear { get; set; }
+        public string? TeacherCode { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Phone { get; set; } // Alias for PhoneNumber (some APIs use this)
     }
 
     /// <summary>
@@ -266,5 +267,89 @@ namespace UCode.Desktop.Models.Admin
         public string? IpAddress { get; set; }
         public DateTime Timestamp { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
+    }
+
+    /// <summary>
+    /// Dashboard card data for admin home
+    /// </summary>
+    public class DashboardCard
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string Route { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// User export request
+    /// </summary>
+    public class ExportUsersRequest
+    {
+        public string? Role { get; set; }
+        public bool? IsActive { get; set; }
+        public string? SearchTerm { get; set; }
+        public string Format { get; set; } = "xlsx"; // xlsx, csv, pdf
+    }
+
+    /// <summary>
+    /// Class export request
+    /// </summary>
+    public class ExportClassesRequest
+    {
+        public string? TeacherId { get; set; }
+        public bool? IsActive { get; set; }
+        public bool? IsArchived { get; set; }
+        public string? SearchTerm { get; set; }
+        public string Format { get; set; } = "xlsx"; // xlsx, csv, pdf
+    }
+
+    /// <summary>
+    /// System settings for admin
+    /// </summary>
+    public class SystemSettings
+    {
+        public GeneralSettings General { get; set; } = new();
+        public SecuritySettings Security { get; set; } = new();
+        public EmailSettings Email { get; set; } = new();
+        public StorageSettings Storage { get; set; } = new();
+    }
+
+    public class GeneralSettings
+    {
+        public string SystemName { get; set; } = "UCode";
+        public string SystemDescription { get; set; } = string.Empty;
+        public string SupportEmail { get; set; } = string.Empty;
+        public bool MaintenanceMode { get; set; } = false;
+        public string? MaintenanceMessage { get; set; }
+    }
+
+    public class SecuritySettings
+    {
+        public bool RequireEmailVerification { get; set; } = true;
+        public int SessionTimeout { get; set; } = 30; // minutes
+        public int MaxLoginAttempts { get; set; } = 5;
+        public int LockoutDuration { get; set; } = 15; // minutes
+        public bool EnableTwoFactor { get; set; } = false;
+    }
+
+    public class EmailSettings
+    {
+        public string SmtpHost { get; set; } = string.Empty;
+        public int SmtpPort { get; set; } = 587;
+        public string SmtpUsername { get; set; } = string.Empty;
+        public string SmtpPassword { get; set; } = string.Empty;
+        public string FromEmail { get; set; } = string.Empty;
+        public string FromName { get; set; } = string.Empty;
+        public bool EnableSsl { get; set; } = true;
+    }
+
+    public class StorageSettings
+    {
+        public long MaxFileSize { get; set; } = 10485760; // 10MB in bytes
+        public List<string> AllowedExtensions { get; set; } = new();
+        public string StorageProvider { get; set; } = "Local"; // Local, Azure, AWS
+        public long TotalStorageQuota { get; set; } = 107374182400; // 100GB in bytes
     }
 }

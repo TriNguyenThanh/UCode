@@ -36,6 +36,11 @@
             <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <helpers:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
             <helpers:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
+            <helpers:SystemLogVisibilityConverter x:Key="SystemLogVisibilityConverter"/>
+            <helpers:ActivityLogVisibilityConverter x:Key="ActivityLogVisibilityConverter"/>
+            <helpers:LogTypeToVisibilityConverter x:Key="LogTypeToVisibilityConverter"/>
+            <helpers:SectionVisibilityConverter x:Key="SectionVisibilityConverter"/>
+            <helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->
