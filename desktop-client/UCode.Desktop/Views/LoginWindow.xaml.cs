@@ -4,10 +4,11 @@ using System.Windows;
 using System.Windows.Controls;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
+using UCode.Desktop.Controls;
 
 namespace UCode.Desktop.Views
 {
-    public partial class LoginWindow : Window
+    public partial class LoginWindow : UCodeWindow
     {
         private readonly AuthService _authService;
 

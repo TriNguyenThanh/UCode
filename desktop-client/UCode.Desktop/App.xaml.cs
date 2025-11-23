@@ -57,6 +57,8 @@ public partial class App : Application
             var authService = ServiceProvider.GetRequiredService<AuthService>();
             bool autoLoginSuccess = false;
 
+            // TEMPORARY: Disable auto-login to show Login Window
+            /*
             try
             {
                 var autoLoginTask = authService.TryAutoLoginAsync();
@@ -68,6 +70,7 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
                 autoLoginSuccess = false;
             }
+            */
 
             if (autoLoginSuccess)
             {

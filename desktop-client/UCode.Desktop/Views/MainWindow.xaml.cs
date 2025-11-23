@@ -1,12 +1,12 @@
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
+using UCode.Desktop.Controls;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : UCodeWindow
     {
         private readonly NavigationService _navigationService;
 
@@ -59,6 +59,16 @@ namespace UCode.Desktop.Views
                 System.IO.File.WriteAllText(logPath, $"FATAL ERROR in MainWindow constructor: {ex.Message}\n{ex.StackTrace}\n\nInner: {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}");
                 MessageBox.Show($"Fatal error creating main window: {ex.Message}", "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
+            }
+        }
+
+        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            if (button?.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
             }
         }
     }
