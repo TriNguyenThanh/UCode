@@ -1,0 +1,434 @@
+<UserControl x:Class="UCode.Desktop.Pages.Admin.AdminSettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             Dialog:DialogParticipation.Register="{Binding}"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1600"
+             Background="#F5F5F5">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#DC143C"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Sidebar - Sections -->
+            <Border Grid.Column="0" Background="White" Padding="20" BorderBrush="#DDD" BorderThickness="0,0,1,0">
+                <StackPanel>
+                    <TextBlock Text="Cài đặt hệ thống" FontSize="24" FontWeight="Bold" Foreground="#DC143C" Margin="0,20,0,30"/>
+                    
+                    <ListBox x:Name="SectionList" 
+                             ItemsSource="{Binding Sections}"
+                             SelectedItem="{Binding SelectedSection}"
+                             BorderThickness="0"
+                             Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="Transparent" 
+                                        Padding="15,12"
+                                        Margin="0,2"
+                                        CornerRadius="6"
+                                        Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="Background" Value="#DC143C"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding}" FontSize="15" FontWeight="Medium">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#666"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Right Content Area -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="40,30,40,40">
+                    
+                    <!-- General Settings Section -->
+                    <Border Visibility="{Binding SelectedSection, Converter={StaticResource SectionVisibilityConverter}, ConverterParameter=General}">
+                        <StackPanel>
+                            <TextBlock Text="Cài đặt chung" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="Cấu hình cơ bản của hệ thống" Foreground="#666" FontSize="14" Margin="0,0,0,30"/>
+                            
+                            <Border Background="White" CornerRadius="8" Padding="30" Margin="0,0,0,20">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- System Name -->
+                                    <TextBlock Text="Tên hệ thống" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding SystemName, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- System Description -->
+                                    <TextBlock Text="Mô tả hệ thống" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding SystemDescription, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Height="80" TextWrapping="Wrap"
+                                             AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                             Margin="0,0,0,20" BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Support Email -->
+                                    <TextBlock Text="Email hỗ trợ" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding SupportEmail, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Maintenance Mode -->
+                                    <CheckBox IsChecked="{Binding MaintenanceMode}" 
+                                              Content="Chế độ bảo trì"
+                                              FontSize="14" Margin="0,0,0,10"/>
+                                    
+                                    <TextBlock Text="Thông báo bảo trì" FontSize="14" FontWeight="SemiBold" Margin="0,10,0,8"/>
+                                    <TextBox Text="{Binding MaintenanceMessage, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Height="60" TextWrapping="Wrap"
+                                             AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                             Margin="0,0,0,20" BorderBrush="#DDD" BorderThickness="1"
+                                             IsEnabled="{Binding MaintenanceMode}"/>
+                                    
+                                    <!-- Save Button -->
+                                    <Button Command="{Binding SaveGeneralSettingsCommand}"
+                                            Background="#DC143C" Foreground="White"
+                                            BorderThickness="0" Padding="25,12" Cursor="Hand"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Lưu cài đặt" FontSize="14" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}" 
+                                                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#B8112D"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Security Settings Section -->
+                    <Border Visibility="{Binding SelectedSection, Converter={StaticResource SectionVisibilityConverter}, ConverterParameter=Security}">
+                        <StackPanel>
+                            <TextBlock Text="Cài đặt bảo mật" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="Cấu hình bảo mật và quyền truy cập" Foreground="#666" FontSize="14" Margin="0,0,0,30"/>
+                            
+                            <Border Background="White" CornerRadius="8" Padding="30" Margin="0,0,0,20">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- Email Verification -->
+                                    <CheckBox IsChecked="{Binding RequireEmailVerification}" 
+                                              Content="Yêu cầu xác thực email"
+                                              FontSize="14" Margin="0,0,0,15"/>
+                                    
+                                    <!-- Two Factor -->
+                                    <CheckBox IsChecked="{Binding EnableTwoFactor}" 
+                                              Content="Bật xác thực hai yếu tố"
+                                              FontSize="14" Margin="0,0,0,20"/>
+                                    
+                                    <!-- Session Timeout -->
+                                    <TextBlock Text="Thời gian hết phiên (phút)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding SessionTimeout, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Max Login Attempts -->
+                                    <TextBlock Text="Số lần đăng nhập sai tối đa" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding MaxLoginAttempts, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Lockout Duration -->
+                                    <TextBlock Text="Thời gian khóa tài khoản (phút)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding LockoutDuration, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Save Button -->
+                                    <Button Command="{Binding SaveSecuritySettingsCommand}"
+                                            Background="#DC143C" Foreground="White"
+                                            BorderThickness="0" Padding="25,12" Cursor="Hand"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Lưu cài đặt" FontSize="14" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}" 
+                                                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#B8112D"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Email Settings Section -->
+                    <Border Visibility="{Binding SelectedSection, Converter={StaticResource SectionVisibilityConverter}, ConverterParameter=Email}">
+                        <StackPanel>
+                            <TextBlock Text="Cài đặt Email" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="Cấu hình máy chủ SMTP để gửi email" Foreground="#666" FontSize="14" Margin="0,0,0,30"/>
+                            
+                            <Border Background="White" CornerRadius="8" Padding="30" Margin="0,0,0,20">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="SMTP Host" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                            <TextBox Text="{Binding SmtpHost, UpdateSourceTrigger=PropertyChanged}"
+                                                     FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="SMTP Port" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                            <TextBox Text="{Binding SmtpPort, UpdateSourceTrigger=PropertyChanged}"
+                                                     FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <TextBlock Text="SMTP Username" FontSize="14" FontWeight="SemiBold" Margin="0,20,0,8"/>
+                                    <TextBox Text="{Binding SmtpUsername, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <TextBlock Text="SMTP Password" FontSize="14" FontWeight="SemiBold" Margin="0,20,0,8"/>
+                                    <PasswordBox x:Name="SmtpPasswordBox"
+                                                 FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <Grid Margin="0,20,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="From Email" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                            <TextBox Text="{Binding FromEmail, UpdateSourceTrigger=PropertyChanged}"
+                                                     FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="From Name" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                            <TextBox Text="{Binding FromName, UpdateSourceTrigger=PropertyChanged}"
+                                                     FontSize="14" Padding="12" BorderBrush="#DDD" BorderThickness="1"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <CheckBox IsChecked="{Binding EnableSsl}" 
+                                              Content="Bật SSL/TLS"
+                                              FontSize="14" Margin="0,20,0,20"/>
+                                    
+                                    <!-- Action Buttons -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Command="{Binding SaveEmailSettingsCommand}"
+                                                Background="#DC143C" Foreground="White"
+                                                BorderThickness="0" Padding="25,12" Cursor="Hand"
+                                                Margin="0,0,10,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Lưu cài đặt" FontSize="14" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#B8112D"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        
+                                        <Button Command="{Binding TestEmailCommand}"
+                                                Background="#4CAF50" Foreground="White"
+                                                BorderThickness="0" Padding="25,12" Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Email" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Test Email" FontSize="14" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#45A049"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Storage Settings Section -->
+                    <Border Visibility="{Binding SelectedSection, Converter={StaticResource SectionVisibilityConverter}, ConverterParameter=Storage}">
+                        <StackPanel>
+                            <TextBlock Text="Cài đặt lưu trữ" FontSize="28" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="Cấu hình dung lượng và định dạng file" Foreground="#666" FontSize="14" Margin="0,0,0,30"/>
+                            
+                            <Border Background="White" CornerRadius="8" Padding="30" Margin="0,0,0,20">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- Max File Size -->
+                                    <TextBlock Text="Kích thước file tối đa (MB)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding MaxFileSizeMB, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Allowed Extensions -->
+                                    <TextBlock Text="Định dạng file cho phép (cách nhau bởi dấu phẩy)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding AllowedExtensions, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,5"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    <TextBlock Text="Ví dụ: .jpg,.png,.pdf,.zip" Foreground="#999" FontSize="12" Margin="0,0,0,20"/>
+                                    
+                                    <!-- Storage Provider -->
+                                    <TextBlock Text="Nhà cung cấp lưu trữ" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <ComboBox SelectedItem="{Binding StorageProvider}"
+                                              FontSize="14" Padding="12" Margin="0,0,0,20"
+                                              BorderBrush="#DDD">
+                                        <ComboBoxItem Content="Local"/>
+                                        <ComboBoxItem Content="Azure"/>
+                                        <ComboBoxItem Content="AWS"/>
+                                    </ComboBox>
+                                    
+                                    <!-- Total Storage Quota -->
+                                    <TextBlock Text="Tổng dung lượng cho phép (GB)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBox Text="{Binding TotalStorageQuotaGB, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="14" Padding="12" Margin="0,0,0,20"
+                                             BorderBrush="#DDD" BorderThickness="1"/>
+                                    
+                                    <!-- Save Button -->
+                                    <Button Command="{Binding SaveStorageSettingsCommand}"
+                                            Background="#DC143C" Foreground="White"
+                                            BorderThickness="0" Padding="25,12" Cursor="Hand"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Lưu cài đặt" FontSize="14" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}" 
+                                                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#B8112D"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>
