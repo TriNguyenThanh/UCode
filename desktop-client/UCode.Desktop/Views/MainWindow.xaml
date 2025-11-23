@@ -259,7 +259,7 @@
                                 
                                 <!-- Logout -->
                                 <MenuItem Header="Đăng xuất"
-                                          Command="{Binding LogoutCommand}">
+                                          Click="LogoutMenuItem_Click">
                                     <MenuItem.Icon>
                                         <iconPacks:PackIconMaterial Kind="Logout"
                                                                     Width="20"

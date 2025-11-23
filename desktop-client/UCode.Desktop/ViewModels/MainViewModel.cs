@@ -357,11 +357,30 @@ namespace UCode.Desktop.ViewModels
 
         private async void ExecuteLogout()
         {
-            var result = await GetMetroWindow()?.ShowMessageAsync(
-                "Đăng xuất",
-                "Bạn có chắc muốn đăng xuất?",
-                MessageDialogStyle.AffirmativeAndNegative
-            );
+            var metroWindow = GetMetroWindow();
+            MessageDialogResult result;
+            
+            if (metroWindow != null)
+            {
+                result = await metroWindow.ShowMessageAsync(
+                    "Đăng xuất",
+                    "Bạn có chắc muốn đăng xuất?",
+                    MessageDialogStyle.AffirmativeAndNegative
+                );
+            }
+            else
+            {
+                // Fallback to MessageBox for UCodeWindow
+                var messageResult = MessageBox.Show(
+                    "Bạn có chắc muốn đăng xuất?",
+                    "Đăng xuất",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+                result = messageResult == MessageBoxResult.Yes 
+                    ? MessageDialogResult.Affirmative 
+                    : MessageDialogResult.Negative;
+            }
 
             if (result == MessageDialogResult.Affirmative)
             {

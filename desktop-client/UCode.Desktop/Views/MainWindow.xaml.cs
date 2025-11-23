@@ -66,18 +66,19 @@ namespace UCode.Desktop.Views
         {
             try
             {
-                // For MainWindow (student), we don't have NavigationService
-                // So we need to show it in a dialog or separate window
-                // Let's create a simple navigation window
-                var settingsWindow = new Window
+                var settingsPage = App.ServiceProvider.GetService(typeof(Pages.SettingsPage)) as Pages.SettingsPage;
+                if (settingsPage != null)
                 {
-                    Title = "Cài đặt",
-                    Width = 900,
-                    Height = 700,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
-                };
-                settingsWindow.ShowDialog();
+                    var settingsWindow = new Controls.UCodeWindow
+                    {
+                        Title = "Cài đặt",
+                        Width = 900,
+                        Height = 700,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        Content = settingsPage
+                    };
+                    settingsWindow.ShowDialog();
+                }
             }
             catch (Exception ex)
             {
@@ -89,20 +90,73 @@ namespace UCode.Desktop.Views
         {
             try
             {
-                // For students, show settings page in a window
-                var settingsWindow = new Window
+                var authService = App.ServiceProvider.GetService(typeof(AuthService)) as AuthService;
+                var currentUser = authService?.CurrentUser;
+                
+                // Check user role - Teachers use TeacherProfilePage, Students use StudentProfilePage
+                if (currentUser?.Role == Models.UserRole.Teacher)
                 {
-                    Title = "Hồ sơ",
-                    Width = 900,
-                    Height = 700,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
-                };
-                settingsWindow.ShowDialog();
+                    var profilePage = App.ServiceProvider.GetService(typeof(Pages.TeacherProfilePage)) as Pages.TeacherProfilePage;
+                    if (profilePage != null)
+                    {
+                        var profileWindow = new Controls.UCodeWindow
+                        {
+                            Title = "Hồ sơ",
+                            Width = 900,
+                            Height = 700,
+                            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                            Content = profilePage
+                        };
+                        profileWindow.ShowDialog();
+                    }
+                }
+                else
+                {
+                    // Students use StudentProfilePage
+                    var profilePage = App.ServiceProvider.GetService(typeof(Pages.StudentProfilePage)) as Pages.StudentProfilePage;
+                    if (profilePage != null)
+                    {
+                        var profileWindow = new Controls.UCodeWindow
+                        {
+                            Title = "Hồ sơ",
+                            Width = 1000,
+                            Height = 750,
+                            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                            Content = profilePage
+                        };
+                        profileWindow.ShowDialog();
+                    }
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LogoutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var viewModel = DataContext as MainViewModel;
+                if (viewModel?.LogoutCommand?.CanExecute(null) == true)
+                {
+                    viewModel.LogoutCommand.Execute(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during logout: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            if (button?.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
             }
         }
     }

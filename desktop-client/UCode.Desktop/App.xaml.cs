@@ -197,6 +197,7 @@ public partial class App : Application
         services.AddTransient<ProblemSolverViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<TeacherProfileViewModel>();
+        services.AddTransient<StudentProfileViewModel>();
 
         // ViewModels - Teacher
         services.AddTransient<TeacherHomeViewModel>();
@@ -280,5 +281,11 @@ public partial class App : Application
         // Pages - Common
         services.AddTransient<Pages.SettingsPage>();
         services.AddTransient<Pages.TeacherProfilePage>();
+        services.AddTransient<Pages.StudentProfilePage>(sp =>
+        {
+            var page = new Pages.StudentProfilePage();
+            page.DataContext = sp.GetRequiredService<StudentProfileViewModel>();
+            return page;
+        });
     }
 }

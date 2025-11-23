@@ -27,15 +27,25 @@ namespace UCode.Desktop.ViewModels
 
         public MetroWindow GetMetroWindow()
         {
-            // Try to get the active window first (for dialogs)
+            // Try to get the active MetroWindow first (for dialogs)
             var activeWindow = Application.Current.Windows.OfType<MetroWindow>()
                 .FirstOrDefault(w => w.IsActive);
             
             if (activeWindow != null)
                 return activeWindow;
             
-            // Fallback to main window
-            return Application.Current.Windows.OfType<MetroWindow>().FirstOrDefault();
+            // Fallback to any MetroWindow
+            var metroWindow = Application.Current.Windows.OfType<MetroWindow>().FirstOrDefault();
+            if (metroWindow != null)
+                return metroWindow;
+            
+            // If no MetroWindow found, try to find the active window and see if we can convert it
+            var anyActiveWindow = Application.Current.Windows.OfType<Window>()
+                .FirstOrDefault(w => w.IsActive);
+            
+            // For UCodeWindow or other windows, we'll need to use standard MessageBox
+            // Return null to signal that we should use MessageBox instead
+            return null;
         }
     }
 }
