@@ -147,13 +147,32 @@
                         </CheckBox>
 
                         <StackPanel Visibility="{Binding RequireIpCheck, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text=" Địa chỉ IP cho phép" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
-                            <TextBox Text="{Binding AllowedIpSubnet, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="40" 
-                                     FontSize="14" 
-                                     Padding="10"
-                                     mah:TextBoxHelper.Watermark="VD: 192.168.1.0"
-                                     mah:ControlsHelper.CornerRadius="8"/>
+                            <TextBlock Text="⚡ Địa chỉ IP cho phép" FontSize="14" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding AllowedIpSubnet, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="40" 
+                                         FontSize="14" 
+                                         Padding="10"
+                                         mah:TextBoxHelper.Watermark="VD: 192.168.1.0"
+                                         mah:ControlsHelper.CornerRadius="8"/>
+                                
+                                <Button Grid.Column="2"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding RefreshIpCommand}"
+                                        Height="40"
+                                        Width="40"
+                                        Padding="0"
+                                        ToolTip="Lấy IP mới">
+                                    <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18"/>
+                                </Button>
+                            </Grid>
                             <TextBlock Text="Định dạng: xxx.xxx.xxx.xxx" 
                                        FontSize="12" Foreground="#666" Margin="0,5,0,0"/>
                         </StackPanel>

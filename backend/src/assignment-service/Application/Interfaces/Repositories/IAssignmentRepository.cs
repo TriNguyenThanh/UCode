@@ -23,6 +23,7 @@ public interface IAssignmentRepository : IRepository<Assignment>
     Task<List<AssignmentUser>> GetAssignmentUsersByAssignmentAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     Task RemoveAssignmentUsersByAssignmentAsync(Guid assignmentId);
+    Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId);
 
     // MaxScore helpers
     Task<int> GetAssignmentMaxScoreAsync(Guid assignmentId);

@@ -222,6 +222,22 @@ public class AssignmentService : IAssignmentService
         }
     }
 
+    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    {
+        try
+        {
+            return await _assignmentRepository.DeleteAssignmentUserByUserIdAsync(userId);
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while deleting assignment user: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error deleting assignment user: {ex.Message}", 500);
+        }
+    }
+
     public async Task<AssignmentUser?> GetAssignmentUserByIdAsync(Guid assignmentUserId)
     {
         try

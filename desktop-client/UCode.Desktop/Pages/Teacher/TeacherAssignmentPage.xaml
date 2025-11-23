@@ -89,7 +89,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <!--ColumnDefinition Width="*"/-->
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,7.5,0" >
@@ -120,12 +120,14 @@
                 </StackPanel>
             </Border>
 
+            <!--
             <Border Grid.Column="4" Style="{StaticResource CardStyle}" Margin="7.5,0,0,0">
                 <StackPanel>
                     <TextBlock Text="Đã chấm" FontSize="13" Foreground="#666" Margin="0,0,0,5"/>
                     <TextBlock Text="{Binding Statistics.Graded}" FontSize="28" FontWeight="Bold" Foreground="#28a745"/>
                 </StackPanel>
             </Border>
+            -->
         </Grid>
 
         <!-- Tabs Content -->
@@ -274,6 +276,29 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
+                            <DataGridTextColumn Header="Truy cập AI" Binding="{Binding CapturedAICount}" Width="120" FontWeight="SemiBold">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#dc3545"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Chi tiết truy cập AI" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="Xem chi tiết truy cập AI"
+                                                Command="{Binding DataContext.ViewAIDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Padding="8"
+                                                HorizontalAlignment="Left">
+                                            <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                         </DataGrid.Columns>
                         </DataGrid>

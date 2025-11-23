@@ -113,6 +113,7 @@ namespace UCode.Desktop.ViewModels
 
         public ICommand SaveCommand { get; }
         public ICommand OpenMapCommand { get; }
+        public ICommand RefreshIpCommand { get; }
 
         public AttendanceConfigViewModel(AttendanceService attendanceService, string sessionId, AttendanceSessionItem session)
         {
@@ -121,6 +122,7 @@ namespace UCode.Desktop.ViewModels
 
             SaveCommand = new RelayCommand(async _ => await SaveConfigAsync());
             OpenMapCommand = new RelayCommand(_ => OpenMap());
+            RefreshIpCommand = new RelayCommand(_ => RefreshIp());
 
             // Initialize from session
             SessionTitle = session.Title;
@@ -178,6 +180,13 @@ namespace UCode.Desktop.ViewModels
 
             var startDateTime = StartDate.Value.Date + StartTime.Value.TimeOfDay;
             var endDateTime = EndDate.Value.Date + EndTime.Value.TimeOfDay;
+
+            // Check if start time is in the past
+            if (startDateTime < DateTime.Now.AddMinutes(-5))
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian bắt đầu không thể ở trong quá khứ");
+                return;
+            }
 
             if (endDateTime <= startDateTime)
             {
@@ -331,6 +340,11 @@ namespace UCode.Desktop.ViewModels
 
             // Default fallback
             return "";
+        }
+
+        private void RefreshIp()
+        {
+            AllowedIpSubnet = GetPublicIp();
         }
     }
 }

@@ -202,7 +202,8 @@ public class AttendanceController : ControllerBase
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
         request.UserId = GetUserIdFromTokenAsGuid();
 
-        request.IpAddress = HttpContext.Items["ClientIp"] as string ?? HttpContext.Request.Headers["X-Client-IP"].FirstOrDefault();
+        // publish thì bỏ cmt nhé
+        // request.IpAddress = HttpContext.Items["ClientIp"] as string ?? HttpContext.Request.Headers["X-Client-IP"].FirstOrDefault();
 
         var record = await _attendanceService.CheckInAsync(request);
         return Ok(record);

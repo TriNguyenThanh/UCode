@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router'
 import { getAttendanceSessionByCode, checkInAttendance, checkAttendanceStatus } from '~/services/attendanceService'
 import type { AttendanceSession, AttendanceRecord, GeolocationPosition } from '~/types'
 import { auth } from '~/auth'
-import { formatDateTime} from '~/utils/dateUtils'
+import { formatDateTime } from '~/utils/dateUtils'
 
 export default function AttendanceCheckIn() {
   const { sessionCode } = useParams()
@@ -167,7 +167,8 @@ export default function AttendanceCheckIn() {
         sessionCode,
         sessionId: session.id,
         latitude: location?.latitude,
-        longitude: location?.longitude
+        longitude: location?.longitude,
+        ipAddress: ipAddress !== 'Đang tải...' && ipAddress !== 'Không xác định' ? ipAddress : undefined,
       })
       setAttendanceRecord(record)
     } catch (err) {

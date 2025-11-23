@@ -36,12 +36,13 @@
                         <TextBlock Text="VD: Two Sum, Binary Search, Merge Sort..." 
                                    FontSize="13" Foreground="#999" Margin="0,-15,0,20"/>
 
-                        <!-- Code -->
+                        <!-- Code 
                         <TextBlock Text="Mã bài toán (tùy chọn)" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"
                                  Height="40" FontSize="16" Padding="10" Margin="0,0,0,20"/>
                         <TextBlock Text="VD: P001. Để trống để tự động tạo từ title" 
                                    FontSize="13" Foreground="#999" Margin="0,-15,0,20"/>
+                        -->
 
                         <!-- Difficulty -->
                         <TextBlock Text="Độ khó *" FontSize="16" FontWeight="SemiBold" Foreground="#191970" Margin="0,0,0,5"/>
