@@ -31,12 +31,17 @@ namespace UCode.Desktop.Models.Admin
         public int ActiveUsers { get; set; }
         public int InactiveUsers { get; set; }
         public int BannedUsers { get; set; }
-        public int StudentCount { get; set; }
-        public int TeacherCount { get; set; }
-        public int AdminCount { get; set; }
+        public int Students { get; set; }
+        public int Teachers { get; set; }
+        public int Admins { get; set; }
         public int NewUsersToday { get; set; }
         public int NewUsersThisWeek { get; set; }
         public int NewUsersThisMonth { get; set; }
+        
+        // Backward compatibility properties
+        public int StudentCount => Students;
+        public int TeacherCount => Teachers;
+        public int AdminCount => Admins;
     }
 
     /// <summary>
