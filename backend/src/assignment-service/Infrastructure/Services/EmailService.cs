@@ -14,7 +14,7 @@ public class EmailService : IEmailService
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(
-        IResend resend, 
+        IResend resend,
         IConfiguration config,
         IRabbitMqService rabbitMqService,
         ILogger<EmailService> logger)
@@ -36,6 +36,32 @@ public class EmailService : IEmailService
         };
 
         await _resend.EmailSendAsync(message);
+    }
+
+    /// <summary>
+    /// Gửi email với BCC (Blind Carbon Copy)
+    /// </summary>
+    public async Task SendWithBccAsync(string to, List<string>? bcc, string subject, string htmlContent)
+    {
+        var message = new EmailMessage
+        {
+            From = _from,
+            To = { to },
+            Subject = subject,
+            HtmlBody = htmlContent
+        };
+
+        // Thêm BCC nếu có
+        if (bcc != null && bcc.Count > 0)
+        {
+            foreach (var bccEmail in bcc.Where(email => !string.IsNullOrWhiteSpace(email)))
+            {
+                message.Bcc.Add(bccEmail);
+            }
+        }
+
+        await _resend.EmailSendAsync(message);
+        _logger.LogInformation("Email sent to {To} with {BccCount} BCC recipients", to, bcc?.Count ?? 0);
     }
 
     /// <summary>
@@ -98,12 +124,12 @@ public class EmailService : IEmailService
         try
         {
             await _rabbitMqService.DeclareQueueAsync("email_queue");
-            
+
             foreach (var email in emails)
             {
                 await _rabbitMqService.PublishMessageAsync(email, "email_queue");
             }
-            
+
             _logger.LogInformation("Queued {Count} emails", emails.Count);
         }
         catch (Exception ex)

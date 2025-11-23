@@ -501,6 +501,11 @@ public class UserAppService : IUserService
             results
         };
     }
+
+    public Task<List<string>> GetEmailsByIdsAsync(List<string> ids)
+    {
+        return _userRepository.GetEmailsByIdsAsync(ids);
+    }
 }
 
 

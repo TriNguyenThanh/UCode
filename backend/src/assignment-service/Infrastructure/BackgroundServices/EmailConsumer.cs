@@ -19,7 +19,11 @@ public class EmailConsumer : BackgroundService
     private readonly IRabbitMqConnectionProvider _connectionProvider;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<EmailConsumer> _logger;
-    private readonly int _maxDegreeOfParallelism = 10; // Số lượng email gửi đồng thời
+    private readonly int _maxDegreeOfParallelism = 2; // Số lượng email gửi đồng thời (phù hợp với rate limit 2/giây)
+    private readonly int _emailsPerSecond = 2; // Rate limit: 1 email per second
+    private readonly TimeSpan _minDelayBetweenEmails = TimeSpan.FromMilliseconds(600); // 1000ms / 2 = 500ms + 100ms buffer
+    private DateTime _lastEmailSentTime = DateTime.MinValue;
+    private readonly SemaphoreSlim _rateLimiter = new SemaphoreSlim(1, 1); // Lock để đảm bảo rate limit
 
     public EmailConsumer(
         IRabbitMqConnectionProvider provider, 
@@ -111,13 +115,23 @@ public class EmailConsumer : BackgroundService
 
         _logger.LogInformation("📧 Processing email to {Email}", emailMessage.To);
 
+        // Apply rate limiting: ensure minimum delay between emails
+        await EnforceRateLimitAsync(stoppingToken);
+
         using (var scope = _serviceScopeFactory.CreateAsyncScope())
         {
             var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
             try
             {
-                await emailService.SendAsync(emailMessage.To, emailMessage.Subject, emailMessage.HtmlContent);
+                if (emailMessage.Bcc.Count > 0)
+                {
+                    await emailService.SendWithBccAsync(emailMessage.To, emailMessage.Bcc, emailMessage.Subject, emailMessage.HtmlContent);
+                }
+                else
+                {
+                    await emailService.SendAsync(emailMessage.To, emailMessage.Subject, emailMessage.HtmlContent);
+                }
                 _logger.LogInformation("✅ Email sent successfully to {Email}", emailMessage.To);
             }
             catch (Exception ex)
@@ -125,6 +139,32 @@ public class EmailConsumer : BackgroundService
                 _logger.LogError(ex, "❌ Failed to send email to {Email}", emailMessage.To);
                 throw; // Re-throw để nack message
             }
+        }
+    }
+
+    /// <summary>
+    /// Enforce rate limit: maximum 2 emails per second
+    /// </summary>
+    private async Task EnforceRateLimitAsync(CancellationToken stoppingToken)
+    {
+        await _rateLimiter.WaitAsync(stoppingToken);
+        try
+        {
+            var now = DateTime.UtcNow;
+            var timeSinceLastEmail = now - _lastEmailSentTime;
+
+            if (timeSinceLastEmail < _minDelayBetweenEmails)
+            {
+                var delayNeeded = _minDelayBetweenEmails - timeSinceLastEmail;
+                _logger.LogDebug("Rate limit: waiting {Delay}ms before sending next email", delayNeeded.TotalMilliseconds);
+                await Task.Delay(delayNeeded, stoppingToken);
+            }
+
+            _lastEmailSentTime = DateTime.UtcNow;
+        }
+        finally
+        {
+            _rateLimiter.Release();
         }
     }
 }

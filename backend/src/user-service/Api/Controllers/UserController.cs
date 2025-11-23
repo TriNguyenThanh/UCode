@@ -229,6 +229,23 @@ public class UserController : ControllerBase
 
         return Ok(ApiResponse<object>.SuccessResponse(null, "User role updated successfully"));
     }
+
+    /// <summary>
+    /// Lấy email của tất cả user
+    /// </summary>
+    /// <param name="Ids">Danh sách ID user</param>
+    /// <returns>Danh sách email</returns>
+    /// <response code="200">Trả về danh sách email</response>
+    /// <response code="400">Yêu cầu không hợp lệ</response>
+    [HttpPost("emails")]
+    public async Task<IActionResult> GetEmailsByIds([FromBody] List<string> Ids)
+    {
+        if (Ids == null || !Ids.Any())
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request"));
+
+        var emails = await _userService.GetEmailsByIdsAsync(Ids);
+        return Ok(ApiResponse<object>.SuccessResponse(emails, "Emails retrieved successfully"));
+    }
 }
 
 // Helper DTOs

@@ -9,6 +9,15 @@ public interface IEmailService
     Task SendAsync(string to, string subject, string htmlContent);
     
     /// <summary>
+    /// Gửi email với BCC (Blind Carbon Copy) - Người nhận BCC sẽ không thấy danh sách người nhận khác
+    /// </summary>
+    /// <param name="to">Email người nhận chính</param>
+    /// <param name="bcc">Danh sách email BCC (có thể null hoặc empty)</param>
+    /// <param name="subject">Tiêu đề email</param>
+    /// <param name="htmlContent">Nội dung HTML</param>
+    Task SendWithBccAsync(string to, List<string>? bcc, string subject, string htmlContent);
+    
+    /// <summary>
     /// Gửi nhiều email song song (parallel) - Phù hợp cho < 100 emails
     /// </summary>
     Task SendBatchAsync(List<EmailQueueMessage> emails, int maxConcurrency = 10);
