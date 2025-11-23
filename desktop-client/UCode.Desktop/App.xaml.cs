@@ -185,6 +185,24 @@ public partial class App : Application
             var authService = sp.GetRequiredService<AuthService>();
             return new AdminClassService(httpClient, dialogCoordinator, tokenStorage, authService);
         });
+        services.AddSingleton<AdminLogsService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var dialogCoordinator = sp.GetRequiredService<IDialogCoordinator>();
+            var tokenStorage = sp.GetRequiredService<TokenStorageService>();
+            var authService = sp.GetRequiredService<AuthService>();
+            return new AdminLogsService(httpClient, dialogCoordinator, tokenStorage, authService);
+        });
+        services.AddSingleton<AdminSettingsService>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient();
+            var dialogCoordinator = sp.GetRequiredService<IDialogCoordinator>();
+            var tokenStorage = sp.GetRequiredService<TokenStorageService>();
+            var authService = sp.GetRequiredService<AuthService>();
+            return new AdminSettingsService(httpClient, dialogCoordinator, tokenStorage, authService);
+        });
 
         // ViewModels - Student
         services.AddTransient<LoginViewModel>();
@@ -221,6 +239,8 @@ public partial class App : Application
         services.AddTransient<AdminHomeViewModel>();
         services.AddTransient<AdminUsersViewModel>();
         services.AddTransient<AdminClassesViewModel>();
+        services.AddTransient<AdminLogsViewModel>();
+        services.AddTransient<AdminSettingsViewModel>();
 
         // Views - Student
         services.AddTransient<LoginWindow>();
@@ -234,6 +254,8 @@ public partial class App : Application
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
         services.AddTransient<Pages.Admin.AdminClassesPage>();
+        services.AddTransient<Pages.Admin.AdminLogsPage>();
+        services.AddTransient<Pages.Admin.AdminSettingsPage>();
 
         // Views - Teacher
         services.AddTransient<TeacherHomeWindow>();

@@ -100,26 +100,22 @@ namespace UCode.Desktop.Views
                 await adminClassesViewModel.LoadClassesAsync();
             });
 
-            NavigateToLogsCommand = new RelayCommand(_ =>
+            NavigateToLogsCommand = new RelayCommand(async _ =>
             {
-                // TODO: Create AdminLogsPage
-                _ = _dialogCoordinator.ShowMessageAsync(
-                    this,
-                    "Chưa triển khai",
-                    "Tính năng xem logs đang được phát triển.",
-                    MessageDialogStyle.Affirmative
-                );
+                var adminLogsPage = App.ServiceProvider.GetRequiredService<AdminLogsPage>();
+                var adminLogsViewModel = App.ServiceProvider.GetRequiredService<AdminLogsViewModel>();
+                adminLogsPage.SetViewModel(adminLogsViewModel);
+                _navigationService.NavigateTo(adminLogsPage);
+                await adminLogsViewModel.InitializeAsync();
             });
 
-            NavigateToSettingsCommand = new RelayCommand(_ =>
+            NavigateToSettingsCommand = new RelayCommand(async _ =>
             {
-                // TODO: Create AdminSettingsPage
-                _ = _dialogCoordinator.ShowMessageAsync(
-                    this,
-                    "Chưa triển khai",
-                    "Tính năng cài đặt đang được phát triển.",
-                    MessageDialogStyle.Affirmative
-                );
+                var adminSettingsPage = App.ServiceProvider.GetRequiredService<AdminSettingsPage>();
+                var adminSettingsViewModel = App.ServiceProvider.GetRequiredService<AdminSettingsViewModel>();
+                adminSettingsPage.SetViewModel(adminSettingsViewModel);
+                _navigationService.NavigateTo(adminSettingsPage);
+                await adminSettingsViewModel.InitializeAsync();
             });
 
             // Navigate to home page by default

@@ -1,0 +1,415 @@
+<UserControl x:Class="UCode.Desktop.Pages.Admin.AdminLogsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             Dialog:DialogParticipation.Register="{Binding}"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1600"
+             Background="#F5F5F5">
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Background="#80000000" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#DC143C"/>
+                <TextBlock Text="Đang tải dữ liệu..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header Section -->
+            <Border Grid.Row="0" Background="White" Padding="40,30">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock FontSize="32" FontWeight="Bold" Foreground="#DC143C" Margin="0,0,0,5">
+                            <Run Text="Logs &amp; Báo cáo 📋"/>
+                        </TextBlock>
+                        <TextBlock Text="Theo dõi hoạt động và lỗi hệ thống" 
+                                   Foreground="#666" FontSize="16"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Command="{Binding ExportLogsCommand}" 
+                                Background="#4CAF50" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="20,12"
+                                Cursor="Hand"
+                                Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Xuất File" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#45A049"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Command="{Binding RefreshCommand}" 
+                                Background="#DC143C" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="20,12"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Làm mới" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#B8112D"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Statistics Cards -->
+            <Grid Grid.Row="1" Margin="40,20,40,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Info Logs Card -->
+                <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <iconPacks:PackIconMaterial Kind="Information" Width="40" Height="40" Foreground="#2196F3" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding TotalInfoLogs}" FontSize="32" FontWeight="Bold" Foreground="#2196F3"/>
+                        <TextBlock Text="Info Logs" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Warning Logs Card -->
+                <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <iconPacks:PackIconMaterial Kind="Alert" Width="40" Height="40" Foreground="#FF9800" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding TotalWarningLogs}" FontSize="32" FontWeight="Bold" Foreground="#FF9800"/>
+                        <TextBlock Text="Warning Logs" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Error Logs Card -->
+                <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <iconPacks:PackIconMaterial Kind="CloseCircle" Width="40" Height="40" Foreground="#F44336" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding TotalErrorLogs}" FontSize="32" FontWeight="Bold" Foreground="#F44336"/>
+                        <TextBlock Text="Error Logs" FontSize="14" Foreground="#666" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Filters and Table -->
+            <Border Grid.Row="2" Background="White" CornerRadius="8" Margin="40,20,40,0" Padding="30">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filters Section -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Search Box -->
+                        <TextBox Grid.Column="0" 
+                                 Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="14"
+                                 Padding="12,10"
+                                 Margin="0,0,10,0"
+                                 BorderBrush="#DDD"
+                                 BorderThickness="1">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </TextBox.Resources>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="TextBox">
+                                                <Border Background="White" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6">
+                                                    <Grid>
+                                                        <iconPacks:PackIconMaterial Kind="Magnify" 
+                                                                                    Width="16" Height="16" 
+                                                                                    Foreground="#999"
+                                                                                    HorizontalAlignment="Left"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Margin="12,0,0,0"/>
+                                                        <ScrollViewer x:Name="PART_ContentHost" 
+                                                                      Margin="40,0,12,0"
+                                                                      VerticalAlignment="Center"/>
+                                                        <TextBlock Text="Tìm kiếm logs..." 
+                                                                   Foreground="#999"
+                                                                   IsHitTestVisible="False"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="40,0,0,0">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Grid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <!-- Log Type ComboBox -->
+                        <ComboBox Grid.Column="1" 
+                                  SelectedItem="{Binding SelectedLogType}"
+                                  ItemsSource="{Binding LogTypes}"
+                                  Width="140"
+                                  Padding="12,10"
+                                  Margin="0,0,10,0"
+                                  FontSize="14"
+                                  BorderBrush="#DDD"/>
+
+                        <!-- Level Filter -->
+                        <ComboBox Grid.Column="2" 
+                                  SelectedItem="{Binding SelectedLevel}"
+                                  ItemsSource="{Binding LogLevels}"
+                                  Width="140"
+                                  Padding="12,10"
+                                  Margin="0,0,10,0"
+                                  FontSize="14"
+                                  BorderBrush="#DDD"/>
+
+                        <!-- Service Filter -->
+                        <ComboBox Grid.Column="3" 
+                                  SelectedItem="{Binding SelectedService}"
+                                  ItemsSource="{Binding AvailableServices}"
+                                  Width="180"
+                                  Padding="12,10"
+                                  Margin="0,0,10,0"
+                                  FontSize="14"
+                                  BorderBrush="#DDD"
+                                  Visibility="{Binding SelectedLogType, Converter={StaticResource LogTypeToVisibilityConverter}}"/>
+
+                        <!-- Clear Filters Button -->
+                        <Button Grid.Column="4" 
+                                Command="{Binding ClearFiltersCommand}"
+                                Background="#F5F5F5"
+                                BorderBrush="#DDD"
+                                BorderThickness="1"
+                                Padding="15,10"
+                                Cursor="Hand">
+                            <iconPacks:PackIconMaterial Kind="FilterRemove" Width="18" Height="18" Foreground="#666"/>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#EEEEEE"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+
+                    <!-- Logs Table -->
+                    <DataGrid Grid.Row="1" 
+                              ItemsSource="{Binding SystemLogs}"
+                              Visibility="{Binding SelectedLogType, Converter={StaticResource SystemLogVisibilityConverter}}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="None"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              AlternatingRowBackground="#F9F9F9"
+                              RowHeight="50"
+                              FontSize="13">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" Width="150"/>
+                            <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                <Setter Property="Foreground" Value="#F44336"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                                <Setter Property="Foreground" Value="#FF9800"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Level}" Value="Info">
+                                                <Setter Property="Foreground" Value="#2196F3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="180"/>
+                            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Activity Logs Table -->
+                    <DataGrid Grid.Row="1" 
+                              ItemsSource="{Binding ActivityLogs}"
+                              Visibility="{Binding SelectedLogType, Converter={StaticResource ActivityLogVisibilityConverter}}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="None"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              AlternatingRowBackground="#F9F9F9"
+                              RowHeight="50"
+                              FontSize="13">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" Width="150"/>
+                            <DataGridTextColumn Header="User" Binding="{Binding Username}" Width="150"/>
+                            <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="150"/>
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- Pagination -->
+            <Border Grid.Row="3" Background="White" Padding="20" Margin="40,10,40,40">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <TextBlock Text="Hiển thị " Foreground="#666" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center">
+                            <Run Text="{Binding TotalLogs, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock Text=" logs" Foreground="#666" FontSize="14" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Command="{Binding PreviousPageCommand}" 
+                                Content="←" 
+                                Width="40" Height="40"
+                                FontSize="18"
+                                Background="White"
+                                BorderBrush="#DDD"
+                                BorderThickness="1"
+                                Margin="0,0,5,0"
+                                Cursor="Hand"/>
+                        <TextBlock Text="{Binding CurrentPage}" 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="10,0"/>
+                        <TextBlock Text="/" 
+                                   FontSize="14" 
+                                   Foreground="#666"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding TotalPages}" 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        <Button Command="{Binding NextPageCommand}" 
+                                Content="→" 
+                                Width="40" Height="40"
+                                FontSize="18"
+                                Background="White"
+                                BorderBrush="#DDD"
+                                BorderThickness="1"
+                                Margin="5,0,0,0"
+                                Cursor="Hand"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
