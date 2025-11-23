@@ -25,8 +25,10 @@ namespace UCode.Desktop.ViewModels
         private Assignment _assignment;
         private Class _classData;
         private Problem _problem;
-        private int _page;
+        private int _page = 1; // API uses 1-based pagination
         private int _rowsPerPage = 10;
+        private string _selectedFilter = "best";
+        private int _totalCount = 0;
 
         public bool IsLoading
         {
@@ -59,7 +61,8 @@ namespace UCode.Desktop.ViewModels
             {
                 if (SetProperty(ref _page, value))
                 {
-                    UpdatePaginatedSubmissions();
+                    OnPropertyChanged(nameof(CanGoPrevious));
+                    OnPropertyChanged(nameof(CanGoNext));
                 }
             }
         }
@@ -71,23 +74,83 @@ namespace UCode.Desktop.ViewModels
             {
                 if (SetProperty(ref _rowsPerPage, value))
                 {
-                    Page = 0;
-                    UpdatePaginatedSubmissions();
+                    _page = 1;
+                    OnPropertyChanged(nameof(Page));
+                    OnPropertyChanged(nameof(TotalPages));
+                    OnPropertyChanged(nameof(CanGoPrevious));
+                    OnPropertyChanged(nameof(CanGoNext));
+                    _ = LoadPageDataAsync(); // Fire and forget
                 }
             }
         }
 
-        public ObservableCollection<BestSubmission> BestSubmissions { get; } = new();
-        public ObservableCollection<BestSubmission> PaginatedSubmissions { get; } = new();
+        public int TotalCount
+        {
+            get => _totalCount;
+            set
+            {
+                if (SetProperty(ref _totalCount, value))
+                {
+                    OnPropertyChanged(nameof(TotalPages));
+                    OnPropertyChanged(nameof(CanGoPrevious));
+                    OnPropertyChanged(nameof(CanGoNext));
+                }
+            }
+        }
 
-        // Statistics
-        public int PassedCount => BestSubmissions.Count(s => s.PassedTestcase == s.TotalTestcase);
-        public int PartialCount => BestSubmissions.Count(s => s.PassedTestcase > 0 && s.PassedTestcase < s.TotalTestcase);
-        public int FailedCount => BestSubmissions.Count(s => s.PassedTestcase == 0);
+        public int TotalPages => TotalCount > 0 ? (int)Math.Ceiling((double)TotalCount / RowsPerPage) : 1;
+
+        public bool CanGoPrevious
+        {
+            get
+            {
+                var result = Page > 1;
+                return result;
+            }
+        }
+
+        public bool CanGoNext
+        {
+            get
+            {
+                // If we're on page 1 and TotalCount is 0, assume we can try to go next
+                // This handles the case where TotalCount hasn't loaded yet
+                if (Page == 1 && TotalCount == 0)
+                {
+                    return true;
+                }
+                
+                var result = Page < TotalPages;
+                return result;
+            }
+        }
+
+        public string SelectedFilter
+        {
+            get => _selectedFilter;
+            set
+            {
+                if (SetProperty(ref _selectedFilter, value))
+                {
+                    _page = 1;
+                    OnPropertyChanged(nameof(Page));
+                    _ = OnFilterChangedAsync(); // Fire and forget
+                }
+            }
+        }
+
+        public ObservableCollection<BestSubmission> AllBestSubmissions { get; } = new(); // For client-side pagination
+        public ObservableCollection<BestSubmission> DisplayedSubmissions { get; } = new();
+
+        // Statistics - now based on total count from API
+        public int PassedCount { get; private set; }
+        public int PartialCount { get; private set; }
+        public int FailedCount { get; private set; }
 
         public ICommand BackCommand { get; }
         public ICommand SubmissionClickCommand { get; }
         public ICommand ChangePageCommand { get; }
+        public ICommand SetFilterCommand { get; }
 
         public TeacherProblemSubmissionsViewModel(
             AssignmentService assignmentService,
@@ -105,6 +168,7 @@ namespace UCode.Desktop.ViewModels
             BackCommand = new RelayCommand(_ => ExecuteBack());
             SubmissionClickCommand = new RelayCommand(param => ExecuteSubmissionClick(param));
             ChangePageCommand = new RelayCommand(param => ExecuteChangePage(param));
+            SetFilterCommand = new RelayCommand(param => ExecuteSetFilter(param));
         }
 
         public async Task InitializeAsync(string assignmentId, string problemId)
@@ -120,16 +184,14 @@ namespace UCode.Desktop.ViewModels
 
             try
             {
-                // Fetch all data in parallel
+                // Fetch metadata in parallel
                 var assignmentTask = _assignmentService.GetAssignmentAsync(_assignmentId);
                 var problemTask = _problemService.GetProblemAsync(_problemId);
-                var submissionsTask = _submissionService.GetBestSubmissionsAsync(_assignmentId, _problemId, 1, 100);
-
-                await Task.WhenAll(assignmentTask, problemTask, submissionsTask);
+                
+                await Task.WhenAll(assignmentTask, problemTask);
 
                 var assignmentResponse = await assignmentTask;
                 var problemResponse = await problemTask;
-                var submissionsResponse = await submissionsTask;
 
                 if (assignmentResponse?.Success == true && assignmentResponse.Data != null)
                 {
@@ -148,23 +210,41 @@ namespace UCode.Desktop.ViewModels
                     Problem = problemResponse.Data;
                 }
 
-                if (submissionsResponse?.Success == true && submissionsResponse.Data != null)
+                // Load initial data based on filter
+                if (SelectedFilter == "best")
                 {
-                    BestSubmissions.Clear();
-                    foreach (var submission in submissionsResponse.Data)
+                    // For "best" filter: Load ALL best submissions for client-side pagination
+                    await LoadAllBestSubmissionsAsync();
+                }
+                else
+                {
+                    // For "all" filter: Get stats then load first page (server-side pagination)
+                    var statsResponse = await _submissionService.GetStatsPerProblemAsync(_assignmentId, _problemId);
+                    if (statsResponse?.Success == true)
                     {
-                        BestSubmissions.Add(submission);
+                        TotalCount = statsResponse.Data.Total;
+                        PassedCount = statsResponse.Data.Passed;
+                        PartialCount = statsResponse.Data.Partial;
+                        FailedCount = statsResponse.Data.Failed;
+                    }
+                    else
+                    {
+                        TotalCount = 0;
+                        PassedCount = 0;
+                        PartialCount = 0;
+                        FailedCount = 0;
                     }
 
-                    UpdatePaginatedSubmissions();
                     OnPropertyChanged(nameof(PassedCount));
                     OnPropertyChanged(nameof(PartialCount));
                     OnPropertyChanged(nameof(FailedCount));
+                    
+                    await LoadPageDataAsync();
                 }
             }
             catch (Exception ex)
             {
-                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải dữ liệu chấm bài: {ex.Message}");
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải dữ liệu: {ex.Message}");
             }
             finally
             {
@@ -172,14 +252,185 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void UpdatePaginatedSubmissions()
+        private async Task OnFilterChangedAsync()
         {
-            PaginatedSubmissions.Clear();
-            var skip = Page * RowsPerPage;
-            var items = BestSubmissions.Skip(skip).Take(RowsPerPage);
+            if (SelectedFilter == "best")
+            {
+                await LoadAllBestSubmissionsAsync();
+            }
+            else
+            {
+                // Switch to server-side
+                try 
+                {
+                    // Get stats first
+                    var statsResponse = await _submissionService.GetStatsPerProblemAsync(_assignmentId, _problemId);
+                    if (statsResponse?.Success == true)
+                    {
+                        TotalCount = statsResponse.Data.Total;
+                        PassedCount = statsResponse.Data.Passed;
+                        PartialCount = statsResponse.Data.Partial;
+                        FailedCount = statsResponse.Data.Failed;
+                    }
+                    else 
+                    {
+                        TotalCount = 0;
+                        PassedCount = 0;
+                        PartialCount = 0;
+                        FailedCount = 0;
+                    }
+
+                    OnPropertyChanged(nameof(PassedCount));
+                    OnPropertyChanged(nameof(PartialCount));
+                    OnPropertyChanged(nameof(FailedCount));
+                    
+                    // Then load page data (it handles IsLoading internally)
+                    await LoadPageDataAsync();
+                }
+                catch (Exception ex)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải dữ liệu: {ex.Message}");
+                }
+            }
+        }
+
+        private async Task LoadAllBestSubmissionsAsync()
+        {
+            // Don't set IsLoading here if it's already set by caller (LoadDataAsync)
+            // But if called from Filter change, we might need to set it.
+            bool localLoading = !IsLoading;
+            if (localLoading) IsLoading = true;
+
+            try
+            {
+                // Fetch all (using large page size to get everything)
+                var response = await _submissionService.GetBestSubmissionsAsync(_assignmentId, _problemId, 1, 10000);
+                
+                if (response?.Success == true && response.Data != null)
+                {
+                    AllBestSubmissions.Clear();
+                    var items = response.Data;
+                    for(int i=0; i<items.Count; i++) 
+                    {
+                         items[i].TotalSubmission = i + 1;
+                         AllBestSubmissions.Add(items[i]);
+                    }
+                    
+                    TotalCount = AllBestSubmissions.Count;
+                    
+                    // Calculate stats for ALL best submissions locally to ensure consistency with the displayed list
+                    PassedCount = AllBestSubmissions.Count(s => s.PassedTestcase == s.TotalTestcase);
+                    PartialCount = AllBestSubmissions.Count(s => s.PassedTestcase > 0 && s.PassedTestcase < s.TotalTestcase);
+                    FailedCount = AllBestSubmissions.Count(s => s.PassedTestcase == 0);
+
+                    OnPropertyChanged(nameof(PassedCount));
+                    OnPropertyChanged(nameof(PartialCount));
+                    OnPropertyChanged(nameof(FailedCount));
+
+                    UpdateDisplayedSubmissionsFromCache();
+                }
+                else
+                {
+                    AllBestSubmissions.Clear();
+                    TotalCount = 0;
+                    DisplayedSubmissions.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                 await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải danh sách tốt nhất: {ex.Message}");
+            }
+            finally 
+            { 
+                if (localLoading) IsLoading = false; 
+            }
+        }
+
+        private void UpdateDisplayedSubmissionsFromCache()
+        {
+            var startIndex = (Page - 1) * RowsPerPage;
+            var items = AllBestSubmissions.Skip(startIndex).Take(RowsPerPage).ToList();
+            
+            DisplayedSubmissions.Clear();
             foreach (var item in items)
             {
-                PaginatedSubmissions.Add(item);
+                DisplayedSubmissions.Add(item);
+            }
+        }
+
+        private async Task LoadPageDataAsync()
+        {
+            if (SelectedFilter == "best")
+            {
+                // Client-side pagination
+                UpdateDisplayedSubmissionsFromCache();
+                return;
+            }
+
+            // Server-side pagination for "all"
+            // Prevent re-entrant calls
+            if (IsLoading)
+            {
+                return;
+            }
+
+            IsLoading = true;
+
+            try
+            {
+                ApiResponse<PagedResultDto<Submission>> allSubmissionsResponse;
+
+                // Load all submissions with pagination
+                allSubmissionsResponse = await _submissionService.GetSubmissionsByAssignmentAndProblemAsync(
+                    _assignmentId, _problemId, Page, RowsPerPage);
+
+                if (allSubmissionsResponse?.Success == true && allSubmissionsResponse.Data?.Items != null)
+                {
+                    // Batch update to avoid multiple CollectionChanged events
+                    var startIndex = (Page - 1) * RowsPerPage;
+                    var newItems = allSubmissionsResponse.Data.Items.Select((submission, index) => new BestSubmission
+                    {
+                        SubmissionId = submission.SubmissionId,
+                        UserId = submission.UserId,
+                        UserFullName = submission.UserFullName,
+                        UserCode = submission.UserCode,
+                        ProblemId = submission.ProblemId,
+                        SourceCode = submission.SourceCode,
+                        LanguageCode = submission.LanguageCode,
+                        Status = submission.Status,
+                        CompareResult = submission.CompareResult,
+                        ErrorCode = submission.ErrorCode,
+                        ErrorMessage = submission.ErrorMessage,
+                        TotalTestcase = submission.TotalTestcase,
+                        PassedTestcase = submission.PassedTestcase,
+                        Score = submission.Score,
+                        TotalTime = submission.TotalTime,
+                        TotalMemory = submission.TotalMemory,
+                        SubmittedAt = submission.SubmittedAt,
+                        ResultFileRef = submission.ResultFileRef,
+                        TotalSubmission = startIndex + index + 1 // Using TotalSubmission as RowNumber
+                    }).ToList();
+
+                    DisplayedSubmissions.Clear();
+                    foreach (var item in newItems)
+                    {
+                        DisplayedSubmissions.Add(item);
+                    }
+                }
+                else
+                {
+                    // No data or error
+                    DisplayedSubmissions.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải dữ liệu trang: {ex.Message}");
+                DisplayedSubmissions.Clear();
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -206,18 +457,28 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private void ExecuteChangePage(object parameter)
+        private async void ExecuteChangePage(object parameter)
         {
             if (parameter is string direction)
             {
-                if (direction == "next" && (Page + 1) * RowsPerPage < BestSubmissions.Count)
+                if (direction == "next" && CanGoNext)
                 {
                     Page++;
+                    await LoadPageDataAsync();
                 }
-                else if (direction == "prev" && Page > 0)
+                else if (direction == "prev" && CanGoPrevious)
                 {
                     Page--;
+                    await LoadPageDataAsync();
                 }
+            }
+        }
+
+        private void ExecuteSetFilter(object parameter)
+        {
+            if (parameter is string filter && (filter == "all" || filter == "best"))
+            {
+                SelectedFilter = filter;
             }
         }
     }

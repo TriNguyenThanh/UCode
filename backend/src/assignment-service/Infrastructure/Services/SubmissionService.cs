@@ -38,16 +38,15 @@ public class SubmissionService : ISubmissionService
         }
     }
 
-    public Task<List<Submission>> GetAllUserSubmission(Guid userId, int pageNumber, int pageSize)
+    public async Task<List<Submission>> GetAllUserSubmission(Guid userId, int pageNumber, int pageSize)
     {
-        return _repository.GetAllSubmissionByUser(userId, pageNumber, pageSize);
+        return await _repository.GetAllSubmissionByUser(userId, pageNumber, pageSize);
     }
 
-    public Task<List<Submission>> GetAllSubmissionProblem(Guid problemId, Guid userId, int pageNumber, int pageSize)
-        => _repository.GetAllSubmissionByProblemIdAndUserId(problemId, userId, pageNumber, pageSize);
-
-    public Task<List<BestSubmission>> GetBestSubmissionByProblemId(Guid assignmentId, Guid problemId, int pageNumber, int pageSize)
-        => _repository.GetBestSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
+    public async Task<List<Submission>> GetAllSubmissionProblem(Guid problemId, Guid userId, int pageNumber, int pageSize)
+        => await _repository.GetAllSubmissionByProblemIdAndUserId(problemId, userId, pageNumber, pageSize);
+    public async Task<List<BestSubmission>> GetBestSubmissionByProblemId(Guid assignmentId, Guid problemId, int pageNumber, int pageSize)
+        => await _repository.GetBestSubmissionByProblemId(assignmentId, problemId, pageNumber, pageSize);
 
     public async Task<Submission> SubmitCode(Submission submission)
     {
@@ -161,11 +160,14 @@ public class SubmissionService : ISubmissionService
     // public Task<bool> DeleteSubmissionByUserId(Guid userId)
     //     => _repository.DeleteSubmissionByUserId(userId);
 
-    public Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId)
-        => _repository.GetNumberOfSubmissionPerProblemId(assignmentId, problemId, userId);
+    public async Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId)
+        => await _repository.GetNumberOfSubmissionPerProblemId(assignmentId, problemId, userId);
 
-    public Task<int> GetNumberOfSubmission(Guid userId)
-        => _repository.GetNumberOfSubmission(userId);
+    public async Task<int> GetTotalSubmissionCountPerProblemIdAndAssignment(Guid assignmentId, Guid problemId)
+        => await _repository.GetTotalSubmissionCountPerProblemIdAndAssignment(assignmentId, problemId);  
+
+    public async Task<int> GetNumberOfSubmission(Guid userId)
+        => await _repository.GetNumberOfSubmission(userId);
 
     public async Task<bool> UpdateSubmission(Submission submission)
     {
@@ -278,4 +280,29 @@ public class SubmissionService : ISubmissionService
             throw new Exception(ex.Message);
         }
     }
+
+    public async Task<List<Submission>> GetAllSubmissionByAssignmentAndProblem(Guid assignmentId, Guid problemId,  int pageNumber, int pageSize)
+    {
+        try
+        {
+            return await _repository.GetAllSubmissionByAssignmentAndProblem(assignmentId, problemId, pageNumber, pageSize);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public async Task<Application.DTOs.Responses.StatsPerProblemResponse> GetStatsPerProblem(Guid assignmentId, Guid problemId)
+    {
+        try
+        {
+            return await _repository.GetStatsPerProblem(assignmentId, problemId);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
 }
