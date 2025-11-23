@@ -103,7 +103,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <iconPacks:PackIconMaterial Kind="CheckCircle" Width="20" Height="20" Foreground="#28a745" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Đang hoạt động" FontSize="16" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bài tập đã giao" FontSize="16" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Text="{Binding ActiveAssignments}" FontSize="32" FontWeight="Bold" Foreground="#28a745"/>
                     </StackPanel>
@@ -362,11 +362,12 @@
                                 </DataGrid.CellStyle>
 
                                 <DataGrid.Columns>
+                                    <DataGridTextColumn Header="STT" Binding="{Binding RowNumber}" Width="100"/>
                                     <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="120"/>
                                     <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="2*"/>
                                     <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*"/>
                                     <DataGridTextColumn Header="Ngành" Binding="{Binding Major}" Width="*"/>
-                                    <DataGridTextColumn Header="Khóa" Binding="{Binding ClassYear}" Width="80"/>
+                                    <!--DataGridTextColumn Header="Khóa" Binding="{Binding ClassYear}" Width="80"/-->
                                     
                                     <DataGridTemplateColumn Header="Thao tác" Width="120">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -421,7 +422,6 @@
                                     <DataGridTextColumn Header="Mã phiên" Binding="{Binding SessionCode}" Width="120"/>
                                     <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
                                     <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
-                                    <DataGridTextColumn Header="Đã điểm danh" Binding="{Binding AttendedCount}" Width="120"/>
                                     
                                     <DataGridTemplateColumn Header="Trạng thái" Width="120">
                                         <DataGridTemplateColumn.CellTemplate>

@@ -4,8 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d" d:DesignWidth="800" Height="440">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -114,7 +113,7 @@
         </Border>
 
         <!-- Content Area -->
-        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="20">
+        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="20" Height="300">
             <Grid>
                 <!-- Step 0: Upload File -->
                 <StackPanel Visibility="{Binding IsStep0, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -199,7 +198,7 @@
                           RowStyle="{StaticResource ModernDataGridRow}"
                           CellStyle="{StaticResource ModernDataGridCell}"
                           ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
-                          MaxHeight="300" SelectionChanged="DataGrid_SelectionChanged">
+                          MaxHeight="500" SelectionChanged="DataGrid_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Dòng" Binding="{Binding RowNumber}" Width="60"/>
                             <DataGridTextColumn Header="MSSV" Binding="{Binding StudentCode}" Width="100"/>
@@ -245,10 +244,10 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" Content="Làm lại" 
-                    Background="White" Foreground="#666" 
-                    BorderBrush="#E0E0E0" BorderThickness="1"
+                    Style="{StaticResource SecondaryButton}"
+                    BorderThickness="1"
                     FontSize="15" FontWeight="SemiBold"
-                    Padding="15,10"
+                    Padding="15,0"
                     Command="{Binding ResetCommand}"
                     Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Width="120"
@@ -256,14 +255,14 @@
 
             <Button Grid.Column="1" 
                     Content="{Binding ImportButtonText}" 
-                    Background="#FACB01" Foreground="#003A70" 
+                    Style="{StaticResource YellowButton}"
                     BorderThickness="0"
                     FontSize="16" FontWeight="Bold"
-                    Padding="20,12"
+                    Padding="20,0"
                     Command="{Binding ImportCommand}"
                     IsEnabled="{Binding CanImport}"
                     Visibility="{Binding IsStep2, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Width="200" Cursor="Hand"/>
+                    Width="300" Cursor="Hand"/>
         </Grid>
     </Grid>
 </UserControl>

@@ -134,27 +134,37 @@ namespace UCode.Desktop.ViewModels
                     using var workbook = new XLWorkbook();
                     var worksheet = workbook.Worksheets.Add("Students");
 
-                    // Headers - Match web version (removed Password and EnrollmentYear)
-                    worksheet.Cell(1, 1).Value = "StudentCode";
-                    worksheet.Cell(1, 2).Value = "FullName";
-                    worksheet.Cell(1, 3).Value = "Email";
-                    worksheet.Cell(1, 4).Value = "Major";
+                    // Headers with new structure
+                    worksheet.Cell(1, 1).Value = "Mã sinh viên";
+                    worksheet.Cell(1, 2).Value = "Họ và tên đệm";
+                    worksheet.Cell(1, 3).Value = "Tên";
+                    worksheet.Cell(1, 4).Value = "Email";
+                    worksheet.Cell(1, 5).Value = "Chuyên ngành";
 
                     // Style headers
-                    var headerRange = worksheet.Range(1, 1, 1, 4);
+                    var headerRange = worksheet.Range(1, 1, 1, 5);
                     headerRange.Style.Font.Bold = true;
                     headerRange.Style.Fill.BackgroundColor = XLColor.LightBlue;
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                     // Sample data
-                    worksheet.Cell(2, 1).Value = "SV001";
-                    worksheet.Cell(2, 2).Value = "Nguyễn Văn A";
-                    worksheet.Cell(2, 3).Value = "sv001@example.com";
-                    worksheet.Cell(2, 4).Value = "Công nghệ phần mềm";
+                    worksheet.Cell(2, 1).Value = "6251071045";
+                    worksheet.Cell(2, 2).Value = "Cao Hoàng Gia";
+                    worksheet.Cell(2, 3).Value = "Khang";
+                    worksheet.Cell(2, 4).Value = "6251071045@st.utc2.edu.vn";
+                    worksheet.Cell(2, 5).Value = "Công nghệ thông tin";
 
-                    worksheet.Cell(3, 1).Value = "SV002";
-                    worksheet.Cell(3, 2).Value = "Trần Thị B";
-                    worksheet.Cell(3, 3).Value = "sv002@example.com";
-                    worksheet.Cell(3, 4).Value = "Khoa học máy tính";
+                    worksheet.Cell(3, 1).Value = "6451071001";
+                    worksheet.Cell(3, 2).Value = "Phạm Đức";
+                    worksheet.Cell(3, 3).Value = "Phạm";
+                    worksheet.Cell(3, 4).Value = "6451071001@st.utc2.edu.vn";
+                    worksheet.Cell(3, 5).Value = "Công nghệ thông tin";
+
+                    worksheet.Cell(4, 1).Value = "6451071002";
+                    worksheet.Cell(4, 2).Value = "Đặng Minh";
+                    worksheet.Cell(4, 3).Value = "Bảo";
+                    worksheet.Cell(4, 4).Value = "6451071002@st.utc2.edu.vn";
+                    worksheet.Cell(4, 5).Value = "Công nghệ thông tin";
 
                     worksheet.Columns().AdjustToContents();
 
@@ -202,13 +212,18 @@ namespace UCode.Desktop.ViewModels
 
                 foreach (var row in rows)
                 {
+                    // Merge surname/middle name (column 2) and given name (column 3)
+                    var surnameMiddle = row.Cell(2).GetString().Trim();
+                    var givenName = row.Cell(3).GetString().Trim();
+                    var fullName = $"{surnameMiddle} {givenName}".Trim();
+                    
                     var result = new ValidationResultViewModel
                     {
                         RowNumber = rowNumber,
                         StudentCode = row.Cell(1).GetString().Trim(),
-                        FullName = row.Cell(2).GetString().Trim(),
-                        Email = row.Cell(3).GetString().Trim(),
-                        Major = row.Cell(4).GetString().Trim(),
+                        FullName = fullName,
+                        Email = row.Cell(4).GetString().Trim(),
+                        Major = row.Cell(5).GetString().Trim(),
                         EnrollmentYear = DateTime.Now.Year // Default to current year
                     };
 
@@ -225,8 +240,7 @@ namespace UCode.Desktop.ViewModels
                     }
                     else if (string.IsNullOrWhiteSpace(result.Email))
                     {
-                        result.Status = "error";
-                        result.ErrorMessage = "Thiếu email";
+                        result.Email = $"{result.StudentCode}@st.utc2.edu.vn";
                     }
                     else if (!result.Email.Contains("@"))
                     {

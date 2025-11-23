@@ -752,4 +752,21 @@ public class AssignmentController : ControllerBase
             $"Logged  activities"
         ));
     }
+
+    #region Hook 
+        
+    
+    //hook cho user service khi xoa user
+    [HttpPost("webhook/sync-delete-user")]
+    [SkipValidateUserId]
+    public async Task<IActionResult> SyncDeleteUser([FromBody] Guid userId)
+    {
+        var success = await _assignmentService.DeleteAssignmentUserByUserIdAsync(userId);
+        if (!success)
+            return NotFound(ApiResponse<object>.ErrorResponse("No assignment users found for the given user ID"));
+
+        return Ok(ApiResponse<object>.SuccessResponse(new { userId }, "Assignment users deleted for the user"));
+    }
+
+    #endregion Hook
 }

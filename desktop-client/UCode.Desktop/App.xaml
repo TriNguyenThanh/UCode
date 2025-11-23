@@ -34,6 +34,7 @@
             <helpers:BooleanToYesNoConverter x:Key="BooleanToYesNoConverter"/>
             <helpers:ValidStatusConverter x:Key="ValidStatusConverter"/>
             <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <helpers:NullToBooleanConverter x:Key="NullToBooleanConverter"/>
             <helpers:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
             <helpers:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
             <helpers:SystemLogVisibilityConverter x:Key="SystemLogVisibilityConverter"/>

@@ -90,7 +90,7 @@ namespace UCode.Desktop.Services
         public string UserId { get; set; } = string.Empty;
         public string StudentCode { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public DateTime AttendedAt { get; set; }
+        public DateTime? AttendedAt { get; set; }
         public string? IpAddress { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }

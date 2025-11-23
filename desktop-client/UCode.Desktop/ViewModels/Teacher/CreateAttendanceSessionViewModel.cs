@@ -217,6 +217,13 @@ namespace UCode.Desktop.ViewModels
                 return;
             }
 
+            // Check if start time is in the past
+            if (StartTime < DateTime.Now.AddMinutes(-5))
+            {
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian bắt đầu không thể ở trong quá khứ.");
+                return;
+            }
+
             if (EndTime <= StartTime)
             {
                 await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Thời gian kết thúc phải sau thời gian bắt đầu.");

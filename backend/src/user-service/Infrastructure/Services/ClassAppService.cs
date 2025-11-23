@@ -307,7 +307,25 @@ public class ClassAppService : IClassService
         if (!await _userClassRepository.ExistsAsync(studentGuid, classGuid))
             throw new ApiException("Student is not enrolled in this class", 404);
 
-        return await _userClassRepository.RemoveAsync(studentGuid, classGuid);
+        var result = await _userClassRepository.RemoveAsync(studentGuid, classGuid);
+
+        if (result)
+        {
+            // Sync delete user from assignment service (fire-and-forget)
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await _assignmentServiceClient.SyncDeleteUserAsync(studentGuid);
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            });
+        }
+
+        return result;
     }
 
     public async Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId)

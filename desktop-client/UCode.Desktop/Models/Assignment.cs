@@ -55,6 +55,9 @@ namespace UCode.Desktop.Models
         public DateTime? StartedAt { get; set; }
         public double? Score { get; set; }
         public double? MaxScore { get; set; }
+        public int TabSwitchCount { get; set; }
+        public int CapturedAICount { get; set; }
+        public string? AiDetectionDetails { get; set; }
         public UserInfo User { get; set; }
     }
 

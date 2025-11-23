@@ -40,7 +40,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="ℹ" Foreground="#2196F3" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Chưa có tag nào được gán cho bài toán này. Nhấn 'Quản lý Tags' để thêm tags." 
-                               Foreground="#1976D2" FontSize="16" TextWrapping="Wrap"/>
+                               Foreground="#1976D2" FontSize="16" TextWrapping="Wrap" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
 

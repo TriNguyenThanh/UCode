@@ -20,12 +20,13 @@ public interface IAssignmentService
     Task<Guid?> GetAssignmentOwnerIdAsync(Guid assignmentId);
     Task<(bool exists, Guid? ownerId)> CheckAssignmentExistsAndGetOwnerAsync(Guid assignmentId);
     
-    // Assignment Details
+    // Assignment user operations
     Task<AssignmentUser?> GetAssignmentUserByIdAsync(Guid assignmentDetailId);
     Task<AssignmentUser?> GetAssignmentUserAsync(Guid assignmentId, Guid studentId);
     Task<List<AssignmentUser>> GetAssignmentUsersAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     Task<AssignmentUser> UpdateAssignmentUserScoreAsync(Guid assignmentId, Guid userId, int score);
+    Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId);
     
     // // BestSubmission operations
     // Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);

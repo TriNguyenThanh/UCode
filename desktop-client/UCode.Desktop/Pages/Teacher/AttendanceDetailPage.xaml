@@ -76,6 +76,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Total Attendance -->
@@ -91,7 +92,7 @@
                                     <iconPacks:PackIconMaterial Kind="ClipboardText" Width="16" Height="16" Foreground="#856404" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Tổng số điểm danh" FontSize="14" FontWeight="SemiBold" Foreground="#856404" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Session.AttendedCount}" 
+                                <TextBlock Text="{Binding AttendedCount}" 
                                        FontSize="24" FontWeight="Bold" Foreground="#856404"/>
                             </StackPanel>
                         </Border>
@@ -134,6 +135,24 @@
 
                         <!-- Attendance Rate -->
                         <Border Grid.Column="3" 
+                                Background="#F3E5F5" 
+                                BorderBrush="#9C27B0" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="5,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <iconPacks:PackIconMaterial Kind="AccountRemove" Width="16" Height="16" Foreground="#6A1B9A" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chưa điểm danh" FontSize="14" FontWeight="SemiBold" Foreground="#6A1B9A" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding NotAttendedCount}" 
+                                       FontSize="24" FontWeight="Bold" Foreground="#6A1B9A"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Attendance Rate -->
+                        <Border Grid.Column="4" 
                                 Background="#E3F2FD" 
                                 BorderBrush="#2196F3" 
                                 BorderThickness="1" 
@@ -215,7 +234,7 @@
 
                                 <!-- Title and Actions -->
                                 <Grid Grid.Row="0" Margin="0,0,0,20">
-                                    <TextBlock Text="DANH SÁCH SINH VIÊN ĐÃ ĐIỂM DANH" 
+                                    <TextBlock Text="DANH SÁCH SINH VIÊN" 
                                            FontSize="18" FontWeight="Bold" Foreground="#191970" 
                                            VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -257,17 +276,39 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <!-- Search -->
-                                <TextBox Grid.Row="1" 
-                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                     Padding="12" FontSize="14" Height="45"
-                                     Margin="0,0,0,15"
-                                     mah:TextBoxHelper.Watermark="Tìm kiếm theo MSSV, tên, email..."
-                                     mah:ControlsHelper.CornerRadius="8">
-                                    <mah:TextBoxHelper.ButtonContent>
-                                        <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
-                                    </mah:TextBoxHelper.ButtonContent>
-                                </TextBox>
+                                <!-- Search and Filter -->
+                                <Grid Grid.Row="1" Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="250"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Search Box -->
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             Padding="12" FontSize="14" Height="45"
+                                             mah:TextBoxHelper.Watermark="Tìm kiếm theo MSSV, tên sinh viên..."
+                                             mah:ControlsHelper.CornerRadius="8">
+                                        <mah:TextBoxHelper.ButtonContent>
+                                            <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
+                                        </mah:TextBoxHelper.ButtonContent>
+                                    </TextBox>
+
+                                    <!-- Status Filter -->
+                                    <ComboBox Grid.Column="2"
+                                              ItemsSource="{Binding StatusFilters}"
+                                              SelectedItem="{Binding SelectedStatus}"
+                                              Height="45"
+                                              FontSize="14"
+                                              mah:ControlsHelper.CornerRadius="8">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Padding="5"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
 
                                 <!-- Records DataGrid -->
                                 <DataGrid Grid.Row="2" 
@@ -296,24 +337,57 @@
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
 
-                                        <DataGridTemplateColumn Header="Trạng thái" Width="120">
+                                        <DataGridTemplateColumn Header="Trạng thái" Width="140">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#9C27B0"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsValid}" Value="True">
+                                                                    <DataTrigger Binding="{Binding AttendedAt}" Value="{x:Null}">
+                                                                        <Setter Property="Background" Value="#9C27B0"/>
+                                                                    </DataTrigger>
+                                                                    <MultiDataTrigger>
+                                                                        <MultiDataTrigger.Conditions>
+                                                                            <Condition Binding="{Binding AttendedAt, Converter={StaticResource NullToBooleanConverter}}" Value="True"/>
+                                                                            <Condition Binding="{Binding IsValid}" Value="True"/>
+                                                                        </MultiDataTrigger.Conditions>
                                                                         <Setter Property="Background" Value="#34C759"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding IsValid}" Value="False">
+                                                                    </MultiDataTrigger>
+                                                                    <MultiDataTrigger>
+                                                                        <MultiDataTrigger.Conditions>
+                                                                            <Condition Binding="{Binding AttendedAt, Converter={StaticResource NullToBooleanConverter}}" Value="True"/>
+                                                                            <Condition Binding="{Binding IsValid}" Value="False"/>
+                                                                        </MultiDataTrigger.Conditions>
                                                                         <Setter Property="Background" Value="#FF3B30"/>
-                                                                    </DataTrigger>
+                                                                    </MultiDataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
                                                         </Border.Style>
-                                                        <TextBlock Text="{Binding IsValid, Converter={StaticResource ValidStatusConverter}}" 
-                                                               Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                                        <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="12">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="Chưa điểm danh"/>
+                                                                    <Style.Triggers>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding AttendedAt, Converter={StaticResource NullToBooleanConverter}}" Value="True"/>
+                                                                                <Condition Binding="{Binding IsValid}" Value="True"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="Hợp lệ"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding AttendedAt, Converter={StaticResource NullToBooleanConverter}}" Value="True"/>
+                                                                                <Condition Binding="{Binding IsValid}" Value="False"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="Không hợp lệ"/>
+                                                                        </MultiDataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
                                                     </Border>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
