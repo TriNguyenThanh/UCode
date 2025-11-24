@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Infrastructure.EF;
@@ -37,22 +38,22 @@ public class UserServiceClient : IUserServiceClient
             }
 
             var url = $"/api/v1/classes/{classId}/user-ids";
-            
+
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
-            
+
             // Đọc response như một object để có thể access các property
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
             // Console.WriteLine($"Response content: {responseContent}");
-            
+
             // Parse JSON response để lấy data array
             using var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             if (root.TryGetProperty("data", out var dataElement) && dataElement.ValueKind == JsonValueKind.Array)
             {
                 var students = new List<StudentDto>();
-                
+
                 foreach (var studentElement in dataElement.EnumerateArray())
                 {
                     var student = new StudentDto
@@ -65,10 +66,10 @@ public class UserServiceClient : IUserServiceClient
                     };
                     students.Add(student);
                 }
-                
+
                 return students.Select(s => s.Id).ToList();
             }
-            
+
             return new List<Guid>();
         }
         catch (HttpRequestException ex)
@@ -84,6 +85,35 @@ public class UserServiceClient : IUserServiceClient
             throw new ApiException($"Error getting students by class id: {ex.Message}");
         }
     }
+
+    public async Task<List<string>> GetUserEmailByIdAsync(List<Guid> userIds)
+    {
+        try
+        {
+            var url = $"/api/v1/users/emails";
+            var requestBody = new {
+                Ids = userIds
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var responseData = JsonSerializer.Deserialize<List<string>>(responseContent);
+            return responseData ?? new List<string>();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new ApiException($"HTTP error getting user email by id: {ex.Message}");
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new ApiException($"Timeout getting user email by id: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error getting user email by id: {ex.Message}");
+        }
+    }
 }
-
-

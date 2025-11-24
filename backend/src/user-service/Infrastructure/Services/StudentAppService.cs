@@ -13,15 +13,18 @@ namespace UserService.Infrastructure.Services;
 public class StudentAppService : IStudentService
 {
     private readonly IStudentRepository _studentRepository;
+    private readonly IAssignmentServiceClient _assignmentServiceClient;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
 
     public StudentAppService(
         IStudentRepository studentRepository,
+        IAssignmentServiceClient assignmentServiceClient,
         IUserRepository userRepository,
         IMapper mapper)
     {
         _studentRepository = studentRepository;
+        _assignmentServiceClient = assignmentServiceClient;
         _userRepository = userRepository;
         _mapper = mapper;
     }
@@ -61,11 +64,17 @@ public class StudentAppService : IStudentService
     {
         var result = new BulkCreateResult();
         var results = new List<BulkCreateStudentResult>();
-
+        List<string> emailsToNotify = new List<string>();
+        List<string> fullNamesToNotify = new List<string>();
+        string tempPassword = students[0].Password ?? "123456"; // Default temporary password
         foreach (var studentRequest in students)
         {
             try
             {
+                // Notity email list
+                emailsToNotify.Add(studentRequest.Email);
+                fullNamesToNotify.Add(studentRequest.FullName);
+
                 // Check if student code already exists
                 var existingByCode = await _studentRepository.GetByStudentCodeAsync(studentRequest.StudentCode);
                 if (existingByCode != null)
@@ -115,9 +124,7 @@ public class StudentAppService : IStudentService
                     Username = studentRequest.Username,
                     Email = studentRequest.Email,
                     // Use default password "123456" if not provided
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(
-                        string.IsNullOrWhiteSpace(studentRequest.Password) ? "123456" : studentRequest.Password
-                    ),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword),
                     FullName = studentRequest.FullName,
                     Major = studentRequest.Major,
                     EnrollmentYear = studentRequest.EnrollmentYear,
@@ -149,6 +156,10 @@ public class StudentAppService : IStudentService
         }
 
         result.Results = results;
+        await _assignmentServiceClient.SendCreatedAccountEmails(
+            fullNamesToNotify,
+            emailsToNotify,
+            tempPassword);
         return result;
     }
 

@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageReference Include="Resend" Version="0.2.1" />
 
     <ProjectReference Include="../Application/Application.csproj" />
   </ItemGroup>

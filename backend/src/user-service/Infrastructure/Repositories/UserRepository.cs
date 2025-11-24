@@ -34,5 +34,16 @@ public class UserRepository : Repository<User>, IUserRepository
         return await _dbSet
             .AnyAsync(u => u.Username.ToLower() == username.ToLower());
     }
+
+    /// <summary>
+    /// Lấy danh sách email từ danh sách ID người dùng
+    /// </summary>
+    public Task<List<string>> GetEmailsByIdsAsync(List<string> ids)
+    {
+        return _dbSet
+            .Where(u => ids.Contains(u.UserId.ToString()))
+            .Select(u => u.Email)
+            .ToListAsync();
+    }
 }
 

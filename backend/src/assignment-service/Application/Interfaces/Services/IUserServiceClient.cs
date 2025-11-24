@@ -8,6 +8,7 @@ namespace AssignmentService.Application.Interfaces.Services;
 public interface IUserServiceClient
 {
     Task<List<Guid>> GetUserIdsByClassIdAsync(Guid classId, CancellationToken cancellationToken = default);
+    Task<List<string>> GetUserEmailByIdAsync(List<Guid> userIds);
 }
 
 

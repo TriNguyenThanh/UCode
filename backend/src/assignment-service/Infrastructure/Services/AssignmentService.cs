@@ -13,11 +13,12 @@ public class AssignmentService : IAssignmentService
 {
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly IUserServiceClient _userServiceClient;
-
-    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient)
+    private readonly IEmailService _emailService;
+    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient, IEmailService emailService)
     {
         _assignmentRepository = assignmentRepository;
         _userServiceClient = userServiceClient;
+        _emailService = emailService;
     }
 
     public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
@@ -48,6 +49,19 @@ public class AssignmentService : IAssignmentService
                 }).ToList();
 
                 await _assignmentRepository.AddAssignmentUsersAsync(details);
+                var endDate = createdAssignment.EndTime?.ToString("dd/MM/yyyy HH:mm") ?? "Không có thời hạn";
+                var userEmails = await _userServiceClient.GetUserEmailByIdAsync(userIds);
+                _ = Task.Run(async ()
+                => await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                {
+                    To = userEmails.First(),
+                    Bcc = userEmails.Skip(1).ToList(),
+                    Subject = "Bài tập mới đã được tạo và giao cho bạn",
+                    HtmlContent = EmailTemplates.NewAssignment(
+                        createdAssignment.Title,
+                        endDate,
+                        createdAssignment.Description ?? string.Empty)
+                }));
             }
 
             return createdAssignment;
@@ -479,7 +493,7 @@ public class AssignmentService : IAssignmentService
                 if (newStudentIds.Any())
                 {
                     var maxScore = await _assignmentRepository.GetAssignmentMaxScoreAsync(assignment.AssignmentId);
-                    
+
                     var newAssignmentUsers = newStudentIds.Select(studentId => new AssignmentUser
                     {
                         AssignmentUserId = Guid.NewGuid(),
@@ -513,7 +527,7 @@ public class AssignmentService : IAssignmentService
 
             assignmentUser.TabSwitchCount++;
             await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
-            
+
             return assignmentUser;
         }
         catch (Exception ex)
@@ -522,7 +536,7 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId, string? aiDetectionDetails=null)
+    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId, string? aiDetectionDetails = null)
     {
         try
         {
@@ -554,7 +568,7 @@ public class AssignmentService : IAssignmentService
                     existingDetails[kv.Key] = kv.Value;
                 }
             }
-            
+
             assignmentUser.CapturedAICount++;
             assignmentUser.AIDetectionDetails = System.Text.Json.JsonSerializer.Serialize(existingDetails);
 
