@@ -49,14 +49,22 @@ namespace UCode.Desktop.ViewModels
         private readonly AuthService _authService;
         private readonly ApiService _apiService;
         private readonly NavigationService _navigationService;
+        private readonly AIDetectorService _aiDetectorService;
         private string _userEmail = string.Empty;
         private string _userName = string.Empty;
         private bool _isLoading;
+        private bool _isNavigationBarVisible = true;
 
         public bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
+        }
+
+        public bool IsNavigationBarVisible
+        {
+            get => _isNavigationBarVisible;
+            set => SetProperty(ref _isNavigationBarVisible, value);
         }
 
         public string UserEmail
@@ -81,20 +89,37 @@ namespace UCode.Desktop.ViewModels
         public ICommand NavigateToClassCommand { get; }
         public ICommand NavigateToAssignmentCommand { get; }
 
-        public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService)
+        public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
             _authService = authService;
             _apiService = apiService;
             _navigationService = navigationService;
-
+            _aiDetectorService = aiDetectorService;
             LogoutCommand = new RelayCommand(_ => ExecuteLogout());
             NavigateToClassCommand = new RelayCommand<string>(NavigateToClass);
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
+
+            // Subscribe to navigation events
+            _navigationService.Navigated += OnNavigated;
 
             // Set user info
             var currentUser = authService.CurrentUser;
             UserEmail = currentUser?.Email ?? "user@example.com";
             UserName = currentUser?.Email?.Split('@')[0] ?? "User";
+            _aiDetectorService = aiDetectorService;
+        }
+
+        private void OnNavigated(object? sender, System.Windows.Controls.UserControl page)
+        {
+            // Hide navigation bar for ProblemSolverPage
+            if (page is Views.Students.ProblemSolverPage)
+            {
+                IsNavigationBarVisible = false;
+            }
+            else
+            {
+                IsNavigationBarVisible = true;
+            }
         }
 
         public async Task LoadDataAsync()
@@ -321,28 +346,22 @@ namespace UCode.Desktop.ViewModels
             if (string.IsNullOrEmpty(assignmentId)) return;
 
             var assignment = UpcomingAssignments.FirstOrDefault(a => a.Id == assignmentId);
-            if (assignment != null && assignment.RawAssignmentType == AssignmentType.EXAMINATION)
-            {
-                var result = await GetMetroWindow()?.ShowMessageAsync(
-                   "Bài kiểm tra - Lưu ý quan trọng",
-                   "Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:\n" +
-                   "- Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài\n" +
-                   "- Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên\n" +
-                   "- Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn\n\n" +
-                   "Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?",
-                   MessageDialogStyle.AffirmativeAndNegative,
-                   new MetroDialogSettings
-                   {
-                       AffirmativeButtonText = "Xác nhận và bắt đầu",
-                       NegativeButtonText = "Hủy",
-                       DefaultButtonFocus = MessageDialogResult.Affirmative
-                   });
+            //var response = await _assignmentService.GetAssignmentAsync(assignmentId);
 
-                if (result != MessageDialogResult.Affirmative)
+            //if (response.Success && response.Data != null)
+            //{
+                //var assignment = response.Data;
+
+                if (assignment.AssignmentType == AssignmentType.EXAMINATION.ToString())
                 {
-                    return;
+                    if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
+                    {
+                        return;
+                    }
+                    _aiDetectorService.StartAutoMonitor();
                 }
-            }
+
+            //}
 
             try
             {
@@ -357,11 +376,30 @@ namespace UCode.Desktop.ViewModels
 
         private async void ExecuteLogout()
         {
-            var result = await GetMetroWindow()?.ShowMessageAsync(
-                "Đăng xuất",
-                "Bạn có chắc muốn đăng xuất?",
-                MessageDialogStyle.AffirmativeAndNegative
-            );
+            var metroWindow = GetMetroWindow();
+            MessageDialogResult result;
+
+            if (metroWindow != null)
+            {
+                result = await metroWindow.ShowMessageAsync(
+                    "Đăng xuất",
+                    "Bạn có chắc muốn đăng xuất?",
+                    MessageDialogStyle.AffirmativeAndNegative
+                );
+            }
+            else
+            {
+                // Fallback to MessageBox for UCodeWindow
+                var messageResult = MessageBox.Show(
+                    "Bạn có chắc muốn đăng xuất?",
+                    "Đăng xuất",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+                result = messageResult == MessageBoxResult.Yes
+                    ? MessageDialogResult.Affirmative
+                    : MessageDialogResult.Negative;
+            }
 
             if (result == MessageDialogResult.Affirmative)
             {

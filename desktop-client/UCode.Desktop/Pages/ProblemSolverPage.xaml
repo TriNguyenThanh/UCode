@@ -4,117 +4,125 @@
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:local="clr-namespace:UCode.Desktop.Helpers">
-    
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <local:InverseCountToVisibilityConverter x:Key="InverseCountToVisibilityConverter"/>
+        <local:RowNumberConverter x:Key="RowIndexConverter"/>
+    </UserControl.Resources>
+    <AdornerDecorator>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0"
-                Background="#00275E"
-                Height="64">
-            <Grid Margin="20,0">
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#00275E"
+                    Height="64">
+                <Grid Margin="20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Back Button -->
+                    <Button Grid.Column="0"
+                            Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                            Foreground="White"
+                            Background="Transparent"
+                            Command="{Binding NavigateBackCommand}"
+                            VerticalAlignment="Center"
+                            Padding="8,6">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ArrowLeft"
+                                                        Width="20"
+                                                        Height="20"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+                            <TextBlock Text="Quay lại"
+                                    FontFamily="Be Vietnam Pro, Segoe UI"
+                                    FontSize="14"
+                                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Title -->
+                    <TextBlock Grid.Column="1"
+                            Text="{Binding Problem.Title}"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            FontFamily="Be Vietnam Pro, Segoe UI"
+                            Foreground="White"
+                            VerticalAlignment="Center"
+                            Margin="20,0,0,0"/>
+                            
+                    <!-- Difficulty Badge -->
+                    <Border Grid.Column="2"
+                            Background="#FACB01"
+                            CornerRadius="4"
+                            Padding="10,6"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Problem.Difficulty}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                FontFamily="Be Vietnam Pro, Segoe UI"
+                                Foreground="#00275E"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" Background="#F8F9FA">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Back Button -->
-                <Button Grid.Column="0"
-                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                        Foreground="White"
-                        Background="Transparent"
-                        Command="{Binding NavigateBackCommand}"
-                        VerticalAlignment="Center"
-                        Padding="8,6">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                    Width="20"
-                                                    Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                        <TextBlock Text="Quay lại"
-                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- Title -->
-                <TextBlock Grid.Column="1"
-                           Text="{Binding Problem.Title}"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           FontFamily="Be Vietnam Pro, Segoe UI"
-                           Foreground="White"
-                           VerticalAlignment="Center"
-                           Margin="20,0,0,0"/>
-                           
-                <!-- Difficulty Badge -->
-                <Border Grid.Column="2"
-                        Background="#FACB01"
-                        CornerRadius="4"
-                        Padding="10,6"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Problem.Difficulty}"
-                               FontSize="11"
-                               FontWeight="SemiBold"
-                               FontFamily="Be Vietnam Pro, Segoe UI"
-                               Foreground="#00275E"/>
-                </Border>
-            </Grid>
-        </Border>
-
-        <!-- Main Content -->
-        <Grid Grid.Row="1" Background="#F8F9FA">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Left Panel - Problem with Tabs -->
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,1,0">
-                <TabControl BorderThickness="0" Background="White">
-                    <TabControl.Resources>
-                        <Style TargetType="TabItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="TabItem">
-                                        <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" Background="Transparent" Padding="20,12">
-                                            <ContentPresenter x:Name="ContentSite" ContentSource="Header"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#00275E"/>
-                                                <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="#00275E"/>
-                                                <Setter TargetName="ContentSite" Property="TextElement.FontWeight" Value="SemiBold"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="False">
-                                                <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="#666"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="FontFamily" Value="Be Vietnam Pro, Segoe UI"/>
-                            <Setter Property="FontSize" Value="14"/>
-                        </Style>
-                    </TabControl.Resources>
-                    
-                    <TabItem Header="Đề bài">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
-                            <StackPanel>
-                                <!-- Problem Statement -->
-                                <TextBlock Text="Mô tả"
+                <!-- Left Panel - Problem with Tabs -->
+                <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,1,0">
+                    <TabControl BorderThickness="0" Background="White">
+                        <TabControl.Resources>
+                            <Style TargetType="TabItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TabItem">
+                                            <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" Background="Transparent" Padding="20,12">
+                                                <ContentPresenter x:Name="ContentSite" ContentSource="Header"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Border" Property="BorderBrush" Value="#00275E"/>
+                                                    <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="#00275E"/>
+                                                    <Setter TargetName="ContentSite" Property="TextElement.FontWeight" Value="SemiBold"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="False">
+                                                    <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="#666"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="FontFamily" Value="Be Vietnam Pro, Segoe UI"/>
+                                <Setter Property="FontSize" Value="14"/>
+                            </Style>
+                        </TabControl.Resources>
+                        
+                        <TabItem Header="Đề bài">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      Padding="30">
+                                <StackPanel>
+                                    <!-- Problem Statement -->
+                                    <TextBlock Text="Mô tả"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                <TextBlock Text="{Binding Problem.Statement}"
+                                    <TextBlock Text="{Binding Problem.Statement}"
                                            FontSize="14"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            TextWrapping="Wrap"
@@ -122,422 +130,714 @@
                                            Foreground="#333"
                                            Margin="0,0,0,24"/>
 
-                                <!-- Constraints -->
-                                <TextBlock Text="Ràng buộc"
+                                    <!-- Constraints -->
+                                    <TextBlock Text="Ràng buộc"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,0,12,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <iconPacks:PackIconMaterial Kind="ClockOutline" Width="14" Height="14" Foreground="#2196F3" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                            <TextBlock FontFamily="Be Vietnam Pro, Segoe UI" FontSize="12" Foreground="#2196F3">
-                                                <Run Text="Time: "/>
-                                                <Run Text="{Binding Problem.TimeLimitMs}"/>
-                                                <Run Text="ms"/>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" CornerRadius="4" Padding="10,6">
-                                        <StackPanel Orientation="Horizontal">
-                                            <iconPacks:PackIconMaterial Kind="Memory" Width="14" Height="14" Foreground="#2196F3" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                            <TextBlock FontFamily="Be Vietnam Pro, Segoe UI" FontSize="12" Foreground="#2196F3">
-                                                <Run Text="Memory: "/>
-                                                <Run Text="{Binding Problem.MemoryLimitKb}"/>
-                                                <Run Text="KB"/>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                                <TextBlock Text="{Binding Problem.Constraints}"
+                                    <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,0,8">
+                                        <Border Background="#E8F0FE"
+                                            BorderBrush="#00275E"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="10,6"
+                                            Margin="0,0,12,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                                        Width="14"
+                                                                        Height="14"
+                                                                        Foreground="#00275E"
+                                                                        VerticalAlignment="Center"
+                                                                        Margin="0,0,6,0"/>
+                                                <TextBlock FontFamily="Be Vietnam Pro, Segoe UI"
+                                                       FontSize="12"
+                                                       Foreground="#00275E">
+                                        <Run Text="Time: "/>
+                                        <Run Text="{Binding Problem.TimeLimitMs, Mode=OneWay}"/>
+                                        <Run Text="ms"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#E8F0FE"
+                                            BorderBrush="#00275E"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="10,6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Memory"
+                                                                        Width="14"
+                                                                        Height="14"
+                                                                        Foreground="#00275E"
+                                                                        VerticalAlignment="Center"
+                                                                        Margin="0,0,6,0"/>
+                                                <TextBlock FontFamily="Be Vietnam Pro, Segoe UI"
+                                                       FontSize="12"
+                                                       Foreground="#00275E">
+                                        <Run Text="Memory: "/>
+                                        <Run Text="{Binding Problem.MemoryLimitKb, Mode=OneWay}"/>
+                                        <Run Text="KB"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Problem.Constraints}"
                                            FontSize="14"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            TextWrapping="Wrap"
                                            Foreground="#333"
                                            Margin="0,0,0,24"/>
 
-                                <!-- Sample Test Cases -->
-                                <TextBlock Text="Test case mẫu"
+                                    <!-- Input Format -->
+                                    <TextBlock Text="Định dạng Input"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                <ItemsControl ItemsSource="{Binding SampleTestCases}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" Padding="16" Margin="0,0,0,12">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="100"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Input:" FontFamily="Be Vietnam Pro, Segoe UI" FontWeight="SemiBold" FontSize="13" Foreground="#666" Margin="0,0,0,6"/>
-                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding InputRef}" FontFamily="Consolas" FontSize="13" Background="#F5F5F5" Padding="8" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                                                    
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Output:" FontFamily="Be Vietnam Pro, Segoe UI" FontWeight="SemiBold" FontSize="13" Foreground="#666"/>
-                                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OutputRef}" FontFamily="Consolas" FontSize="13" Background="#F5F5F5" Padding="8" TextWrapping="Wrap"/>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </TabItem>
-                    
-                    <TabItem Header="Hướng dẫn">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
-                            <TextBlock Text="{Binding Problem.Solution, FallbackValue='Chưa có hướng dẫn'}"
-                                       FontSize="14"
-                                       FontFamily="Be Vietnam Pro, Segoe UI"
-                                       TextWrapping="Wrap"
-                                       LineHeight="22"
-                                       Foreground="#333"/>
-                        </ScrollViewer>
-                    </TabItem>
-                    
-                    <TabItem Header="Nộp bài">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
-                            <StackPanel>
-                                <TextBlock Text="Lịch sử nộp bài"
+                                    <TextBlock Text="{Binding Problem.InputFormat, FallbackValue='Chưa có thông tin'}"
+                                           FontSize="14"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           TextWrapping="Wrap"
+                                           Foreground="#333"
+                                           Margin="0,0,0,24"/>
+
+                                    <!-- Output Format -->
+                                    <TextBlock Text="Định dạng Output"
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
-                                           Margin="0,0,0,16"/>
-                                
-                                <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Background="White">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        
-                                        <!-- Table Header -->
-                                        <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="12,10">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="2*"/>
-                                                    <ColumnDefinition Width="1.2*"/>
-                                                    <ColumnDefinition Width="1.5*"/>
-                                                    <ColumnDefinition Width="0.8*"/>
-                                                    <ColumnDefinition Width="1*"/>
-                                                    <ColumnDefinition Width="1*"/>
-                                                    <ColumnDefinition Width="0.8*"/>
-                                                </Grid.ColumnDefinitions>
-                                                
-                                                <TextBlock Grid.Column="0" Text="Thời gian" FontWeight="SemiBold" FontSize="12" Foreground="#333"/>
-                                                <TextBlock Grid.Column="1" Text="Ngôn ngữ" FontWeight="SemiBold" FontSize="12" Foreground="#333"/>
-                                                <TextBlock Grid.Column="2" Text="Status" FontWeight="SemiBold" FontSize="12" Foreground="#333"/>
-                                                <TextBlock Grid.Column="3" Text="Điểm" FontWeight="SemiBold" FontSize="12" Foreground="#333" TextAlignment="Center"/>
-                                                <TextBlock Grid.Column="4" Text="Time (ms)" FontWeight="SemiBold" FontSize="12" Foreground="#333" TextAlignment="Right"/>
-                                                <TextBlock Grid.Column="5" Text="Memory (KB)" FontWeight="SemiBold" FontSize="12" Foreground="#333" TextAlignment="Right"/>
-                                                <TextBlock Grid.Column="6" Text="Chi tiết" FontWeight="SemiBold" FontSize="12" Foreground="#333" TextAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-                                        
-                                        <!-- Table Body -->
-                                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Submissions}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="12,12" Background="White">
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter Property="Background" Value="#F9F9F9"/>
-                                                                    </Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
+                                           Margin="0,0,0,12"/>
+                                    <TextBlock Text="{Binding Problem.OutputFormat, FallbackValue='Chưa có thông tin'}"
+                                           FontSize="14"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           TextWrapping="Wrap"
+                                           Foreground="#333"
+                                           Margin="0,0,0,24"/>
+
+                                    <!-- Tags -->
+                                    <TextBlock Text="Tags"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Margin="0,0,0,12"/>
+                                    <ItemsControl ItemsSource="{Binding Problem.TagNames}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#E8F0FE"
+                                                    BorderBrush="#00275E"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Margin="0,0,8,8">
+                                                    <TextBlock Text="{Binding}"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                                           FontSize="12"
+                                                           Foreground="#00275E"
+                                                           FontWeight="SemiBold"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Height="24"/>
+
+                                    <!-- Sample Test Cases -->
+                                    <TextBlock Text="Test case mẫu"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Margin="0,0,0,12"/>
+                                    <DataGrid ItemsSource="{Binding SampleTestCases}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              CanUserResizeRows="False"
+                                              SelectionMode="Single"
+                                              GridLinesVisibility="All"
+                                              HeadersVisibility="Column"
+                                              BorderBrush="#E0E0E0"
+                                              BorderThickness="1"
+                                              FontFamily="Be Vietnam Pro, Segoe UI"
+                                              FontSize="13"
+                                              Background="White">
+                                        <DataGrid.ColumnHeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="Background" Value="#F5F5F5"/>
+                                                <Setter Property="Foreground" Value="#333"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Setter Property="FontSize" Value="13"/>
+                                                <Setter Property="Padding" Value="12,10"/>
+                                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                            </Style>
+                                        </DataGrid.ColumnHeaderStyle>
+                                        <DataGrid.RowStyle>
+                                            <Style TargetType="DataGridRow">
+                                                <Setter Property="Background" Value="White"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#F9F9F9"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGrid.RowStyle>
+                                        <DataGrid.CellStyle>
+                                            <Style TargetType="DataGridCell">
+                                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                <Setter Property="Padding" Value="12,8"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="DataGridCell">
+                                                            <Border Padding="{TemplateBinding Padding}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                                                <ContentPresenter VerticalAlignment="Top"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </DataGrid.CellStyle>
+                                        <DataGrid.Columns>
+                                            <!-- STT Column -->
+                                            <DataGridTextColumn Header="STT" Width="60">
+                                                <DataGridTextColumn.Binding>
+                                                    <Binding RelativeSource="{RelativeSource AncestorType=DataGridRow}" 
+                                                             Converter="{StaticResource RowIndexConverter}"/>
+                                                </DataGridTextColumn.Binding>
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                        <Setter Property="Foreground" Value="#666"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            
+                                            <!-- Input Column -->
+                                            <DataGridTemplateColumn Header="Input" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="2*"/>
-                                                                <ColumnDefinition Width="1.2*"/>
-                                                                <ColumnDefinition Width="1.5*"/>
-                                                                <ColumnDefinition Width="0.8*"/>
-                                                                <ColumnDefinition Width="1*"/>
-                                                                <ColumnDefinition Width="1*"/>
-                                                                <ColumnDefinition Width="0.8*"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
-                                                            
-                                                            <!-- Time -->
-                                                            <TextBlock Grid.Column="0" 
-                                                                       Text="{Binding SubmittedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" 
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding InputRef}"
+                                                                       FontFamily="Consolas"
                                                                        FontSize="13"
-                                                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                                                       TextWrapping="Wrap"
+                                                                       Padding="4"
+                                                                       Background="#F9F9F9"
+                                                                       Foreground="#333"
                                                                        VerticalAlignment="Center"/>
-                                                            
-                                                            <!-- Language Chip -->
-                                                            <Border Grid.Column="1" 
+                                                            <Button Grid.Column="1"
+                                                                    Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                                                    Width="28"
+                                                                    Height="28"
+                                                                    Margin="4,0,0,0"
                                                                     Background="Transparent"
-                                                                    BorderBrush="#2196F3" 
-                                                                    BorderThickness="1" 
-                                                                    CornerRadius="12" 
-                                                                    Padding="8,4"
-                                                                    HorizontalAlignment="Left"
-                                                                    VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding LanguageCode}" 
-                                                                           FontSize="11"
-                                                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                                                           Foreground="#2196F3"
-                                                                           FontWeight="SemiBold"/>
-                                                            </Border>
-                                                            
-                                                            <!-- Status Chip -->
-                                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                                <Border CornerRadius="12" Padding="8,4,8,4">
+                                                                    ToolTip="Copy Input"
+                                                                    Cursor="Hand"
+                                                                    Click="CopyInputButton_Click"
+                                                                    Tag="{Binding InputRef}">
+                                                                <iconPacks:PackIconMaterial Kind="ContentCopy"
+                                                                                            Width="14"
+                                                                                            Height="14"
+                                                                                            Foreground="#666"/>
+                                                            </Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <!-- Output Column -->
+                                            <DataGridTemplateColumn Header="Output" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding OutputRef}"
+                                                                       FontFamily="Consolas"
+                                                                       FontSize="13"
+                                                                       TextWrapping="Wrap"
+                                                                       Padding="4"
+                                                                       Background="#F9F9F9"
+                                                                       Foreground="#333"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Button Grid.Column="1"
+                                                                    Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                                                    Width="28"
+                                                                    Height="28"
+                                                                    Margin="4,0,0,0"
+                                                                    Background="Transparent"
+                                                                    ToolTip="Copy Output"
+                                                                    Cursor="Hand"
+                                                                    Click="CopyOutputButton_Click"
+                                                                    Tag="{Binding OutputRef}">
+                                                                <iconPacks:PackIconMaterial Kind="ContentCopy"
+                                                                                            Width="14"
+                                                                                            Height="14"
+                                                                                            Foreground="#666"/>
+                                                            </Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        
+                        <TabItem Header="Hướng dẫn">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
+                                <TextBlock Text="{Binding Problem.Solution, FallbackValue='Chưa có hướng dẫn'}"
+                                        FontSize="14"
+                                        FontFamily="Be Vietnam Pro, Segoe UI"
+                                        TextWrapping="Wrap"
+                                        LineHeight="22"
+                                        Foreground="#333"/>
+                            </ScrollViewer>
+                        </TabItem>
+                        
+                        <TabItem Header="Nộp bài">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
+                                <StackPanel>
+                                    <TextBlock Text="Lịch sử nộp bài"
+                                            FontSize="16"
+                                            FontWeight="SemiBold"
+                                            FontFamily="Be Vietnam Pro, Segoe UI"
+                                            Margin="0,0,0,16"/>
+                                    
+                                    <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Background="White">
+                                        <Grid Margin="20">
+                                            <DataGrid ItemsSource="{Binding Submissions}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      CanUserResizeRows="False"
+                                      SelectionMode="Single"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      BorderBrush="#E0E0E0"
+                                      BorderThickness="1"
+                                      FontFamily="Be Vietnam Pro, Segoe UI"
+                                      FontSize="13"
+                                      RowHeight="48"
+                                      Background="White">
+                                                <DataGrid.ColumnHeaderStyle>
+                                                    <Style TargetType="DataGridColumnHeader">
+                                                        <Setter Property="Background"
+                                                Value="#F5F5F5"/>
+                                                        <Setter Property="Foreground"
+                                                Value="#333"/>
+                                                        <Setter Property="FontWeight"
+                                                Value="SemiBold"/>
+                                                        <Setter Property="FontSize"
+                                                Value="13"/>
+                                                        <Setter Property="Padding"
+                                                Value="12,10"/>
+                                                        <Setter Property="BorderBrush"
+                                                Value="#E0E0E0"/>
+                                                        <Setter Property="BorderThickness"
+                                                Value="0,0,0,1"/>
+                                                        <Setter Property="HorizontalContentAlignment"
+                                                Value="Left"/>
+                                                    </Style>
+                                                </DataGrid.ColumnHeaderStyle>
+                                                <DataGrid.RowStyle>
+                                                    <Style TargetType="DataGridRow">
+                                                        <Setter Property="Background"
+                                                Value="White"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver"
+                                                     Value="True">
+                                                                <Setter Property="Background"
+                                                        Value="#F9F9F9"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </DataGrid.RowStyle>
+                                                <DataGrid.CellStyle>
+                                                    <Style TargetType="DataGridCell">
+                                                        <Setter Property="BorderThickness"
+                                                Value="0"/>
+                                                        <Setter Property="Padding"
+                                                Value="12,0"/>
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="DataGridCell">
+                                                                    <Border Padding="{TemplateBinding Padding}"
+                                                            Background="{TemplateBinding Background}">
+                                                                        <ContentPresenter VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </DataGrid.CellStyle>
+
+                                                <DataGrid.Columns>
+                                                    <!-- Thời gian -->
+                                                    <DataGridTextColumn Header="Thời gian"
+                                                        Binding="{Binding SubmittedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}"
+                                                        Width="150"/>
+
+                                                    <!-- Ngôn ngữ -->
+                                                    <DataGridTemplateColumn Header="Ngôn ngữ"
+                                                            Width="100">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="Transparent"
+                                                        BorderBrush="#00275E"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Padding="6,3"
+                                                        HorizontalAlignment="Left">
+                                                                    <TextBlock Text="{Binding LanguageCode}"
+                                                               FontSize="11"
+                                                               Foreground="#00275E"
+                                                               FontWeight="SemiBold"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- Status -->
+                                                    <DataGridTemplateColumn Header="Status"
+                                                            Width="120">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Border CornerRadius="4"
+                                                        Padding="8,4"
+                                                        HorizontalAlignment="Left">
                                                                     <Border.Style>
                                                                         <Style TargetType="Border">
                                                                             <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="Passed">
-                                                                                    <Setter Property="Background" Value="#4CAF50"/>
+                                                                                <DataTrigger Binding="{Binding Status}"
+                                                                             Value="Passed">
+                                                                                    <Setter Property="Background"
+                                                                            Value="#E8F5E9"/>
                                                                                 </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="Failed">
-                                                                                    <Setter Property="Background" Value="#F44336"/>
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="CompilationError">
-                                                                                    <Setter Property="Background" Value="#F44336"/>
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="RuntimeError">
-                                                                                    <Setter Property="Background" Value="#F44336"/>
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="TimeLimitExceeded">
-                                                                                    <Setter Property="Background" Value="#FF9800"/>
-                                                                                </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding Status}" Value="MemoryLimitExceeded">
-                                                                                    <Setter Property="Background" Value="#FF9800"/>
+                                                                                <DataTrigger Binding="{Binding Status}"
+                                                                             Value="Failed">
+                                                                                    <Setter Property="Background"
+                                                                            Value="#FFEBEE"/>
                                                                                 </DataTrigger>
                                                                             </Style.Triggers>
                                                                         </Style>
                                                                     </Border.Style>
                                                                     <StackPanel Orientation="Horizontal">
-                                                                        <iconPacks:PackIconMaterial Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="White">
+                                                                        <iconPacks:PackIconMaterial Width="14"
+                                                                                    Height="14"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Margin="0,0,4,0">
                                                                             <iconPacks:PackIconMaterial.Style>
                                                                                 <Style TargetType="iconPacks:PackIconMaterial">
                                                                                     <Style.Triggers>
-                                                                                        <DataTrigger Binding="{Binding Status}" Value="Passed">
-                                                                                            <Setter Property="Kind" Value="CheckCircle"/>
+                                                                                        <DataTrigger Binding="{Binding Status}"
+                                                                                     Value="Passed">
+                                                                                            <Setter Property="Kind"
+                                                                                    Value="CheckCircle"/>
+                                                                                            <Setter Property="Foreground"
+                                                                                    Value="#2E7D32"/>
                                                                                         </DataTrigger>
-                                                                                        <DataTrigger Binding="{Binding Status}" Value="Failed">
-                                                                                            <Setter Property="Kind" Value="CloseCircle"/>
-                                                                                        </DataTrigger>
-                                                                                        <DataTrigger Binding="{Binding Status}" Value="CompilationError">
-                                                                                            <Setter Property="Kind" Value="CloseCircle"/>
-                                                                                        </DataTrigger>
-                                                                                        <DataTrigger Binding="{Binding Status}" Value="RuntimeError">
-                                                                                            <Setter Property="Kind" Value="CloseCircle"/>
+                                                                                        <DataTrigger Binding="{Binding Status}"
+                                                                                     Value="Failed">
+                                                                                            <Setter Property="Kind"
+                                                                                    Value="CloseCircle"/>
+                                                                                            <Setter Property="Foreground"
+                                                                                    Value="#C62828"/>
                                                                                         </DataTrigger>
                                                                                     </Style.Triggers>
                                                                                 </Style>
                                                                             </iconPacks:PackIconMaterial.Style>
                                                                         </iconPacks:PackIconMaterial>
-                                                                        <TextBlock Text="{Binding StatusDisplay, Mode=OneWay}" 
-                                                                                   FontSize="11"
-                                                                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                                                                   Foreground="White"
-                                                                                   FontWeight="SemiBold"
-                                                                                   VerticalAlignment="Center"/>
+                                                                        <TextBlock FontSize="12"
+                                                                   FontWeight="SemiBold">
+                                                                            <TextBlock.Style>
+                                                                                <Style TargetType="TextBlock">
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding Status}"
+                                                                                     Value="Passed">
+                                                                                            <Setter Property="Text"
+                                                                                    Value="Passed"/>
+                                                                                            <Setter Property="Foreground"
+                                                                                    Value="#2E7D32"/>
+                                                                                        </DataTrigger>
+                                                                                        <DataTrigger Binding="{Binding Status}"
+                                                                                     Value="Failed">
+                                                                                            <Setter Property="Text"
+                                                                                    Value="Failed"/>
+                                                                                            <Setter Property="Foreground"
+                                                                                    Value="#C62828"/>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </TextBlock.Style>
+                                                                        </TextBlock>
                                                                     </StackPanel>
                                                                 </Border>
-                                                            </StackPanel>
-                                                            
-                                                            <!-- Score -->
-                                                            <TextBlock Grid.Column="3" 
-                                                                       FontSize="13"
-                                                                       FontWeight="SemiBold"
-                                                                       FontFamily="Be Vietnam Pro, Segoe UI"
-                                                                       TextAlignment="Center"
-                                                                       VerticalAlignment="Center">
-                                                                <TextBlock.Style>
-                                                                    <Style TargetType="TextBlock">
-                                                                        <Setter Property="Foreground" Value="#F44336"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Status}" Value="Passed">
-                                                                                <Setter Property="Foreground" Value="#4CAF50"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Style>
-                                                                <Run Text="{Binding Score, Mode=OneWay}"/>
-                                                            </TextBlock>
-                                                            
-                                                            <!-- Time -->
-                                                            <TextBlock Grid.Column="4" 
-                                                                       Text="{Binding TotalTime}" 
-                                                                       FontSize="13"
-                                                                       FontFamily="Be Vietnam Pro, Segoe UI"
-                                                                       TextAlignment="Right"
-                                                                       VerticalAlignment="Center"/>
-                                                            
-                                                            <!-- Memory -->
-                                                            <TextBlock Grid.Column="5" 
-                                                                       Text="{Binding TotalMemory}" 
-                                                                       FontSize="13"
-                                                                       FontFamily="Be Vietnam Pro, Segoe UI"
-                                                                       TextAlignment="Right"
-                                                                       VerticalAlignment="Center"/>
-                                                            
-                                                            <!-- View Details Button -->
-                                                            <Button Grid.Column="6"
-                                                                    Style="{DynamicResource MahApps.Styles.Button.Circle}"
-                                                                    Width="32"
-                                                                    Height="32"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"
-                                                                     Command="{Binding DataContext.ViewSubmissionDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                    CommandParameter="{Binding}"
-                                                                    ToolTip="Xem chi tiết">
-                                                                <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16" Foreground="#2196F3"/>
-                                                            </Button>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
-                                </Border>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </TabItem>
-                </TabControl>
-            </Border>
-            <GridSplitter Grid.Column="1"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          Background="#FACB01"
-                          Width="5"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
 
-            <!-- Right Panel - Editor -->
-            <Grid Grid.Column="2" Background="#1E1E1E">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="5"/>
-                    <RowDefinition Height="250" MinHeight="100"/>
-                </Grid.RowDefinitions>
+                                                    <!-- Điểm -->
+                                                    <DataGridTemplateColumn Header="Điểm"
+                                                            Width="80">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center"
+                                                           TextDecorations="Underline"
+                                                           Cursor="Hand">
+                                                                    <TextBlock.InputBindings>
+                                                                        <MouseBinding MouseAction="LeftClick"
+                                                                      Command="{Binding DataContext.ViewTestCaseResultsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                      CommandParameter="{Binding}"/>
+                                                                    </TextBlock.InputBindings>
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Text"
+                                                                    Value="{Binding Score}"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Status}"
+                                                                             Value="Passed">
+                                                                                    <Setter Property="Foreground"
+                                                                            Value="#2E7D32"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Status}"
+                                                                             Value="Failed">
+                                                                                    <Setter Property="Foreground"
+                                                                            Value="#C62828"/>
+                                                                                </DataTrigger>
+                                                                                <Trigger Property="IsMouseOver"
+                                                                         Value="True">
+                                                                                    <Setter Property="Opacity"
+                                                                            Value="0.8"/>
+                                                                                </Trigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
 
-                <!-- Editor Toolbar -->
-                <Border Grid.Row="0" Background="#2D2D2D" BorderBrush="#3D3D3D" BorderThickness="0,0,0,1" Padding="16,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Language Selector -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="Ngôn ngữ:" VerticalAlignment="Center" Foreground="#D4D4D4" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" Margin="0,0,10,0"/>
-                            <ComboBox Width="200" SelectedItem="{Binding SelectedLanguage}" ItemsSource="{Binding AvailableLanguages}" DisplayMemberPath="LanguageDisplayName"
-                                      Background="#3D3D3D" Foreground="White" BorderBrush="#FACB01" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13"/>
-                        </StackPanel>
-                        
-                        <!-- Reset Button -->
-                        <Button Grid.Column="1" Command="{Binding ResetCodeCommand}"
-                                Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                                Foreground="#86868B"
-                                Background="Transparent"
-                                HorizontalAlignment="Left"
-                                Margin="20,0,0,0"
-                                Padding="10,6">
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="Restore" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBlock Text="Reset Code" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" VerticalAlignment="Center"/>
+                                                    <!-- Time -->
+                                                    <DataGridTemplateColumn Header="Time (ms)"
+                                                            Width="90">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding TotalTime}"
+                                                           HorizontalAlignment="Right"
+                                                           Foreground="#666"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- Memory -->
+                                                    <DataGridTemplateColumn Header="Memory (KB)"
+                                                            Width="100">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding TotalMemory}"
+                                                           HorizontalAlignment="Right"
+                                                           Foreground="#666"/>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+
+                                                    <!-- Chi tiết -->
+                                                    <DataGridTemplateColumn Header="Chi tiết"
+                                                            Width="80">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Button Command="{Binding DataContext.ViewSubmissionDetailCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                        Width="32"
+                                                        Height="32"
+                                                        Background="Transparent"
+                                                        BorderBrush="#00275E"
+                                                        ToolTip="Xem chi tiết"
+                                                        Cursor="Hand">
+                                                                    <iconPacks:PackIconMaterial Kind="Eye"
+                                                                                Width="16"
+                                                                                Height="16"
+                                                                                Foreground="#00275E"/>
+                                                                </Button>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+
+                                            <!-- Empty State -->
+                                            <TextBlock Text="Chưa có lần nộp bài nào"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       FontSize="14"
+                                       Foreground="#999"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding Submissions.Count, Converter={StaticResource InverseCountToVisibilityConverter}}"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+                <GridSplitter Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="#FACB01"
+                            Width="5"
+                            ResizeBehavior="PreviousAndNext"
+                            ShowsPreview="True"/>
+
+                <!-- Right Panel - Editor -->
+                <Grid Grid.Column="2" Background="#1E1E1E">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="250" MinHeight="100"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Editor Toolbar -->
+                    <Border Grid.Row="0" Background="#2D2D2D" BorderBrush="#3D3D3D" BorderThickness="0,0,0,1" Padding="16,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Language Selector -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <TextBlock Text="Ngôn ngữ:" VerticalAlignment="Center" Foreground="#D4D4D4" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" Margin="0,0,10,0"/>
+                                <ComboBox Width="200" SelectedItem="{Binding SelectedLanguage}" ItemsSource="{Binding AvailableLanguages}" DisplayMemberPath="LanguageDisplayName"
+                                        Background="#3D3D3D" Foreground="White" BorderBrush="#FACB01" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13"/>
                             </StackPanel>
-                        </Button>
-                        
-                        <!-- Action Buttons -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Button Command="{Binding RunCodeCommand}"
+                            
+                            <!-- Reset Button -->
+                            <Button Grid.Column="1" Command="{Binding ResetCodeCommand}"
                                     Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                                    Foreground="#86868B"
                                     Background="Transparent"
-                                    BorderBrush="#FACB01"
-                                    BorderThickness="1.5"
-                                    Foreground="#FACB01"
-                                    Margin="0,0,10,0"
-                                    Padding="14,7">
+                                    HorizontalAlignment="Left"
+                                    Margin="20,0,0,0"
+                                    Padding="10,6">
                                 <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Kind="Play" Width="15" Height="15" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Chạy thử" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <iconPacks:PackIconMaterial Kind="Restore" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Reset Code" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" VerticalAlignment="Center" Cursor="Hand"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding SubmitCodeCommand}"
-                                    Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                                    Background="#4CAF50"
-                                    Foreground="White"
-                                    Padding="14,7">
-                                <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Kind="Send" Width="15" Height="15" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Nộp bài" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- Code Editor -->
-                <TextBox Grid.Row="1"
-                         Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"
-                         AcceptsReturn="True"
-                         AcceptsTab="True"
-                         FontFamily="Consolas"
-                         FontSize="14"
-                         Padding="16"
-                         TextWrapping="NoWrap"
-                         BorderThickness="0"
-                         Background="#1E1E1E"
-                         Foreground="#D4D4D4"
-                         CaretBrush="#FACB01"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Auto"/>
-
-                <!-- Output Splitter -->
-                <GridSplitter Grid.Row="2"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch"
-                              Background="#FACB01"
-                              Cursor="SizeNS"
-                              Height="5"/>
-
-                <!-- Output Console -->
-                <Border Grid.Row="3" Background="White" BorderBrush="#3D3D3D" BorderThickness="0,1,0,0">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        
-                        <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,10">
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="Console" Width="16" Height="16" Foreground="#666" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Kết quả" FontSize="13" FontWeight="SemiBold" FontFamily="Be Vietnam Pro, Segoe UI" Foreground="#333" VerticalAlignment="Center"/>
+                            
+                            <!-- Action Buttons -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Command="{Binding RunCodeCommand}"
+                                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                                        Background="Transparent"
+                                        BorderBrush="#FACB01"
+                                        BorderThickness="1.5"
+                                        Foreground="#FACB01"
+                                        Margin="0,0,10,0"
+                                        Padding="14,7"
+                                        Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Play" Width="15" Height="15" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Chạy thử" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding SubmitCodeCommand}"
+                                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                                        Background="#4CAF50"
+                                        Foreground="White"
+                                        Padding="14,7"
+                                        Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="Send" Width="15" Height="15" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Nộp bài" FontFamily="Be Vietnam Pro, Segoe UI" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
-                        </Border>
-                        
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16" Background="White">
-                            <TextBlock Text="{Binding Output, FallbackValue='Nhấn Chạy thử hoặc Nộp bài để xem kết quả...'}"
-                                       FontFamily="Consolas"
-                                       FontSize="13"
-                                       TextWrapping="Wrap"
-                                       Foreground="#333"
-                                       LineHeight="20"/>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Code Editor -->
+                    <TextBox Grid.Row="1"
+                             x:Name="CodeEditor"
+                             Text="{Binding FullCode, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True"
+                             AcceptsTab="True"
+                             FontFamily="Consolas"
+                             FontSize="14"
+                             Padding="16"
+                             TextWrapping="NoWrap"
+                             BorderThickness="0"
+                             Background="#1E1E1E"
+                             Foreground="#D4D4D4"
+                             CaretBrush="#FACB01"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"/>
+
+                    <!-- Output Splitter -->
+                    <GridSplitter Grid.Row="2"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="#FACB01"
+                                Cursor="SizeNS"
+                                Height="5"
+                                ResizeBehavior="PreviousAndNext"
+                                ShowsPreview="True"/>
+
+                    <!-- Output Console -->
+                    <Border Grid.Row="3" Background="White" BorderBrush="#3D3D3D" BorderThickness="0,1,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Console" Width="16" Height="16" Foreground="#666" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Kết quả" FontSize="13" FontWeight="SemiBold" FontFamily="Be Vietnam Pro, Segoe UI" Foreground="#333" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16" Background="White">
+                                <TextBlock Text="{Binding Output, FallbackValue='Nhấn Chạy thử hoặc Nộp bài để xem kết quả...'}"
+                                        FontFamily="Consolas"
+                                        FontSize="13"
+                                        TextWrapping="Wrap"
+                                        Foreground="#333"
+                                        LineHeight="20"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
-    </Grid>
-
-    <UserControl.Resources>
-        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
-        <local:InverseCountToVisibilityConverter x:Key="InverseCountToVisibilityConverter"/>
-    </UserControl.Resources>
+    </AdornerDecorator>
+   
 </UserControl>

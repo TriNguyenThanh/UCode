@@ -16,6 +16,7 @@ namespace UCode.Desktop.Views
         private readonly NavigationService _navigationService;
         private readonly IDialogCoordinator _dialogCoordinator;
         private readonly AuthService _authService;
+        private readonly AIDetectorService _aiDetectorService;
 
         public ICommand GoBackCommand { get; }
         public ICommand LogoutCommand { get; }
@@ -35,6 +36,7 @@ namespace UCode.Desktop.Views
             _navigationService = App.ServiceProvider.GetRequiredService<NavigationService>();
             _dialogCoordinator = App.ServiceProvider.GetRequiredService<IDialogCoordinator>();
             _authService = App.ServiceProvider.GetRequiredService<AuthService>();
+            _aiDetectorService = App.ServiceProvider.GetRequiredService<AIDetectorService>();
 
             // Set data context to this window for command bindings
             DataContext = this;
@@ -130,6 +132,16 @@ namespace UCode.Desktop.Views
                 adminHomePage.SetViewModel(adminHomeViewModel);
                 _navigationService.NavigateTo(adminHomePage);
                 await adminHomeViewModel.LoadStatisticsAsync();
+            };
+
+            // Cleanup when window closes
+            Closing += (s, e) =>
+            {
+                try
+                {
+                    _aiDetectorService?.StopAIDetector();
+                }
+                catch { /* Ignore cleanup errors */ }
             };
         }
     }

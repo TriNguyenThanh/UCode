@@ -11,13 +11,15 @@ namespace UCode.Desktop.Views
     {
         private readonly NavigationService _navigationService;
         private readonly AuthService _authService;
+        private readonly AIDetectorService _aiDetectorService;
 
-        public TeacherHomeWindow(NavigationService navigationService, AuthService authService)
+        public TeacherHomeWindow(NavigationService navigationService, AuthService authService, AIDetectorService aiDetectorService)
         {
             InitializeComponent();
             
             _navigationService = navigationService;
             _authService = authService;
+            _aiDetectorService = aiDetectorService;
             
             // Set up navigation frame
             _navigationService.SetFrame(NavigationFrame);
@@ -43,6 +45,16 @@ namespace UCode.Desktop.Views
                     
                     _navigationService.NavigateTo(homePage);
                 }
+            };
+
+            // Cleanup when window closes
+            Closing += (s, e) =>
+            {
+                try
+                {
+                    _aiDetectorService?.StopAIDetector();
+                }
+                catch { /* Ignore cleanup errors */ }
             };
         }
 

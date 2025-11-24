@@ -2,12 +2,13 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using MahApps.Metro.Controls;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
-    public partial class LoginWindow : Window
+    public partial class LoginWindow : MetroWindow
     {
         private readonly AuthService _authService;
 
