@@ -38,10 +38,15 @@ public class UserRepository : Repository<User>, IUserRepository
     /// <summary>
     /// Lấy danh sách email từ danh sách ID người dùng
     /// </summary>
-    public Task<List<string>> GetEmailsByIdsAsync(List<string> ids)
+    public async Task<List<string>> GetEmailsByIdsAsync(List<Guid> ids)
     {
-        return _dbSet
-            .Where(u => ids.Contains(u.UserId.ToString()))
+        if (ids == null || !ids.Any())
+        {
+            return new List<string>();
+        }
+        
+        return await _dbSet
+            .Where(u => ids.Contains(u.UserId))
             .Select(u => u.Email)
             .ToListAsync();
     }
