@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AssignmentService.Infrastructure.Services;
-
 public class EmailService : IEmailService
 {
     private readonly IResend _resend;
@@ -24,7 +23,7 @@ public class EmailService : IEmailService
         _rabbitMqService = rabbitMqService ?? throw new ArgumentNullException(nameof(rabbitMqService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
-        // ✅ Validate From address
+        // Validate From address
         _from = config["Resend:From"];
         if (string.IsNullOrWhiteSpace(_from))
         {
@@ -58,11 +57,10 @@ public class EmailService : IEmailService
         try
         {
             var response = await _resend.EmailSendAsync(message);
-            // _logger.LogInformation("✅ Email sent to {To}, ID: {MessageId}", to, response.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Failed to send email to {To}", to);
+            _logger.LogError(ex, "Failed to send email to {To}", to);
             throw;
         }
     }
@@ -77,7 +75,7 @@ public class EmailService : IEmailService
         if (string.IsNullOrWhiteSpace(htmlContent))
             throw new ArgumentException("HTML content cannot be empty", nameof(htmlContent));
 
-        _logger.LogInformation("📧 Preparing email to {To} with {BccCount} BCC recipients", to, bcc?.Count ?? 0);
+        _logger.LogInformation("Preparing email to {To} with {BccCount} BCC recipients", to, bcc?.Count ?? 0);
 
         var message = new EmailMessage
         {
