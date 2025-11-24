@@ -24,12 +24,14 @@ namespace UCode.Desktop.ViewModels
         private bool _isSubmitting;
         private bool _hasRunSuccessfully;
         private string _lastRunCode;
+        private NavigationService _navigationService;
 
-        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService)
+        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService, NavigationService navigationService)
         {
             _problemService = problemService;
             _submissionService = submissionService;
             _authService = authService;
+            _navigationService = navigationService;
             _problem = new Problem();
             _code = "// Your code here";
             _output = string.Empty;
@@ -485,14 +487,7 @@ namespace UCode.Desktop.ViewModels
 
         private void NavigateBack()
         {
-            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
-            {
-                if (window is Views.Students.ProblemSolverWindow)
-                {
-                    window.Close();
-                    break;
-                }
-            }
+            _navigationService.GoBack();
         }
 
         private void ViewSubmissionDetail(Submission submission)

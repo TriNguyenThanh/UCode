@@ -9,11 +9,24 @@ namespace UCode.Desktop.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            string trueText = "Có";
+            string falseText = "Không";
+
+            if (parameter is string paramString && paramString.Contains("|"))
+            {
+                var parts = paramString.Split('|');
+                if (parts.Length >= 2)
+                {
+                    trueText = parts[0];
+                    falseText = parts[1];
+                }
+            }
+
             if (value is bool boolValue)
             {
-                return boolValue ? "Có" : "Không";
+                return boolValue ? trueText : falseText;
             }
-            return "Không";
+            return falseText;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

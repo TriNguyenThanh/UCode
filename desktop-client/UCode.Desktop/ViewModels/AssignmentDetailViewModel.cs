@@ -192,16 +192,15 @@ namespace UCode.Desktop.ViewModels
                     return;
                 }
 
-                // Note: ProblemSolverPage chưa được tạo, tạm thời giữ window cho problem solver
-                // TODO: Chuyển sang ProblemSolverPage khi có yêu cầu
-                var problemWindow = App.ServiceProvider.GetService(typeof(Views.Students.ProblemSolverWindow)) as Views.Students.ProblemSolverWindow;
-                if (problemWindow == null)
+                // Navigate to ProblemSolverPage
+                var problemPage = App.ServiceProvider.GetService(typeof(Pages.ProblemSolverPage)) as Pages.ProblemSolverPage;
+                if (problemPage == null)
                 {
-                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverWindow. Vui lòng kiểm tra DI configuration.");
+                    await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Không thể tạo ProblemSolverPage. Vui lòng kiểm tra DI configuration.");
                     return;
                 }
 
-                var viewModel = problemWindow.DataContext as ProblemSolverViewModel;
+                var viewModel = problemPage.DataContext as ProblemSolverViewModel;
                 if (viewModel == null)
                 {
                     await GetMetroWindow()?.ShowMessageAsync("Lỗi", "ProblemSolverViewModel không tồn tại trong DataContext");
@@ -209,7 +208,7 @@ namespace UCode.Desktop.ViewModels
                 }
 
                 await viewModel.InitializeAsync(_assignmentId, problemId);
-                problemWindow.Show();
+                _navigationService.NavigateTo(problemPage);
             }
             catch (System.Exception ex)
             {

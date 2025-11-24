@@ -91,6 +91,9 @@ namespace UCode.Desktop.Views
                 // Clear user session
                 _authService.Logout();
                 
+                // Reset shutdown mode to prevent app from closing
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                
                 // Close this window and show login
                 var loginViewModel = App.ServiceProvider?.GetService(typeof(ViewModels.LoginViewModel)) as ViewModels.LoginViewModel;
                 var loginWindow = new LoginWindow(loginViewModel, _authService);

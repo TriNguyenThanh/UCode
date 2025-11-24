@@ -67,6 +67,10 @@ namespace UCode.Desktop.Views
                 if (result == MessageDialogResult.Affirmative)
                 {
                     _authService.Logout();
+                    
+                    // Reset shutdown mode to prevent app from closing
+                    Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                    
                     var loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
                     loginWindow.Show();
                     Close();

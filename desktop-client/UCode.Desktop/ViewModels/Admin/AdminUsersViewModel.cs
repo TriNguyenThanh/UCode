@@ -103,7 +103,7 @@ namespace UCode.Desktop.ViewModels.Admin
         private int _currentPage = 1;
         private int _totalPages = 1;
         private int _totalUsers = 0;
-        private const int PageSize = 20;
+        private const int PageSize = 50;
 
         public ObservableCollection<UserItem> Users { get; } = new();
         public List<string> Roles { get; } = new() { "All", "Student", "Teacher", "Admin" };
@@ -124,7 +124,7 @@ namespace UCode.Desktop.ViewModels.Admin
             {
                 if (SetProperty(ref _searchTerm, value))
                 {
-                    _ = SearchUsersAsync();
+                    // _ = SearchUsersAsync();
                 }
             }
         }
@@ -219,12 +219,27 @@ namespace UCode.Desktop.ViewModels.Admin
             ExportCommand = new RelayCommand(async _ => await ExportUsersAsync());
             NextPageCommand = new RelayCommand(async _ => await NextPageAsync(), (Predicate<object>)(_ => CurrentPage < TotalPages));
             PreviousPageCommand = new RelayCommand(async _ => await PreviousPageAsync(), (Predicate<object>)(_ => CurrentPage > 1));
-            RefreshCommand = new RelayCommand(async _ => await LoadUsersAsync());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
         }
 
         public async Task InitializeAsync()
         {
             await LoadUsersAsync();
+        }
+
+        public async Task RefreshAsync()
+        {
+            //clear bộ search và lọc
+            SearchTerm = string.Empty;
+            SelectedRole = "All";
+            SelectedStatus = "All";
+            
+            await LoadUsersAsync();
+
+            OnPropertyChanged(nameof(SearchTerm));
+            OnPropertyChanged(nameof(SelectedRole));
+            OnPropertyChanged(nameof(SelectedStatus));
+
         }
 
         public async Task LoadUsersAsync()

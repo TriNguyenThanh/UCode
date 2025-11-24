@@ -247,7 +247,7 @@ public partial class App : Application
         services.AddTransient<MainWindow>();
         // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
-        services.AddTransient<ProblemSolverWindow>();
+        // services.AddTransient<ProblemSolverWindow>(); // ← Đã chuyển sang Page
 
         // Views - Admin
         services.AddTransient<Views.AdminMainWindow>();
@@ -292,6 +292,7 @@ public partial class App : Application
         // Pages - Student (for navigation)
         services.AddTransient<Views.Students.ClassDetailPage>();
         services.AddTransient<Views.Students.AssignmentDetailPage>();
+        services.AddTransient<Pages.ProblemSolverPage>();
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();

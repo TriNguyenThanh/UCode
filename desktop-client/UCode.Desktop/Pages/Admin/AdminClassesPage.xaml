@@ -35,27 +35,7 @@
                 </StackPanel>
 
                 <Button Grid.Column="2" Command="{Binding RefreshCommand}"
-                        Background="#191970" Foreground="White" BorderThickness="0"
-                        Padding="20,12" Cursor="Hand">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" 
-                                                CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#0d1a4d"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
+                        Style="{StaticResource NavyButton}">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18" 
                                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -108,27 +88,7 @@
                                       FontSize="14" Padding="12"/>
 
                             <Button Grid.Column="2" Command="{Binding SearchCommand}"
-                                    Background="#007bff" Foreground="White" BorderThickness="0"
-                                    Padding="25,10" Cursor="Hand">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}" 
-                                                            CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#0056b3"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
+                                    Style="{StaticResource PrimaryButton}">
                                 <StackPanel Orientation="Horizontal">
                                     <iconPacks:PackIconMaterial Kind="Magnify" Width="18" Height="18" 
                                                                VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -146,31 +106,9 @@
                     </Border.Effect>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                         <Button Command="{Binding BulkArchiveCommand}" 
-                                Background="#ffc107" Foreground="White" BorderThickness="0"
-                                Padding="15,12" Margin="0,0,10,0" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
-                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#e0a800"/>
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                            <Setter Property="Cursor" Value="Arrow"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
+                                Style="{StaticResource WarningButton}"
+                                Margin="0,0,10,0"
+                                IsEnabled="{Binding HasActiveSelection}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="Archive" Width="16" Height="16" 
                                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -179,31 +117,9 @@
                         </Button>
 
                         <Button Command="{Binding BulkUnarchiveCommand}" 
-                                Background="#28a745" Foreground="White" BorderThickness="0"
-                                Padding="15,12" Margin="0,0,10,0" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
-                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#218838"/>
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                            <Setter Property="Cursor" Value="Arrow"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
+                                Style="{StaticResource SuccessButton}"
+                                Margin="0,0,10,0"
+                                IsEnabled="{Binding HasArchivedSelection}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="ArchiveArrowUp" Width="16" Height="16" 
                                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -212,31 +128,7 @@
                         </Button>
 
                         <Button Command="{Binding BulkDeleteCommand}" 
-                                Background="#dc3545" Foreground="White" BorderThickness="0"
-                                Padding="15,12" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
-                                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#c82333"/>
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                            <Setter Property="Cursor" Value="Arrow"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
+                                Style="{StaticResource DangerButton}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16" 
                                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -247,64 +139,20 @@
                 </Border>
 
                 <!-- Classes DataGrid -->
-                <Border Background="White" CornerRadius="8" Padding="0" Margin="0,0,0,20">
-                    <Border.Effect>
-                        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
-                    </Border.Effect>
+                <Border Style="{StaticResource RoundedDataGridContainer}" Margin="0,0,0,20">
                     <DataGrid ItemsSource="{Binding Classes}" 
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              IsReadOnly="True"
-                              SelectionMode="Single"
-                              GridLinesVisibility="None"
-                              HeadersVisibility="Column"
-                              RowHeight="60"
-                              BorderThickness="0"
-                              Background="White"
-                              EnableRowVirtualization="False"
-                              VirtualizingPanel.IsVirtualizing="False">
+                              Style="{StaticResource ModernDataGrid}"
+                              ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                              RowStyle="{StaticResource ModernDataGridRow}"
+                              CellStyle="{StaticResource ModernDataGridCell}">
                         
-                        <DataGrid.ColumnHeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#f8f9fa"/>
-                                <Setter Property="Foreground" Value="#191970"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="14"/>
-                                <Setter Property="Padding" Value="15,12"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Setter Property="BorderBrush" Value="#e9ecef"/>
-                            </Style>
-                        </DataGrid.ColumnHeaderStyle>
-
-                        <DataGrid.RowStyle>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="Background" Value="White"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#f8f9fa"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.RowStyle>
-
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Padding" Value="15,0"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGrid.CellStyle>
-
                         <DataGrid.Columns>
                             <!-- Checkbox -->
                             <DataGridTemplateColumn Width="50">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                  Style="{StaticResource SelectionCheckBox}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -328,9 +176,9 @@
                             <DataGridTemplateColumn Header="Trạng thái" Width="150">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Center">
+                                        <Border>
                                             <Border.Style>
-                                                <Style TargetType="Border">
+                                                <Style TargetType="Border" BasedOn="{StaticResource StatusBadge}">
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsArchived}" Value="True">
                                                             <Setter Property="Background" Value="#6c757d"/>
@@ -356,55 +204,54 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            <Button Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"
-                                                    Background="#17a2b8" Foreground="White" BorderThickness="0"
-                                                    Width="35" Height="35" Cursor="Hand" Margin="0,0,5,0"
+                                                    Style="{StaticResource InfoActionButton}"
+                                                    Margin="0,0,5,0"
                                                     ToolTip="Xem chi tiết">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#138496"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
                                                 <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16"/>
                                             </Button>
 
-                                            <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            <!-- Archive Button (Visible if NOT Archived) -->
+                                             <!--<Button Command="{Binding DataContext.ArchiveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"
-                                                    Background="#dc3545" Foreground="White" BorderThickness="0"
-                                                    Width="35" Height="35" Cursor="Hand"
-                                                    ToolTip="Xóa lớp học">
+                                                    Margin="0,0,5,0"
+                                                    ToolTip="Lưu trữ">
                                                 <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource WarningActionButton}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#c82333"/>
-                                                            </Trigger>
+                                                            <DataTrigger Binding="{Binding IsArchived}" Value="False">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
+                                                <iconPacks:PackIconMaterial Kind="Archive" Width="16" Height="16"/>
+                                            </Button> -->
+
+                                            <!-- Unarchive Button (Visible if Archived) -->
+                                            <!-- <Button Command="{Binding DataContext.UnarchiveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Margin="0,0,5,0"
+                                                    ToolTip="Khôi phục">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource SuccessActionButton}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsArchived}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <iconPacks:PackIconMaterial Kind="ArchiveArrowUp" Width="16" Height="16"/>
+                                            </Button> -->
+
+                                            <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource DangerActionButton}"
+                                                    ToolTip="Xóa lớp học">
                                                 <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
                                             </Button>
                                         </StackPanel>
