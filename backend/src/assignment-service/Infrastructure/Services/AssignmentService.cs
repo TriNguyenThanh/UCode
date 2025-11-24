@@ -13,11 +13,12 @@ public class AssignmentService : IAssignmentService
 {
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly IUserServiceClient _userServiceClient;
-
-    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient)
+    private readonly IEmailService _emailService;
+    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient, IEmailService emailService)
     {
         _assignmentRepository = assignmentRepository;
         _userServiceClient = userServiceClient;
+        _emailService = emailService;
     }
 
     public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
@@ -26,6 +27,7 @@ public class AssignmentService : IAssignmentService
         {
             assignment.AssignmentId = Guid.NewGuid();
             assignment.AssignedAt = DateTime.UtcNow;
+            assignment.TotalPoints = 0;
 
             var createdAssignment = await _assignmentRepository.AddAsync(assignment);
 
@@ -47,6 +49,30 @@ public class AssignmentService : IAssignmentService
                 }).ToList();
 
                 await _assignmentRepository.AddAssignmentUsersAsync(details);
+                
+                var endDate = createdAssignment.EndTime?.ToString("dd/MM/yyyy HH:mm") ?? "Không có thời hạn";
+                var userEmails = await _userServiceClient.GetUserEmailByIdAsync(userIds);
+                Console.WriteLine($"[✅] Retrieved {userEmails.Count} user emails for assignment notification.");
+                // ✅ ĐÚNG: Enqueue ngay, không cần Task.Run
+                try
+                {
+                    await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                    {
+                        To = userEmails.First(),
+                        Bcc = userEmails.Skip(1).ToList(),
+                        Subject = "Bài tập mới đã được tạo và giao cho bạn",
+                        HtmlContent = EmailTemplates.NewAssignment(
+                            createdAssignment.Title,
+                            endDate,
+                            createdAssignment.Description ?? string.Empty)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // ✅ Log error nhưng không fail request
+                    Console.WriteLine($"⚠️ Failed to enqueue email: {ex.Message}");
+                    // Optional: Log to monitoring system
+                }
             }
 
             return createdAssignment;
@@ -218,6 +244,22 @@ public class AssignmentService : IAssignmentService
         catch (Exception ex)
         {
             throw new ApiException($"Error retrieving assignment user: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    {
+        try
+        {
+            return await _assignmentRepository.DeleteAssignmentUserByUserIdAsync(userId);
+        }
+        catch (DbException ex)
+        {
+            throw new ApiException($"Database error while deleting assignment user: {ex.Message}", 500);
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error deleting assignment user: {ex.Message}", 500);
         }
     }
 
@@ -462,7 +504,7 @@ public class AssignmentService : IAssignmentService
                 if (newStudentIds.Any())
                 {
                     var maxScore = await _assignmentRepository.GetAssignmentMaxScoreAsync(assignment.AssignmentId);
-                    
+
                     var newAssignmentUsers = newStudentIds.Select(studentId => new AssignmentUser
                     {
                         AssignmentUserId = Guid.NewGuid(),
@@ -496,7 +538,7 @@ public class AssignmentService : IAssignmentService
 
             assignmentUser.TabSwitchCount++;
             await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
-            
+
             return assignmentUser;
         }
         catch (Exception ex)
@@ -505,7 +547,7 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId)
+    public async Task<AssignmentUser> IncrementCapturedAICountAsync(Guid assignmentId, Guid userId, string? aiDetectionDetails = null)
     {
         try
         {
@@ -513,9 +555,35 @@ public class AssignmentService : IAssignmentService
             if (assignmentUser == null)
                 throw new ApiException("Assignment detail not found", 404);
 
+            // Lưu chi tiết AI detection dạng Dictionary<string, int> và cộng dồn từng loại
+            var existingDetails = string.IsNullOrEmpty(assignmentUser.AIDetectionDetails)
+                ? new Dictionary<string, int>()
+                : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(assignmentUser.AIDetectionDetails)!;
+
+            if (string.IsNullOrEmpty(aiDetectionDetails) || aiDetectionDetails == "{}")
+            {
+                return assignmentUser;
+            }
+
+            // Parse aiDetectionDetails (body mới) thành Dictionary<string, int>
+            var newDetails = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(aiDetectionDetails)!;
+
+            foreach (var kv in newDetails)
+            {
+                if (existingDetails.ContainsKey(kv.Key))
+                {
+                    existingDetails[kv.Key] += kv.Value;
+                }
+                else
+                {
+                    existingDetails[kv.Key] = kv.Value;
+                }
+            }
+
             assignmentUser.CapturedAICount++;
+            assignmentUser.AIDetectionDetails = System.Text.Json.JsonSerializer.Serialize(existingDetails);
+
             await _assignmentRepository.UpdateAssignmentUserAsync(assignmentUser);
-            
             return assignmentUser;
         }
         catch (Exception ex)

@@ -16,6 +16,13 @@ namespace UCode.Desktop.ViewModels
         private bool _rememberMe;
         private string _errorMessage;
         private bool _isLoading;
+        private bool _showPassword;
+
+        public bool ShowPassword
+        {
+            get => _showPassword;
+            set => SetProperty(ref _showPassword, value);
+        }
 
         public string Username
         {
@@ -48,6 +55,7 @@ namespace UCode.Desktop.ViewModels
         }
 
         public ICommand LoginCommand { get; }
+        public ICommand TogglePasswordVisibilityCommand { get; }
 
         public event EventHandler<bool> LoginCompleted;
 
@@ -55,6 +63,7 @@ namespace UCode.Desktop.ViewModels
         {
             _authService = authService;
             LoginCommand = new RelayCommand(async _ => await ExecuteLoginAsync(), _ => CanLogin());
+            TogglePasswordVisibilityCommand = new RelayCommand(_ => ShowPassword = !ShowPassword);
         }
 
         private bool CanLogin()

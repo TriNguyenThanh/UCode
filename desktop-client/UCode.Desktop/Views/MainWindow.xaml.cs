@@ -1,13 +1,16 @@
 using System;
 using System.Windows;
 using MahApps.Metro.Controls;
+using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Views
 {
     public partial class MainWindow : MetroWindow
     {
-        public MainWindow(MainViewModel viewModel)
+        private readonly NavigationService _navigationService;
+
+        public MainWindow(MainViewModel viewModel, NavigationService navigationService)
         {
             try
             {
@@ -18,14 +21,26 @@ namespace UCode.Desktop.Views
                 System.IO.File.AppendAllText(logPath, "InitializeComponent completed\n");
 
                 DataContext = viewModel;
-                System.IO.File.AppendAllText(logPath, "DataContext set\n");
+                _navigationService = navigationService;
+                System.IO.File.AppendAllText(logPath, "DataContext and NavigationService set\n");
 
                 // Load data when window loads
                 Loaded += async (s, e) =>
                 {
                     try
                     {
-                        System.IO.File.AppendAllText(logPath, "Window Loaded event fired. Loading data...\n");
+                        System.IO.File.AppendAllText(logPath, "Window Loaded event fired. Initializing NavigationService...\n");
+
+                        // Setup NavigationFrame
+                        _navigationService.SetFrame(NavigationFrame);
+
+                        // Hide HomeScrollViewer when navigating
+                        _navigationService.CanGoBackChanged += (sender, canGoBack) =>
+                        {
+                            HomeScrollViewer.Visibility = canGoBack ? Visibility.Collapsed : Visibility.Visible;
+                        };
+
+                        System.IO.File.AppendAllText(logPath, "NavigationService initialized. Loading data...\n");
                         await viewModel.LoadDataAsync();
                         System.IO.File.AppendAllText(logPath, "LoadDataAsync completed\n");
                     }
@@ -44,6 +59,50 @@ namespace UCode.Desktop.Views
                 System.IO.File.WriteAllText(logPath, $"FATAL ERROR in MainWindow constructor: {ex.Message}\n{ex.StackTrace}\n\nInner: {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}");
                 MessageBox.Show($"Fatal error creating main window: {ex.Message}", "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
+            }
+        }
+
+        private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // For MainWindow (student), we don't have NavigationService
+                // So we need to show it in a dialog or separate window
+                // Let's create a simple navigation window
+                var settingsWindow = new Window
+                {
+                    Title = "Cài đặt",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
+                };
+                settingsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // For students, show settings page in a window
+                var settingsWindow = new Window
+                {
+                    Title = "Hồ sơ",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
+                };
+                settingsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

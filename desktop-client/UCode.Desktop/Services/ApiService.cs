@@ -15,7 +15,7 @@ namespace UCode.Desktop.Services
         private string _accessToken;
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
-            Converters = { new UtcToLocalDateTimeConverter() }
+            Converters = { new VietnamDateTimeConverter() }  // Xử lý cả serialize và deserialize
         };
 
         public ApiService(HttpClient httpClient)
@@ -48,6 +48,12 @@ namespace UCode.Desktop.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Log successful GET response for debugging
+                    if (endpoint.Contains("problems"))
+                    {
+                        Console.WriteLine($"[API GET] Endpoint: {endpoint}");
+                        Console.WriteLine($"[API GET] Response: {content}");
+                    }
                     return JsonConvert.DeserializeObject<ApiResponse<T>>(content, JsonSettings);
                 }
 
@@ -73,30 +79,42 @@ namespace UCode.Desktop.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(data);
+                var json = JsonConvert.SerializeObject(data, JsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Log request
+                System.Diagnostics.Debug.WriteLine($"[API POST] Endpoint: {endpoint}");
+                System.Diagnostics.Debug.WriteLine($"[API POST] Request JSON: {json}");
 
                 var response = await _httpClient.PostAsync(endpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
+
+                // Log response
+                System.Diagnostics.Debug.WriteLine($"[API POST] Status Code: {(int)response.StatusCode} {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[API POST] Response Content: {responseContent}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent, JsonSettings);
                 }
 
+                // Log error with details
+                System.Diagnostics.Debug.WriteLine($"[API POST] Request FAILED - Status: {response.StatusCode}");
+                
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent, JsonSettings);
                 return new ApiResponse<T>
                 {
                     Success = false,
-                    Message = errorResponse?.Message ?? "Request failed"
+                    Message = errorResponse?.Message ?? $"Request failed with status {(int)response.StatusCode}: {response.ReasonPhrase}"
                 };
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API POST] Exception: {ex}");
                 return new ApiResponse<T>
                 {
                     Success = false,
-                    Message = ex.Message
+                    Message = $"Exception: {ex.Message}"
                 };
             }
         }
@@ -105,7 +123,7 @@ namespace UCode.Desktop.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(data);
+                var json = JsonConvert.SerializeObject(data, JsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync(endpoint, content);

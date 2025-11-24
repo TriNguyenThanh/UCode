@@ -458,4 +458,11 @@ public class AssignmentRepository : IAssignmentRepository
             .OrderBy(log => log.Timestamp)
             .ToListAsync();
     }
+
+    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    {
+        return await _context.AssignmentUsers
+            .Where(au => au.UserId == userId)
+            .ExecuteDeleteAsync() > 0;
+    }
 }

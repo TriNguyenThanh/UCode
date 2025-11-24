@@ -1,14 +1,16 @@
+using StatsPerProblemResponse = AssignmentService.Application.DTOs.Responses.StatsPerProblemResponse;
 using AssignmentService.Domain.Entities;
-
 namespace AssignmentService.Application.Interfaces.Services;
 
 public interface ISubmissionService
 {
     Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId);
+    Task<int> GetTotalSubmissionCountPerProblemIdAndAssignment(Guid assignmentId, Guid problemId);
     Task<int> GetNumberOfSubmission(Guid userId);
     Task<Submission> GetSubmission(Guid submissionId);
     Task<List<Submission>> GetAllUserSubmission(Guid userId, int pageNumber = 1, int pageSize = 10);
     Task<List<Submission>> GetAllSubmissionProblem(Guid problemId, Guid userId, int pageNumber, int pageSize);
+    Task<List<Submission>> GetAllSubmissionByAssignmentAndProblem(Guid assignmentId, Guid problemId, int pageNumber, int pageSize);
     Task<List<BestSubmission>> GetBestSubmissionByProblemId(Guid assignmentId, Guid problemId, int pageNumber, int pageSize);
     Task<BestSubmission?> GetBestSubmission(Guid assignmentId, Guid problemId, Guid userId);
     Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId);
@@ -16,7 +18,9 @@ public interface ISubmissionService
     Task<Submission> RunCode(Submission submission);
     Task<bool> UpdateSubmission(Submission submission);
     Task<int> Getscore(Submission submission);
-    Task UpdateSubmissionByTeacher(Submission submission);
+    Task<bool> UpdateSubmissionByTeacher(Submission submission);
+
+    Task<StatsPerProblemResponse> GetStatsPerProblem(Guid assignmentId, Guid problemId);
     // Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status);
     // Task<bool> DeleteSubmission(Guid submissionId);
     // Task<bool> DeleteSubmissionByProblemId(Guid problemId);

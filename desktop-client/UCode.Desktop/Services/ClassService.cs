@@ -7,10 +7,12 @@ namespace UCode.Desktop.Services
     public class ClassService
     {
         private readonly ApiService _apiService;
+        private readonly AuthService _authService;
 
-        public ClassService(ApiService apiService)
+        public ClassService(ApiService apiService, AuthService authService)
         {
             _apiService = apiService;
+            _authService = authService;
         }
 
         public async Task<ApiResponse<Class>> GetClassByIdAsync(string classId)
@@ -26,6 +28,18 @@ namespace UCode.Desktop.Services
         public async Task<ApiResponse<Class>> CreateClassAsync(CreateClassRequest request)
         {
             return await _apiService.PostAsync<Class>("/api/v1/classes/create", request);
+        }
+
+        public async Task<ApiResponse<Class>> CreateClassAsync(string name, string classCode, string description)
+        {
+            var request = new CreateClassRequest
+            {
+                Name = name,
+                ClassCode = classCode,
+                Description = description,
+                TeacherId = _authService.CurrentUser.UserId
+            };
+            return await CreateClassAsync(request);
         }
 
         public async Task<ApiResponse<Class>> UpdateClassAsync(string classId, UpdateClassRequest request)
@@ -124,10 +138,12 @@ namespace UCode.Desktop.Services
     public class CreateStudentRequest
     {
         public string StudentCode { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Major { get; set; } = string.Empty;
         public int? ClassYear { get; set; }
+        public int EnrollmentYear { get; set; }
     }
 
     public class BulkEnrollResult
@@ -141,6 +157,8 @@ namespace UCode.Desktop.Services
     public class BulkEnrollStudentResult
     {
         public string StudentId { get; set; } = string.Empty;
+        public string StudentCode { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public bool Success { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
     }

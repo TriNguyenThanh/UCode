@@ -1,0 +1,38 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    classes ||--o{ AttendanceSession : "has_sessions"
+    AttendanceSession ||--o{ AttendanceRecord : "contains_records"
+    users ||--o{ AttendanceRecord : "performs_attendance"
+
+    AttendanceSession {
+        UUID id PK
+        UUID class_id FK "Lop duoc diem danh"
+        nvarchar_100_ title "VD: Diem danh tuan 1"
+        nvarchar_50_ session_code "Ma unique de tao URL diem danh"
+        datetime2 start_time "Thoi gian bat dau mo link"
+        datetime2 end_time "Thoi gian link het han"
+        bit require_ip_check "Cau hinh: Bat buoc check IP"
+        nvarchar_50_ allowed_ip_subnet "IP/Subnet cho phep (VD: 192.168.1.1)"
+        bit require_gps_check "Cau hinh: Bat buoc check GPS"
+        decimal_9_6_ allowed_latitude "Vi do cho phep"
+        decimal_9_6_ allowed_longitude "Kinh do cho phep"
+        int allowed_radius_meters "Ban kinh cho phep (met)"
+        bit is_active
+        datetime2 created_at
+    }
+    AttendanceRecord {
+        UUID id PK
+        UUID session_id FK "Link toi phien diem danh"
+        UUID user_id FK "Sinh vien diem danh"
+        datetime2 attended_at "Thoi gian thuc hien"
+        nvarchar_50_ ip_address "IP thuc te cua SV"
+        decimal_9_6_ latitude "Vi do thuc te cua SV"
+        decimal_9_6_ longitude "Kinh do thuc te cua SV"
+        nvarchar_500_ user_agent "Thiet bi su dung"
+	nvarchar_500_ device_id "Dinh danh thiet bi"
+        bit is_valid "Ket qua so sanh voi Config (True/False)"
+        nvarchar_200_ invalid_reason "Ly do fail (VD: Wrong IP, Too far)"
+    }

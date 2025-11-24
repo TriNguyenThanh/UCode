@@ -31,6 +31,8 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
 
         builder.Property(au => au.CapturedAICount)
             .HasDefaultValue(0);
+        builder.Property(au => au.AIDetectionDetails)
+            .HasColumnType("nvarchar(max)");
 
         // Relationships
         builder.HasOne(au => au.Assignment)
@@ -41,5 +43,7 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         // Indexes
         builder.HasIndex(au => au.AssignmentId);
         builder.HasIndex(au => au.UserId);
+        builder.HasIndex(au => new { au.AssignmentId, au.UserId })
+            .IsUnique();
     }
 }

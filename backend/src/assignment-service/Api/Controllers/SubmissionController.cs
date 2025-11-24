@@ -198,6 +198,36 @@ public class SubmissionController : ControllerBase
     }
 
     /// <summary>
+    /// Get all submissions for problem of assignment 
+    /// </summary>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="pageNumber">The page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
+    /// <returns>Returns a paginated list of submissions for the problem</returns>
+    /// <response code="200">Submissions retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}")]
+    [RequireRole("teacher,admin")]
+    [ProducesResponseType(typeof(ApiResponse<List<SubmissionResponse>>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetAllSubmissionsByAssignmentAndProblem(Guid assignmentId, Guid problemId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var submissions = await _submissionService.GetAllSubmissionByAssignmentAndProblem(assignmentId, problemId, pageNumber, pageSize);
+        var response = _mapper.Map<List<SubmissionResponse>>(submissions);
+        var pagedResult = new PagedResultDto<SubmissionResponse>
+        {
+            Items = response,
+            Page = pageNumber,
+            PageSize = pageSize,
+            Total = response.Count
+        };
+        return Ok(ApiResponse<PagedResultDto<SubmissionResponse>>.SuccessResponse(pagedResult, $"Retrieved {response.Count} submissions for problem"));
+    }
+
+    /// <summary>
     /// Get best submissions (leaderboard) for a specific problem in an assignment
     /// </summary>
     /// <param name="assignmentUserId">The unique identifier of the assignment</param>
@@ -285,6 +315,49 @@ public class SubmissionController : ControllerBase
     }
 
     /// <summary>
+    /// Get the number of submissions for a specific problem FOR TEACHER WATCH STUDENT
+    /// </summary>
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <returns>Returns the count of submissions for the problem</returns>
+    /// <response code="200">Count retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/total-count")]
+    [RequireRole("teacher,admin")]
+    [ProducesResponseType(typeof(ApiResponse<int>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetTotalSubmissionCountPerProblem(Guid assignmentId, Guid problemId)
+    {
+        var count = await _submissionService.GetTotalSubmissionCountPerProblemIdAndAssignment(assignmentId, problemId);
+        
+        return Ok(ApiResponse<int>.SuccessResponse(count, "Problem submission count retrieved successfully"));
+    }
+
+    
+    /// <summary>
+    /// Stats
+    /// </summary>
+    /// <param name="assignmentId">The unique identifier of the assignment</param>
+    /// <param name="problemId">The unique identifier of the problem</param>
+    /// <returns>Returns the count of submissions for the problem</returns>
+    /// <response code="200">Count retrieved successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/stats")]
+    [RequireRole("teacher,admin")]
+    [ProducesResponseType(typeof(ApiResponse<StatsPerProblemResponse>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetStatsPerProblem(Guid assignmentId, Guid problemId)
+    {
+        var stats = await _submissionService.GetStatsPerProblem(assignmentId, problemId);
+        
+        return Ok(ApiResponse<StatsPerProblemResponse>.SuccessResponse(stats, "Problem stats retrieved successfully"));
+    }
+
+    /// <summary>
     /// Get a specific best submission by submission ID
     /// </summary>
     /// <param name="assignmentId">The unique identifier of the assignment</param>
@@ -294,7 +367,7 @@ public class SubmissionController : ControllerBase
     /// <response code="404">Best submission not found</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    /// chỉ dành cho student xem best submission của mình thôi
+    /// for student to get his/her best submission for a problem in an assignment
     [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/my-best")]
     [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -302,47 +375,42 @@ public class SubmissionController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> GetBestSubmission(Guid assignmentId, Guid problemId)
     {
-        var userId = GetAuthenticatedUserId();
-        var bestSubmission = await _submissionService.GetBestSubmission(assignmentId, problemId, userId);
-        
+        var bestSubmission = await _submissionService.GetBestSubmission(assignmentId, problemId, GetAuthenticatedUserId());
+
         if (bestSubmission == null)
             return NotFound(ApiResponse<BestSubmissionResponse>.ErrorResponse("Best submission not found"));
 
         var response = _mapper.Map<BestSubmissionResponse>(bestSubmission);
         return Ok(ApiResponse<BestSubmissionResponse>.SuccessResponse(response, "Best submission retrieved successfully"));
     }
-
-    // Additional endpoints can be added here as needed
-    
+    public record UpdateBestSubmissionScoreRequest(Guid SubmissionId, int NewScore, string Comment);
     /// <summary>
     /// Get a specific best submission by submission ID
     /// </summary>
-    /// <param name="assignmentId">The unique identifier of the assignment</param>
-    /// <param name="problemId">The unique identifier of the problem</param>
-    /// <param name="userId">The unique identifier of the user</param>
+    /// <param name="request">The request containing the new score and submission ID to update for the best submission</param>
     /// <returns>Returns the best submission details if found</returns>
     /// <response code="200">Best submission retrieved successfully</response>
     /// <response code="404">Best submission not found</response>
     /// <response code="401">Unauthorized</response>
     /// <response code="500">Internal server error</response>
-    /// chỉ dành cho student xem best submission của mình thôi
-    [HttpGet("assignment/{assignmentId:guid}/problem/{problemId:guid}/best/{userId:guid}")]
-    [RequireRole("teacher,admin")]
-    [ProducesResponseType(typeof(ApiResponse<BestSubmissionResponse>), 200)]
+    /// <response code="400">Bad request</response>
+    [RequireRole("teacher, admin")]
+    [HttpPut("update-score")]
+    [ProducesResponseType(typeof(ApiResponse<Submission>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> GetBestSubmissionByUser(Guid assignmentId, Guid problemId, Guid userId)
+    public async Task<IActionResult> UpdateBestSubmissionScore([FromBody] UpdateBestSubmissionScoreRequest request)
     {
         var submission = await _submissionService.GetSubmission(request.SubmissionId);
 
         if (submission == null)
             return NotFound(ApiResponse<Submission>.ErrorResponse("Best submission not found"));
-        submission.Score = request.NewScore;
+        
+        // submission.Score = request.NewScore;
         submission.Comment = request.Comment;
-        await _submissionService.UpdateSubmissionByTeacher(submission);
+        // await _submissionService.UpdateSubmissionByTeacher(submission); //bỏ nha, không dùng nha, dùng là bị cộng dồn bị lỗi đó
         var response = _mapper.Map<Submission>(submission);
-        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission retrieved successfully"));
+        return Ok(ApiResponse<Submission>.SuccessResponse(response, "Best submission score updated successfully"));
     }
-
 }

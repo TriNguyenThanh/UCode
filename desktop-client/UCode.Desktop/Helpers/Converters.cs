@@ -49,6 +49,19 @@ namespace UCode.Desktop.Helpers
         }
     }
 
+    public class NullToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value != null && !string.IsNullOrEmpty(value.ToString()) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class StringToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -136,6 +149,30 @@ namespace UCode.Desktop.Helpers
                 };
             }
             return value?.ToString() ?? string.Empty;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AssignmentTypeToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Models.AssignmentType type)
+            {
+                var colorString = type switch
+                {
+                    Models.AssignmentType.PRACTICE => "#FFC107", // Vàng cho Luyện tập
+                    Models.AssignmentType.HOMEWORK => "#FF9800", // Cam cho Bài tập về nhà  
+                    Models.AssignmentType.EXAMINATION => "#F44336", // Đỏ cho Bài kiểm tra
+                    _ => "#2196F3" // Xanh mặc định
+                };
+                return (SolidColorBrush)new BrushConverter().ConvertFromString(colorString);
+            }
+            return Brushes.Gray;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -368,4 +405,250 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+    
+    public class CountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int count)
+            {
+                return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts user role to brush color for display
+    /// Admin -> Red, Teacher -> Blue, Student -> Green
+    /// </summary>
+    public class RoleToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string role)
+            {
+                return role.ToUpper() switch
+                {
+                    "ADMIN" => new SolidColorBrush(Color.FromRgb(220, 38, 38)),    // Red
+                    "TEACHER" => new SolidColorBrush(Color.FromRgb(59, 130, 246)), // Blue
+                    "STUDENT" => new SolidColorBrush(Color.FromRgb(34, 197, 94)),  // Green
+                    _ => new SolidColorBrush(Color.FromRgb(156, 163, 175))         // Gray
+                };
+            }
+            return new SolidColorBrush(Color.FromRgb(156, 163, 175));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class InverseCountToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int count)
+            {
+                return count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+    /// <summary>
+    /// Converts active status to brush color for display
+    /// Active -> Green, Inactive -> Red
+    /// </summary>
+    public class StatusToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isActive)
+            {
+                return isActive
+                    ? new SolidColorBrush(Color.FromRgb(34, 197, 94))  // Green
+                    : new SolidColorBrush(Color.FromRgb(220, 38, 38)); // Red
+            }
+            return new SolidColorBrush(Color.FromRgb(156, 163, 175)); // Gray
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Multi-value converter that returns true if first value is greater than second value
+    /// Used for pagination "Previous" button (enabled when Page > 1)
+    /// </summary>
+    public class GreaterThanConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] != null && values[1] != null)
+            {
+                try
+                {
+                    var value1 = System.Convert.ToDouble(values[0]);
+                    var value2 = System.Convert.ToDouble(values[1]);
+                    return value1 > value2;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Multi-value converter that returns true if first value is less than second value  
+    /// Used for pagination "Next" button (enabled when Page < TotalPages)
+    /// </summary>
+    public class LessThanConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length == 2 && values[0] != null && values[1] != null)
+            {
+                try
+                {
+                    var value1 = System.Convert.ToDouble(values[0]);
+                    var value2 = System.Convert.ToDouble(values[1]);
+                    return value1 < value2;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter for AdminLogsPage to show/hide System Logs DataGrid
+    /// </summary>
+    public class SystemLogVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString() == "System" ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter for AdminLogsPage to show/hide Activity Logs DataGrid
+    /// </summary>
+    public class ActivityLogVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString() == "Activity" ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter for AdminLogsPage to show/hide Service filter when System log type is selected
+    /// </summary>
+    public class LogTypeToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value?.ToString() == "System" ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter for AdminSettingsPage to show/hide sections based on SelectedSection
+    /// </summary>
+    public class SectionVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var selectedSection = value?.ToString();
+            var targetSection = parameter?.ToString();
+            return selectedSection == targetSection ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts boolean to color (true = green, false = gray)
+    /// </summary>
+    public class BoolToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isActive)
+            {
+                return isActive ? new SolidColorBrush(Color.FromRgb(16, 185, 129)) : new SolidColorBrush(Color.FromRgb(156, 163, 175));
+            }
+            return new SolidColorBrush(Colors.Gray);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    /// Converts null values to boolean
+    /// Returns true if value is NOT null, false if null
+    /// </summary>
+    public class NullToBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value != null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
+

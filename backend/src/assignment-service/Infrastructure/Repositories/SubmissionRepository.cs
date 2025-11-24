@@ -3,7 +3,6 @@ using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
 using AssignmentService.Application.Interfaces.Repositories;
 using AssignmentService.Infrastructure.EF;
-using System.Threading.Tasks;
 
 namespace AssignmentService.Infrastructure.Repositories;
 
@@ -33,7 +32,7 @@ public class SubmissionRepository : ISubmissionRepository
         // First, try to find if the entity is already being tracked
         var trackedEntity = _context.ChangeTracker.Entries<Submission>()
             .FirstOrDefault(e => e.Entity.SubmissionId == submissionId);
-        
+
         if (trackedEntity != null)
         {
             // If it's already tracked, just remove it directly
@@ -41,7 +40,7 @@ public class SubmissionRepository : ISubmissionRepository
             Console.WriteLine($"[x] Deleted tracked submission {submissionId} from database");
             return await _context.SaveChangesAsync() > 0;
         }
-        
+
         // If not tracked, fetch without tracking and remove
         var submission = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(p => p.SubmissionId == submissionId);
         if (submission != null)
@@ -77,7 +76,7 @@ public class SubmissionRepository : ISubmissionRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public Task Detach(Submission submission)
+    public  Task Detach(Submission submission)
     {
         _context.Entry(submission).State = EntityState.Detached;
         return Task.CompletedTask;
@@ -127,9 +126,9 @@ public class SubmissionRepository : ISubmissionRepository
             .ToListAsync();
     }
 
-    public Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId)
+    public async Task<List<BestSubmission>> GetMyBestSubmissionByAssignment(Guid assignmentId, List<Guid> problemId, Guid userId)
     {
-        return _context.BestSubmissions
+        return await _context.BestSubmissions
             .AsNoTracking()
             .Where(s => s.AssignmentId == assignmentId && problemId.Contains(s.ProblemId) && s.UserId == userId)
             .OrderByDescending(s => s.Score)
@@ -151,19 +150,27 @@ public class SubmissionRepository : ISubmissionRepository
             .FirstOrDefaultAsync();
     }
 
-    public Task<int> GetNumberOfSubmission(Guid userId)
+    public async Task<int> GetNumberOfSubmission(Guid userId)
     {
-        return _context.Submissions
+        return await _context.Submissions
             .AsNoTracking()
             .Where(s => s.UserId == userId)
             .CountAsync();
     }
 
-    public Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId)
+    public async Task<int> GetNumberOfSubmissionPerProblemId(Guid assignmentId, Guid problemId, Guid userId)
     {
-        return _context.Submissions
+        return await _context.Submissions
             .AsNoTracking()
             .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.UserId == userId)
+            .CountAsync();
+    }
+
+    public async Task<int> GetTotalSubmissionCountPerProblemIdAndAssignment(Guid assignmentId, Guid problemId)
+    {
+        return await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId)
             .CountAsync();
     }
 
@@ -181,7 +188,7 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<Submission> GetRunningSubmissionByUserAndProblem(Guid userId, Guid problemId)
     {
-        var submission =  await _context.Submissions
+        var submission = await _context.Submissions
             .AsNoTracking()
             .Where(s => s.UserId == userId && s.ProblemId == problemId && s.Status == SubmissionStatus.Running)
             .FirstOrDefaultAsync();
@@ -196,15 +203,73 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<bool> UpdateSubmission(Submission submission)
     {
-        var _submisison = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submission.SubmissionId);
-        if (_submisison != null)
+        // var _submisison = await _context.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.SubmissionId == submission.SubmissionId);
+        // if (_submisison != null)
+        // {
+
+        // }
+        try
         {
             _context.Submissions.Update(submission);
             Console.WriteLine($"[x] Updated submission {submission.SubmissionId} in database");
             return await _context.SaveChangesAsync() > 0;
         }
-        Console.WriteLine($"[x] Submission {submission.SubmissionId} not found in database");
-        return false;
+        catch (System.Exception ex)
+        {
+            throw new Exception($"Failed to update submission {submission.SubmissionId} in database: ", ex);
+        }
+        // Console.WriteLine($"[x] Submission {submission.SubmissionId} not found in database");
+        // return false;
+    }
+
+    public async Task<List<Submission>> GetAllSubmissionByAssignmentAndProblem(Guid assignmentId, Guid problemId, int pageNumber, int pageSize)
+    {
+        try
+        {
+            var submissions =  await _context.Submissions
+                .AsNoTracking()
+                .Where(p => p.AssignmentId == assignmentId && p.ProblemId == problemId)
+                .OrderByDescending(p => p.SubmittedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return submissions;
+        }
+        catch (System.Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
+    }
+
+    public async Task<AssignmentService.Application.DTOs.Responses.StatsPerProblemResponse> GetStatsPerProblem(Guid assignmentId, Guid problemId)
+    {
+        var total = await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId)
+            .CountAsync();
+
+        var passed = await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.PassedTestcase == s.TotalTestcase)
+            .CountAsync();
+
+        var failed = await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.PassedTestcase == 0)
+            .CountAsync();
+
+        var partial = await _context.Submissions
+            .AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId && s.ProblemId == problemId && s.PassedTestcase > 0 && s.PassedTestcase < s.TotalTestcase)
+            .CountAsync();
+
+        return new AssignmentService.Application.DTOs.Responses.StatsPerProblemResponse
+        {
+            Total = total,
+            Passed = passed,
+            Failed = failed,
+            Partial = partial
+        };
     }
 
     // public async Task<bool> UpdateSubmissionStatus(Guid submissionId, SubmissionStatus status)
@@ -219,5 +284,6 @@ public class SubmissionRepository : ISubmissionRepository
     //     }
     //     Console.WriteLine($"[x] Submission {submissionId} not found in database");
     //     return false;
-    // }
+    //     public async Task<SubmissionStatsResponse> GetSubmissionStatsPerProblemIdAndAssignment(Guid assignmentId, Guid problemId)
+
 }

@@ -210,6 +210,11 @@ public class ClassAppService : IClassService
         if (student == null)
             throw new ApiException("Student not found", 404);
 
+        // Validate teacher exists
+        var teacher = await _teacherRepository.GetByIdAsync(classEntity.TeacherId);
+        if (teacher == null)
+            throw new ApiException("Class teacher not found", 404);
+
         // Check if already enrolled
         if (await _userClassRepository.ExistsAsync(studentGuid, classGuid))
             throw new ApiException("Student is already enrolled in this class");
@@ -223,13 +228,17 @@ public class ClassAppService : IClassService
         };
 
         await _userClassRepository.AddAsync(userClass);
-        
         // Sync student to all active assignments of this class (fire-and-forget)
         _ = Task.Run(async () => 
         {
             try 
             {
                 await _assignmentServiceClient.SyncStudentsToClassAssignmentsAsync(classGuid, new List<Guid> { studentGuid });
+                await _assignmentServiceClient.SendAddedToClassEmails(
+                    new List<string> { student.Email },
+                    classEntity.Name,
+                    teacher.FullName,
+                    classEntity.CreatedAt);
             }
             catch
             {
@@ -252,6 +261,11 @@ public class ClassAppService : IClassService
         // Prevent enrolling to archived classes
         if (classEntity.IsArchived)
             throw new ApiException("Cannot enroll students to archived class", 400);
+
+        // Validate teacher exists
+        var teacher = await _teacherRepository.GetByIdAsync(classEntity.TeacherId);
+        if (teacher == null)
+            throw new ApiException("Class teacher not found", 404);
 
         var userClasses = new List<UserClass>();
 
@@ -288,6 +302,20 @@ public class ClassAppService : IClassService
                 try 
                 {
                     await _assignmentServiceClient.SyncStudentsToClassAssignmentsAsync(classGuid, addedStudentIds);
+                    var studentEmails = new List<string>();
+                    foreach (var uc in userClasses)
+                    {
+                        var student = await _studentRepository.GetByIdAsync(uc.StudentId);
+                        if (student != null)
+                        {
+                            studentEmails.Add(student.Email);
+                        }
+                    }
+                    await _assignmentServiceClient.SendAddedToClassEmails(
+                        studentEmails,
+                        classEntity.Name,
+                        teacher.FullName,
+                        classEntity.CreatedAt);
                 }
                 catch
                 {
@@ -307,7 +335,25 @@ public class ClassAppService : IClassService
         if (!await _userClassRepository.ExistsAsync(studentGuid, classGuid))
             throw new ApiException("Student is not enrolled in this class", 404);
 
-        return await _userClassRepository.RemoveAsync(studentGuid, classGuid);
+        var result = await _userClassRepository.RemoveAsync(studentGuid, classGuid);
+
+        if (result)
+        {
+            // Sync delete user from assignment service (fire-and-forget)
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await _assignmentServiceClient.SyncDeleteUserAsync(studentGuid);
+                }
+                catch
+                {
+                    // Ignore errors
+                }
+            });
+        }
+
+        return result;
     }
 
     public async Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId)

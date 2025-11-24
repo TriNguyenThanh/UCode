@@ -32,7 +32,9 @@ namespace UCode.Desktop.Models
     {
         public List<T> Items { get; set; } = new List<T>();
         public int TotalCount { get; set; }
+        public int Total { get => TotalCount; set => TotalCount = value; }
         public int PageNumber { get; set; }
+        public int Page { get => PageNumber; set => PageNumber = value; }
         public int PageSize { get; set; }
         public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
         public bool HasPreviousPage => PageNumber > 1;

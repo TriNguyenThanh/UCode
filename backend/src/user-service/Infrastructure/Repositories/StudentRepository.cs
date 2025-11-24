@@ -42,6 +42,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .Include(s => s.UserClasses)
                 .ThenInclude(uc => uc.Class)
             .Where(s => s.UserClasses.Any(uc => uc.ClassId == classId && uc.IsActive))
+            .OrderBy(s => s.StudentCode)
             .ToListAsync();
     }
 
@@ -54,6 +55,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     {
         return await _dbSet
             .Where(s => s.ClassYear == classYear)
+            .OrderBy(s => s.StudentCode)
             .ToListAsync();
     }
 
@@ -61,6 +63,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     {
         return await _dbSet
             .Where(s => s.Major.ToLower() == major.ToLower())
+            .OrderBy(s => s.StudentCode)
             .ToListAsync();
     }
 
@@ -68,6 +71,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     {
         return await _dbSet
             .Where(s => studentCodes.Contains(s.StudentCode))
+            .OrderBy(s => s.StudentCode)
             .ToListAsync();
     }
 }

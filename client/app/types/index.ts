@@ -47,18 +47,18 @@ export interface User {
   fullName: string // Map từ backend FullName
   role: 'Student' | 'Teacher' | 'Admin' // Map từ UserRole enum
   status?: 'Active' | 'Inactive' | 'Banned' // Map từ UserStatus enum
-  
+
   // Student specific
   studentCode?: string // Map từ backend StudentCode
   major?: string
   enrollmentYear?: number
   classYear?: number
-  
+
   // Teacher specific
   teacherCode?: string // Map từ backend TeacherCode
   department?: string
   title?: string
-  
+
   // Common
   phone?: string
   address?: string
@@ -106,7 +106,7 @@ export interface ResetPasswordRequest {
 
 export interface Class {
   classId: string // Backend: ClassId (Guid)
-  className: string 
+  className: string
   classCode: string // Backend: ClassCode
   teacherId: string
   teacherName: string
@@ -299,21 +299,21 @@ export interface ProblemAsset {
   orderIndex: number
   isActive: boolean
   createdAt: string
-  createdBy?: string 
+  createdBy?: string
 }
 
 /// =====================
 /// TESTCASE STATUS
 /// =====================
 export type TestcaseStatus =
-        'Passed' |
-        'TimeLimitExceeded' |
-        'MemoryLimitExceeded' |
-        'RuntimeError' |
-        'InternalError' |
-        'WrongAnswer' |
-        'CompilationError' |
-        'Skipped'
+  'Passed' |
+  'TimeLimitExceeded' |
+  'MemoryLimitExceeded' |
+  'RuntimeError' |
+  'InternalError' |
+  'WrongAnswer' |
+  'CompilationError' |
+  'Skipped'
 
 // ============================================
 // DATASET & TEST CASE
@@ -543,4 +543,53 @@ export function isTeacher(user: User): user is User & Required<Pick<User, 'teach
 
 export function isAdmin(user: User): boolean {
   return user.role === 'Admin'
+}
+
+// ============================================
+// ATTENDANCE TYPES
+// ============================================
+
+export interface AttendanceSession {
+  id: string
+  classId: string
+  className?: string
+  title: string
+  sessionCode: string
+  startTime: string
+  endTime: string
+  requireIpCheck: boolean
+  allowedIpSubnet?: string
+  requireGpsCheck: boolean
+  allowedLatitude?: number
+  allowedLongitude?: number
+  allowedRadiusMeters?: number
+  isActive: boolean
+  createdAt: string
+}
+
+export interface AttendanceRecord {
+  id: string
+  sessionId: string
+  userId: string
+  attendedAt: string
+  ipAddress: string
+  latitude?: number
+  longitude?: number
+  userAgent: string
+  isValid: boolean
+  invalidReason?: string
+}
+
+export interface AttendanceCheckInRequest {
+  sessionCode: string
+  sessionId?: string
+  latitude?: number
+  longitude?: number
+  ipAddress?: string // For testing purposes when not deployed on VPS
+}
+
+export interface GeolocationPosition {
+  latitude: number
+  longitude: number
+  accuracy: number
 }

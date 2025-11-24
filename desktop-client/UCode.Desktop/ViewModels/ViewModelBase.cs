@@ -25,7 +25,7 @@ namespace UCode.Desktop.ViewModels
             return true;
         }
 
-        protected MetroWindow GetMetroWindow()
+        public MetroWindow GetMetroWindow()
         {
             // Try to get the active window first (for dialogs)
             var activeWindow = Application.Current.Windows.OfType<MetroWindow>()

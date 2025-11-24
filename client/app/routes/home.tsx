@@ -153,7 +153,7 @@ export default function Home() {
         {/* Welcome Section */}
         <Box sx={{ mb: 4 }}>
           <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-            Xin chào, {userName}! 👋
+            Xin chào, {userName}!
           </Typography>
           <Typography variant='body1' color='text.secondary'>
             Hôm nay bạn muốn học gì?
@@ -197,7 +197,7 @@ export default function Home() {
                     <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
                       {classItem.teacherName}
                     </Typography>
-                    <Chip label={classItem.semester} size='small' />
+                    <Chip label={classItem.studentCount} size='small' />
                   </CardContent>
                 </CardActionArea>
               </Card> 

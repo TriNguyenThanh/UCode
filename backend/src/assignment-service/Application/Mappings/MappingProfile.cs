@@ -4,6 +4,7 @@ using AssignmentService.Application.DTOs.Responses;
 using AssignmentService.Application.DTOs.Common;
 using AssignmentService.Domain.Entities;
 using AssignmentService.Domain.Enums;
+using System.Text.Json.Nodes;
 
 
 namespace AssignmentService.Application.Mappings;
@@ -81,7 +82,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? AssignmentStatus.DRAFT));
 
         // AssignmentUser mappings
-        CreateMap<AssignmentUser, AssignmentUserDto>().ReverseMap();
+        CreateMap<AssignmentUser, AssignmentUserDto>().ReverseMap()
+            .ForMember(dest => dest.AIDetectionDetails, opt => opt.MapFrom(src => 
+                src.AIDetectionDetails != null ? src.AIDetectionDetails : null));
 
         // AssignmentProblem mappings
         CreateMap<AssignmentProblem, AssignmentProblemDto>()

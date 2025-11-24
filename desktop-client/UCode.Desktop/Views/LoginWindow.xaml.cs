@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using UCode.Desktop.Services;
@@ -17,13 +18,41 @@ namespace UCode.Desktop.Views
             _authService = authService;
 
             viewModel.LoginCompleted += OnLoginCompleted;
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LoginViewModel.ShowPassword))
+            {
+                var viewModel = (LoginViewModel)DataContext;
+                // Sync password between TextBox and PasswordBox
+                if (viewModel.ShowPassword)
+                {
+                    // Switching to TextBox, copy from PasswordBox
+                    PasswordTextBox.Text = PasswordBox.Password;
+                }
+                else
+                {
+                    // Switching to PasswordBox, copy from TextBox
+                    PasswordBox.Password = PasswordTextBox.Text;
+                }
+            }
         }
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (DataContext is LoginViewModel viewModel)
+            if (DataContext is LoginViewModel viewModel && !viewModel.ShowPassword)
             {
                 viewModel.Password = ((PasswordBox)sender).Password;
+            }
+        }
+        
+        private void PasswordTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (DataContext is LoginViewModel viewModel && viewModel.ShowPassword)
+            {
+                viewModel.Password = ((System.Windows.Controls.TextBox)sender).Text;
             }
         }
 
@@ -38,21 +67,25 @@ namespace UCode.Desktop.Views
                 {
                     // Get current user to check role
                     var currentUser = _authService.CurrentUser;
-                    var userRole = currentUser?.Role.ToString().ToLower() ?? "student";
 
-                    System.IO.File.AppendAllText(logPath, $"User role: {userRole}\n");
+                    System.IO.File.AppendAllText(logPath, $"User role: {currentUser?.Role} (Enum: {(int?)currentUser?.Role})\n");
 
                     Window targetWindow = null;
 
-                    // Redirect based on role
-                    if (userRole == "teacher")
+                    // Redirect based on role - use enum comparison
+                    if (currentUser?.Role == Models.UserRole.Admin)
                     {
-                        System.IO.File.AppendAllText(logPath, "Getting TeacherHomeWindow from ServiceProvider...\n");
+                        System.IO.File.AppendAllText(logPath, "✅ Getting AdminMainWindow from ServiceProvider...\n");
+                        targetWindow = App.ServiceProvider.GetService(typeof(Views.AdminMainWindow)) as Views.AdminMainWindow;
+                    }
+                    else if (currentUser?.Role == Models.UserRole.Teacher)
+                    {
+                        System.IO.File.AppendAllText(logPath, "✅ Getting TeacherHomeWindow from ServiceProvider...\n");
                         targetWindow = App.ServiceProvider.GetService(typeof(TeacherHomeWindow)) as TeacherHomeWindow;
                     }
                     else
                     {
-                        System.IO.File.AppendAllText(logPath, "Getting MainWindow from ServiceProvider...\n");
+                        System.IO.File.AppendAllText(logPath, "✅ Getting MainWindow from ServiceProvider...\n");
                         targetWindow = App.ServiceProvider.GetService(typeof(MainWindow)) as MainWindow;
                     }
 

@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
@@ -16,6 +20,7 @@ namespace UCode.Desktop.ViewModels
         public string Code { get; set; } = string.Empty;
         public string TeacherName { get; set; } = string.Empty;
         public string Semester { get; set; } = string.Empty;
+        public int StudentCount { get; set; }
     }
 
     public class AssignmentItem
@@ -23,6 +28,8 @@ namespace UCode.Desktop.ViewModels
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
+        public string AssignmentType { get; set; } = string.Empty;
+        public AssignmentType RawAssignmentType { get; set; }
         public int DaysLeft { get; set; }
         public int ProblemCount { get; set; }
         public int TotalPoints { get; set; }
@@ -41,6 +48,7 @@ namespace UCode.Desktop.ViewModels
     {
         private readonly AuthService _authService;
         private readonly ApiService _apiService;
+        private readonly NavigationService _navigationService;
         private string _userEmail = string.Empty;
         private string _userName = string.Empty;
         private bool _isLoading;
@@ -70,13 +78,18 @@ namespace UCode.Desktop.ViewModels
         public int UpcomingAssignmentsCount => UpcomingAssignments.Count;
 
         public ICommand LogoutCommand { get; }
+        public ICommand NavigateToClassCommand { get; }
+        public ICommand NavigateToAssignmentCommand { get; }
 
-        public MainViewModel(AuthService authService, ApiService apiService)
+        public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService)
         {
             _authService = authService;
             _apiService = apiService;
+            _navigationService = navigationService;
 
             LogoutCommand = new RelayCommand(_ => ExecuteLogout());
+            NavigateToClassCommand = new RelayCommand<string>(NavigateToClass);
+            NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
 
             // Set user info
             var currentUser = authService.CurrentUser;
@@ -89,6 +102,7 @@ namespace UCode.Desktop.ViewModels
             IsLoading = true;
             try
             {
+                await LoadUserProfileAsync();
                 await LoadClassesAsync();
                 await LoadUpcomingAssignmentsAsync();
                 LoadPracticeCategories();
@@ -99,67 +113,140 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
+        private async Task LoadUserProfileAsync()
+        {
+            try
+            {
+                var currentUser = _authService.CurrentUser;
+                if (currentUser?.Role.ToString().ToLower() == "student")
+                {
+                    var response = await _apiService.GetAsync<StudentResponse>("/api/v1/students/me");
+                    if (response?.Success == true && response.Data != null)
+                    {
+                        if (!string.IsNullOrEmpty(response.Data.FullName))
+                        {
+                            UserName = response.Data.FullName;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading profile: {ex.Message}");
+            }
+        }
+
         private async Task LoadClassesAsync()
         {
             try
             {
-                var response = await _apiService.GetAsync<PagedResponse<Class>>("/api/v1/classes");
-
+                var currentUser = _authService.CurrentUser;
                 Classes.Clear();
-                
-                if (response?.Success == true && response.Data?.Items != null)
+
+                if (currentUser?.Role.ToString().ToLower() == "student")
                 {
-                    foreach (var cls in response.Data.Items)
+                    // Student: Get enrolled classes - returns ApiResponse<List<Class>>
+                    var response = await _apiService.GetAsync<List<Class>>("/api/v1/classes/enrolled");
+
+                    if (response?.Success == true && response.Data != null)
                     {
-                        Classes.Add(new ClassItem
+                        foreach (var cls in response.Data)
                         {
-                            Id = cls.ClassId,
-                            Name = cls.ClassName,
-                            Code = cls.ClassCode,
-                            TeacherName = cls.TeacherName,
-                            Semester = cls.Semester
-                        });
+                            Classes.Add(new ClassItem
+                            {
+                                Id = cls.ClassId,
+                                Name = cls.ClassName,
+                                Code = cls.ClassCode,
+                                TeacherName = cls.TeacherName,
+                                Semester = cls.Semester,
+                                StudentCount = cls.StudentCount
+                            });
+                        }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Load classes failed: {response?.Message}");
+                    // Teacher/Admin: Get all classes with pagination
+                    var response = await _apiService.GetAsync<PagedResponse<Class>>("/api/v1/classes");
+
+                    if (response?.Success == true && response.Data != null)
+                    {
+                        foreach (var cls in response.Data.Items ?? new List<Class>())
+                        {
+                            Classes.Add(new ClassItem
+                            {
+                                Id = cls.ClassId,
+                                Name = cls.ClassName,
+                                Code = cls.ClassCode,
+                                TeacherName = cls.TeacherName,
+                                Semester = cls.Semester
+                            });
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Exception loading classes: {ex.Message}");
-                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể tải danh sách lớp học: {ex.Message}");
             }
         }
+
         private async Task LoadUpcomingAssignmentsAsync()
         {
             try
             {
-                var response = await _apiService.GetAsync<PagedResponse<Assignment>>("/api/v1/assignments/upcoming");
+                var currentUser = _authService.CurrentUser;
+                ApiResponse<List<Assignment>> response = null;
 
-                UpcomingAssignments.Clear();
-                
-                if (response?.Success == true && response.Data?.Items != null)
+                if (currentUser?.Role.ToString().ToLower() == "student")
                 {
-                    foreach (var assignment in response.Data.Items)
-                    {
-                        var daysLeft = (assignment.EndTime - DateTime.Now)?.Days ?? 0;
-                        
-                        UpcomingAssignments.Add(new AssignmentItem
-                        {
-                            Id = assignment.AssignmentId,
-                            Title = assignment.Title,
-                            ClassName = assignment.ClassName ?? "Unknown Class",
-                            DaysLeft = daysLeft > 0 ? daysLeft : 0,
-                            ProblemCount = assignment.TotalProblems ?? 0,
-                            TotalPoints = assignment.TotalPoints
-                        });
-                    }
+                    var assignmentService = App.ServiceProvider.GetService(typeof(AssignmentService)) as AssignmentService;
+                    response = await assignmentService.GetStudentAssignmentsAsync();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Load assignments failed: {response?.Message}");
+                    response = await _apiService.GetAsync<List<Assignment>>("/api/v1/assignments/my-assignments");
+                }
+
+                UpcomingAssignments.Clear();
+
+                if (response?.Success == true && response.Data != null)
+                {
+                    var now = DateTime.Now;
+                    var sevenDaysLater = now.AddDays(7);
+
+                    foreach (var assignment in response.Data)
+                    {
+                        if (assignment.EndTime.HasValue)
+                        {
+                            var dueDate = assignment.EndTime.Value;
+                            if (dueDate <= sevenDaysLater && dueDate > now)
+                            {
+                                var daysLeft = (dueDate - now).Days;
+
+                                // Convert AssignmentType enum to string
+                                string typeDisplay = assignment.AssignmentType switch
+                                {
+                                    AssignmentType.HOMEWORK => "Bài tập về nhà",
+                                    AssignmentType.EXAMINATION => "Bài kiểm tra",
+                                    AssignmentType.PRACTICE => "Luyện tập",
+                                    _ => "Bài tập"
+                                };
+
+                                UpcomingAssignments.Add(new AssignmentItem
+                                {
+                                    Id = assignment.AssignmentId,
+                                    Title = assignment.Title,
+                                    ClassName = assignment.ClassName ?? "Unknown Class",
+                                    AssignmentType = typeDisplay,
+                                    RawAssignmentType = assignment.AssignmentType,
+                                    DaysLeft = daysLeft > 0 ? daysLeft : 0,
+                                    ProblemCount = assignment.TotalProblems ?? 0,
+                                    TotalPoints = assignment.TotalPoints
+                                });
+                            }
+                        }
+                    }
                 }
 
                 OnPropertyChanged(nameof(UpcomingAssignmentsCount));
@@ -172,37 +259,99 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private async void LoadPracticeCategories()
+        private void LoadPracticeCategories()
         {
+            // Use mock data to match React client
+            PracticeCategories.Clear();
+
+            PracticeCategories.Add(new PracticeCategoryItem
+            {
+                Id = "algorithms",
+                Name = "Thuật toán",
+                Icon = "🧮",
+                Description = "Luyện tập các thuật toán cơ bản đến nâng cao",
+                ProblemCount = 150
+            });
+
+            PracticeCategories.Add(new PracticeCategoryItem
+            {
+                Id = "data-structures",
+                Name = "Cấu trúc dữ liệu",
+                Icon = "📦",
+                Description = "Ngăn xếp, hàng đợi, cây, đồ thị và hơn thế nữa",
+                ProblemCount = 120
+            });
+
+            PracticeCategories.Add(new PracticeCategoryItem
+            {
+                Id = "sql",
+                Name = "SQL",
+                Icon = "🗄️",
+                Description = "Truy vấn cơ sở dữ liệu từ cơ bản đến nâng cao",
+                ProblemCount = 80
+            });
+
+            PracticeCategories.Add(new PracticeCategoryItem
+            {
+                Id = "ai",
+                Name = "Trí tuệ nhân tạo",
+                Icon = "🤖",
+                Description = "Các bài toán về AI và Machine Learning",
+                ProblemCount = 45
+            });
+        }
+
+        private void NavigateToClass(string classId)
+        {
+            if (string.IsNullOrEmpty(classId)) return;
+
             try
             {
-                var response = await _apiService.GetAsync<List<PracticeCategory>>("/api/v1/practice/categories");
-
-                PracticeCategories.Clear();
-                
-                if (response?.Success == true && response.Data != null)
-                {
-                    foreach (var category in response.Data)
-                    {
-                        PracticeCategories.Add(new PracticeCategoryItem
-                        {
-                            Id = category.CategoryId,
-                            Name = category.Name,
-                            Icon = category.Icon ?? "�",
-                            Description = category.Description ?? string.Empty,
-                            ProblemCount = category.ProblemCount
-                        });
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Load practice categories failed: {response?.Message}");
-                }
+                var classDetailPage = new Views.Students.ClassDetailPage();
+                _navigationService.NavigateTo(classDetailPage, classId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exception loading practice categories: {ex.Message}");
-                PracticeCategories.Clear();
+                System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
+            }
+        }
+
+        private async void NavigateToAssignment(string assignmentId)
+        {
+            if (string.IsNullOrEmpty(assignmentId)) return;
+
+            var assignment = UpcomingAssignments.FirstOrDefault(a => a.Id == assignmentId);
+            if (assignment != null && assignment.RawAssignmentType == AssignmentType.EXAMINATION)
+            {
+                var result = await GetMetroWindow()?.ShowMessageAsync(
+                   "Bài kiểm tra - Lưu ý quan trọng",
+                   "Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:\n" +
+                   "- Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài\n" +
+                   "- Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên\n" +
+                   "- Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn\n\n" +
+                   "Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?",
+                   MessageDialogStyle.AffirmativeAndNegative,
+                   new MetroDialogSettings
+                   {
+                       AffirmativeButtonText = "Xác nhận và bắt đầu",
+                       NegativeButtonText = "Hủy",
+                       DefaultButtonFocus = MessageDialogResult.Affirmative
+                   });
+
+                if (result != MessageDialogResult.Affirmative)
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                var assignmentDetailPage = new Views.Students.AssignmentDetailPage();
+                _navigationService.NavigateTo(assignmentDetailPage, assignmentId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
             }
         }
 
@@ -236,5 +385,13 @@ namespace UCode.Desktop.ViewModels
             }
         }
     }
-}
 
+    // Helper class for student response
+    public class StudentResponse
+    {
+        public string StudentId { get; set; }
+        public string FullName { get; set; }
+        public string StudentCode { get; set; }
+        public string Email { get; set; }
+    }
+}

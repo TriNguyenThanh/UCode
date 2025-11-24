@@ -26,6 +26,5 @@ public interface IUserService
     Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request);
     Task<bool> DeleteUserByAdminAsync(string userId);
     Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null);
+    Task<List<string>> GetEmailsByIdsAsync(List<Guid> ids);
 }
-
-

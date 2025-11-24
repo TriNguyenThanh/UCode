@@ -55,7 +55,29 @@ namespace UCode.Desktop.Services
 
         public async Task<ApiResponse<BestSubmission>> GradeSubmissionAsync(string assignmentId, string submissionId, GradeSubmissionRequest request)
         {
-            return await _apiService.PutAsync<BestSubmission>($"/api/v1/assignments/{assignmentId}/grade-submission/{submissionId}", request);
+            return await _apiService.PutAsync<BestSubmission>($"/api/v1/submissions/update-score", request);
+        }
+
+        // Student methods
+        public async Task<ApiResponse<AssignmentUser>> GetMyAssignmentDetailAsync(string assignmentId)
+        {
+            return await _apiService.GetAsync<AssignmentUser>($"/api/v1/assignments/{assignmentId}/student/my-detail");
+        }
+
+        public async Task<ApiResponse<AssignmentUser>> StartAssignmentAsync(string assignmentId)
+        {
+            return await _apiService.PostAsync<AssignmentUser>($"/api/v1/assignments/{assignmentId}/student/start", null);
+        }
+
+        public async Task<ApiResponse<List<Assignment>>> GetStudentAssignmentsAsync()
+        {
+            return await _apiService.GetAsync<List<Assignment>>("/api/v1/assignments/student/my-assignments");
+        }
+
+        public async Task<ApiResponse<List<BestSubmission>>> GetBestSubmissionsAsync(string assignmentId, List<string> problemIds)
+        {
+            var requestBody = new { problemIds = problemIds };
+            return await _apiService.PostAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/problem/list-my-best", requestBody);
         }
     }
 
@@ -78,8 +100,8 @@ namespace UCode.Desktop.Services
         public string ClassId { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public bool AllowLateSubmission { get; set; }
         public string Status { get; set; } = string.Empty;
         public List<AssignmentProblem> Problems { get; set; } = new();
@@ -89,8 +111,9 @@ namespace UCode.Desktop.Services
 
     public class GradeSubmissionRequest
     {
-        public double? Score { get; set; }
-        public string TeacherFeedback { get; set; } = string.Empty;
+        public string SubmissionId { get; set; }
+        public int NewScore { get; set; }
+        public string Comment { get; set; } = string.Empty;
     }
 
     public class AssignmentProblemDetail
