@@ -100,6 +100,10 @@ public class EmailConsumer : BackgroundService
     private async Task ProcessEmailMessage(BasicDeliverEventArgs ea, CancellationToken stoppingToken)
     {
         var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+        
+        // ✅ Log raw message for debugging
+        _logger.LogDebug("📧 Raw message: {Json}", json);
+        
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -109,13 +113,27 @@ public class EmailConsumer : BackgroundService
         
         if (emailMessage == null)
         {
-            _logger.LogWarning("Received null email message");
+            _logger.LogWarning("❌ Received null email message");
             return;
         }
 
-        _logger.LogInformation("📧 Processing email to {Email}", emailMessage.To);
+        // ✅ Validate message fields
+        if (string.IsNullOrWhiteSpace(emailMessage.To))
+        {
+            _logger.LogWarning("❌ Email message has empty 'To' field");
+            return;
+        }
 
-        // Apply rate limiting: ensure minimum delay between emails
+        if (string.IsNullOrWhiteSpace(emailMessage.Subject))
+        {
+            _logger.LogWarning("❌ Email message has empty 'Subject' field");
+            return;
+        }
+
+        _logger.LogInformation("📧 Processing email to {Email} with subject: {Subject}", 
+            emailMessage.To, emailMessage.Subject);
+
+        // Apply rate limiting
         await EnforceRateLimitAsync(stoppingToken);
 
         using (var scope = _serviceScopeFactory.CreateAsyncScope())
@@ -124,20 +142,31 @@ public class EmailConsumer : BackgroundService
 
             try
             {
+                // ✅ Ensure Bcc is not null
+                emailMessage.Bcc ??= new List<string>();
+
                 if (emailMessage.Bcc.Count > 0)
                 {
-                    await emailService.SendWithBccAsync(emailMessage.To, emailMessage.Bcc, emailMessage.Subject, emailMessage.HtmlContent);
+                    await emailService.SendWithBccAsync(
+                        emailMessage.To, 
+                        emailMessage.Bcc, 
+                        emailMessage.Subject, 
+                        emailMessage.HtmlContent);
                 }
                 else
                 {
-                    await emailService.SendAsync(emailMessage.To, emailMessage.Subject, emailMessage.HtmlContent);
+                    await emailService.SendAsync(
+                        emailMessage.To, 
+                        emailMessage.Subject, 
+                        emailMessage.HtmlContent);
                 }
+                
                 _logger.LogInformation("✅ Email sent successfully to {Email}", emailMessage.To);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Failed to send email to {Email}", emailMessage.To);
-                throw; // Re-throw để nack message
+                throw;
             }
         }
     }

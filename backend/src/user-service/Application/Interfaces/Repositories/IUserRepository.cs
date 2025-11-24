@@ -8,6 +8,6 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByUsernameAsync(string username);
     Task<bool> EmailExistsAsync(string email);
     Task<bool> UsernameExistsAsync(string username);
-    Task<List<string>> GetEmailsByIdsAsync(List<string> ids);
+    Task<List<string>> GetEmailsByIdsAsync(List<Guid> ids);
 }
 
