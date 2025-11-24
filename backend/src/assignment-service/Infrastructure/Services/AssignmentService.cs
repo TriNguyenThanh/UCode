@@ -49,19 +49,30 @@ public class AssignmentService : IAssignmentService
                 }).ToList();
 
                 await _assignmentRepository.AddAssignmentUsersAsync(details);
+                
                 var endDate = createdAssignment.EndTime?.ToString("dd/MM/yyyy HH:mm") ?? "Không có thời hạn";
                 var userEmails = await _userServiceClient.GetUserEmailByIdAsync(userIds);
-                _ = Task.Run(async ()
-                => await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                Console.WriteLine($"[✅] Retrieved {userEmails.Count} user emails for assignment notification.");
+                // ✅ ĐÚNG: Enqueue ngay, không cần Task.Run
+                try
                 {
-                    To = userEmails.First(),
-                    Bcc = userEmails.Skip(1).ToList(),
-                    Subject = "Bài tập mới đã được tạo và giao cho bạn",
-                    HtmlContent = EmailTemplates.NewAssignment(
-                        createdAssignment.Title,
-                        endDate,
-                        createdAssignment.Description ?? string.Empty)
-                }));
+                    await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                    {
+                        To = userEmails.First(),
+                        Bcc = userEmails.Skip(1).ToList(),
+                        Subject = "Bài tập mới đã được tạo và giao cho bạn",
+                        HtmlContent = EmailTemplates.NewAssignment(
+                            createdAssignment.Title,
+                            endDate,
+                            createdAssignment.Description ?? string.Empty)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // ✅ Log error nhưng không fail request
+                    Console.WriteLine($"⚠️ Failed to enqueue email: {ex.Message}");
+                    // Optional: Log to monitoring system
+                }
             }
 
             return createdAssignment;
