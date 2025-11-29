@@ -190,7 +190,7 @@ public class ProblemController : ControllerBase
         
         var visibility = problem.Visibility;
         
-        if (visibility != Visibility.PUBLIC)
+        if (visibility == Visibility.PRIVATE)
             throw new ApiException("Problem not accessible");
         
         var response = _mapper.Map<ProblemResponse>(problem);

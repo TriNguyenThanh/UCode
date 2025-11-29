@@ -127,6 +127,7 @@
                             </StackPanel>
                         </Button>
 
+                        <!--
                         <Button Command="{Binding BulkDeleteCommand}" 
                                 Style="{StaticResource DangerButton}">
                             <StackPanel Orientation="Horizontal">
@@ -135,6 +136,7 @@
                                 <TextBlock Text="Xóa" FontSize="14"/>
                             </StackPanel>
                         </Button>
+                        -->
                     </StackPanel>
                 </Border>
 
@@ -248,12 +250,13 @@
                                                 <iconPacks:PackIconMaterial Kind="ArchiveArrowUp" Width="16" Height="16"/>
                                             </Button> -->
 
-                                            <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            <!--<Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"
                                                     Style="{StaticResource DangerActionButton}"
                                                     ToolTip="Xóa lớp học">
                                                 <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
                                             </Button>
+                                            -->
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

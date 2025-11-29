@@ -63,20 +63,18 @@ public partial class App : Application
             var authService = ServiceProvider.GetRequiredService<AuthService>();
             bool autoLoginSuccess = false;
 
-            // TEMPORARY: Disable auto-login to show Login Window
-            /*
             try
             {
                 var autoLoginTask = authService.TryAutoLoginAsync();
                 autoLoginTask.Wait();
                 autoLoginSuccess = autoLoginTask.Result;
+                System.IO.File.AppendAllText(logPath, $"Auto-login result: {autoLoginSuccess}\n");
             }
             catch (Exception ex)
             {
-                System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
+                System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n{ex.StackTrace}\n");
                 autoLoginSuccess = false;
             }
-            */
 
             if (autoLoginSuccess)
             {

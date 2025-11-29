@@ -193,7 +193,7 @@
                                      BorderBrush="#d2d2d7" BorderThickness="1"
                                      mah:ControlsHelper.CornerRadius="8"
                                      Margin="0,0,0,5"/>
-                            <TextBlock Text="Code dùng để định danh bài toán, nếu để trống sẽ tự động tạo từ title" 
+                            <TextBlock Text="Code dùng để định danh bài toán, nếu để trống sẽ tự động tạo" 
                                        FontSize="13" Foreground="#86868b" Margin="0,5,0,20"/>
 
                             <Grid>
@@ -219,7 +219,7 @@
                                 </StackPanel>
 
                                 <!-- Status -->
-                                <StackPanel Grid.Column="2">
+                                <!--<StackPanel Grid.Column="2">
                                     <TextBlock Text="Trạng thái" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <ComboBox SelectedValue="{Binding Status}" SelectedValuePath="Tag"
                                               Height="40" FontSize="16" Cursor="Hand"
@@ -229,10 +229,10 @@
                                         <ComboBoxItem Content="Đã xuất bản" Tag="PUBLISHED"/>
                                         <ComboBoxItem Content="Lưu trữ" Tag="ARCHIVED"/>
                                     </ComboBox>
-                                </StackPanel>
+                                </StackPanel>-->
 
                                 <!-- Visibility -->
-                                <StackPanel Grid.Column="4">
+                                <StackPanel Grid.Column="2">
                                     <TextBlock Text="Hiển thị" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <ComboBox SelectedValue="{Binding Visibility}" SelectedValuePath="Tag"
                                               Height="40" FontSize="16" Cursor="Hand"

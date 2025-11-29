@@ -241,13 +241,14 @@
                         </Grid>
 
                         <!-- Remember Me -->
-                        <CheckBox Content="Ghi nhớ đăng nhập"
+                        <!--<CheckBox Content="Ghi nhớ đăng nhập"
                                   IsChecked="{Binding RememberMe}"
                                   FontSize="14"
                                   FontFamily="Segoe UI, Be Vietnam Pro"
                                   Foreground="#00275E"
                                   Margin="0,0,0,20"/>
-
+                        -->
+                        
                         <!-- Loading Indicator -->
                         <mah:ProgressRing Height="40"
                                 Width="40"
