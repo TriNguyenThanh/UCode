@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace UCode.Desktop.Models
 {
@@ -8,7 +11,57 @@ namespace UCode.Desktop.Models
         public bool Success { get; set; }
         public T Data { get; set; }
         public string Message { get; set; }
-        public List<string> Errors { get; set; }
+        
+        [JsonProperty("errors")]
+        public object ErrorsRaw { get; set; }
+        
+        [JsonIgnore]
+        public List<string> Errors 
+        { 
+            get
+            {
+                if (ErrorsRaw == null) return null;
+                
+                try
+                {
+                    // Try to parse as JArray (JSON array)
+                    if (ErrorsRaw is JArray jArray)
+                    {
+                        return jArray.ToObject<List<string>>();
+                    }
+                    
+                    // Try to parse as JObject (JSON object/dictionary)
+                    if (ErrorsRaw is JObject jObject)
+                    {
+                        var errors = new List<string>();
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value is JArray valueArray)
+                            {
+                                errors.AddRange(valueArray.Select(v => v.ToString()));
+                            }
+                            else
+                            {
+                                errors.Add(prop.Value.ToString());
+                            }
+                        }
+                        return errors;
+                    }
+                    
+                    // Fallback: convert to string
+                    return new List<string> { ErrorsRaw.ToString() };
+                }
+                catch
+                {
+                    return new List<string> { ErrorsRaw.ToString() };
+                }
+            }
+            set
+            {
+                ErrorsRaw = value;
+            }
+        }
+        
         public DateTime? Timestamp { get; set; }
     }
 
@@ -47,6 +100,67 @@ namespace UCode.Desktop.Models
         public string Message { get; set; }
         public DateTime? Timestamp { get; set; }
         public string Path { get; set; }
-        public Dictionary<string, string[]> Errors { get; set; }
+        
+        [JsonProperty("errors")]
+        public object ErrorsRaw { get; set; }
+        
+        [JsonIgnore]
+        public Dictionary<string, string[]> Errors 
+        { 
+            get
+            {
+                if (ErrorsRaw == null) return null;
+                
+                try
+                {
+                    if (ErrorsRaw is JObject jObject)
+                    {
+                        return jObject.ToObject<Dictionary<string, string[]>>();
+                    }
+                }
+                catch { }
+                
+                return null;
+            }
+        }
+        
+        [JsonIgnore]
+        public List<string> ErrorList
+        {
+            get
+            {
+                if (ErrorsRaw == null) return null;
+                
+                try
+                {
+                    // Try to parse as JArray
+                    if (ErrorsRaw is JArray jArray)
+                    {
+                        return jArray.ToObject<List<string>>();
+                    }
+                    
+                    // Try to parse as JObject and flatten
+                    if (ErrorsRaw is JObject jObject)
+                    {
+                        var errors = new List<string>();
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value is JArray valueArray)
+                            {
+                                errors.AddRange(valueArray.Select(v => v.ToString()));
+                            }
+                            else
+                            {
+                                errors.Add(prop.Value.ToString());
+                            }
+                        }
+                        return errors;
+                    }
+                }
+                catch { }
+                
+                return null;
+            }
+        }
     }
 }

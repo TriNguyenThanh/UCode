@@ -143,11 +143,24 @@ public class UserAppService : IUserService
         return await _userRepository.UpdateAsync(user);
     }
 
-    public async Task<bool> UpdateUserRoleAsync(string userId, UserRole role)
+    public async Task<bool> UpdateUserRoleAsync(string userId, UserRole role, string? currentUserId = null)
     {
         var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
         if (user == null)
             throw new ApiException("User not found", 404);
+
+        // Ngăn Admin tự đổi role của chính mình
+        if (!string.IsNullOrEmpty(currentUserId) && userId == currentUserId)
+            throw new ApiException("Cannot change your own role", 400);
+
+        // Nếu đang đổi từ Admin sang role khác, kiểm tra còn Admin nào khác không
+        if (user.Role == UserRole.Admin && role != UserRole.Admin)
+        {
+            var allUsers = await _userRepository.GetAllAsync();
+            var adminCount = allUsers.Count(u => u.Role == UserRole.Admin);
+            if (adminCount <= 1)
+                throw new ApiException("Cannot change role: This is the last Admin in the system", 400);
+        }
 
         user.Role = role;
         user.UpdatedAt = DateTime.UtcNow;
@@ -383,7 +396,7 @@ public class UserAppService : IUserService
         return true;
     }
 
-    public async Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request)
+    public async Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request, string? currentUserId = null)
     {
         var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
         if (user == null)
@@ -399,6 +412,19 @@ public class UserAppService : IUserService
         {
             if (Enum.TryParse<UserRole>(request.Role, true, out var newRole))
             {
+                // Ngăn Admin tự đổi role của chính mình
+                if (!string.IsNullOrEmpty(currentUserId) && userId == currentUserId && user.Role != newRole)
+                    throw new ApiException("Cannot change your own role", 400);
+
+                // Nếu đang đổi từ Admin sang role khác, kiểm tra còn Admin nào khác không
+                if (user.Role == UserRole.Admin && newRole != UserRole.Admin)
+                {
+                    var allUsers = await _userRepository.GetAllAsync();
+                    var adminCount = allUsers.Count(u => u.Role == UserRole.Admin);
+                    if (adminCount <= 1)
+                        throw new ApiException("Cannot change role: This is the last Admin in the system", 400);
+                }
+
                 user.Role = newRole;
             }
         }
@@ -412,26 +438,51 @@ public class UserAppService : IUserService
         return await _userRepository.UpdateAsync(user);
     }
 
-    public async Task<bool> DeleteUserByAdminAsync(string userId)
+    public async Task<bool> DeleteUserByAdminAsync(string userId, string? currentUserId = null)
     {
         var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
         if (user == null)
             throw new ApiException("User not found", 404);
 
+        // Ngăn Admin tự xóa chính mình
+        if (!string.IsNullOrEmpty(currentUserId) && userId == currentUserId)
+            throw new ApiException("Cannot delete your own account", 400);
+
+        // Nếu đang xóa Admin, kiểm tra còn Admin nào khác không
+        if (user.Role == UserRole.Admin)
+        {
+            var allUsers = await _userRepository.GetAllAsync();
+            var adminCount = allUsers.Count(u => u.Role == UserRole.Admin);
+            if (adminCount <= 1)
+                throw new ApiException("Cannot delete: This is the last Admin in the system", 400);
+        }
+
         // TODO: Consider soft delete or cleanup related data
         return await _userRepository.DeleteAsync(Guid.Parse(userId));
     }
 
-    public async Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null)
+    public async Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null, string? currentUserId = null)
     {
         var results = new List<object>();
         int successCount = 0;
         int failureCount = 0;
 
+        // Lấy danh sách tất cả Admin để kiểm tra
+        var allUsers = await _userRepository.GetAllAsync();
+        var adminCount = allUsers.Count(u => u.Role == UserRole.Admin);
+
         foreach (var userId in userIds)
         {
             try
             {
+                // Ngăn thao tác trên chính mình
+                if (!string.IsNullOrEmpty(currentUserId) && userId == currentUserId)
+                {
+                    results.Add(new { userId, success = false, error = "Cannot perform action on your own account" });
+                    failureCount++;
+                    continue;
+                }
+
                 var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
                 if (user == null)
                 {
@@ -450,18 +501,47 @@ public class UserAppService : IUserService
                         break;
 
                     case "deactivate":
+                        // Ngăn deactivate Admin cuối cùng
+                        if (user.Role == UserRole.Admin && adminCount <= 1)
+                        {
+                            results.Add(new { userId, success = false, error = "Cannot deactivate: This is the last Admin" });
+                            failureCount++;
+                            continue;
+                        }
                         user.Status = UserStatus.Inactive;
                         user.UpdatedAt = DateTime.UtcNow;
                         success = await _userRepository.UpdateAsync(user);
                         break;
 
                     case "delete":
+                        // Ngăn xóa Admin cuối cùng
+                        if (user.Role == UserRole.Admin)
+                        {
+                            if (adminCount <= 1)
+                            {
+                                results.Add(new { userId, success = false, error = "Cannot delete: This is the last Admin" });
+                                failureCount++;
+                                continue;
+                            }
+                            adminCount--; // Giảm count để kiểm tra các Admin tiếp theo trong batch
+                        }
                         success = await _userRepository.DeleteAsync(Guid.Parse(userId));
                         break;
 
                     case "changerole":
                         if (!string.IsNullOrEmpty(newRole) && Enum.TryParse<UserRole>(newRole, true, out var role))
                         {
+                            // Ngăn đổi role của Admin cuối cùng
+                            if (user.Role == UserRole.Admin && role != UserRole.Admin)
+                            {
+                                if (adminCount <= 1)
+                                {
+                                    results.Add(new { userId, success = false, error = "Cannot change role: This is the last Admin" });
+                                    failureCount++;
+                                    continue;
+                                }
+                                adminCount--; // Giảm count
+                            }
                             user.Role = role;
                             user.UpdatedAt = DateTime.UtcNow;
                             success = await _userRepository.UpdateAsync(user);
@@ -478,6 +558,7 @@ public class UserAppService : IUserService
                 {
                     results.Add(new { userId, success = true });
                     successCount++;
+                }
                 }
                 else
                 {

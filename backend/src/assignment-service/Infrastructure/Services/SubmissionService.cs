@@ -124,7 +124,7 @@ public class SubmissionService : ISubmissionService
             }
 
             submission.SubmissionId = Guid.NewGuid();
-            submission.SubmittedAt = DateTime.Now;
+            submission.SubmittedAt = DateTime.UtcNow;
             var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId, DatasetKind.SAMPLE);
             if (datasets == null || datasets.Count == 0)
             {

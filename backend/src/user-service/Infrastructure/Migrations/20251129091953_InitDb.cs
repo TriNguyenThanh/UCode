@@ -15,20 +15,20 @@ namespace UserService.Infrastructure.Migrations
                 name: "attendance_sessions",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    class_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    session_code = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    require_ip_check = table.Column<bool>(type: "bit", nullable: false),
-                    allowed_ip_subnet = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    require_gps_check = table.Column<bool>(type: "bit", nullable: false),
-                    allowed_latitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    allowed_longitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    allowed_radius_meters = table.Column<int>(type: "int", nullable: true),
-                    is_active = table.Column<bool>(type: "bit", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    class_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    session_code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    require_ip_check = table.Column<bool>(type: "boolean", nullable: false),
+                    allowed_ip_subnet = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    require_gps_check = table.Column<bool>(type: "boolean", nullable: false),
+                    allowed_latitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
+                    allowed_longitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
+                    allowed_radius_meters = table.Column<int>(type: "integer", nullable: true),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -39,16 +39,16 @@ namespace UserService.Infrastructure.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    password_hash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    full_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    role = table.Column<int>(type: "int", nullable: false),
-                    status = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    last_login_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    password_hash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    full_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    role = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_login_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,17 +59,17 @@ namespace UserService.Infrastructure.Migrations
                 name: "attendance_records",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    session_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    attended_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ip_address = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    latitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    longitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    user_agent = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    device_id = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    is_valid = table.Column<bool>(type: "bit", nullable: false),
-                    invalid_reason = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    session_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    attended_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ip_address = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    latitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
+                    longitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
+                    user_agent = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    device_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    is_valid = table.Column<bool>(type: "boolean", nullable: false),
+                    invalid_reason = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -86,7 +86,7 @@ namespace UserService.Infrastructure.Migrations
                 name: "admins",
                 columns: table => new
                 {
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,20 +103,20 @@ namespace UserService.Infrastructure.Migrations
                 name: "refresh_tokens",
                 columns: table => new
                 {
-                    refresh_token_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    token = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    expires_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    last_used_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    created_by_ip = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    last_used_by_ip = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    created_by_user_agent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    last_used_by_user_agent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false),
-                    revoked_reason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    revoked_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    replaced_by_token = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    refresh_token_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    last_used_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    created_by_ip = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    last_used_by_ip = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    created_by_user_agent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    last_used_by_user_agent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    revoked_reason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    revoked_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    replaced_by_token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -133,11 +133,11 @@ namespace UserService.Infrastructure.Migrations
                 name: "students",
                 columns: table => new
                 {
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    student_code = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    enrollment_year = table.Column<int>(type: "int", nullable: false),
-                    major = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    class_year = table.Column<int>(type: "int", nullable: false)
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    student_code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    enrollment_year = table.Column<int>(type: "integer", nullable: false),
+                    major = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    class_year = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -154,11 +154,11 @@ namespace UserService.Infrastructure.Migrations
                 name: "teachers",
                 columns: table => new
                 {
-                    user_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    teacher_code = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    department = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    phone = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false)
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    teacher_code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    department = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    title = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    phone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -175,17 +175,17 @@ namespace UserService.Infrastructure.Migrations
                 name: "classes",
                 columns: table => new
                 {
-                    class_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    teacher_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    class_code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    is_active = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    is_archived = table.Column<bool>(type: "bit", nullable: false),
-                    archived_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    archive_reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    class_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    class_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    is_archived = table.Column<bool>(type: "boolean", nullable: false),
+                    archived_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    archive_reason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -202,10 +202,10 @@ namespace UserService.Infrastructure.Migrations
                 name: "user_classes",
                 columns: table => new
                 {
-                    student_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    class_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    joined_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    is_active = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
+                    student_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    class_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    joined_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -266,15 +266,13 @@ namespace UserService.Infrastructure.Migrations
                 name: "ix_students_student_code",
                 table: "students",
                 column: "student_code",
-                unique: true,
-                filter: "[student_code] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_teachers_teacher_code",
                 table: "teachers",
                 column: "teacher_code",
-                unique: true,
-                filter: "[teacher_code] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_user_classes_class_id",

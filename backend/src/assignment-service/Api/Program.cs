@@ -104,7 +104,7 @@ builder.Services.AddDbContext<AssignmentDbContext>(options =>
         ?? builder.Configuration["AssignmentDb"]
         ?? throw new InvalidOperationException("Connection string 'AssignmentDb' not found.");
     
-    options.UseSqlServer(
+    options.UseNpgsql(
         connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     );
