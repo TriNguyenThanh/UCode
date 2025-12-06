@@ -145,8 +145,43 @@ public class ClassAppService : IClassService
         return _mapper.Map<List<ClassResponse>>(activeClasses);
     }
 
-    public async Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request)
+    // ===== OWNERSHIP VALIDATION =====
+    
+    public async Task<bool> IsClassOwnerAsync(string classId, string teacherId)
     {
+        var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            return false;
+        
+        return classEntity.TeacherId == Guid.Parse(teacherId);
+    }
+
+    public async Task<bool> IsStudentEnrolledAsync(string classId, string studentId)
+    {
+        return await _userClassRepository.IsStudentEnrolledAsync(Guid.Parse(studentId), Guid.Parse(classId));
+    }
+
+    private async Task ValidateClassOwnership(string classId, string? currentTeacherId)
+    {
+        if (string.IsNullOrEmpty(currentTeacherId))
+            throw new ApiException("Teacher ID is required", 401);
+
+        var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
+        if (classEntity == null)
+            throw new ApiException("Class not found", 404);
+
+        if (classEntity.TeacherId != Guid.Parse(currentTeacherId))
+            throw new ApiException("You do not have permission to access this class", 403);
+    }
+
+    public async Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request, string? currentTeacherId = null)
+    {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
@@ -178,8 +213,14 @@ public class ClassAppService : IClassService
         return await _classRepository.UpdateAsync(classEntity);
     }
 
-    public async Task<bool> DeleteClassAsync(string classId)
+    public async Task<bool> DeleteClassAsync(string classId, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var classEntity = await _classRepository.GetByIdAsync(Guid.Parse(classId));
         if (classEntity == null)
             throw new ApiException("Class not found", 404);
@@ -191,8 +232,14 @@ public class ClassAppService : IClassService
         return await _classRepository.DeleteAsync(Guid.Parse(classId));
     }
 
-    public async Task<bool> AddStudentToClassAsync(string classId, string studentId)
+    public async Task<bool> AddStudentToClassAsync(string classId, string studentId, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var classGuid = Guid.Parse(classId);
         var studentGuid = Guid.Parse(studentId);
         
@@ -249,9 +296,15 @@ public class ClassAppService : IClassService
         return true;
     }
 
-    public async Task<bool> AddStudentsToClassAsync(AddStudentsToClassRequest request)
+    public async Task<bool> AddStudentsToClassAsync(AddStudentsToClassRequest request, string? currentTeacherId = null)
     {
         var classGuid = request.ClassId;
+        
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classGuid.ToString(), currentTeacherId);
+        }
         
         // Validate class exists
         var classEntity = await _classRepository.GetByIdAsync(classGuid);
@@ -327,8 +380,14 @@ public class ClassAppService : IClassService
         return true;
     }
 
-    public async Task<bool> RemoveStudentFromClassAsync(string classId, string studentId)
+    public async Task<bool> RemoveStudentFromClassAsync(string classId, string studentId, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var classGuid = Guid.Parse(classId);
         var studentGuid = Guid.Parse(studentId);
         
@@ -356,14 +415,26 @@ public class ClassAppService : IClassService
         return result;
     }
 
-    public async Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId)
+    public async Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var students = await _studentRepository.GetStudentsByClassIdAsync(Guid.Parse(classId));
         return _mapper.Map<List<StudentListResponse>>(students);
     }
 
-    public async Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers)
+    public async Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var classGuid = Guid.Parse(classId);
         var duplicates = new List<string>();
 
@@ -390,8 +461,14 @@ public class ClassAppService : IClassService
         return duplicates;
     }
 
-    public async Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds)
+    public async Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds, string? currentTeacherId = null)
     {
+        // Validate ownership
+        if (!string.IsNullOrEmpty(currentTeacherId))
+        {
+            await ValidateClassOwnership(classId, currentTeacherId);
+        }
+
         var result = new BulkEnrollResult
         {
             ClassId = classId,

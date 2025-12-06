@@ -559,7 +559,7 @@ public class UserAppService : IUserService
                     results.Add(new { userId, success = true });
                     successCount++;
                 }
-                }
+                
                 else
                 {
                     results.Add(new { userId, success = false, error = "Operation failed" });
