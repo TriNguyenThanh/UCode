@@ -90,6 +90,7 @@ public class ClassAppService : IClassService
         var teacherGuid = !string.IsNullOrEmpty(teacherId) ? Guid.Parse(teacherId) : (Guid?)null;
         
         // Filter out archived classes for normal users (Teacher/Student views)
+        // GetPagedAsync now includes Teacher and UserClasses automatically
         var classes = await _classRepository.GetPagedAsync(pageNumber, pageSize, c =>
             (teacherGuid == null || c.TeacherId == teacherGuid) &&
             (!isActive.HasValue || c.IsActive == isActive.Value) &&
@@ -102,17 +103,7 @@ public class ClassAppService : IClassService
             !c.IsArchived // Only count non-archived classes
         );
 
-        // Load teachers for each class
-        foreach (var cls in classes)
-        {
-            var fullClass = await _classRepository.GetClassWithTeacherAsync(cls.ClassId);
-            if (fullClass != null)
-            {
-                cls.Teacher = fullClass.Teacher;
-                cls.UserClasses = fullClass.UserClasses;
-            }
-        }
-
+        // No need to load Teacher again - already included in GetPagedAsync
         var classResponses = _mapper.Map<List<ClassResponse>>(classes);
         return new PagedResultDto<ClassResponse>(classResponses, totalCount, pageNumber, pageSize);
     }
@@ -124,14 +115,7 @@ public class ClassAppService : IClassService
         // Filter out archived classes - Teacher không nên thấy classes đã archive
         classes = classes.Where(c => !c.IsArchived).ToList();
         
-        // Load teacher info
-        foreach (var cls in classes)
-        {
-            var fullClass = await _classRepository.GetClassWithTeacherAsync(cls.ClassId);
-            if (fullClass != null)
-                cls.Teacher = fullClass.Teacher;
-        }
-
+        // Teacher info is now loaded in repository
         return _mapper.Map<List<ClassResponse>>(classes);
     }
 

@@ -14,9 +14,9 @@ public class ClassRepository : Repository<Class>, IClassRepository
     public async Task<Class?> GetByClassCodeAsync(string classCode)
     {
         return await _dbSet
-            .Include(c => c.Teacher)
-            .Include(c => c.UserClasses)
-                .ThenInclude(uc => uc.Student)
+            // .Include(c => c.Teacher)
+            // .Include(c => c.UserClasses)
+            //     .ThenInclude(uc => uc.Student)
             .FirstOrDefaultAsync(c => c.ClassCode == classCode);
     }
 
@@ -25,10 +25,16 @@ public class ClassRepository : Repository<Class>, IClassRepository
         return await _dbSet.AnyAsync(c => c.ClassCode == classCode);
     }
 
+    public async Task<int> CountByTeacherIdAsync(Guid teacherId)
+    {
+        return await _dbSet.CountAsync(c => c.TeacherId == teacherId);
+    }
+
     public async Task<List<Class>> GetClassesByTeacherIdAsync(Guid teacherId)
     {
         return await _dbSet
-            .Include(c => c.UserClasses)
+            // .Include(c => c.Teacher)
+            // .Include(c => c.UserClasses)
             .Where(c => c.TeacherId == teacherId)
             .ToListAsync();
     }
@@ -36,8 +42,8 @@ public class ClassRepository : Repository<Class>, IClassRepository
     public async Task<List<Class>> GetClassesByStudentIdAsync(Guid studentId)
     {
         return await _dbSet
-            .Include(c => c.Teacher)
-            .Include(c => c.UserClasses)
+            // .Include(c => c.Teacher)
+            // .Include(c => c.UserClasses)
             .Where(c => c.UserClasses.Any(uc => uc.StudentId == studentId && uc.IsActive))
             .ToListAsync();
     }
@@ -45,9 +51,9 @@ public class ClassRepository : Repository<Class>, IClassRepository
     public async Task<Class?> GetClassWithStudentsAsync(Guid classId)
     {
         return await _dbSet
-            .Include(c => c.Teacher)
-            .Include(c => c.UserClasses)
-                .ThenInclude(uc => uc.Student)
+            // .Include(c => c.Teacher)
+            // .Include(c => c.UserClasses)
+            //     .ThenInclude(uc => uc.Student)
             .FirstOrDefaultAsync(c => c.ClassId == classId);
     }
 
@@ -57,6 +63,21 @@ public class ClassRepository : Repository<Class>, IClassRepository
             .Include(c => c.Teacher)
             .Include(c => c.UserClasses)
             .FirstOrDefaultAsync(c => c.ClassId == classId);
+    }
+
+    public override async Task<List<Class>> GetPagedAsync(int pageNumber, int pageSize, System.Linq.Expressions.Expression<Func<Class, bool>>? filter = null)
+    {
+        IQueryable<Class> query = _dbSet
+            .Include(c => c.Teacher)
+            .Include(c => c.UserClasses);
+
+        if (filter != null)
+            query = query.Where(filter);
+
+        return await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
     }
 }
 
