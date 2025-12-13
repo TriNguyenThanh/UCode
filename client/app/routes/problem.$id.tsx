@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/problem.$id'
 import { auth } from '~/auth'
+import { Navigation } from '~/components/Navigation'
 import {
   Box,
   Typography,

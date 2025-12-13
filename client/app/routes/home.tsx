@@ -24,7 +24,7 @@ import ClassIcon from '@mui/icons-material/Class'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { mockPracticeCategories } from '~/data/mock'
 import type { ApiResponse, PagedResponse, Class, Assignment } from '~/types'
-import { getStudentAssignments, getMyAssignments } from '~/services/assignmentService'
+import { getAllStudentAssignments, getMyAssignments } from '~/services/assignmentService'
 import * as StudentService from '~/services/studentService'
 
 export const meta: Route.MetaFunction = () => [
@@ -81,7 +81,7 @@ export async function clientLoader({}: Route.ClientLoaderArgs) {
     let allAssignments: Assignment[] = []
     try {
       if (user.role === 'student') {
-        allAssignments = await getStudentAssignments()
+        allAssignments = await getAllStudentAssignments()
       } else if (user.role === 'teacher') {
         allAssignments = await getMyAssignments()
       }

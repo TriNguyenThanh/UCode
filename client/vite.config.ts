@@ -34,25 +34,25 @@ export default defineConfig({
     ],
   },
   
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('@mui/material') || id.includes('@mui/icons-material')) {
-            return 'mui' 
-          }
+  // build: {
+  //   rollupOptions: {
+  //     output: {
+  //       manualChunks(id) {
+  //         if (id.includes('@mui/material') || id.includes('@mui/icons-material')) {
+  //           return 'mui' 
+  //         }
           
-          if (id.includes('react-syntax-highlighter')) {
-            return 'syntax-highlighter'
-          }
+  //         if (id.includes('react-syntax-highlighter')) {
+  //           return 'syntax-highlighter'
+  //         }
           
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
-        },
+  //         if (id.includes('node_modules')) {
+  //           return 'vendor'
+  //         }
+  //       },
       
-      },
-    },
-    chunkSizeWarningLimit: 1000,
-  },
+  //     },
+  //   },
+  //   chunkSizeWarningLimit: 1000,
+  // },
 })
