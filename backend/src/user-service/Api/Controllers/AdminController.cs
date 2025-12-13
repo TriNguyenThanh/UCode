@@ -5,6 +5,7 @@ using UserService.Application.DTOs.Requests;
 using UserService.Application.DTOs.Admin;
 using UserService.Application.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -18,6 +19,16 @@ public class AdminController : ControllerBase
 {
     private readonly IClassService _classService;
     private readonly IUserService _userService;
+
+    /// <summary>
+    /// Helper method để lấy UserId từ JWT token
+    /// </summary>
+    private string GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+    }
 
     public AdminController(IClassService classService, IUserService userService)
     {
@@ -386,7 +397,8 @@ public class AdminController : ControllerBase
     [SwaggerResponse(404, "Không tìm thấy người dùng", typeof(ApiResponse<object>))]
     public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserByAdminRequest request)
     {
-        var result = await _userService.UpdateUserByAdminAsync(userId, request);
+        var currentUserId = GetCurrentUserId();
+        var result = await _userService.UpdateUserByAdminAsync(userId, request, currentUserId);
         return Ok(ApiResponse<object>.SuccessResponse(result, "User updated successfully"));
     }
 
@@ -405,7 +417,8 @@ public class AdminController : ControllerBase
     [SwaggerResponse(404, "Không tìm thấy người dùng", typeof(ApiResponse<object>))]
     public async Task<IActionResult> DeleteUser(string userId)
     {
-        var result = await _userService.DeleteUserByAdminAsync(userId);
+        var currentUserId = GetCurrentUserId();
+        var result = await _userService.DeleteUserByAdminAsync(userId, currentUserId);
         return Ok(ApiResponse<object>.SuccessResponse(result, "User deleted successfully"));
     }
 
@@ -422,10 +435,12 @@ public class AdminController : ControllerBase
     [SwaggerResponse(200, "Kết quả thực hiện", typeof(ApiResponse<object>))]
     public async Task<IActionResult> BulkAction([FromBody] BulkUserActionRequest request)
     {
+        var currentUserId = GetCurrentUserId();
         var result = await _userService.BulkActionAsync(
             request.Action, 
             request.UserIds, 
-            request.NewRole);
+            request.NewRole,
+            currentUserId);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Bulk action completed"));
     }
 }

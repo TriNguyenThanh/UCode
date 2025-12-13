@@ -12,15 +12,18 @@ namespace UserService.Infrastructure.Services;
 public class TeacherAppService : ITeacherService
 {
     private readonly ITeacherRepository _teacherRepository;
+    private readonly IClassRepository _classRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
 
     public TeacherAppService(
         ITeacherRepository teacherRepository,
+        IClassRepository classRepository,
         IUserRepository userRepository,
         IMapper mapper)
     {
         _teacherRepository = teacherRepository;
+        _classRepository = classRepository;
         _userRepository = userRepository;
         _mapper = mapper;
     }
@@ -58,14 +61,23 @@ public class TeacherAppService : ITeacherService
 
     public async Task<TeacherResponse?> GetTeacherByIdAsync(string teacherId)
     {
-        var teacher = await _teacherRepository.GetTeacherWithClassesAsync(Guid.Parse(teacherId));
-        return teacher != null ? _mapper.Map<TeacherResponse>(teacher) : null;
+        var teacherGuid = Guid.Parse(teacherId);
+        var teacher = await _teacherRepository.GetByIdAsync(teacherGuid);
+        if (teacher == null) return null;
+        
+        var response = _mapper.Map<TeacherResponse>(teacher);
+        response.ClassCount = await _classRepository.CountByTeacherIdAsync(teacherGuid);
+        return response;
     }
 
     public async Task<TeacherResponse?> GetTeacherByTeacherCodeAsync(string teacherCode)
     {
         var teacher = await _teacherRepository.GetByTeacherCodeAsync(teacherCode);
-        return teacher != null ? _mapper.Map<TeacherResponse>(teacher) : null;
+        if (teacher == null) return null;
+        
+        var response = _mapper.Map<TeacherResponse>(teacher);
+        response.ClassCount = await _classRepository.CountByTeacherIdAsync(teacher.UserId);
+        return response;
     }
 
     public async Task<PagedResultDto<TeacherResponse>> GetTeachersAsync(int pageNumber, int pageSize, string? department = null)
@@ -86,6 +98,13 @@ public class TeacherAppService : ITeacherService
         }
 
         var teacherResponses = _mapper.Map<List<TeacherResponse>>(teachers);
+        
+        // Set ClassCount for each teacher
+        foreach (var response in teacherResponses)
+        {
+            response.ClassCount = await _classRepository.CountByTeacherIdAsync(response.UserId);
+        }
+        
         return new PagedResultDto<TeacherResponse>(teacherResponses, totalCount, pageNumber, pageSize);
     }
 

@@ -31,7 +31,7 @@ namespace UCode.Desktop.ViewModels
         public ObservableCollection<DatasetKind> DatasetKindOptions { get; } = new()
         {
             DatasetKind.SAMPLE,
-            DatasetKind.PUBLIC,
+            //DatasetKind.PUBLIC,
             DatasetKind.PRIVATE,
             DatasetKind.OFFICIAL
         };

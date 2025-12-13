@@ -22,6 +22,9 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        
+        // Register cleanup on app exit
+        Exit += OnApplicationExit;
 
         // Prevent app from closing when login window closes
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -65,10 +68,11 @@ public partial class App : Application
                 var autoLoginTask = authService.TryAutoLoginAsync();
                 autoLoginTask.Wait();
                 autoLoginSuccess = autoLoginTask.Result;
+                System.IO.File.AppendAllText(logPath, $"Auto-login result: {autoLoginSuccess}\n");
             }
             catch (Exception ex)
             {
-                System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n");
+                System.IO.File.AppendAllText(logPath, $"Auto-login exception: {ex.Message}\n{ex.StackTrace}\n");
                 autoLoginSuccess = false;
             }
 
@@ -77,14 +81,14 @@ public partial class App : Application
                 System.IO.File.AppendAllText(logPath, "Auto-login successful, opening main window...\n");
                 // Auto-login successful, open main window based on user role
                 var user = authService.CurrentUser;
-                
+
                 // Debug logging
                 System.IO.File.AppendAllText(logPath, $"User Role: {user?.Role} (Enum value: {(int?)user?.Role})\n");
                 System.IO.File.AppendAllText(logPath, $"Comparing with UserRole.Admin: {Models.UserRole.Admin} (Enum value: {(int)Models.UserRole.Admin})\n");
-                
+
                 // Change shutdown mode to close when main window closes
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
-                
+
                 if (user?.Role == Models.UserRole.Admin)
                 {
                     System.IO.File.AppendAllText(logPath, "✅ Opening AdminMainWindow...\n");
@@ -212,6 +216,7 @@ public partial class App : Application
         services.AddTransient<ProblemSolverViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<TeacherProfileViewModel>();
+        services.AddTransient<StudentProfileViewModel>();
 
         // ViewModels - Teacher
         services.AddTransient<TeacherHomeViewModel>();
@@ -247,7 +252,7 @@ public partial class App : Application
         services.AddTransient<MainWindow>();
         // services.AddTransient<ClassDetailWindow>(); // ← Đã chuyển sang Page
         // services.AddTransient<AssignmentDetailWindow>(); // ← Đã chuyển sang Page
-        services.AddTransient<ProblemSolverWindow>();
+        // services.AddTransient<ProblemSolverWindow>(); // ← Đã chuyển sang Page
 
         // Views - Admin
         services.AddTransient<Views.AdminMainWindow>();
@@ -292,12 +297,38 @@ public partial class App : Application
         // Pages - Student (for navigation)
         services.AddTransient<Views.Students.ClassDetailPage>();
         services.AddTransient<Views.Students.AssignmentDetailPage>();
+        services.AddTransient<Pages.ProblemSolverPage>();
         // Pages - Admin (for navigation)
         services.AddTransient<Pages.Admin.AdminHomePage>();
         services.AddTransient<Pages.Admin.AdminUsersPage>();
-        
+
         // Pages - Common
         services.AddTransient<Pages.SettingsPage>();
         services.AddTransient<Pages.TeacherProfilePage>();
+        services.AddTransient<Pages.StudentProfilePage>(sp =>
+        {
+            var page = new Pages.StudentProfilePage();
+            page.DataContext = sp.GetRequiredService<StudentProfileViewModel>();
+            return page;
+        });
+    }
+
+    private void OnApplicationExit(object sender, ExitEventArgs e)
+    {
+        try
+        {
+            // Stop AI Detector when app closes
+            var aiDetectorService = ServiceProvider?.GetService<AIDetectorService>();
+            if (aiDetectorService != null)
+            {
+                aiDetectorService.StopAIDetector();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't prevent app from closing
+            var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cleanup_error.log");
+            System.IO.File.WriteAllText(logPath, $"Error during cleanup at {DateTime.Now}\n{ex.Message}\n{ex.StackTrace}");
+        }
     }
 }

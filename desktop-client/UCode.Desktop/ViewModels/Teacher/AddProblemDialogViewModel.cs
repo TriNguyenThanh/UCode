@@ -206,6 +206,12 @@ namespace UCode.Desktop.ViewModels
 
                     foreach (var problem in response.Data.Items)
                     {
+                        // Skip PRIVATE problems - only show PUBLIC problems
+                        if (problem.Visibility == Models.Enums.Visibility.PRIVATE)
+                        {
+                            continue;
+                        }
+
                         var existing = _existingProblems.FirstOrDefault(p => p.ProblemId == problem.ProblemId);
 
                         var problemItem = new ProblemItemViewModel

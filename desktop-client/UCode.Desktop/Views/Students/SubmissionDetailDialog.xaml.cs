@@ -1,9 +1,10 @@
+using MahApps.Metro.Controls;
 using System.Windows;
 using UCode.Desktop.Models;
 
 namespace UCode.Desktop.Views.Students
 {
-    public partial class SubmissionDetailDialog : Window
+    public partial class SubmissionDetailDialog : MetroWindow
     {
         public SubmissionDetailDialog(Submission submission)
         {

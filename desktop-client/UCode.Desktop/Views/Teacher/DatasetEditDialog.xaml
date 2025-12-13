@@ -248,7 +248,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <iconPacks:PackIconMaterial Kind="InformationOutline" Width="20" Height="20" Foreground="#2196F3" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Chưa có test case nào. Nhấn 'Thêm Test Case' để bắt đầu." 
-                                           Foreground="#1976D2" FontSize="16" TextWrapping="Wrap"/>
+                                           Foreground="#1976D2" FontSize="16" TextWrapping="Wrap" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 

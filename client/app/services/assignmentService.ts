@@ -158,10 +158,22 @@ export async function getAssignmentStatistics(
 /**
  * Gets all assignments assigned to the current student
  */
-export async function getStudentAssignments(): Promise<Assignment[]> {
+export async function getAllStudentAssignments(): Promise<Assignment[]> {
   try {
     const response = await API.get<ApiResponse<Assignment[]>>(
       '/api/v1/assignments/student/my-assignments',
+    )
+    return unwrapApiResponse(response.data)
+  } catch (error) {
+    handleApiError(error)
+  }
+}
+
+//get trong class
+export async function getStudentAssignmentsByClass(classId: string): Promise<Assignment[]> {
+  try {
+    const response = await API.get<ApiResponse<Assignment[]>>(
+      `/api/v1/assignments/student/class/${classId}`,
     )
     return unwrapApiResponse(response.data)
   } catch (error) {

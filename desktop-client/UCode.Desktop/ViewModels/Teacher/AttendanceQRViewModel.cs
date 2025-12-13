@@ -36,7 +36,7 @@ namespace UCode.Desktop.ViewModels
         public AttendanceQRViewModel(string sessionCode, string sessionTitle)
         {
             SessionTitle = sessionTitle;
-            AttendanceUrl = $"https://ucode.edu.vn/attendance/{sessionCode}";
+            AttendanceUrl = $"https://ucode.io.vn/attendance/{sessionCode}";
 
             CopyUrlCommand = new RelayCommand(_ => CopyUrl());
 

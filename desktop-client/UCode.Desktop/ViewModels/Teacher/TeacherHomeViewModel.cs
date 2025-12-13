@@ -302,27 +302,7 @@ namespace UCode.Desktop.ViewModels
         {
             if (!string.IsNullOrEmpty(assignmentId) && _navigationService != null)
             {   
-                // Cái này để test bên teacher, sau đó chuyển sang student nhé///////////////////////////
-                var response = await _assignmentService.GetAssignmentAsync(assignmentId);
-
-                if (response.Success && response.Data != null)
-                {
-                    var assignment = response.Data;
-
-                    if (assignment.AssignmentType == AssignmentType.EXAMINATION)
-                    {
-                        if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
-                        {
-                            return;
-                        }
-                        _aiDetectorService.StartAutoMonitor();
-                    }
-                    //else
-                    //{
-                    //    //return;
-                    //}
-                }
-                  ///////////////////////////// test ////////////////////////////// 
+                
 
                 var assignmentPage = App.ServiceProvider.GetService(typeof(Pages.TeacherAssignmentPage)) as Pages.TeacherAssignmentPage;
                 if (assignmentPage != null)

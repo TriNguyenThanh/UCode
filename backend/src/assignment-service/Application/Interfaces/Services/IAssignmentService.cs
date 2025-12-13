@@ -15,6 +15,7 @@ public interface IAssignmentService
     Task<List<Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId);
     Task<List<Assignment>> GetAssignmentsByStudentAsync(Guid studentId);
     Task<List<Assignment>> GetAssignmentsByClassIdAsync(Guid classId);
+    Task<List<Assignment>> GetAssignmentsByStudentInClassAsync(Guid studentId, Guid classId);
     
     // Lightweight queries for ownership verification
     Task<Guid?> GetAssignmentOwnerIdAsync(Guid assignmentId);

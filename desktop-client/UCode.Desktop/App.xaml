@@ -42,7 +42,7 @@
             <helpers:LogTypeToVisibilityConverter x:Key="LogTypeToVisibilityConverter"/>
             <helpers:SectionVisibilityConverter x:Key="SectionVisibilityConverter"/>
             <helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <helpers:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->
             <Color x:Key="PrimaryColor">#191970</Color>

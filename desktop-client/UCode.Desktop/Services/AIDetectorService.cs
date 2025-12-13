@@ -1,4 +1,4 @@
-﻿using MahApps.Metro.Controls.Dialogs;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -38,8 +38,10 @@ namespace UCode.Desktop.Services
             try
             {
                 var result = await _viewModel.GetMetroWindow()?.ShowMessageAsync(
-                            "Xác nhận",
-                            "Đây là Bài kiểm tra, trong quá trình kiểm tra sẽ bắt hết các trình sử dụng AI, vui lòng chú ý",
+                            "Lưu ý quan trọng:",
+                            "   - Đây là Bài kiểm tra, trong quá trình kiểm tra sẽ bắt hết các trình sử dụng AI" + 
+                            "   - Không sử dụng bạn nhé!!!!!!!!!11"  ,
+                             
                             MessageDialogStyle.AffirmativeAndNegative
                         );
 
@@ -94,20 +96,84 @@ namespace UCode.Desktop.Services
 
         public void StopAIDetector()
         {
-            // Gửi lệnh stop qua API
             try
             {
-                using (var client = new HttpClient())
+                // Stop the timer first
+                if (_checkTimer != null)
                 {
-                    client.PostAsync("http://localhost:1701/stop", null).Wait();
+                    _checkTimer.Stop();
+                    _checkTimer.Dispose();
+                    _checkTimer = null;
                 }
+
+                // Stop file watcher
+                if (_flagWatcher != null)
+                {
+                    _flagWatcher.EnableRaisingEvents = false;
+                    _flagWatcher.Dispose();
+                    _flagWatcher = null;
+                }
+
+                // Send stop command via API
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.Timeout = TimeSpan.FromSeconds(2);
+                        var task = client.PostAsync("http://localhost:1701/stop", null);
+                        task.Wait(2000); // Wait max 2 seconds
+                    }
+                }
+                catch { /* Ignore API errors */ }
+
+                // Stop the process
+                if (_aiProcess != null && !_aiProcess.HasExited)
+                {
+                    try
+                    {
+                        // Try graceful shutdown first
+                        _aiProcess.CloseMainWindow();
+                        
+                        // Wait up to 3 seconds for graceful exit
+                        if (!_aiProcess.WaitForExit(3000))
+                        {
+                            // Force kill if still running
+                            _aiProcess.Kill();
+                            _aiProcess.WaitForExit(1000);
+                        }
+                    }
+                    catch { /* Process might already be terminated */ }
+                    finally
+                    {
+                        _aiProcess?.Dispose();
+                        _aiProcess = null;
+                    }
+                }
+
+                // Kill any remaining processes by name (in case of orphaned processes)
+                try
+                {
+                    var processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(_aiExeName));
+                    foreach (var proc in processes)
+                    {
+                        try
+                        {
+                            if (!proc.HasExited)
+                            {
+                                proc.Kill();
+                                proc.WaitForExit(1000);
+                            }
+                            proc.Dispose();
+                        }
+                        catch { /* Ignore individual process errors */ }
+                    }
+                }
+                catch { /* Ignore process enumeration errors */ }
             }
-            catch { }
-            if (_aiProcess != null && !_aiProcess.HasExited)
+            catch (Exception ex)
             {
-                _aiProcess.WaitForExit(3000);
-                if (!_aiProcess.HasExited)
-                    _aiProcess.Kill();
+                // Log error but don't throw
+                Debug.WriteLine($"Error stopping AI Detector: {ex.Message}");
             }
         }
 

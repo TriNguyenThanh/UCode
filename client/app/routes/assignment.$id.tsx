@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link, useNavigation } from 'react-router'
+import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/assignment.$id'
 import { auth } from '~/auth'
 import { Navigation } from '~/components/Navigation'
@@ -29,7 +29,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { getMyAssignmentDetail, getAssignment, startAssignment } from '~/services/assignmentService'
 import { getListBestSubmissions } from '~/services/submissionService'
 import type { Assignment, AssignmentUser, BestSubmission, Problem } from '~/types'
-import { Loading } from '~/components/Loading'
 import { useNavigate } from 'react-router'
 import { formatDateTime, getDaysUntil } from '~/utils/dateUtils'
 import { useExamMonitoring } from '~/utils/useExamMonitoring'
@@ -99,9 +98,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export default function AssignmentDetail() {
   const { user, assignment, assignmentUser, problems, problemSubmissions } = useLoaderData<typeof clientLoader>()
-  const navigation = useNavigation()
   const navigate = useNavigate()
-  const isLoading = navigation.state === 'loading'
   
   const [startDialogOpen, setStartDialogOpen] = React.useState(false)
   const [selectedProblemId, setSelectedProblemId] = React.useState<string | null>(null)
@@ -180,15 +177,7 @@ export default function AssignmentDetail() {
 
   const isOverdue = daysLeft !== null && daysLeft < 0
 
-  // Show loading screen while navigation is in progress
-  if (isLoading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>
-        <Navigation />
-        <Loading fullScreen message="Đang tải thông tin bài tập..." />
-      </Box>
-    )
-  }
+  // Loading now handled by root.tsx global loading
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f7' }}>

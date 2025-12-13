@@ -1,11 +1,10 @@
 import * as React from 'react'
-import { useLoaderData, redirect, Link, useNavigation, useNavigate } from 'react-router'
+import { useLoaderData, redirect, Link, useNavigate } from 'react-router'
 import type { Route } from './+types/class.$id'
 import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
-import { getAssignmentStudents, getStudentAssignments } from '~/services/assignmentService'
+import { getStudentAssignmentsByClass } from '~/services/assignmentService'
 import { Navigation } from '~/components/Navigation'
-import { Loading } from '~/components/Loading'
 import type { Assignment, AssignmentStatus } from '~/types'
 import {
   Container,
@@ -45,10 +44,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   try {
     // Student chỉ cần thông tin cơ bản của class, không cần detail với danh sách sinh viên
     const classData = await ClassService.getClassById(params.id)
-    
-    // TODO: assignments need to come from assignment-service
-    // For now, assignments will be an empty array
-    const assignments = await getStudentAssignments()
+  
+    const assignments = await getStudentAssignmentsByClass(params.id)
 
     return { user, classData, assignments }
   } catch (error) {
@@ -59,9 +56,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export default function ClassDetail() {
   const { classData, assignments, user } = useLoaderData<typeof clientLoader>()
-  const navigation = useNavigation()
   const navigate = useNavigate()
-  const isLoading = navigation.state === 'loading'
   
   const [examDialogOpen, setExamDialogOpen] = React.useState(false)
   const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null)
@@ -178,14 +173,7 @@ export default function ClassDetail() {
   }
 
   // Show loading screen while navigation is in progress
-  if (isLoading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-        <Navigation />
-        <Loading fullScreen message="Đang tải thông tin lớp học..." />
-      </Box>
-    )
-  }
+  // Now handled by root.tsx global loading
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>

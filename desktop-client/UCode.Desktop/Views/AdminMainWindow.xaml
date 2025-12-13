@@ -13,7 +13,12 @@
                  WindowStartupLocation="CenterScreen"
                  TitleCharacterCasing="Normal"
                  GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
-                 BorderThickness="1">
+                 BorderThickness="1"
+                 TextOptions.TextFormattingMode="Ideal"
+                 TextOptions.TextRenderingMode="Auto"
+                RenderOptions.BitmapScalingMode="HighQuality"
+                WindowState="Maximized"
+                 >
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
@@ -90,14 +95,15 @@
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToHomeCommand}"
                             Padding="20,15"
-                            HorizontalContentAlignment="Left">
+                            HorizontalContentAlignment="Left"
+                            Cursor="Hand">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="ViewDashboard"
                                                       Width="20"
                                                       Height="20"
                                                       VerticalAlignment="Center"
                                                       Foreground="{DynamicResource MahApps.Brushes.Accent}"/>
-                            <TextBlock Text="Dashboard"
+                            <TextBlock Text="Tổng quan"
                                       FontSize="14"
                                       VerticalAlignment="Center"
                                       Margin="15,0,0,0"/>
@@ -108,14 +114,15 @@
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToUsersCommand}"
                             Padding="20,15"
-                            HorizontalContentAlignment="Left">
+                            HorizontalContentAlignment="Left"
+                            Cursor="Hand">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="AccountGroup"
                                                       Width="20"
                                                       Height="20"
                                                       VerticalAlignment="Center"
                                                       Foreground="{DynamicResource MahApps.Brushes.Accent}"/>
-                            <TextBlock Text="Users"
+                            <TextBlock Text="Người dùng"
                                       FontSize="14"
                                       VerticalAlignment="Center"
                                       Margin="15,0,0,0"/>
@@ -126,14 +133,15 @@
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToClassesCommand}"
                             Padding="20,15"
-                            HorizontalContentAlignment="Left">
+                            HorizontalContentAlignment="Left"
+                            Cursor="Hand">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="GoogleClassroom"
                                                       Width="20"
                                                       Height="20"
                                                       VerticalAlignment="Center"
                                                       Foreground="{DynamicResource MahApps.Brushes.Accent}"/>
-                            <TextBlock Text="Classes"
+                            <TextBlock Text="Lớp học"
                                       FontSize="14"
                                       VerticalAlignment="Center"
                                       Margin="15,0,0,0"/>
@@ -144,14 +152,15 @@
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToLogsCommand}"
                             Padding="20,15"
-                            HorizontalContentAlignment="Left">
+                            HorizontalContentAlignment="Left"
+                            Cursor="Hand">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="FileDocument"
                                                       Width="20"
                                                       Height="20"
                                                       VerticalAlignment="Center"
                                                       Foreground="{DynamicResource MahApps.Brushes.Accent}"/>
-                            <TextBlock Text="Logs"
+                            <TextBlock Text="Nhật ký hệ thống (đang phát triển)"
                                       FontSize="14"
                                       VerticalAlignment="Center"
                                       Margin="15,0,0,0"/>
@@ -162,14 +171,15 @@
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToSettingsCommand}"
                             Padding="20,15"
-                            HorizontalContentAlignment="Left">
+                            HorizontalContentAlignment="Left"
+                            Cursor="Hand">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="Cog"
                                                       Width="20"
                                                       Height="20"
                                                       VerticalAlignment="Center"
                                                       Foreground="{DynamicResource MahApps.Brushes.Accent}"/>
-                            <TextBlock Text="Settings"
+                            <TextBlock Text="Cài đặt (Sẽ phát triển)"
                                       FontSize="14"
                                       VerticalAlignment="Center"
                                       Margin="15,0,0,0"/>

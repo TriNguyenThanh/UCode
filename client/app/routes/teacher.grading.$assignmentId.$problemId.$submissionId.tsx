@@ -79,8 +79,6 @@ export default function SubmissionGrading() {
   const [error, setError] = useState<string | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const isLoading = navigation.state === 'loading'
-
   // Detect when submissionId changes to show loading
   useEffect(() => {
     setIsTransitioning(false)
@@ -133,12 +131,12 @@ export default function SubmissionGrading() {
 
   const isPassed = submission.passedTestcase === submission.totalTestcase
 
-  // Show loading screen while navigation is in progress
-  if (isLoading || isTransitioning) {
+  // Show loading screen while transitioning between submissions
+  if (isTransitioning) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
         <Navigation />
-        <Loading fullScreen message="Đang tải dữ liệu..." />
+        <Loading fullScreen message="Đang tải..." />
       </Box>
     )
   }

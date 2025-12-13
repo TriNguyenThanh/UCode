@@ -44,10 +44,23 @@ public class ProblemService : IProblemService
                 OwnerId = ownerId,
                 Slug = GenerateSlug(title),
                 Visibility = visibility,
-                Status = ProblemStatus.DRAFT
+                Status = ProblemStatus.PUBLISHED
             };
 
-            return await _problemRepository.AddAsync(problem);
+           
+            var addedProblem = await _problemRepository.AddAsync(problem);
+
+            var languageDtos = await _languageService.GetAllLanguagesAsync(includeDisabled: false);
+
+            await this.AddOrUpdateProblemLanguagesAsync(addedProblem.ProblemId,
+                languageDtos.Select(lang => new ProblemLanguageDto
+                {
+                    LanguageId = lang.LanguageId,
+                    IsAllowed = true
+                }).ToList());
+                
+            return addedProblem;
+
         }
         catch (DbException ex)
         {

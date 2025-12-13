@@ -14,7 +14,6 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
     public async Task<Teacher?> GetByTeacherCodeAsync(string teacherCode)
     {
         return await _dbSet
-            .Include(t => t.Classes)
             .FirstOrDefaultAsync(t => t.TeacherCode == teacherCode);
     }
 
@@ -35,7 +34,6 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
         return await _dbSet
             .Include(t => t.Classes)
                 .ThenInclude(c => c.UserClasses)
-                    .ThenInclude(uc => uc.Student)
             .FirstOrDefaultAsync(t => t.UserId == teacherId);
     }
 }

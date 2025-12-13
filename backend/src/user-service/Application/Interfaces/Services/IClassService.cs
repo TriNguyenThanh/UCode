@@ -12,22 +12,26 @@ public interface IClassService
     Task<PagedResultDto<ClassResponse>> GetClassesAsync(int pageNumber, int pageSize, string? teacherId = null, bool? isActive = null);
     Task<List<ClassResponse>> GetClassesByTeacherIdAsync(string teacherId);
     Task<List<ClassResponse>> GetClassesByStudentIdAsync(string studentId); // New: Get enrolled classes for student
-    Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request);
-    Task<bool> DeleteClassAsync(string classId);
-    Task<bool> AddStudentToClassAsync(string classId, string studentId);
-    Task<bool> AddStudentsToClassAsync(AddStudentsToClassRequest request);
-    Task<bool> RemoveStudentFromClassAsync(string classId, string studentId);
-    Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId);
+    Task<bool> UpdateClassAsync(string classId, UpdateClassRequest request, string? currentTeacherId = null);
+    Task<bool> DeleteClassAsync(string classId, string? currentTeacherId = null);
+    Task<bool> AddStudentToClassAsync(string classId, string studentId, string? currentTeacherId = null);
+    Task<bool> AddStudentsToClassAsync(AddStudentsToClassRequest request, string? currentTeacherId = null);
+    Task<bool> RemoveStudentFromClassAsync(string classId, string studentId, string? currentTeacherId = null);
+    Task<List<StudentListResponse>> GetStudentListByClassAsync(string classId, string? currentTeacherId = null);
+    
+    // Ownership validation
+    Task<bool> IsClassOwnerAsync(string classId, string teacherId);
+    Task<bool> IsStudentEnrolledAsync(string classId, string studentId);
     
     /// <summary>
     /// Check duplicate students trong class
     /// </summary>
-    Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers);
+    Task<List<string>> CheckDuplicatesAsync(string classId, List<string> identifiers, string? currentTeacherId = null);
     
     /// <summary>
     /// Bulk enroll students vào class
     /// </summary>
-    Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds);
+    Task<BulkEnrollResult> BulkEnrollStudentsAsync(string classId, List<string> studentIds, string? currentTeacherId = null);
 
     // ===== ADMIN METHODS =====
     

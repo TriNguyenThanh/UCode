@@ -17,14 +17,24 @@ public class SubmissionRepository : ISubmissionRepository
 
     public async Task<Submission> AddSubmission(Submission submission)
     {
-        _context.Submissions.Add(submission);
-        if (await _context.SaveChangesAsync() > 0)
+        try
         {
-            Console.WriteLine($"[x] Added submission {submission.SubmissionId} to database");
-            return submission;
+            _context.Submissions.Add(submission);
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                Console.WriteLine($"[x] Added submission {submission.SubmissionId} to database");
+                return submission;
+            }
+            Console.WriteLine($"[x] Failed to add submission to database");
+            return new Submission();
         }
-        Console.WriteLine($"[x] Failed to add submission to database");
-        return new Submission();
+        catch (Exception ex)
+        {
+            var innerMessage = ex.InnerException?.Message ?? "No inner exception";
+            Console.WriteLine($"[AddSubmission Error] {ex.Message}");
+            Console.WriteLine($"[AddSubmission Inner Error] {innerMessage}");
+            throw new Exception($"{ex.Message} Inner: {innerMessage}", ex);
+        }
     }
 
     public async Task<bool> DeleteSubmission(Guid submissionId)

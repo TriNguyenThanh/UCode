@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace UCode.Desktop.Models
 {
@@ -24,14 +26,95 @@ namespace UCode.Desktop.Models
         public AssignmentStatistics? Statistics { get; set; }
     }
 
-    public class AssignmentProblemDetail
+    public class AssignmentProblemDetail : INotifyPropertyChanged
     {
+        private bool _isCompleted;
+        private int _passedTestcases;
+        private int _totalTestcases;
+        private int _earnedPoints;
+        private int _submissionCount;
+
         public string ProblemId { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Difficulty { get; set; } = string.Empty;
         public int Points { get; set; }
         public int OrderIndex { get; set; }
+
+        // Computed properties for UI
+        public string ProblemCode => Code;
+
+        public bool IsCompleted
+        {
+            get => _isCompleted;
+            set
+            {
+                if (_isCompleted != value)
+                {
+                    _isCompleted = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int PassedTestcases
+        {
+            get => _passedTestcases;
+            set
+            {
+                if (_passedTestcases != value)
+                {
+                    _passedTestcases = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int TotalTestcases
+        {
+            get => _totalTestcases;
+            set
+            {
+                if (_totalTestcases != value)
+                {
+                    _totalTestcases = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int EarnedPoints
+        {
+            get => _earnedPoints;
+            set
+            {
+                if (_earnedPoints != value)
+                {
+                    _earnedPoints = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int SubmissionCount
+        {
+            get => _submissionCount;
+            set
+            {
+                if (_submissionCount != value)
+                {
+                    _submissionCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class AssignmentStatistics
@@ -59,6 +142,7 @@ namespace UCode.Desktop.Models
         public int CapturedAICount { get; set; }
         public string? AiDetectionDetails { get; set; }
         public UserInfo User { get; set; }
+        public Assignment Assignment { get; set; }
     }
 
     public class UserInfo
@@ -95,7 +179,7 @@ namespace UCode.Desktop.Models
 
         // Calculated properties for display
         public string UserStudentCode => UserCode;
-        
+
         public string StatusDisplay => Status switch
         {
             "Passed" => "Đạt",
