@@ -25,7 +25,21 @@ public class DatasetService : IDatasetService
     {
         try
         {
+            // Check if a dataset of the same kind already exists for this problem
+            var existingDatasets = await _datasetRepository.GetByProblemIdAsync(dataset.ProblemId, dataset.Kind);
+            
+            if (existingDatasets != null && existingDatasets.Any())
+            {
+                var kindName = dataset.Kind == DatasetKind.SAMPLE ? "SAMPLE" : "OFFICIAL";
+                throw new ApiException($"A {kindName} dataset already exists for this problem. Only one {kindName} dataset is allowed per problem. ", 400);
+            }
+            
             return await _datasetRepository.AddAsync(dataset);
+        }
+        catch (ApiException)
+        {
+            // Re-throw ApiException as-is
+            throw;
         }
         catch (DbException ex)
         {
@@ -105,7 +119,32 @@ public class DatasetService : IDatasetService
     {
         try
         {
+            // Get the existing dataset to check if DatasetKind is being changed
+            var existingDataset = await _datasetRepository.GetByIdAsync(dataset.DatasetId);
+            
+            if (existingDataset == null)
+            {
+                throw new ApiException("Dataset not found", 404);
+            }
+            
+            // If DatasetKind is being changed, check if the new kind already exists for this problem
+            if (existingDataset.Kind != dataset.Kind)
+            {
+                var datasetsWithNewKind = await _datasetRepository.GetByProblemIdAsync(dataset.ProblemId, dataset.Kind);
+                
+                if (datasetsWithNewKind != null && datasetsWithNewKind.Any())
+                {
+                    var kindName = dataset.Kind == DatasetKind.SAMPLE ? "SAMPLE" : "OFFICIAL";
+                    throw new ApiException($"A {kindName} dataset already exists for this problem. Only one {kindName} dataset is allowed per problem. ", 400);
+                }
+            }
+            
             return await _datasetRepository.UpdateAsync(dataset);
+        }
+        catch (ApiException)
+        {
+            // Re-throw ApiException as-is
+            throw;
         }
         catch (DbException ex)
         {

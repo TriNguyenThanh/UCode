@@ -3,16 +3,16 @@ using System;
 using AssignmentService.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251123211340_InitDb")]
+    [Migration("20251201084720_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -21,74 +21,74 @@ namespace Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("AssignmentService.Domain.Entities.Assignment", b =>
                 {
                     b.Property<Guid>("AssignmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_id");
 
                     b.Property<bool>("AllowLateSubmission")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("allow_late_submission");
 
                     b.Property<DateTime?>("AssignedAt")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("assigned_at");
 
                     b.Property<Guid>("AssignedBy")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assigned_by");
 
                     b.Property<string>("AssignmentType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("assignment_type");
 
                     b.Property<Guid>("ClassId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("class_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
                     b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
 
                     b.Property<DateTime?>("StartTime")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasDefaultValue("DRAFT")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("title");
 
                     b.Property<int?>("TotalPoints")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("total_points");
 
                     b.HasKey("AssignmentId")
@@ -112,20 +112,20 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("AssignmentService.Domain.Entities.AssignmentProblem", b =>
                 {
                     b.Property<Guid>("AssignmentId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_id");
 
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<int>("OrderIndex")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("order_index");
 
                     b.Property<int>("Points")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(100)
                         .HasColumnName("points");
 
@@ -145,54 +145,54 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("AssignmentUserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_user_id");
 
                     b.Property<string>("AIDetectionDetails")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("ai_detection_details");
 
                     b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("assigned_at");
 
                     b.Property<Guid>("AssignmentId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_id");
 
                     b.Property<int>("CapturedAICount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("captured_ai_count");
 
                     b.Property<int?>("MaxScore")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("max_score");
 
                     b.Property<int?>("Score")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("score");
 
                     b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("started_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
                     b.Property<int>("TabSwitchCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("tab_switch_count");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("AssignmentUserId")
@@ -214,85 +214,85 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("AssignmentService.Domain.Entities.BestSubmission", b =>
                 {
                     b.Property<Guid?>("AssignmentId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_id");
 
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("comment");
 
                     b.Property<string>("CompareResult")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("compare_result");
 
                     b.Property<Guid>("DatasetId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("dataset_id");
 
                     b.Property<string>("ErrorCode")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("error_code");
 
                     b.Property<string>("ErrorMessage")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("error_message");
 
                     b.Property<string>("LanguageCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("language_code");
 
                     b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("language_id");
 
                     b.Property<int>("PassedTestcase")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("passed_testcase");
 
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<string>("ResultFileRef")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("result_file_ref");
 
                     b.Property<int>("Score")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("score");
 
                     b.Property<string>("SourceCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("source_code");
 
                     b.Property<string>("SourceCodeRef")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("source_code_ref");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
                     b.Property<Guid>("SubmissionId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("submission_id");
 
                     b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("submitted_at");
 
                     b.Property<long>("TotalMemory")
@@ -300,11 +300,11 @@ namespace Infrastructure.Migrations
                         .HasColumnName("total_memory");
 
                     b.Property<int>("TotalSubmission")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("total_submission");
 
                     b.Property<int>("TotalTestcase")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("total_testcase");
 
                     b.Property<long>("TotalTime")
@@ -314,22 +314,22 @@ namespace Infrastructure.Migrations
                     b.Property<string>("UserCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("user_code");
 
                     b.Property<string>("UserFullName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("user_full_name");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.Property<bool>("isSubmitLate")
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasColumnName("is_submit_late");
 
                     b.ToTable((string)null);
@@ -341,23 +341,23 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("DatasetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("dataset_id");
 
                     b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("kind");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.HasKey("DatasetId")
@@ -373,17 +373,17 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("ActivityLogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("activity_log_id");
 
                     b.Property<string>("ActivityType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("activity_type");
 
                     b.Property<Guid>("AssignmentUserId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_user_id");
 
                     b.Property<string>("Metadata")
@@ -393,12 +393,12 @@ namespace Infrastructure.Migrations
 
                     b.Property<int>("SuspicionLevel")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("suspicion_level");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
 
                     b.HasKey("ActivityLogId")
@@ -420,38 +420,38 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("LanguageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("language_id");
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<string>("DefaultBody")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("default_body");
 
                     b.Property<string>("DefaultHead")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("default_head");
 
                     b.Property<int?>("DefaultMemoryKb")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("default_memory_kb");
 
                     b.Property<string>("DefaultTail")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("default_tail");
 
                     b.Property<decimal>("DefaultTimeFactor")
@@ -463,16 +463,16 @@ namespace Infrastructure.Migrations
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("display_name");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("display_order");
 
                     b.Property<bool>("IsEnabled")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_enabled");
 
@@ -493,153 +493,153 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("ProblemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<string>("Changelog")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("changelog");
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("code");
 
                     b.Property<string>("Constraints")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("constraints");
 
                     b.Property<DateTime?>("CreatedAt")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("description");
 
                     b.Property<string>("Difficulty")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("difficulty");
 
                     b.Property<string>("InputFormat")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("input_format");
 
                     b.Property<string>("IoMode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)")
+                        .HasColumnType("character varying(8)")
                         .HasDefaultValue("STDIO")
                         .HasColumnName("io_mode");
 
                     b.Property<bool>("IsLocked")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_locked");
 
                     b.Property<int?>("MaxScore")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("max_score");
 
                     b.Property<int>("MemoryLimitKb")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(262144)
                         .HasColumnName("memory_limit_kb");
 
                     b.Property<string>("OutputFormat")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("output_format");
 
                     b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("owner_id");
 
                     b.Property<string>("SampleInput")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("sample_input");
 
                     b.Property<string>("SampleOutput")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("sample_output");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("slug");
 
                     b.Property<string>("Solution")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("solution");
 
                     b.Property<int>("SourceLimitKb")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(65536)
                         .HasColumnName("source_limit_kb");
 
                     b.Property<int>("StackLimitKb")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(8192)
                         .HasColumnName("stack_limit_kb");
 
                     b.Property<string>("Statement")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("statement");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
                     b.Property<int>("TimeLimitMs")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(1000)
                         .HasColumnName("time_limit_ms");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<string>("ValidatorRef")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("validator_ref");
 
                     b.Property<string>("Visibility")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("visibility");
 
                     b.HasKey("ProblemId")
@@ -678,59 +678,59 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("ProblemAssetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_asset_id");
 
                     b.Property<string>("Checksum")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("checksum");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<string>("Format")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasDefaultValue("MARKDOWN")
                         .HasColumnName("format");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
                     b.Property<string>("ObjectRef")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("object_ref");
 
                     b.Property<int>("OrderIndex")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("order_index");
 
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<string>("Title")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("title");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("type");
 
                     b.HasKey("ProblemAssetId")
@@ -748,42 +748,42 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemLanguage", b =>
                 {
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("language_id");
 
                     b.Property<string>("BodyOverride")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("body_override");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<string>("HeadOverride")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("head_override");
 
                     b.Property<bool>("IsAllowed")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_allowed");
 
                     b.Property<int?>("MemoryKbOverride")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("memory_kb_override");
 
                     b.Property<string>("TailOverride")
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("tail_override");
 
                     b.Property<decimal?>("TimeFactorOverride")
@@ -805,11 +805,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("AssignmentService.Domain.Entities.ProblemTag", b =>
                 {
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<Guid>("TagId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("tag_id");
 
                     b.HasKey("ProblemId", "TagId")
@@ -825,99 +825,99 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("SubmissionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("submission_id");
 
                     b.Property<Guid?>("AssignmentId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_id");
 
                     b.Property<Guid?>("AssignmentUserId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("assignment_user_id");
 
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("comment");
 
                     b.Property<string>("CompareResult")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("compare_result");
 
                     b.Property<Guid>("DatasetId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("dataset_id");
 
                     b.Property<string>("ErrorCode")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("error_code");
 
                     b.Property<string>("ErrorMessage")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("error_message");
 
                     b.Property<string>("LanguageCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("language_code");
 
                     b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("language_id");
 
                     b.Property<int>("PassedTestcase")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("passed_testcase");
 
                     b.Property<Guid>("ProblemId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("problem_id");
 
                     b.Property<string>("ResultFileRef")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("result_file_ref");
 
                     b.Property<int>("Score")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("score");
 
                     b.Property<string>("SourceCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("source_code");
 
                     b.Property<string>("SourceCodeRef")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("source_code_ref");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("SubmittedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("submitted_at")
-                        .HasDefaultValueSql("SYSDATETIME()");
+                        .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
                     b.Property<long>("TotalMemory")
                         .HasColumnType("bigint")
                         .HasColumnName("total_memory");
 
                     b.Property<int>("TotalTestcase")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("total_testcase");
 
                     b.Property<long>("TotalTime")
@@ -927,21 +927,21 @@ namespace Infrastructure.Migrations
                     b.Property<string>("UserCode")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("user_code");
 
                     b.Property<string>("UserFullName")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("user_full_name");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.Property<bool>("isSubmitLate")
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasColumnName("is_submit_late");
 
                     b.HasKey("SubmissionId")
@@ -978,19 +978,19 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("TagId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("tag_id");
 
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("category");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)")
+                        .HasColumnType("character varying(64)")
                         .HasColumnName("name");
 
                     b.HasKey("TagId")
@@ -1010,34 +1010,34 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("TestCaseId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("test_case_id");
 
                     b.Property<Guid>("DatasetId")
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("dataset_id");
 
                     b.Property<int>("IndexNo")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("index_no");
 
                     b.Property<string>("InputRef")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("input_ref");
 
                     b.Property<string>("OutputRef")
                         .IsRequired()
                         .HasMaxLength(4000)
-                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasColumnType("TEXT")
                         .HasColumnName("output_ref");
 
                     b.Property<string>("Score")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasDefaultValue("100")
                         .HasColumnName("score");
 

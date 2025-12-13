@@ -5,7 +5,7 @@ import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
 import type { Class, Assignment } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
-// import { getClass } from '~/services/classService'
+import { getClassById } from '~/services/classService'
 import { getAssignmentsByClass, deleteAssignment } from '~/services/assignmentService'
 import {
   Box,

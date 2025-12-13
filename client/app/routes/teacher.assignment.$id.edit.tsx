@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { redirect, useLoaderData, useNavigate, useNavigation, useRevalidator } from 'react-router'
+import { redirect, useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.assignment.$id.edit'
 import { auth } from '~/auth'
 import { Navigation } from '~/components/Navigation'
@@ -58,9 +58,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function EditAssignment() {
   const { assignment, classData } = useLoaderData<typeof clientLoader>()
   const navigate = useNavigate()
-  const navigation = useNavigation()
   const revalidator = useRevalidator()
-  const isLoading = navigation.state === 'loading'
   
   const [title, setTitle] = useState(assignment.title)
   const [description, setDescription] = useState(assignment.description || '')
@@ -132,23 +130,7 @@ export default function EditAssignment() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-        <Navigation />
-        <Loading message="Đang tải thông tin bài tập..." fullScreen />
-      </Box>
-    )
-  }
-
-  if (!assignment || !classData) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-        <Navigation />
-        <Loading message="Không tìm thấy bài tập hoặc lớp học" fullScreen />
-      </Box>
-    )
-  }
+  // Không cần check assignment/classData vì clientLoader đã handle lỗi
   
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>

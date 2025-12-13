@@ -16,6 +16,8 @@ namespace UCode.Desktop.ViewModels.Admin
     public class ClassItem : INotifyPropertyChanged
     {
         private bool _isSelected = false;
+        private bool _isActive;
+        private bool _isArchived;
 
         public string ClassId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
@@ -24,8 +26,35 @@ namespace UCode.Desktop.ViewModels.Admin
         public string TeacherName { get; set; } = string.Empty;
         public int StudentCount { get; set; }
         public int AssignmentCount { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsArchived { get; set; }
+        
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StatusDisplay));
+                }
+            }
+        }
+
+        public bool IsArchived
+        {
+            get => _isArchived;
+            set
+            {
+                if (_isArchived != value)
+                {
+                    _isArchived = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StatusDisplay));
+                }
+            }
+        }
+
         public DateTime CreatedAt { get; set; }
 
         public bool IsSelected
@@ -146,8 +175,16 @@ namespace UCode.Desktop.ViewModels.Admin
             set => SetProperty(ref _totalClasses, value);
         }
 
+
         public bool HasSelection => Classes.Any(c => c.IsSelected);
         public int SelectedCount => Classes.Count(c => c.IsSelected);
+        
+        // Check if any selected items are active (not archived) - to show Archive button
+        public bool HasActiveSelection => Classes.Any(c => c.IsSelected && !c.IsArchived);
+        
+        // Check if any selected items are archived - to show Unarchive button
+        public bool HasArchivedSelection => Classes.Any(c => c.IsSelected && c.IsArchived);
+
 
         #endregion
 
@@ -363,13 +400,26 @@ namespace UCode.Desktop.ViewModels.Admin
                 var bulkResult = await _classService.BulkActionAsync("archive", classIds);
                 if (bulkResult != null)
                 {
+                    // Update items directly
+                    foreach (var item in selected)
+                    {
+                        item.IsArchived = true;
+                        item.IsActive = false;
+                        item.IsSelected = false;
+                    }
+                    
+                    // Notify changes
+                    OnPropertyChanged(nameof(HasActiveSelection));
+                    OnPropertyChanged(nameof(HasArchivedSelection));
+                    OnPropertyChanged(nameof(HasSelection));
+                    OnPropertyChanged(nameof(SelectedCount));
+                    
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",
                         $"Đã lưu trữ {selected.Count} lớp học",
                         MessageDialogStyle.Affirmative
                     );
-                    await LoadClassesAsync();
                 }
             }
         }
@@ -392,13 +442,26 @@ namespace UCode.Desktop.ViewModels.Admin
                 var bulkResult = await _classService.BulkActionAsync("unarchive", classIds);
                 if (bulkResult != null)
                 {
+                    // Update items directly
+                    foreach (var item in selected)
+                    {
+                        item.IsArchived = false;
+                        item.IsActive = true;
+                        item.IsSelected = false;
+                    }
+                    
+                    // Notify changes
+                    OnPropertyChanged(nameof(HasActiveSelection));
+                    OnPropertyChanged(nameof(HasArchivedSelection));
+                    OnPropertyChanged(nameof(HasSelection));
+                    OnPropertyChanged(nameof(SelectedCount));
+                    
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",
                         $"Đã khôi phục {selected.Count} lớp học",
                         MessageDialogStyle.Affirmative
                     );
-                    await LoadClassesAsync();
                 }
             }
         }
@@ -456,6 +519,8 @@ namespace UCode.Desktop.ViewModels.Admin
             {
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(SelectedCount));
+                OnPropertyChanged(nameof(HasActiveSelection));
+                OnPropertyChanged(nameof(HasArchivedSelection));
 
                 (BulkArchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (BulkUnarchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();

@@ -34,6 +34,7 @@
   <ItemGroup>
     <Resource Include="Resources\background.png" />
     <Resource Include="Resources\logo.png" />
+    <Resource Include="Resources\favicon.ico" />
   </ItemGroup>
 
 </Project>

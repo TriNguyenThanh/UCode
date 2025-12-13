@@ -62,7 +62,7 @@ namespace UCode.Desktop.Services
                 {
                     Success = false,
                     Message = errorResponse?.Message ?? "Request failed",
-                    Errors = errorResponse?.Errors != null ? new System.Collections.Generic.List<string> { errorResponse.Message } : null
+                    ErrorsRaw = errorResponse?.ErrorsRaw ?? errorResponse?.ErrorList
                 };
             }
             catch (Exception ex)
@@ -102,10 +102,21 @@ namespace UCode.Desktop.Services
                 System.Diagnostics.Debug.WriteLine($"[API POST] Request FAILED - Status: {response.StatusCode}");
                 
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent, JsonSettings);
+                
+                // Build error message
+                var errorMessage = errorResponse?.Message ?? $"Request failed with status {(int)response.StatusCode}: {response.ReasonPhrase}";
+                
+                // Add detailed errors if available
+                if (errorResponse?.ErrorList != null && errorResponse.ErrorList.Any())
+                {
+                    errorMessage += "\n" + string.Join("\n", errorResponse.ErrorList);
+                }
+                
                 return new ApiResponse<T>
                 {
                     Success = false,
-                    Message = errorResponse?.Message ?? $"Request failed with status {(int)response.StatusCode}: {response.ReasonPhrase}"
+                    Message = errorMessage,
+                    ErrorsRaw = errorResponse?.ErrorsRaw
                 };
             }
             catch (Exception ex)

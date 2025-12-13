@@ -88,9 +88,9 @@ builder.Services.AddSwaggerGen(c =>
 // Configure DbContext with Snake Case Naming Convention
 builder.Services.AddDbContext<UserDbContext>(options =>
 {
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure()
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()
     );
     
     // Enable Snake Case Naming (user_id, created_at, etc.)

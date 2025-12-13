@@ -15,7 +15,7 @@ public interface IUserService
     Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request);
     Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
     Task<bool> UpdateUserStatusAsync(string userId, UserStatus status);
-    Task<bool> UpdateUserRoleAsync(string userId, UserRole role);
+    Task<bool> UpdateUserRoleAsync(string userId, UserRole role, string? currentUserId = null);
     Task<bool> DeleteUserAsync(string userId);
     
     // Admin User Management
@@ -23,8 +23,8 @@ public interface IUserService
     Task<PagedResultDto<AdminUserResponse>> GetAllUsersForAdminAsync(int pageNumber, int pageSize, string? searchTerm = null, string? role = null, bool? isActive = null);
     Task<AdminUserDetailResponse?> GetUserDetailForAdminAsync(string userId);
     Task<bool> CreateUserByAdminAsync(CreateUserByAdminRequest request);
-    Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request);
-    Task<bool> DeleteUserByAdminAsync(string userId);
-    Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null);
+    Task<bool> UpdateUserByAdminAsync(string userId, UpdateUserByAdminRequest request, string? currentUserId = null);
+    Task<bool> DeleteUserByAdminAsync(string userId, string? currentUserId = null);
+    Task<object> BulkActionAsync(string action, List<string> userIds, string? newRole = null, string? currentUserId = null);
     Task<List<string>> GetEmailsByIdsAsync(List<Guid> ids);
 }

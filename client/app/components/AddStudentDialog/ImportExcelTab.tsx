@@ -18,6 +18,7 @@ import {
   Chip,
   Stack,
   Snackbar,
+  major,
 } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import * as XLSX from 'xlsx'
@@ -36,9 +37,6 @@ interface ParsedStudent {
   studentCode: string
   fullName: string
   email: string
-  major: string
-  enrollmentYear: number
-  classYear: number
 }
 
 interface StudentValidation extends ParsedStudent {
@@ -59,50 +57,23 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
 
   const handleDownloadTemplate = () => {
     const template = [
-      // Header with instructions
-      ['HƯỚNG DẪN IMPORT SINH VIÊN', '', '', '', ''],
-      ['Mật khẩu mặc định cho tất cả sinh viên: 123456', '', '', '', ''],
-      ['', '', '', '', ''],
-      // Column headers
-      ['Mã sinh viên', 'Họ và tên', 'Email', 'Chuyên ngành', 'Năm nhập học'],
-      ['(Bắt buộc)', '(Bắt buộc)', '(Bắt buộc)', '(Bắt buộc)', '(Bắt buộc)'],
+      // Column headers (row 1)
+      ['Mã sinh viên', 'Họ và tên đệm', 'Tên', 'Email'],
       // Sample data
-      ['SV001', 'Nguyễn Văn A', 'sv001@example.com', 'Công nghệ phần mềm', 2024],
-      ['SV002', 'Trần Thị B', 'sv002@example.com', 'Khoa học máy tính', 2024],
-      ['SV003', 'Lê Văn C', 'sv003@example.com', 'An toàn thông tin', 2023],
+      ['6451071001', 'Nguyễn Văn', 'A', '6451071001@st.utc2.edu.vn'],
+      ['6451071002', 'Trần Thị', 'B', ''],
+      ['6451071003', 'Lê Văn', 'C', ''],
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(template)
     
-    // Merge cells for title
-    ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }, // Title row
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // Password info row
-    ]
-    
     // Set column widths
     ws['!cols'] = [
-      { wch: 15 }, // StudentCode
-      { wch: 25 }, // FullName
+      { wch: 15 }, // Mã sinh viên
+      { wch: 20 }, // Họ và tên đệm
+      { wch: 10 }, // Tên
       { wch: 30 }, // Email
-      { wch: 25 }, // Major
-      { wch: 15 }, // EnrollmentYear
     ]
-    
-    // Style the cells (basic styling)
-    // Title row - bold and centered
-    if (ws['A1']) ws['A1'].s = { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } }
-    if (ws['A2']) ws['A2'].s = { font: { bold: true, color: { rgb: 'FF0000' } }, alignment: { horizontal: 'center' } }
-    
-    // Header row - bold and background color
-    const headerCells = ['A4', 'B4', 'C4', 'D4', 'E4']
-    headerCells.forEach(cell => {
-      if (ws[cell]) ws[cell].s = { 
-        font: { bold: true }, 
-        fill: { fgColor: { rgb: '4472C4' } },
-        alignment: { horizontal: 'center' }
-      }
-    })
     
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Students')
@@ -123,40 +94,115 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
       
-      // Read from row 4 (skip instructions and header rows)
-      // Range starts at A6 (row 6, after header at row 4-5)
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-        range: 5, // Start from row 6 (0-indexed, so 5)
-        header: ['StudentCode', 'FullName', 'Email', 'Major', 'EnrollmentYear'],
+      // Read all data to find header row
+      const allData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: 1, // Return as array of arrays
         defval: ''
-      }) as any[]
+      }) as any[][]
 
-      const parsed: ParsedStudent[] = []
-      const currentYear = new Date().getFullYear()
+      // Find header row by looking for "Mã sinh viên" or similar keywords
+      let headerRowIndex = -1
+      const headerKeywords = ['mã sinh viên', 'mssv', 'studentcode', 'ma sinh vien', 'mã sv']
       
-      for (let i = 0; i < jsonData.length; i++) {
-        const row = jsonData[i]
+      for (let i = 0; i < Math.min(allData.length, 20); i++) { // Check first 20 rows
+        const row = allData[i]
+        if (!row) continue
         
-        // Validate required fields (removed password requirement)
-        if (!row.StudentCode || !row.FullName || !row.Email) {
+        const rowText = row.map(cell => String(cell || '').toLowerCase()).join(' ')
+        if (headerKeywords.some(keyword => rowText.includes(keyword))) {
+          headerRowIndex = i
+          break
+        }
+      }
+
+      if (headerRowIndex === -1) {
+        setError('Không tìm thấy dòng tiêu đề (cột "Mã sinh viên"). Vui lòng kiểm tra lại file Excel.')
+        setLoading(false)
+        return
+      }
+
+      // Detect column indices from header row
+      const headerRow = allData[headerRowIndex].map(cell => String(cell || '').toLowerCase().trim())
+      
+      // Find column indices - use exact match first, then partial match
+      const findColumnIndex = (exactKeywords: string[], partialKeywords: string[] = []) => {
+        // First try exact match
+        let idx = headerRow.findIndex(cell => exactKeywords.some(kw => cell === kw))
+        if (idx !== -1) return idx
+        
+        // Then try partial match
+        if (partialKeywords.length > 0) {
+          idx = headerRow.findIndex(cell => partialKeywords.some(kw => cell.includes(kw)))
+        }
+        return idx
+      }
+
+      const studentCodeCol = findColumnIndex(
+        ['mã sinh viên', 'mssv', 'studentcode', 'ma sinh vien', 'mã sv'],
+        ['mã sinh viên', 'mssv']
+      )
+      const lastNameCol = findColumnIndex(
+        ['họ và tên đệm', 'họ tên đệm', 'họ đệm', 'ho ten dem', 'họ và tên', 'họ tên', 'fullname', 'ho va ten'],
+        ['họ và tên đệm', 'họ tên đệm', 'ho ten dem']
+      )
+      // For firstName, use exact match only to avoid matching "họ và tên đệm"
+      const firstNameCol = findColumnIndex(
+        ['tên', 'ten', 'firstname', 'first name'],
+        [] // No partial match to avoid matching "họ và tên đệm"
+      )
+      const emailCol = findColumnIndex(
+        ['email', 'e-mail', 'mail'],
+        ['email', 'mail']
+      )
+
+      if (studentCodeCol === -1) {
+        setError('Không tìm thấy cột "Mã sinh viên" trong file Excel.')
+        setLoading(false)
+        return
+      }
+
+      // Parse data rows (starting after header)
+      const parsed: ParsedStudent[] = []
+      
+      for (let i = headerRowIndex + 1; i < allData.length; i++) {
+        const row = allData[i]
+        if (!row) continue
+        
+        const studentCode = String(row[studentCodeCol] || '').trim()
+        
+        // Skip empty rows
+        if (!studentCode) {
           continue
         }
 
-        const enrollmentYear = parseInt(row.EnrollmentYear) || currentYear
-        // Tính ClassYear dựa trên năm hiện tại - năm nhập học + 1
-        // Ví dụ: nhập học 2024, hiện tại 2025 => năm 2
-        let classYear = currentYear - enrollmentYear + 1
-        // Đảm bảo ClassYear trong khoảng 1-6 (yêu cầu của backend)
-        classYear = Math.max(1, Math.min(6, classYear))
+        // Build full name
+        let fullName = ''
+        if (lastNameCol !== -1 && firstNameCol !== -1 && firstNameCol !== lastNameCol) {
+          // Separate lastName and firstName columns
+          const lastName = String(row[lastNameCol] || '').trim()
+          const firstName = String(row[firstNameCol] || '').trim()
+          fullName = `${lastName} ${firstName}`.trim()
+        } else if (lastNameCol !== -1) {
+          // Single fullName column (or only lastName column found)
+          fullName = String(row[lastNameCol] || '').trim()
+        }
+        
+        // Skip if no name at all
+        if (!fullName) {
+          continue
+        }
+
+        // Auto-generate email if empty: mssv@st.utc2.edu.vn
+        let email = emailCol !== -1 ? String(row[emailCol] || '').trim() : ''
+        if (!email) {
+          email = `${studentCode}@st.utc2.edu.vn`
+        }
 
         parsed.push({
-          rowNumber: i + 2, // +2 because Excel is 1-indexed and we skip header
-          studentCode: row.StudentCode.toString().trim(),
-          fullName: row.FullName.toString().trim(),
-          email: row.Email.toString().trim(),
-          major: row.Major?.toString().trim() || '',
-          enrollmentYear: enrollmentYear,
-          classYear: classYear,
+          rowNumber: i + 1, // Excel rows are 1-indexed
+          studentCode: studentCode,
+          fullName: fullName,
+          email: email,
         })
       }
 
@@ -237,17 +283,17 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
       const existingStudents = validationResults.filter((r) => r.status === 'exists')
       let createdUserIds: string[] = []
 
-      // 1. Bulk create new students (SINGLE API CALL instead of N calls!)
+      // 1. Bulk create new students
       if (newStudents.length > 0) {
         const studentsToCreate = newStudents.map((student) => ({
           studentCode: student.studentCode,
           username: student.studentCode,
           email: student.email,
-          password: '123456', // Default password, will be generated by backend
+          password: '123456', // Default password
           fullName: student.fullName,
-          major: student.major || '',
-          enrollmentYear: student.enrollmentYear || new Date().getFullYear(),
-          classYear: student.classYear || 1,
+          major: 'CNTT',
+          enrollmentYear: 2025,
+          classYear: 1,
         }))
 
         const createResult = await bulkCreateStudents(studentsToCreate)
@@ -393,13 +439,10 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Dòng</TableCell>
+                  <TableCell>STT</TableCell>
                   <TableCell>MSSV</TableCell>
                   <TableCell>Họ tên</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>Ngành</TableCell>
-                  <TableCell>Năm vào học</TableCell>
-                  <TableCell>Năm học</TableCell>
                   <TableCell>Trạng thái</TableCell>
                 </TableRow>
               </TableHead>
@@ -416,13 +459,10 @@ export default function ImportExcelTab({ classId, onSuccess }: ImportExcelTabPro
                             : 'success.light',
                     }}
                   >
-                    <TableCell>{result.rowNumber}</TableCell>
+                    <TableCell>{idx + 1}</TableCell>
                     <TableCell>{result.studentCode}</TableCell>
                     <TableCell>{result.fullName}</TableCell>
                     <TableCell>{result.email}</TableCell>
-                    <TableCell>{result.major}</TableCell>
-                    <TableCell>{result.enrollmentYear}</TableCell>
-                    <TableCell>Năm {result.classYear}</TableCell>
                     <TableCell>
                       <Chip
                         label={

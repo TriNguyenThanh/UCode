@@ -114,6 +114,8 @@ public class AttendanceService : IAttendanceService
             var attendanceSession = _mapper.Map<AttendanceSession>(request);
             attendanceSession.Id = Guid.NewGuid();
             attendanceSession.CreatedAt = DateTime.UtcNow;
+            attendanceSession.StartTime = request.StartTime.Kind == DateTimeKind.Utc ? request.StartTime : request.StartTime.ToUniversalTime();
+            attendanceSession.EndTime = request.EndTime.Kind == DateTimeKind.Utc ? request.EndTime : request.EndTime.ToUniversalTime();
             attendanceSession.SessionCode = this.GenerateRandomCode();
             var session = await _attendanceRepository.CreateSessionAsync(attendanceSession);
             var response = _mapper.Map<AttendanceSessionResponse>(session);

@@ -235,6 +235,31 @@ public class AssignmentService : IAssignmentService
         }
     }
 
+    public async Task<List<Assignment>> GetAssignmentsByStudentInClassAsync(Guid studentId, Guid classId)
+    {
+        try
+        {
+            var assignments = await _assignmentRepository.GetByClassIdAsync(classId);
+            
+            var studentAssignments = new List<Assignment>();
+
+            foreach (var assignment in assignments)
+            {
+                var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignment.AssignmentId, studentId);
+                if (assignmentUser != null)
+                {
+                    studentAssignments.Add(assignment);
+                }
+            }
+
+            return studentAssignments.Where(a => a.Status != AssignmentStatus.DRAFT).ToList();
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving assignments for student in class: {ex.Message}", 500);
+        }
+    }
+
     public async Task<AssignmentUser?> GetAssignmentUserAsync(Guid assignmentId, Guid userId)
     {
         try
