@@ -24,6 +24,8 @@ public class UpdateUserRequest
 
     [Range(1, 6)]
     public int? ClassYear { get; set; }
+    
+    public bool? IsFaceAuth { get; set; }
 
     // For Teacher
     [MaxLength(100)]
@@ -59,6 +61,8 @@ public class UpdateUserByAdminRequest
 
     [Range(1, 6)]
     public int? ClassYear { get; set; }
+    
+    public bool? IsFaceAuth { get; set; }
 
     // For Teacher
     [MaxLength(100)]

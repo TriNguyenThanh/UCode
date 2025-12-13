@@ -173,6 +173,9 @@ var app = builder.Build();
 // Add Exception Middleware
 app.UseMiddleware<ExceptionMiddleware>();
 
+// Add API Key Authentication Middleware (for internal webhooks)
+app.UseMiddleware<ApiKeyAuthMiddleware>();
+
 // Apply migrations and seed data on startup
 using (var scope = app.Services.CreateScope())
 {

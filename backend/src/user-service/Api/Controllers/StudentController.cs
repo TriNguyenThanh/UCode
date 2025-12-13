@@ -93,7 +93,7 @@ public class StudentController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update student"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student updated successfully"));
     }
 
     #endregion
@@ -250,7 +250,7 @@ public class StudentController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update student"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student updated successfully"));
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public class StudentController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete student"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student deleted successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student deleted successfully"));
     }
 
     /// <summary>

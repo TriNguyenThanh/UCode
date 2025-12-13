@@ -12,7 +12,7 @@ using UserService.Infrastructure.Data;
 namespace UserService.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20251129091953_InitDb")]
+    [Migration("20251213160732_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -333,6 +333,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("full_name");
+
+                    b.Property<bool>("IsFaceAuth")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_face_auth");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone")

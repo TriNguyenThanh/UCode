@@ -159,6 +159,9 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+// Add API Key Authentication Middleware (for internal webhooks)
+app.UseMiddleware<ApiKeyAuthMiddleware>();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

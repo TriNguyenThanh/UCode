@@ -331,6 +331,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("full_name");
 
+                    b.Property<bool>("IsFaceAuth")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_face_auth");
+
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_login_at");

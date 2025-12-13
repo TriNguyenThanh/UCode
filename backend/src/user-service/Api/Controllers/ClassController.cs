@@ -194,7 +194,7 @@ public class ClassController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Class updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class updated successfully"));
     }
 
     /// <summary>
@@ -219,7 +219,7 @@ public class ClassController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Class deleted successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class deleted successfully"));
     }
 
     /// <summary>
@@ -266,7 +266,7 @@ public class ClassController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to add student to class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student added to class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student added to class successfully"));
     }
 
     /// <summary>
@@ -294,7 +294,7 @@ public class ClassController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to add students to class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Students added to class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Students added to class successfully"));
     }
 
     /// <summary>
@@ -320,7 +320,7 @@ public class ClassController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to remove student from class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student removed from class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student removed from class successfully"));
     }
 
     /// <summary>
@@ -412,39 +412,6 @@ public class ClassController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// [INTERNAL] Lấy danh sách User IDs của lớp học
-    /// Internal API - yêu cầu internal API key, dùng cho service-to-service call
-    /// </summary>
-    /// <param name="classId">ID lớp học</param>
-    /// <returns>Danh sách User IDs</returns>
-    /// <response code="200">Trả về danh sách User IDs</response>
-    [HttpGet("{classId}/user-ids")]
-    [AllowAnonymous] // Internal service call - no auth required
-    [SwaggerOperation(Summary = "[INTERNAL] Lấy User IDs của lớp", Description = "Internal API để Assignment Service lấy danh sách sinh viên")]
-    [SwaggerResponse(200, "Danh sách User IDs", typeof(ApiResponse<List<Guid>>))]
-    public async Task<IActionResult> GetUserIdsByClassId(string classId)
-    {
-        try
-        {
-            // Validate internal API key from header
-            // var internalApiKey = Request.Headers["X-Internal-Api-Key"].FirstOrDefault();
-            // var expectedApiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "internal-service-key";
-            
-            // if (string.IsNullOrEmpty(internalApiKey) || internalApiKey != expectedApiKey)
-            // {
-            //     return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid or missing internal API key"));
-            // }
-            /////////nhớ uncomment đoạn trên khi deploy/////////
-
-            var students = await _classService.GetStudentListByClassAsync(classId);
-            return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to get user IDs: {ex.Message}"));
-        }
-    }
 }
 
 // Helper DTOs

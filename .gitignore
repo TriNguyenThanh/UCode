@@ -419,3 +419,5 @@ FodyWeavers.xsd
 *.msp
 package-lock.json
 .agent/*
+face-service/*
+face-service

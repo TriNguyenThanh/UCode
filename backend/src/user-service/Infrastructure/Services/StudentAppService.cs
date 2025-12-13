@@ -272,6 +272,9 @@ public class StudentAppService : IStudentService
 
         if (request.ClassYear.HasValue)
             student.ClassYear = request.ClassYear.Value;
+        
+        if (request.IsFaceAuth.HasValue)
+            student.IsFaceAuth = request.IsFaceAuth.Value;
 
         student.UpdatedAt = DateTime.UtcNow;
         return await _studentRepository.UpdateAsync(student);

@@ -48,7 +48,8 @@ namespace UserService.Infrastructure.Migrations
                     status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_login_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    last_login_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    is_face_auth = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

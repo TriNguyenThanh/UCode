@@ -29,13 +29,17 @@ public class AssignmentServiceClient : IAssignmentServiceClient
     {
         try
         {
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
             var request = new { StudentIds = studentIds };
             var json = JsonSerializer.Serialize(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            // Create request with API key header
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, 
+                $"/api/v1/webhooks/sync-students-to-class/{classId}");
+            httpRequest.Headers.Add("X-Internal-Api-Key", apiKey);
+            httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(
-                $"/api/v1/assignments/classes/{classId}/students/sync", 
-                content);
+            var response = await _httpClient.SendAsync(httpRequest);
 
             if (response.IsSuccessStatusCode)
             {
@@ -73,12 +77,15 @@ public class AssignmentServiceClient : IAssignmentServiceClient
     {
         try
         {
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
             var json = JsonSerializer.Serialize(userId);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            // Create request with API key header
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/v1/webhooks/sync-delete-user");
+            httpRequest.Headers.Add("X-Internal-Api-Key", apiKey);
+            httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(
-                "/api/v1/assignments/webhook/sync-delete-user", 
-                content);
+            var response = await _httpClient.SendAsync(httpRequest);
 
             if (response.IsSuccessStatusCode)
             {
