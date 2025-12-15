@@ -21,6 +21,7 @@ public interface IAssignmentRepository : IRepository<Assignment>
     Task<AssignmentUser?> GetAssignmentUserAsync(Guid assignmentId, Guid studentId);
     Task<AssignmentUser?> GetAssignmentUserByIdAsync(Guid AssignmentUserId);
     Task<List<AssignmentUser>> GetAssignmentUsersByAssignmentAsync(Guid assignmentId);
+    Task<List<AssignmentUser>> GetAssignmentUsersByAssignmentIncludeInactiveAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     Task RemoveAssignmentUsersByAssignmentAsync(Guid assignmentId);
     Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId);

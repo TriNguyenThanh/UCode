@@ -51,6 +51,7 @@ public class AssignmentDbContext : DbContext
         /* ===== Apply Configurations =====
          * Tự động áp dụng tất cả IEntityTypeConfiguration
          * trong assembly này (Infrastructure)
+         * Global Query Filters được define trong từng Configuration
          */
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssignmentDbContext).Assembly);
     }

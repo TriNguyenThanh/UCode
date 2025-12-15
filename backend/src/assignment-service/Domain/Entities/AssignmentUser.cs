@@ -61,6 +61,8 @@ public class AssignmentUser
     public int? MaxScore { get; set; } = 0;
 
 
+    public bool IsActive { get; set; } = true; 
+
     // Navigation properties
     public Assignment Assignment { get; set; } = null!;
     

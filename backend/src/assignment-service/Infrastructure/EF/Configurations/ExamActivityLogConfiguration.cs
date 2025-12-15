@@ -15,7 +15,7 @@ public class ExamActivityLogConfiguration : IEntityTypeConfiguration<ExamActivit
             .IsRequired();
 
         builder.Property(e => e.AssignmentUserId)
-            .IsRequired();
+            .IsRequired(); // Foreign key vẫn required
 
         builder.Property(e => e.ActivityType)
             .HasMaxLength(50)
@@ -31,10 +31,13 @@ public class ExamActivityLogConfiguration : IEntityTypeConfiguration<ExamActivit
             .HasDefaultValue(0);
 
         // Relationships
+        // ⚠️ Navigation property là OPTIONAL (vì AssignmentUser có thể bị soft delete)
+        // Nhưng Foreign Key vẫn REQUIRED (luôn phải có AssignmentUserId)
         builder.HasOne(e => e.AssignmentUser)
             .WithMany()
             .HasForeignKey(e => e.AssignmentUserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict) // Không cascade delete
+            .IsRequired(false); // Navigation property optional
 
         // Indexes
         builder.HasIndex(e => e.AssignmentUserId)

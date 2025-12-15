@@ -3,6 +3,8 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Interfaces.Services;
+using UserService.Application.Interfaces.MessageBrokers;
+using UserService.Application.Events;
 
 namespace UserService.Infrastructure.Services;
 
@@ -11,15 +13,18 @@ public class AssignmentServiceClient : IAssignmentServiceClient
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AssignmentServiceClient> _logger;
+    private readonly IRabbitMqService _rabbitMqService;
 
     public AssignmentServiceClient(
         HttpClient httpClient, 
         IConfiguration configuration,
-        ILogger<AssignmentServiceClient> logger)
+        ILogger<AssignmentServiceClient> logger,
+        IRabbitMqService rabbitMqService)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
+        _rabbitMqService = rabbitMqService;
 
         var baseUrl = _configuration["ServiceUrls:AssignmentService"] ?? "http://localhost:5002";
         _httpClient.BaseAddress = new Uri(baseUrl);
@@ -29,46 +34,33 @@ public class AssignmentServiceClient : IAssignmentServiceClient
     {
         try
         {
-            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
-            var request = new { StudentIds = studentIds };
-            var json = JsonSerializer.Serialize(request);
-            
-            // Create request with API key header
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, 
-                $"/api/v1/webhooks/sync-students-to-class/{classId}");
-            httpRequest.Headers.Add("X-Internal-Api-Key", apiKey);
-            httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.SendAsync(httpRequest);
-
-            if (response.IsSuccessStatusCode)
+            // Publish event to RabbitMQ instead of HTTP call
+            var @event = new StudentsAddedToClassEvent
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<SyncResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                ClassId = classId,
+                StudentIds = studentIds,
+                OccurredAt = DateTime.UtcNow
+            };
 
-                return result?.Data?.AssignmentUsersCreated ?? 0;
-            }
+            await _rabbitMqService.PublishMessageAsync(@event, "user_service.students_added");
 
-            _logger.LogWarning(
-                "Failed to sync students to assignments. ClassId: {ClassId}, StatusCode: {StatusCode}", 
-                classId, 
-                response.StatusCode);
+            _logger.LogInformation(
+                "✅ Published StudentsAddedToClass event. ClassId: {ClassId}, StudentCount: {StudentCount}",
+                classId,
+                studentIds.Count);
 
-            return 0;
+            // Since this is async, we can't return the actual count
+            // Return expected count for backwards compatibility
+            return studentIds.Count;
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex, 
-                "Error syncing students to assignments. ClassId: {ClassId}, StudentCount: {StudentCount}", 
+                "❌ Error publishing StudentsAddedToClass event. ClassId: {ClassId}, StudentCount: {StudentCount}", 
                 classId, 
                 studentIds.Count);
 
-            // Don't throw - just log and return 0
-            // This is a background sync, we don't want to block the main operation
             return 0;
         }
     }
@@ -77,33 +69,28 @@ public class AssignmentServiceClient : IAssignmentServiceClient
     {
         try
         {
-            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
-            var json = JsonSerializer.Serialize(userId);
-            
-            // Create request with API key header
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/v1/webhooks/sync-delete-user");
-            httpRequest.Headers.Add("X-Internal-Api-Key", apiKey);
-            httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.SendAsync(httpRequest);
-
-            if (response.IsSuccessStatusCode)
+            // Publish event to RabbitMQ instead of HTTP call
+            var @event = new UserDeletedEvent
             {
-                return true;
-            }
+                UserId = userId,
+                OccurredAt = DateTime.UtcNow
+            };
 
-            _logger.LogWarning(
-                "Failed to sync delete user. UserId: {UserId}, StatusCode: {StatusCode}", 
-                userId, 
-                response.StatusCode);
+            // hiện tại không xóa assignment_user khi xóa user khỏi class
 
-            return false;
+            await _rabbitMqService.PublishMessageAsync(@event, "user_service.user_deleted");
+
+            _logger.LogInformation(
+                "✅ Published UserDeleted event. UserId: {UserId}",
+                userId);
+
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex, 
-                "Error syncing delete user. UserId: {UserId}", 
+                "❌ Error publishing UserDeleted event. UserId: {UserId}", 
                 userId);
             return false;
         }
