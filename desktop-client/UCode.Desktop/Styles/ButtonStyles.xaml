@@ -387,5 +387,72 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    <!-- DataGrid Action Button Base -->
+    <Style x:Key="DataGridActionButton" TargetType="Button">
+        <Setter Property="Width" Value="35"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Info Action Button (Cyan/Blue) -->
+    <Style x:Key="InfoActionButton" TargetType="Button" BasedOn="{StaticResource DataGridActionButton}">
+        <Setter Property="Background" Value="#17a2b8"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#138496"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Warning Action Button (Yellow) -->
+    <Style x:Key="WarningActionButton" TargetType="Button" BasedOn="{StaticResource DataGridActionButton}">
+        <Setter Property="Background" Value="#ffc107"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#e0a800"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Success Action Button (Green) -->
+    <Style x:Key="SuccessActionButton" TargetType="Button" BasedOn="{StaticResource DataGridActionButton}">
+        <Setter Property="Background" Value="#28a745"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#218838"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Danger Action Button (Red) -->
+    <Style x:Key="DangerActionButton" TargetType="Button" BasedOn="{StaticResource DataGridActionButton}">
+        <Setter Property="Background" Value="#dc3545"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#c82333"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Secondary Action Button (Gray) -->
+    <Style x:Key="SecondaryActionButton" TargetType="Button" BasedOn="{StaticResource DataGridActionButton}">
+        <Setter Property="Background" Value="#6c757d"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#5a6268"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 
 </ResourceDictionary>

@@ -117,15 +117,15 @@ namespace UCode.Desktop.Services
                 _apiService.SetAccessToken(_accessToken);
                 
                 // Save token if remember me is checked
-                if (rememberMe)
-                {
+                //if (rememberMe)
+                //{
                     var userJson = System.Text.Json.JsonSerializer.Serialize(_currentUser);
                     _tokenStorage.SaveToken(
                         _accessToken, 
                         _refreshToken, 
                         _expiresAt,
                         userJson);
-                }
+                //}
                 
                 UserChanged?.Invoke(this, _currentUser);
 

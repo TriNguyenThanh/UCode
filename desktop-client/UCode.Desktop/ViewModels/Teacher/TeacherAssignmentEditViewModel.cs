@@ -43,6 +43,7 @@ namespace UCode.Desktop.ViewModels
         private string _error = string.Empty;
         private string _assignmentId = string.Empty;
         private bool _isNewAssignment = true;
+        private DateTime? _originalStartTime = null; // Store original start time for validation
 
         // Form fields
         private string _classId = string.Empty;
@@ -265,6 +266,9 @@ namespace UCode.Desktop.ViewModels
                     StartTime = assignment.StartTime ?? DateTime.Now;
                     EndTime = assignment.EndTime ?? DateTime.Now.AddDays(7);
                     AllowLateSubmission = assignment.AllowLateSubmission;
+                    
+                    // Store original start time for validation
+                    _originalStartTime = assignment.StartTime;
 
                     // Load selected problems
                     SelectedProblems.Clear();
@@ -325,11 +329,16 @@ namespace UCode.Desktop.ViewModels
                 return;
             }
 
-            // Check if start time is in the past
-            if (StartTime < DateTime.Now.AddMinutes(-5))
+            // When editing, check if new start time is not earlier than original start time
+            if (!_isNewAssignment && _originalStartTime.HasValue)
             {
-                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian bắt đầu không thể ở trong quá khứ");
-                return;
+                if (StartTime < _originalStartTime.Value)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync(
+                        "Thông báo", 
+                        $"Thời gian bắt đầu mới không được nhỏ hơn thời gian bắt đầu ban đầu ({_originalStartTime.Value:dd/MM/yyyy HH:mm})");
+                    return;
+                }
             }
 
             // Check if end time is after start time

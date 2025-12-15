@@ -23,20 +23,20 @@ public class ProblemLanguageConfiguration : IEntityTypeConfiguration<ProblemLang
         builder.Property(pl => pl.MemoryKbOverride);
         
         builder.Property(pl => pl.HeadOverride)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(pl => pl.BodyOverride)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(pl => pl.TailOverride)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(pl => pl.IsAllowed)
             .HasDefaultValue(true)
             .IsRequired();
         
         builder.Property(pl => pl.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()")
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')")
             .IsRequired();
         
         // Note: Composite PK already creates unique constraint

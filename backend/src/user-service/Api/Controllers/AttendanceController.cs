@@ -87,7 +87,7 @@ public class AttendanceController : ControllerBase
             // Ensure the Id is not set for new sessions
             request.Id = null;
             var response = await _attendanceService.CreateSessionAsync(request);
-            return CreatedAtAction(nameof(GetSessionById), new { id = response.Data?.Id }, response);
+            return Ok(response);
         }
         catch (Exception ex)
         {

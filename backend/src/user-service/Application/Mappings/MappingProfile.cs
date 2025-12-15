@@ -29,7 +29,7 @@ public class MappingProfile : Profile
         CreateMap<Teacher, TeacherResponse>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
             .ForMember(dest => dest.TeacherCode, opt => opt.MapFrom(src => src.TeacherCode))
-            .ForMember(dest => dest.ClassCount, opt => opt.MapFrom(src => src.Classes.Count));
+            .ForMember(dest => dest.ClassCount, opt => opt.Ignore()); // Will be set in service layer
         
         // Admin mappings
         CreateMap<Admin, AdminResponse>()

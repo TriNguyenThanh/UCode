@@ -20,22 +20,24 @@
 
         <!-- Custom Navigation Button Style - No gray background -->
         <Style x:Key="NavButtonStyle"
-                TargetType="Button"
-                BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+               TargetType="Button"
+               BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
             <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderBrush"
                     Value="Transparent"/>
             <Setter Property="BorderThickness"
                     Value="0"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver"
-                        Value="True">
+                         Value="True">
                     <Setter Property="Background"
                             Value="#20FACB01"/>
                     <Setter Property="Foreground"
                             Value="#FACB01"/>
                 </Trigger>
                 <Trigger Property="IsPressed"
-                        Value="True">
+                         Value="True">
                     <Setter Property="Background"
                             Value="#30FACB01"/>
                     <Setter Property="Foreground"

@@ -14,33 +14,28 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     public override async Task<Student?> GetByIdAsync(Guid id)
     {
         return await _dbSet
-            .Include(s => s.UserClasses)
-                .ThenInclude(uc => uc.Class)
-                    .ThenInclude(c => c.Teacher)
+            // .Include(s => s.UserClasses)
+            //     .ThenInclude(uc => uc.Class)
             .FirstOrDefaultAsync(s => s.UserId == id);
     }
 
     public async Task<Student?> GetByStudentCodeAsync(string studentCode)
     {
         return await _dbSet
-            .Include(s => s.UserClasses)
-                .ThenInclude(uc => uc.Class)
+            // .Include(s => s.UserClasses)
+            //     .ThenInclude(uc => uc.Class)
             .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
     }
 
     public async Task<Student?> GetByEmailAsync(string email)
     {
         return await _dbSet
-            .Include(s => s.UserClasses)
-                .ThenInclude(uc => uc.Class)
             .FirstOrDefaultAsync(s => s.Email == email);
     }
 
     public async Task<List<Student>> GetStudentsByClassIdAsync(Guid classId)
     {
         return await _dbSet
-            .Include(s => s.UserClasses)
-                .ThenInclude(uc => uc.Class)
             .Where(s => s.UserClasses.Any(uc => uc.ClassId == classId && uc.IsActive))
             .OrderBy(s => s.StudentCode)
             .ToListAsync();

@@ -24,13 +24,13 @@ public class ProblemAssetConfiguration : IEntityTypeConfiguration<ProblemAsset>
         
         builder.Property(pa => pa.ObjectRef)
             .IsRequired()
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("TEXT");
         
         builder.Property(pa => pa.Checksum)
             .HasMaxLength(100);
         
         builder.Property(pa => pa.Title)
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("TEXT");
         
         builder.Property(pa => pa.Format)
             .IsRequired()
@@ -48,7 +48,7 @@ public class ProblemAssetConfiguration : IEntityTypeConfiguration<ProblemAsset>
         
         builder.Property(pa => pa.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("GETUTCDATE()");
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
         
         // Foreign Key
         builder.HasOne(pa => pa.Problem)

@@ -41,7 +41,7 @@ public class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
 
         builder.Property(s => s.SubmittedAt)
             .IsRequired()
-            .HasDefaultValueSql("SYSDATETIME()");
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
 
         // Relationships
         builder.HasOne(s => s.Assignment)

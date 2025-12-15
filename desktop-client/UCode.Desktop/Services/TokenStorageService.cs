@@ -62,6 +62,7 @@ namespace UCode.Desktop.Services
                 var encrypted = Encrypt(data);
 
                 File.WriteAllText(path, encrypted);
+                System.Diagnostics.Debug.WriteLine($"File saved successfully to: {path}");
 
             }
             catch (Exception e)

@@ -29,13 +29,13 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
         builder.Property(l => l.DefaultMemoryKb);
         
         builder.Property(l => l.DefaultHead)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(l => l.DefaultBody)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(l => l.DefaultTail)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(l => l.IsEnabled)
             .HasDefaultValue(true)
@@ -44,7 +44,7 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
         builder.Property(l => l.DisplayOrder);
 
         builder.Property(l => l.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()")
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')")
             .IsRequired();
         
         // Indexes

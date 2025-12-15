@@ -10,6 +10,7 @@ namespace UCode.Desktop.Services
         private ContentControl? _frame;
 
         public event EventHandler<bool>? CanGoBackChanged;
+        public event EventHandler<UserControl>? Navigated;
 
         public bool CanGoBack => _navigationStack.Count > 1;
 
@@ -30,6 +31,7 @@ namespace UCode.Desktop.Services
             InitializePage(page, parameter);
 
             CanGoBackChanged?.Invoke(this, CanGoBack);
+            Navigated?.Invoke(this, page);
         }
 
         public void GoBack()
@@ -70,6 +72,10 @@ namespace UCode.Desktop.Services
             }
 
             CanGoBackChanged?.Invoke(this, CanGoBack);
+            if (previousPage != null)
+            {
+                Navigated?.Invoke(this, previousPage);
+            }
         }
 
         public void ClearNavigationStack()

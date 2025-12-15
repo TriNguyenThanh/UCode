@@ -223,7 +223,9 @@ public class UserController : ControllerBase
     [SwaggerResponse(400, "Cập nhật thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateUserRoleRequest request)
     {
-        var result = await _userService.UpdateUserRoleAsync(id, request.Role);
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value;
+        var result = await _userService.UpdateUserRoleAsync(id, request.Role, currentUserId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user role"));
 
