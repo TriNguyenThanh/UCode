@@ -36,7 +36,8 @@ export async function checkInAttendance(
       sessionId: request.sessionId,
       latitude: request.latitude,
       longitude: request.longitude,
-      ipAddress: request.ipAddress, // Send IP address for testing
+      ipAddress: request.ipAddress,
+      faceImage: request.faceImage,
     }
   )
   if (!response.data.success || !response.data.data) {

@@ -45,10 +45,14 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
   const isLockedRef = useRef(false);
   const currentStepRef = useRef(0);
   const challengesRef = useRef<Challenge[]>([]);
+  const noFaceCountRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const faceAlignedRef = useRef(false);
   
   const [status, setStatus] = useState<'initializing' | 'ready' | 'verifying' | 'success' | 'failed'>('initializing');
   const [message, setMessage] = useState<string>('Đang khởi tạo hệ thống nhận diện...');
   const [progress, setProgress] = useState(0);
+  const [faceAligned, setFaceAligned] = useState(false);
 
   // Define all 6 challenges using face.html algorithm (check function receives face object directly)
   const allChallenges: Challenge[] = [
@@ -112,10 +116,15 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
   ];
 
   const generateChallenges = useCallback(() => {
-    // Random select 4 challenges from all 6 available
-    const shuffled = [...allChallenges].sort(() => 0.5 - Math.random());
+    // Random select 4 challenges from 5 available (exclude 'center')
+    // Then add 'center' as the final step to capture the best image
+    const availableChallenges = allChallenges.filter(c => c.id !== 'center');
+    const shuffled = [...availableChallenges].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 4);
-    challengesRef.current = selected;
+    
+    // Add 'center' as the final mandatory step for image capture
+    const centerChallenge = allChallenges.find(c => c.id === 'center')!;
+    challengesRef.current = [...selected, centerChallenge];
     currentStepRef.current = 0;
     setProgress(0);
   }, []);
@@ -142,15 +151,37 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
   }, [generateChallenges]);
 
   const startVerification = async () => {
-    if (!humanRef.current || !videoRef.current) return;
+    if (!humanRef.current || !videoRef.current || !canvasRef.current) return;
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
+      });
       videoRef.current.srcObject = stream;
+      
+      // Wait for video to be ready
+      await new Promise<void>((resolve) => {
+        videoRef.current!.onloadedmetadata = () => {
+          // Set canvas size to match video
+          canvasRef.current!.width = videoRef.current!.videoWidth;
+          canvasRef.current!.height = videoRef.current!.videoHeight;
+          resolve();
+        };
+      });
+      
       await videoRef.current.play();
       
       setStatus('verifying');
-      setMessage(challengesRef.current[0]?.label || 'Bắt đầu...');
+      setMessage('Đặt khuôn mặt vào trong khung oval');
+      setFaceAligned(false);
+      faceAlignedRef.current = false;
+      noFaceCountRef.current = 0;
+      currentStepRef.current = 0;
+      isLockedRef.current = false;
+      
+      // Draw initial oval guide
+      drawOvalGuide(canvasRef.current, false);
+      
       detect();
     } catch (error) {
       console.error('Camera access denied:', error);
@@ -159,23 +190,219 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
     }
   };
 
+  // Draw oval guide on canvas
+  const drawOvalGuide = (canvas: HTMLCanvasElement, isAligned: boolean) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw semi-transparent overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Calculate oval dimensions (centered, portrait orientation)
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radiusX = canvas.width * 0.35; // 70% of width
+    const radiusY = canvas.height * 0.45; // 90% of height
+
+    // Clear the oval area
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+    ctx.clip();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // Draw oval border
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+    ctx.strokeStyle = isAligned ? '#4caf50' : '#2196f3';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  };
+
+  // Check if face is within oval bounds (for size/position only, not rotation)
+  const checkFaceInBounds = (face: FaceResult, canvas: HTMLCanvasElement): { inBounds: boolean; hint: string } => {
+    if (!face.box || canvas.width === 0 || canvas.height === 0) {
+      return { inBounds: false, hint: 'Không tìm thấy khuôn mặt' };
+    }
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radiusX = canvas.width * 0.35;
+    const radiusY = canvas.height * 0.45;
+
+    // Get face bounding box - Human.js returns [x, y, width, height] in pixels
+    const faceX = face.box[0] + face.box[2] / 2;
+    const faceY = face.box[1] + face.box[3] / 2;
+    const faceWidth = face.box[2];
+    const faceHeight = face.box[3];
+
+    // Debug: log actual values
+    // console.log('Face:', { faceWidth, faceHeight, canvasW: canvas.width, canvasH: canvas.height });
+
+    // Check position - face center must be close to oval center
+    const distanceX = faceX - centerX;
+    const distanceY = faceY - centerY;
+    
+    if (Math.abs(distanceX) > radiusX * 0.35) {
+      return { inBounds: false, hint: distanceX > 0 ? 'Di chuyển sang trái' : 'Di chuyển sang phải' };
+    }
+    if (Math.abs(distanceY) > radiusY * 0.35) {
+      return { inBounds: false, hint: distanceY > 0 ? 'Di chuyển lên trên' : 'Di chuyển xuống dưới' };
+    }
+
+    // Check size - STRICT: face must fill at least 50% of oval width/height
+    // Oval width = radiusX * 2, height = radiusY * 2
+    const ovalWidth = radiusX * 2;
+    const ovalHeight = radiusY * 2;
+    
+    const fillRatioX = faceWidth / ovalWidth;
+    const fillRatioY = faceHeight / ovalHeight;
+
+    // Face must fill at least 50% of oval (Binance style)
+    if (fillRatioX < 0.5 || fillRatioY < 0.5) {
+      return { inBounds: false, hint: 'Tiến lại gần camera hơn' };
+    }
+    // Face should not be larger than oval
+    if (fillRatioX > 0.95 || fillRatioY > 0.95) {
+      return { inBounds: false, hint: 'Lùi ra xa camera hơn' };
+    }
+
+    return { inBounds: true, hint: '' };
+  };
+
+  // Check if face fits within oval guide - Binance style (strict) - for initial alignment
+  const checkFaceAlignment = (face: FaceResult, canvas: HTMLCanvasElement): { aligned: boolean; hint: string } => {
+    // First check bounds with STRICTER size requirement for initial alignment
+    if (!face.box || canvas.width === 0 || canvas.height === 0) {
+      return { aligned: false, hint: 'Không tìm thấy khuôn mặt' };
+    }
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radiusX = canvas.width * 0.35;
+    const radiusY = canvas.height * 0.45;
+
+    const faceX = face.box[0] + face.box[2] / 2;
+    const faceY = face.box[1] + face.box[3] / 2;
+    const faceWidth = face.box[2];
+    const faceHeight = face.box[3];
+
+    // Check position - centering (more lenient)
+    const distanceX = faceX - centerX;
+    const distanceY = faceY - centerY;
+    
+    if (Math.abs(distanceX) > radiusX * 0.35) {
+      return { aligned: false, hint: distanceX > 0 ? 'Di chuyển sang phải' : 'Di chuyển sang trái' };
+    }
+    if (Math.abs(distanceY) > radiusY * 0.35) {
+      return { aligned: false, hint: distanceY > 0 ? 'Di chuyển lên trên' : 'Di chuyển xuống dưới' };
+    }
+
+    // Size check - face must fill 60-95% of oval
+    const ovalWidth = radiusX * 2;
+    const ovalHeight = radiusY * 2;
+    const fillRatioX = faceWidth / ovalWidth;
+    const fillRatioY = faceHeight / ovalHeight;
+
+    if (fillRatioX < 0.6 || fillRatioY < 0.6) {
+      return { aligned: false, hint: 'Tiến lại gần camera hơn' };
+    }
+    if (fillRatioX > 0.95 || fillRatioY > 0.95) {
+      return { aligned: false, hint: 'Lùi ra xa camera hơn' };
+    }
+
+    // Check rotation (more lenient)
+    const yaw = face.rotation?.angle?.yaw ?? 1;
+    const pitch = face.rotation?.angle?.pitch ?? 1;
+    
+    if (Math.abs(yaw) > 0.2) {
+      return { aligned: false, hint: yaw > 0 ? 'Quay mặt sang trái một chút' : 'Quay mặt sang phải một chút' };
+    }
+    if (Math.abs(pitch) > 0.2) {
+      return { aligned: false, hint: pitch > 0 ? 'Hạ cằm xuống một chút' : 'Ngẩng mặt lên một chút' };
+    }
+
+    return { aligned: true, hint: '' };
+  };
+
   // Detection loop following face.html pattern exactly
   const detect = async () => {
     const human = humanRef.current;
     const video = videoRef.current;
+    const canvas = canvasRef.current;
     const challenges = challengesRef.current;
     
-    if (!human || !video) return;
-    if (currentStepRef.current >= challenges.length) return;
+    if (!human || !video || !canvas || canvas.width === 0) return;
 
     const result = await human.detect(video);
     
-    // Check if face detected and current challenge passes
-    if (result.face?.[0] && challenges[currentStepRef.current]?.check(result.face[0])) {
-      goToNextStep();
+    // Check if face is detected
+    if (result.face?.[0]) {
+      noFaceCountRef.current = 0;
+      
+      const face = result.face[0];
+      
+      if (!faceAlignedRef.current) {
+        // Initial alignment phase - check full alignment (position + size + rotation)
+        const { aligned, hint } = checkFaceAlignment(face, canvas);
+        drawOvalGuide(canvas, aligned);
+        
+        if (aligned) {
+          faceAlignedRef.current = true;
+          setFaceAligned(true);
+          setMessage(challenges[0]?.label || 'Bắt đầu...');
+        } else {
+          setMessage(hint || 'Đặt khuôn mặt vào trong khung oval');
+        }
+      } else {
+        // Challenge phase - only check bounds (position + size), allow rotation for challenges
+        const { inBounds, hint } = checkFaceInBounds(face, canvas);
+        drawOvalGuide(canvas, inBounds);
+        
+        if (!inBounds) {
+          // Face moved out of bounds - reset progress!
+          currentStepRef.current = 0;
+          setProgress(0);
+          faceAlignedRef.current = false;
+          setFaceAligned(false);
+          setMessage(hint || 'Đặt khuôn mặt vào trong khung oval');
+          isLockedRef.current = false;
+        } else {
+          // Face still in bounds, check challenges
+          if (currentStepRef.current >= challenges.length) return;
+
+          // Check if current challenge passes
+          if (challenges[currentStepRef.current]?.check(face)) {
+            goToNextStep();
+          }
+        }
+      }
+    } else {
+      // No face detected
+      noFaceCountRef.current++;
+      
+      // Draw empty oval guide
+      if (canvas) {
+        drawOvalGuide(canvas, false);
+      }
+
+      // If no face for ~2 seconds (60 frames at 30fps), reset to beginning
+      if (noFaceCountRef.current > 60) {
+        currentStepRef.current = 0;
+        setProgress(0);
+        faceAlignedRef.current = false;
+        setFaceAligned(false);
+        setMessage('Đặt khuôn mặt vào trong khung oval');
+        noFaceCountRef.current = 0;
+        isLockedRef.current = false;
+      }
     }
     
-    requestAnimationFrame(detect);
+    animationFrameRef.current = requestAnimationFrame(detect);
   };
 
   const goToNextStep = () => {
@@ -206,6 +433,11 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
     const video = videoRef.current;
     if (!video) return;
     
+    // Stop animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    
     // Capture image
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = video.videoWidth;
@@ -222,6 +454,20 @@ export default function FaceVerification({ onVerified, onCancel }: FaceVerificat
       setTimeout(() => onVerified(imageBase64), 1000);
     }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      const video = videoRef.current;
+      if (video?.srcObject) {
+        const stream = video.srcObject as MediaStream;
+        stream?.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   return (
     <Paper elevation={3} sx={{ p: 3, maxWidth: 600, mx: 'auto', textAlign: 'center' }}>
