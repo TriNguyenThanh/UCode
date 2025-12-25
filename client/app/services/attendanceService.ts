@@ -171,3 +171,34 @@ export async function deleteAttendanceSession(id: string): Promise<void> {
     throw new Error(response.data.message || 'Không thể xóa phiên điểm danh')
   }
 }
+
+// Extended AttendanceRecord with student info for detail view
+export interface AttendanceRecordDetail {
+  id: string
+  sessionId: string
+  userId: string
+  studentCode: string
+  fullName: string
+  attendedAt: string | null
+  ipAddress: string | null
+  latitude: number | null
+  longitude: number | null
+  isValid: boolean
+  invalidReason: string | null
+}
+
+/**
+ * [Teacher] Lấy danh sách bản ghi điểm danh theo phiên
+ * GET /api/v1/attendance/records/by-session/{sessionId}
+ */
+export async function getAttendanceRecordsBySession(
+  sessionId: string
+): Promise<AttendanceRecordDetail[]> {
+  const response = await API.get<ApiResponse<AttendanceRecordDetail[]>>(
+    `/api/v1/attendance/records/by-session/${sessionId}`
+  )
+  if (!response.data.success || !response.data.data) {
+    throw new Error(response.data.message || 'Không thể tải danh sách điểm danh')
+  }
+  return response.data.data
+}

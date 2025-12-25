@@ -35,6 +35,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PeopleIcon from '@mui/icons-material/People'
 import QrCodeIcon from '@mui/icons-material/QrCode2'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
@@ -441,6 +442,17 @@ export default function TeacherClassDetail() {
                         )}
                       </TableCell>
                       <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          component={Link}
+                          to={`/teacher/class/${classData.classId}/attendance/${session.id}`}
+                          sx={{ 
+                            color: 'secondary.main',
+                          }}
+                          title="Xem chi tiết"
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
                         <IconButton
                           size="small"
                           onClick={() => openQRDialog(session)}
