@@ -5,6 +5,7 @@ using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using UserService.Domain.Enums;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -22,6 +23,12 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value;
+    }
+
     /// <summary>
     /// Lấy thông tin user theo ID
     /// </summary>
@@ -35,6 +42,19 @@ public class UserController : ControllerBase
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetUser(string id)
     {
+        bool isAdminOrTeacher = false;
+
+        if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+        {
+            isAdminOrTeacher = true;
+        }
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId != id && !isAdminOrTeacher)
+        {
+            return Forbid();
+        }
+
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
@@ -50,6 +70,7 @@ public class UserController : ControllerBase
     /// <response code="200">Trả về thông tin user</response>
     /// <response code="404">Không tìm thấy user</response>
     [HttpGet("by-email/{email}")]
+    [Authorize(Roles = "Admin,Teacher")]
     [SwaggerOperation(Summary = "Get user by email", Description = "Lấy thông tin user theo email")]
     [SwaggerResponse(200, "Thông tin user", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]
@@ -70,6 +91,7 @@ public class UserController : ControllerBase
     /// <response code="200">Trả về thông tin user</response>
     /// <response code="404">Không tìm thấy user</response>
     [HttpGet("by-username/{username}")]
+    [Authorize(Roles = "Admin,Teacher")]
     [SwaggerOperation(Summary = "Get user by username", Description = "Lấy thông tin user theo username")]
     [SwaggerResponse(200, "Thông tin user", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]

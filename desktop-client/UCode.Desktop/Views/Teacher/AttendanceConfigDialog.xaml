@@ -268,6 +268,32 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+
+                <!-- Face Check Settings -->
+                <Border Style="{StaticResource CardStyle}" Padding="20" Margin="0,20,0,0">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding RequireFaceCheck}" 
+                                  FontSize="18" 
+                                  FontWeight="Bold" 
+                                  Foreground="#191970"
+                                  Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="FaceRecognition" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Yêu cầu xác thực khuôn mặt" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" CornerRadius="8" Padding="12"
+                                Visibility="{Binding RequireFaceCheck, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Information" Foreground="#F57C00" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                                <TextBlock TextWrapping="Wrap" Foreground="#E65100" FontSize="13">
+                                    Sinh viên sẽ phải xác thực khuôn mặt khi điểm danh. Đảm bảo sinh viên đã đăng ký khuôn mặt trong hệ thống.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 

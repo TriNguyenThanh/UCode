@@ -3,10 +3,12 @@ import { redirect, useLoaderData, Link, useRevalidator } from 'react-router'
 import type { Route } from './+types/teacher.class.$id'
 import { auth } from '~/auth'
 import * as ClassService from '~/services/classService'
-import type { Class, Assignment } from '~/types/index'
+import type { Class, Assignment, AttendanceSession } from '~/types/index'
 import { Navigation } from '~/components/Navigation'
+import { AttendanceQRDialog } from '~/components/AttendanceQRDialog'
 import { getClassById } from '~/services/classService'
 import { getAssignmentsByClass, deleteAssignment } from '~/services/assignmentService'
+import { getAttendanceSessions } from '~/services/attendanceService'
 import {
   Box,
   Container,
@@ -25,11 +27,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tabs,
+  Tab,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import PeopleIcon from '@mui/icons-material/People'
+import QrCodeIcon from '@mui/icons-material/QrCode2'
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const user = auth.getUser()
@@ -49,7 +54,15 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       console.warn('Assignment service unavailable:', assignmentError)
     }
 
-    return { user, classData, assignments }
+    // Try to fetch attendance sessions
+    let attendanceSessions: AttendanceSession[] = []
+    try {
+      attendanceSessions = await getAttendanceSessions(params.id)
+    } catch (attendanceError) {
+      console.warn('Attendance service unavailable:', attendanceError)
+    }
+
+    return { user, classData, assignments, attendanceSessions }
   } catch (error) {
     console.error('Failed to load class data:', error)
     throw new Response('Không thể tải thông tin lớp học', { status: 500 })
@@ -57,11 +70,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 export default function TeacherClassDetail() {
-  const { classData, assignments } = useLoaderData<typeof clientLoader>()
+  const { classData, assignments, attendanceSessions } = useLoaderData<typeof clientLoader>()
   const revalidator = useRevalidator()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null)
   const [archivedDialogOpen, setArchivedDialogOpen] = useState(false)
+  const [currentTab, setCurrentTab] = useState(0)
+  const [qrDialogOpen, setQrDialogOpen] = useState(false)
+  const [selectedSession, setSelectedSession] = useState<AttendanceSession | null>(null)
 
   // Hiển thị dialog nếu lớp bị archive
   useEffect(() => {
@@ -87,6 +103,16 @@ export default function TeacherClassDetail() {
   const openDeleteDialog = (assignmentId: string) => {
     setAssignmentToDelete(assignmentId)
     setDeleteDialogOpen(true)
+  }
+
+  const openQRDialog = (session: AttendanceSession) => {
+    setSelectedSession(session)
+    setQrDialogOpen(true)
+  }
+
+  const closeQRDialog = () => {
+    setQrDialogOpen(false)
+    setSelectedSession(null)
   }
 
   return (
@@ -157,33 +183,43 @@ export default function TeacherClassDetail() {
         </Typography>
       </Box>
 
-      {/* Assignments Section */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-          Danh sách bài tập
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          component={Link}
-          to={`/teacher/class/${classData.classId}/create-assignment`}
-          disabled={classData.isArchived}
-          sx={{
-            bgcolor: 'secondary.main',
-            color: 'primary.main',
-            '&:hover': {
-              bgcolor: 'primary.main',
-              color: 'secondary.main',
-            },
-            '&.Mui-disabled': {
-              bgcolor: 'grey.300',
-              color: 'grey.500',
-            },
-          }}
-        >
-          Tạo bài tập mới
-        </Button>
+      {/* Tabs for Assignments and Attendance */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)}>
+          <Tab label="Bài tập" />
+          <Tab label="Điểm danh" />
+        </Tabs>
       </Box>
+
+      {/* Assignments Tab */}
+      {currentTab === 0 && (
+        <>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+              Danh sách bài tập
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              component={Link}
+              to={`/teacher/class/${classData.classId}/create-assignment`}
+              disabled={classData.isArchived}
+              sx={{
+                bgcolor: 'secondary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                  color: 'secondary.main',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'grey.300',
+                  color: 'grey.500',
+                },
+              }}
+            >
+              Tạo bài tập mới
+            </Button>
+          </Box>
 
       <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
         <Table>
@@ -316,6 +352,161 @@ export default function TeacherClassDetail() {
           </Button>
         </Paper>
       )}
+        </>
+      )}
+
+      {/* Attendance Tab */}
+      {currentTab === 1 && (
+        <>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+              Danh sách phiên điểm danh
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              component={Link}
+              to={`/teacher/class/${classData.classId}/create-attendance`}
+              disabled={classData.isArchived}
+              sx={{
+                bgcolor: 'secondary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                  color: 'secondary.main',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'grey.300',
+                  color: 'grey.500',
+                },
+              }}
+            >
+              Tạo phiên điểm danh
+            </Button>
+          </Box>
+
+          <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+            <Table>
+              <TableHead sx={{ bgcolor: 'secondary.main' }}>
+                <TableRow>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Tiêu đề</TableCell>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Mã phiên</TableCell>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Thời gian</TableCell>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Trạng thái</TableCell>
+                  <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }} align="right">
+                    Thao tác
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {attendanceSessions.map((session) => {
+                  const startTime = new Date(session.startTime)
+                  const endTime = new Date(session.endTime)
+                  const now = new Date()
+                  const isOngoing = now >= startTime && now <= endTime
+                  const isPast = now > endTime
+                  const isFuture = now < startTime
+
+                  return (
+                    <TableRow key={session.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500}>
+                          {session.title}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontFamily="monospace">
+                          {session.sessionCode}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Typography variant="body2">
+                            {startTime.toLocaleDateString('vi-VN')} {startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            đến {endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {!session.isActive ? (
+                          <Chip label="Tạm dừng" color="default" size="small" />
+                        ) : isOngoing ? (
+                          <Chip label="Đang diễn ra" color="success" size="small" />
+                        ) : isPast ? (
+                          <Chip label="Đã kết thúc" color="error" size="small" />
+                        ) : (
+                          <Chip label="Sắp diễn ra" color="info" size="small" />
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          onClick={() => openQRDialog(session)}
+                          disabled={classData.isArchived || !session.isActive}
+                          sx={{ 
+                            color: 'secondary.main',
+                            '&.Mui-disabled': { color: 'grey.400' }
+                          }}
+                          title="Xem QR Code"
+                        >
+                          <QrCodeIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          component={Link}
+                          to={`/teacher/class/${classData.classId}/attendance/${session.id}/edit`}
+                          disabled={classData.isArchived}
+                          sx={{ 
+                            color: 'secondary.main',
+                            '&.Mui-disabled': { color: 'grey.400' }
+                          }}
+                          title="Chỉnh sửa cấu hình"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {attendanceSessions.length === 0 && (
+            <Paper sx={{ p: 6, textAlign: 'center', bgcolor: 'grey.50' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Chưa có phiên điểm danh nào
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Tạo phiên điểm danh đầu tiên cho lớp học này
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                component={Link}
+                to={`/teacher/class/${classData.classId}/create-attendance`}
+                disabled={classData.isArchived}
+                sx={{
+                  bgcolor: 'secondary.main',
+                  color: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                    color: 'secondary.main',
+                  },
+                  '&.Mui-disabled': {
+                    bgcolor: 'grey.300',
+                    color: 'grey.500',
+                  },
+                }}
+              >
+                Tạo phiên điểm danh
+              </Button>
+            </Paper>
+          )}
+        </>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -389,6 +580,13 @@ export default function TeacherClassDetail() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* QR Code Dialog */}
+      <AttendanceQRDialog
+        open={qrDialogOpen}
+        session={selectedSession}
+        onClose={closeQRDialog}
+      />
       </Container>
     </Box>
   )
