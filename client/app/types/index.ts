@@ -563,6 +563,7 @@ export interface AttendanceSession {
   allowedLatitude?: number
   allowedLongitude?: number
   allowedRadiusMeters?: number
+  requireFaceCheck: boolean
   isActive: boolean
   createdAt: string
 }
@@ -586,6 +587,7 @@ export interface AttendanceCheckInRequest {
   latitude?: number
   longitude?: number
   ipAddress?: string // For testing purposes when not deployed on VPS
+  faceImage?: string // Base64 encoded face image for verification
 }
 
 export interface GeolocationPosition {

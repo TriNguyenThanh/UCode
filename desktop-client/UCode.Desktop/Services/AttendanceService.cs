@@ -66,6 +66,7 @@ namespace UCode.Desktop.Services
         public decimal? AllowedLatitude { get; set; }
         public decimal? AllowedLongitude { get; set; }
         public int? AllowedRadiusMeters { get; set; }
+        public bool RequireFaceCheck { get; set; }
     }
 
     public class UpdateAttendanceSessionRequest
@@ -81,6 +82,7 @@ namespace UCode.Desktop.Services
         public decimal? AllowedLatitude { get; set; }
         public decimal? AllowedLongitude { get; set; }
         public int? AllowedRadiusMeters { get; set; }
+        public bool? RequireFaceCheck { get; set; }
     }
 
     public class AttendanceRecord

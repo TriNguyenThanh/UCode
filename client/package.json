@@ -23,6 +23,7 @@
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "@types/react-window": "^1.8.8",
+    "@vladmandic/human": "^3.3.6",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "easymde": "^2.20.0",
@@ -31,7 +32,7 @@
     "react-dom": "^19.1.1",
     "react-router": "^7.9.2",
     "react-simplemde-editor": "^5.2.0",
-    "react-syntax-highlighter": "^16.1.0",
+    "react-syntax-highlighter": "^15.5.0",
     "react-window": "^2.2.3",
     "xlsx": "^0.18.5"
   },

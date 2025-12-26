@@ -5,6 +5,7 @@ using UserService.Application.DTOs.Requests;
 using UserService.Application.Interfaces.Services;
 using UserService.Domain.Enums;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace UserService.Api.Controllers;
 
@@ -22,6 +23,12 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value;
+    }
+
     /// <summary>
     /// Lấy thông tin user theo ID
     /// </summary>
@@ -35,6 +42,19 @@ public class UserController : ControllerBase
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetUser(string id)
     {
+        bool isAdminOrTeacher = false;
+
+        if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+        {
+            isAdminOrTeacher = true;
+        }
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId != id && !isAdminOrTeacher)
+        {
+            return Forbid();
+        }
+
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
@@ -50,6 +70,7 @@ public class UserController : ControllerBase
     /// <response code="200">Trả về thông tin user</response>
     /// <response code="404">Không tìm thấy user</response>
     [HttpGet("by-email/{email}")]
+    [Authorize(Roles = "Admin,Teacher")]
     [SwaggerOperation(Summary = "Get user by email", Description = "Lấy thông tin user theo email")]
     [SwaggerResponse(200, "Thông tin user", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]
@@ -70,6 +91,7 @@ public class UserController : ControllerBase
     /// <response code="200">Trả về thông tin user</response>
     /// <response code="404">Không tìm thấy user</response>
     [HttpGet("by-username/{username}")]
+    [Authorize(Roles = "Admin,Teacher")]
     [SwaggerOperation(Summary = "Get user by username", Description = "Lấy thông tin user theo username")]
     [SwaggerResponse(200, "Thông tin user", typeof(ApiResponse<object>))]
     [SwaggerResponse(404, "User not found", typeof(ApiResponse<object>))]
@@ -140,7 +162,7 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "User updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "User updated successfully"));
     }
 
     /// <summary>
@@ -163,7 +185,7 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to change password"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Password changed successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Password changed successfully"));
     }
 
     /// <summary>
@@ -184,7 +206,7 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user status"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "User status updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "User status updated successfully"));
     }
 
     /// <summary>
@@ -205,7 +227,7 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete user"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "User deleted successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "User deleted successfully"));
     }
 
     /// <summary>
@@ -229,33 +251,9 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update user role"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "User role updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "User role updated successfully"));
     }
 
-    public record UserIdRequest(List<Guid> Ids);
-    public record UserEmailResponse(List<string> Emails);
-    /// <summary>
-    /// Lấy email của tất cả user
-    /// </summary>
-    /// <param name="request">Danh sách ID user</param>
-    /// <returns>Danh sách email</returns>
-    /// <response code="200">Trả về danh sách email</response>
-    /// <response code="400">Yêu cầu không hợp lệ</response>
-    [HttpPost("emails")]
-    [SwaggerOperation(Summary = "Get emails by user IDs", Description = "Lấy danh sách email từ danh sách ID người dùng")]
-    [SwaggerResponse(200, "Danh sách email", typeof(ApiResponse<List<string>>))]
-    [SwaggerResponse(400, "Yêu cầu không hợp lệ", typeof(ApiResponse<object>))]
-    public async Task<IActionResult> GetEmailsByIds([FromBody] UserIdRequest request)
-    {
-        if (request.Ids == null || !request.Ids.Any())
-        {            
-            foreach (var id in request.Ids) Console.WriteLine(id);
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request"));
-        }
-
-        var emails = await _userService.GetEmailsByIdsAsync(request.Ids);
-        return Ok(ApiResponse<UserEmailResponse>.SuccessResponse(new UserEmailResponse(emails), "Emails retrieved successfully"));
-    }
 }
 
 // Helper DTOs

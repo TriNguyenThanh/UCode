@@ -19,6 +19,8 @@ export default [
   route('teacher/class/:id', 'routes/teacher.class.$id.tsx'),
   route('teacher/class/:classId/students', 'routes/teacher.class.$classId.students.tsx'),
   route('teacher/class/:classId/create-assignment', 'routes/teacher.class.$classId.create-assignment.tsx'),
+  route('teacher/class/:classId/create-attendance', 'routes/teacher.class.$classId.create-attendance.tsx'),
+  route('teacher/class/:classId/attendance/:sessionId/edit', 'routes/teacher.class.$classId.attendance.$sessionId.edit.tsx'),
   route('teacher/assignment/:id', 'routes/teacher.assignment.$id.tsx'),
   route('teacher/assignment/:id/edit', 'routes/teacher.assignment.$id.edit.tsx'),
   route('teacher/grading/:assignmentId', 'routes/teacher.grading.$assignmentId.tsx'),
@@ -35,5 +37,7 @@ export default [
   //student route
   route('student/assignment/:assignmentId/problem/:problemId', 'routes/student.assignment.$assignmentId.problem.$problemId.tsx'),
   // Attendance route
-  route('attendance/:sessionCode', 'routes/attendance.$sessionCode.tsx')
+  route('attendance/:sessionCode', 'routes/attendance.$sessionCode.tsx'),
+
+  route('face-registration', 'routes/face-registration.tsx'),
 ] satisfies RouteConfig

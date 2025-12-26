@@ -39,7 +39,12 @@ public class UserServiceClient : IUserServiceClient
                 throw new ApiException("UserService BaseAddress is not configured. Please check UserService:BaseUrl in appsettings.json");
             }
 
-            var url = $"/api/v1/classes/{classId}/user-ids";
+            var url = $"/api/v1/webhooks/class/{classId}/students";
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
+            
+            // Add internal API key header
+            _httpClient.DefaultRequestHeaders.Remove("X-Internal-Api-Key");
+            _httpClient.DefaultRequestHeaders.Add("X-Internal-Api-Key", apiKey);
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -91,7 +96,9 @@ public class UserServiceClient : IUserServiceClient
     {
         try
         {
-            var url = $"/api/v1/users/emails";
+            var url = $"/api/v1/webhooks/get-emails";
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
+            
             var requestBody = new UserIdRequest
             {
                 Ids = userIds
@@ -101,8 +108,12 @@ public class UserServiceClient : IUserServiceClient
             Console.WriteLine($"[→] Request to {_httpClient.BaseAddress}{url}");
             Console.WriteLine($"[→] Request JSON: {json}");
             
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(url, content);
+            // Add internal API key header
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("X-Internal-Api-Key", apiKey);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.SendAsync(request);
             
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"[←] Response status: {response.StatusCode}");

@@ -130,6 +130,8 @@ builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentsAddedConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.UserDeletedConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -158,6 +160,9 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Add API Key Authentication Middleware (for internal webhooks)
+app.UseMiddleware<ApiKeyAuthMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

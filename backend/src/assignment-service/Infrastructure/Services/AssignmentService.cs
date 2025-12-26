@@ -519,13 +519,34 @@ public class AssignmentService : IAssignmentService
 
             foreach (var assignment in activeAssignments)
             {
-                // Lấy danh sách studentId đã có AssignmentUser
-                var existingAssignmentUsers = await _assignmentRepository.GetAssignmentUsersByAssignmentAsync(assignment.AssignmentId);
-                var existingStudentIds = existingAssignmentUsers.Select(au => au.UserId).ToHashSet();
+                // Lấy TẤT CẢ AssignmentUser (bao gồm cả IsActive=false)
+                var allAssignmentUsers = await _assignmentRepository.GetAssignmentUsersByAssignmentIncludeInactiveAsync(assignment.AssignmentId);
+                
+                // Chia thành 2 nhóm: active và inactive
+                var activeUserIds = allAssignmentUsers
+                    .Where(au => au.IsActive)
+                    .Select(au => au.UserId)
+                    .ToHashSet();
+                    
+                var inactiveUsers = allAssignmentUsers
+                    .Where(au => !au.IsActive && studentIds.Contains(au.UserId))
+                    .ToList();
 
-                // Chỉ thêm những student chưa có AssignmentUser
-                var newStudentIds = studentIds.Where(sid => !existingStudentIds.Contains(sid)).ToList();
+                // Reactive những user đã bị soft delete
+                foreach (var inactiveUser in inactiveUsers)
+                {
+                    inactiveUser.IsActive = true;
+                    await _assignmentRepository.UpdateAssignmentUserAsync(inactiveUser);
+                    totalCreated++;
+                }
 
+                // Tìm những student hoàn toàn mới (chưa có record)
+                var allExistingUserIds = allAssignmentUsers.Select(au => au.UserId).ToHashSet();
+                var newStudentIds = studentIds
+                    .Where(sid => !allExistingUserIds.Contains(sid))
+                    .ToList();
+
+                // Tạo mới cho những student chưa có record
                 if (newStudentIds.Any())
                 {
                     var maxScore = await _assignmentRepository.GetAssignmentMaxScoreAsync(assignment.AssignmentId);
@@ -537,7 +558,8 @@ public class AssignmentService : IAssignmentService
                         UserId = studentId,
                         Status = AssignmentUserStatus.NOT_STARTED,
                         AssignedAt = DateTime.UtcNow,
-                        MaxScore = maxScore
+                        MaxScore = maxScore,
+                        IsActive = true
                     }).ToList();
 
                     await _assignmentRepository.AddAssignmentUsersAsync(newAssignmentUsers);

@@ -12,11 +12,19 @@ public class AttendanceService : IAttendanceService
 {
     private readonly IAttendanceRepository _attendanceRepository;
     private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
+    private readonly IFaceServiceClient _faceServiceClient;
 
-    public AttendanceService(IAttendanceRepository attendanceRepository, IMapper mapper)
+    public AttendanceService(
+        IAttendanceRepository attendanceRepository, 
+        IMapper mapper,
+        IUserRepository userRepository,
+        IFaceServiceClient faceServiceClient)
     {
         _attendanceRepository = attendanceRepository;
         _mapper = mapper;
+        _userRepository = userRepository;
+        _faceServiceClient = faceServiceClient;
     }
 
     private string GenerateRandomCode(int length = 6)
@@ -67,6 +75,41 @@ public class AttendanceService : IAttendanceService
                 {
                     attendanceRecord.IsValid = false;
                     attendanceRecord.InvalidReason += " Vị trí không khớp ";
+                }
+            }
+
+            // Validate face verification if required
+            if (session.RequireFaceCheck)
+            {
+                // Check if user has face authentication enabled
+                var user = await _userRepository.GetByIdAsync(request.UserId);
+                if (user == null)
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("User not found");
+                }
+
+                if (!user.IsFaceAuth)
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("Face authentication is required but not set up. Please register your face first.");
+                }
+
+                // Verify face if image is provided
+                if (!string.IsNullOrEmpty(request.FaceImage))
+                {
+                    var verifyResult = await _faceServiceClient.VerifyFaceAsync(
+                        request.UserId.ToString(), 
+                        request.FaceImage, 
+                        threshold: 0.6f);
+
+                    if (!verifyResult.Success || !verifyResult.IsMatch)
+                    {
+                        attendanceRecord.IsValid = false;
+                        attendanceRecord.InvalidReason += " Khuôn mặt không khớp ";
+                    }
+                }
+                else
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("Face image is required for this session");
                 }
             }
 

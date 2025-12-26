@@ -41,4 +41,7 @@ public abstract class User
     
     [Column("last_login_at")]
     public DateTime? LastLoginAt { get; set; }
+    
+    [Column("is_face_auth")]
+    public bool IsFaceAuth { get; set; } = false;
 }

@@ -57,6 +57,10 @@ public class AttendanceSessionConfiguration : IEntityTypeConfiguration<Attendanc
         builder.Property(attendanceSession => attendanceSession.AllowedRadiusMeters)
             .HasColumnName("allowed_radius_meters");
 
+        builder.Property(attendanceSession => attendanceSession.RequireFaceCheck)
+            .HasColumnName("require_face_check")
+            .IsRequired();
+
         builder.Property(attendanceSession => attendanceSession.IsActive)
             .HasColumnName("is_active")
             .IsRequired();

@@ -34,5 +34,6 @@ public class ExamActivityLog
     public int SuspicionLevel { get; set; }
 
     // Navigation properties
-    public AssignmentUser AssignmentUser { get; set; } = null!;
+    // Nullable vì AssignmentUser có thể bị soft delete (IsActive=false)
+    public AssignmentUser? AssignmentUser { get; set; }
 }

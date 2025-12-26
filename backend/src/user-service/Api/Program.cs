@@ -10,6 +10,8 @@ using UserService.Infrastructure.Data;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Services;
 using UserService.Api.Middlewares;
+using UserService.Application.Interfaces.MessageBrokers;
+using UserService.Infrastructure.MessageBrokers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -156,6 +158,12 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // Register HTTP Clients
 builder.Services.AddHttpClient<IAssignmentServiceClient, AssignmentServiceClient>();
+builder.Services.AddHttpClient<IFaceServiceClient, FaceServiceClient>();
+builder.Services.AddHttpClient<IFileServiceClient, FileServiceClient>();
+
+// Register RabbitMQ services (for publishing events only)
+builder.Services.AddSingleton<IRabbitMqConnectionProvider, RabbitMqConnectionProvider>();
+builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -172,6 +180,9 @@ var app = builder.Build();
 
 // Add Exception Middleware
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Add API Key Authentication Middleware (for internal webhooks)
+app.UseMiddleware<ApiKeyAuthMiddleware>();
 
 // Apply migrations and seed data on startup
 using (var scope = app.Services.CreateScope())

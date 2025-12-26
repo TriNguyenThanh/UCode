@@ -265,6 +265,16 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
+    public async Task<List<AssignmentUser>> GetAssignmentUsersByAssignmentIncludeInactiveAsync(Guid assignmentId)
+    {
+        return await _context.AssignmentUsers
+            .IgnoreQueryFilters() // Lấy cả IsActive=false
+            .AsNoTracking()
+            .Where(d => d.AssignmentId == assignmentId)
+            .OrderBy(d => d.AssignedAt)
+            .ToListAsync();
+    }
+
     public async Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail)
     {
         _context.AssignmentUsers.Update(detail);
@@ -462,7 +472,9 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
     {
         return await _context.AssignmentUsers
-            .Where(au => au.UserId == userId)
-            .ExecuteDeleteAsync() > 0;
+            .Where(au => au.UserId == userId && au.IsActive)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(au => au.IsActive, false)
+            ) > 0;
     }
 }
