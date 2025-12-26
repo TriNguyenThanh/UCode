@@ -226,9 +226,7 @@
                                                         <TextBlock FontSize="15" Foreground="#333">
                                                             <Run Text="{Binding EndTime, StringFormat='dd/MM/yyyy HH:mm', TargetNullValue='Không giới hạn'}"/>
                                                         </TextBlock>
-                                                        <TextBlock FontSize="12" Foreground="#666">
-                                                            <Run Text="{Binding EndTime, StringFormat='Còn {0:dd} ngày', TargetNullValue=''}"/>
-                                                        </TextBlock>
+                                                        <TextBlock FontSize="12" Foreground="#666" Text="{Binding EndTime, Converter={StaticResource DeadlineDisplayConverter}}"/>
                                                     </StackPanel>
 
                                                     <!-- Số bài -->

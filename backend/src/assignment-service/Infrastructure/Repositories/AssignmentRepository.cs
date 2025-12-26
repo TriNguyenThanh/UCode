@@ -155,8 +155,13 @@ public class AssignmentRepository : IAssignmentRepository
         existingAssignment.ClassId = entity.ClassId;
         existingAssignment.Title = entity.Title;
         existingAssignment.Description = entity.Description;
-        existingAssignment.StartTime = entity.StartTime;
-        existingAssignment.EndTime = entity.EndTime;
+        // Convert to UTC for PostgreSQL
+        existingAssignment.StartTime = entity.StartTime.HasValue
+            ? (entity.StartTime.Value.Kind == DateTimeKind.Utc ? entity.StartTime : entity.StartTime.Value.ToUniversalTime())
+            : null;
+        existingAssignment.EndTime = entity.EndTime.HasValue
+            ? (entity.EndTime.Value.Kind == DateTimeKind.Utc ? entity.EndTime : entity.EndTime.Value.ToUniversalTime())
+            : null;
         // existingAssignment.AssignedAt = entity.AssignedAt;
         // existingAssignment.TotalPoints = entity.TotalPoints;
         existingAssignment.AllowLateSubmission = entity.AllowLateSubmission;
@@ -469,10 +474,13 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
-    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    public async Task<bool> DeleteAssignmentUserByUserIdAndClassIdAsync(Guid userId, Guid classId)
     {
+        // Only deactivate AssignmentUsers where the assignment belongs to the specified class
         return await _context.AssignmentUsers
-            .Where(au => au.UserId == userId && au.IsActive)
+            .Where(au => au.UserId == userId 
+                && au.IsActive 
+                && au.Assignment.ClassId == classId)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(au => au.IsActive, false)
             ) > 0;

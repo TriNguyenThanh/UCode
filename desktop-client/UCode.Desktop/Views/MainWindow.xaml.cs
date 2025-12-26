@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using MahApps.Metro.Controls;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
@@ -36,11 +37,17 @@ namespace UCode.Desktop.Views
                         // Setup NavigationFrame
                         _navigationService.SetFrame(NavigationFrame);
 
-                        // Hide HomeScrollViewer when navigating
+                        // Hide HomeScrollViewer when navigating, show it when going back to home
                         _navigationService.CanGoBackChanged += (sender, canGoBack) =>
                         {
                             HomeScrollViewer.Visibility = canGoBack ? Visibility.Collapsed : Visibility.Visible;
+                            // Clear NavigationFrame content when going back to home
+                            if (!canGoBack)
+                            {
+                                NavigationFrame.Content = null;
+                            }
                         };
+
 
                         System.IO.File.AppendAllText(logPath, "NavigationService initialized. Loading data...\n");
                         await viewModel.LoadDataAsync();
@@ -74,6 +81,25 @@ namespace UCode.Desktop.Views
                 {
                     var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "window_cleanup_error.log");
                     System.IO.File.WriteAllText(logPath, $"Error during window cleanup: {ex.Message}\n{ex.StackTrace}");
+                }
+            };
+
+            // Handle Backspace key for navigation back
+            PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Back && _navigationService.CanGoBack)
+                {
+                    // Don't trigger if focus is on a TextBox or similar input control
+                    var focusedElement = Keyboard.FocusedElement;
+                    if (focusedElement is System.Windows.Controls.TextBox || 
+                        focusedElement is System.Windows.Controls.PasswordBox ||
+                        focusedElement is System.Windows.Controls.RichTextBox)
+                    {
+                        return; // Let TextBox handle the Backspace
+                    }
+
+                    _navigationService.GoBack();
+                    e.Handled = true;
                 }
             };
         }

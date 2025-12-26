@@ -215,6 +215,14 @@ export default function SubmissionGrading() {
                   <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                     {new Date(submission.submittedAt).toLocaleString('vi-VN')}
                   </Typography>
+                  {submission.isSubmitLate && (
+                    <Chip
+                      label="Nộp trễ"
+                      size="small"
+                      color="warning"
+                      sx={{ mt: 1, bgcolor: 'warning.main', color: 'white' }}
+                    />
+                  )}
                 </Box>
               </Box>
             </Paper>

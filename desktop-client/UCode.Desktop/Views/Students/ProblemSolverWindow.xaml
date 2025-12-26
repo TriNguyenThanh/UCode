@@ -27,6 +27,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Back Button -->
@@ -65,8 +66,25 @@
                            VerticalAlignment="Center"
                            Margin="20,0,0,0"/>
 
+                <!-- Refresh Button -->
+                <Button Grid.Column="2"
+                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                        Foreground="White"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Command="{Binding DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        VerticalAlignment="Center"
+                        Padding="8,6"
+                        Margin="0,0,12,0"
+                        ToolTip="Làm mới">
+                    <iconPacks:PackIconMaterial Kind="Refresh"
+                                                Width="24"
+                                                Height="24"
+                                                VerticalAlignment="Center"/>
+                </Button>
+
                 <!-- Difficulty Badge -->
-                <Border Grid.Column="2"
+                <Border Grid.Column="3"
                         Background="#FACB01"
                         CornerRadius="4"
                         Padding="10,6"
@@ -533,6 +551,27 @@
                                                                         <TextBlock Text="{Binding StatusDisplay, Mode=OneWay}"
                                                                                    FontSize="11"
                                                                                    FontFamily="Be Vietnam Pro, Segoe UI"
+                                                                                   Foreground="White"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                                <!-- Late Submission Indicator -->
+                                                                <Border CornerRadius="12"
+                                                                        Padding="6,3"
+                                                                        Background="#FF9800"
+                                                                        Margin="6,0,0,0"
+                                                                        VerticalAlignment="Center"
+                                                                        Visibility="{Binding IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                                                                    Width="12"
+                                                                                                    Height="12"
+                                                                                                    Foreground="White"
+                                                                                                    VerticalAlignment="Center"
+                                                                                                    Margin="0,0,4,0"/>
+                                                                        <TextBlock Text="Trễ"
+                                                                                   FontSize="11"
                                                                                    Foreground="White"
                                                                                    FontWeight="SemiBold"
                                                                                    VerticalAlignment="Center"/>

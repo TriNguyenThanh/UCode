@@ -31,6 +31,7 @@ namespace UCode.Desktop.ViewModels
 
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
             _aiDetectorService = aiDetectorService;
         }
 
@@ -60,6 +61,7 @@ namespace UCode.Desktop.ViewModels
 
         public ICommand NavigateToAssignmentCommand { get; }
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
 
         public async Task InitializeAsync(string classId)
         {
@@ -177,6 +179,22 @@ namespace UCode.Desktop.ViewModels
         private void NavigateBack()
         {
             _navigationService.GoBack();
+        }
+
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_classId)) return;
+            
+            IsLoading = true;
+            try
+            {
+                await LoadClassDataAsync();
+                await LoadAssignmentsAsync();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         public int GetDaysUntilDue(DateTime? endTime)

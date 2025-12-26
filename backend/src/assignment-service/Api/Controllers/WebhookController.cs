@@ -78,31 +78,42 @@ public class WebhookController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> SyncDeleteUser([FromBody] Guid userId)
+    public async Task<IActionResult> SyncDeleteUserFromClass([FromBody] SyncDeleteUserRequest request)
     {
         try
         {
-            _logger.LogInformation("Deleting assignment users for user {UserId}", userId);
+            _logger.LogInformation("Deleting assignment users for user {UserId} in class {ClassId}", 
+                request.UserId, request.ClassId);
 
-            var success = await _assignmentService.DeleteAssignmentUserByUserIdAsync(userId);
+            var success = await _assignmentService.DeleteAssignmentUserByUserIdAndClassIdAsync(
+                request.UserId, request.ClassId);
 
             if (!success)
             {
-                _logger.LogWarning("No assignment users found for user {UserId}", userId);
-                return NotFound(ApiResponse<object>.ErrorResponse("No assignment users found for the given user ID"));
+                _logger.LogWarning("No assignment users found for user {UserId} in class {ClassId}", 
+                    request.UserId, request.ClassId);
+                return NotFound(ApiResponse<object>.ErrorResponse("No assignment users found for the given user ID in this class"));
             }
 
-            _logger.LogInformation("Successfully deleted assignment users for user {UserId}", userId);
+            _logger.LogInformation("Successfully deleted assignment users for user {UserId} in class {ClassId}", 
+                request.UserId, request.ClassId);
 
             return Ok(ApiResponse<object>.SuccessResponse(
-                new { userId }, 
-                "Assignment users deleted for the user"
+                new { request.UserId, request.ClassId }, 
+                "Assignment users deleted for the user in the class"
             ));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting assignment users for user {UserId}", userId);
+            _logger.LogError(ex, "Error deleting assignment users for user {UserId} in class {ClassId}", 
+                request.UserId, request.ClassId);
             return StatusCode(500, ApiResponse<object>.ErrorResponse($"Internal server error: {ex.Message}"));
         }
     }
+}
+
+public class SyncDeleteUserRequest
+{
+    public Guid UserId { get; set; }
+    public Guid ClassId { get; set; }
 }

@@ -54,6 +54,7 @@ namespace UCode.Desktop.ViewModels
         private string _userName = string.Empty;
         private bool _isLoading;
         private bool _isNavigationBarVisible = true;
+        private bool _canGoBack;
 
         public bool IsLoading
         {
@@ -65,6 +66,12 @@ namespace UCode.Desktop.ViewModels
         {
             get => _isNavigationBarVisible;
             set => SetProperty(ref _isNavigationBarVisible, value);
+        }
+
+        public bool CanGoBack
+        {
+            get => _canGoBack;
+            set => SetProperty(ref _canGoBack, value);
         }
 
         public string UserEmail
@@ -88,6 +95,9 @@ namespace UCode.Desktop.ViewModels
         public ICommand LogoutCommand { get; }
         public ICommand NavigateToClassCommand { get; }
         public ICommand NavigateToAssignmentCommand { get; }
+        public ICommand GoBackCommand { get; }
+        public ICommand NavigateToHomeCommand { get; }
+        public ICommand NavigateToAssignmentsCommand { get; }
 
         public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
@@ -98,14 +108,18 @@ namespace UCode.Desktop.ViewModels
             LogoutCommand = new RelayCommand(_ => ExecuteLogout());
             NavigateToClassCommand = new RelayCommand<string>(NavigateToClass);
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
+            GoBackCommand = new RelayCommand(_ => ExecuteGoBack(), _ => CanGoBack);
+            NavigateToHomeCommand = new RelayCommand(_ => ExecuteNavigateToHome());
+            NavigateToAssignmentsCommand = new RelayCommand(_ => ExecuteNavigateToAssignments());
 
             // Subscribe to navigation events
             _navigationService.Navigated += OnNavigated;
+            _navigationService.CanGoBackChanged += OnCanGoBackChanged;
 
             // Set user info
             var currentUser = authService.CurrentUser;
             UserEmail = currentUser?.Email ?? "user@example.com";
-            UserName = currentUser?.Email?.Split('@')[0] ?? "User";
+            UserName = currentUser?.Username ?? "User";
             _aiDetectorService = aiDetectorService;
         }
 
@@ -120,6 +134,29 @@ namespace UCode.Desktop.ViewModels
             {
                 IsNavigationBarVisible = true;
             }
+        }
+
+        private void OnCanGoBackChanged(object? sender, bool canGoBack)
+        {
+            CanGoBack = canGoBack;
+        }
+
+        private void ExecuteGoBack()
+        {
+            _navigationService.GoBack();
+        }
+
+        private void ExecuteNavigateToHome()
+        {
+            // Clear navigation stack and go back to home
+            _navigationService.ClearNavigationStack();
+        }
+
+        private async void ExecuteNavigateToAssignments()
+        {
+            // For now, reload assignments and stay on home page
+            // A dedicated assignments page can be added in the future
+            await LoadUpcomingAssignmentsAsync();
         }
 
         public async Task LoadDataAsync()
@@ -404,6 +441,9 @@ namespace UCode.Desktop.ViewModels
             if (result == MessageDialogResult.Affirmative)
             {
                 _authService.Logout();
+                
+                // Clear navigation stack
+                _navigationService.ClearNavigationStack();
 
                 // Change shutdown mode back to explicit before closing main window
                 Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;

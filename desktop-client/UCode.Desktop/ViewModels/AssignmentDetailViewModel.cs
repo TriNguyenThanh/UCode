@@ -31,6 +31,7 @@ namespace UCode.Desktop.ViewModels
 
             NavigateToProblemCommand = new RelayCommand<string>(NavigateToProblem);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
             StartAssignmentCommand = new RelayCommand(_ => StartAssignment(), _ => _assignmentUser?.Status == AssignmentUserStatus.NOT_STARTED);
             ShowAIDetectionDetailsCommand = new RelayCommand(_ => ShowAIDetectionDetails());
         }
@@ -63,6 +64,7 @@ namespace UCode.Desktop.ViewModels
 
         public ICommand NavigateToProblemCommand { get; }
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
         public ICommand StartAssignmentCommand { get; }
         public ICommand ShowAIDetectionDetailsCommand { get; }
 
@@ -288,6 +290,22 @@ namespace UCode.Desktop.ViewModels
         private void NavigateBack()
         {
             _navigationService.GoBack();
+        }
+
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_assignmentId)) return;
+            
+            IsLoading = true;
+            try
+            {
+                await LoadAssignmentDataAsync();
+                await LoadBestSubmissionsAsync();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private async void ShowAIDetectionDetails()

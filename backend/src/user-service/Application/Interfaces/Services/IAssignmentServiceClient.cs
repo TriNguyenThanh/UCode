@@ -11,11 +11,12 @@ public interface IAssignmentServiceClient
     Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds);
 
     /// <summary>
-    /// Syncs delete user to assignment service
+    /// Syncs delete user from class to assignment service
     /// </summary>
     /// <param name="userId">User ID</param>
+    /// <param name="classId">Class ID</param>
     /// <returns>Success</returns>
-    Task<bool> SyncDeleteUserAsync(Guid userId);
+    Task<bool> SyncDeleteUserFromClassAsync(Guid userId, Guid classId);
 
     /// <summary>
     /// Tạo tài khoản cho sinh viên

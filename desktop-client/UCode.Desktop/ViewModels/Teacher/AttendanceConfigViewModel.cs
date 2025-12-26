@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -13,6 +14,7 @@ namespace UCode.Desktop.ViewModels
     {
         private readonly AttendanceService _attendanceService;
         private readonly string _sessionId;
+        private readonly DateTime _originalStartTime;
         private bool _isSaving;
         private string _sessionTitle = string.Empty;
 
@@ -32,6 +34,9 @@ namespace UCode.Desktop.ViewModels
         private string _allowedLatitude = string.Empty;
         private string _allowedLongitude = string.Empty;
         private string _allowedRadiusMeters = string.Empty;
+
+        // Face check setting
+        private bool _requireFaceCheck;
 
         public bool IsSaving
         {
@@ -105,10 +110,42 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _allowedRadiusMeters, value);
         }
 
+        public string GpsCoordinates
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(AllowedLatitude) || string.IsNullOrWhiteSpace(AllowedLongitude))
+                    return string.Empty;
+                return $"{AllowedLatitude}, {AllowedLongitude}";
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    AllowedLatitude = string.Empty;
+                    AllowedLongitude = string.Empty;
+                    return;
+                }
+
+                var parts = value.Split(',');
+                if (parts.Length == 2)
+                {
+                    AllowedLatitude = parts[0].Trim();
+                    AllowedLongitude = parts[1].Trim();
+                }
+            }
+        }
+
         public bool IsActive
         {
             get => _isActive;
             set => SetProperty(ref _isActive, value);
+        }
+
+        public bool RequireFaceCheck
+        {
+            get => _requireFaceCheck;
+            set => SetProperty(ref _requireFaceCheck, value);
         }
 
         public ICommand SaveCommand { get; }
@@ -120,6 +157,9 @@ namespace UCode.Desktop.ViewModels
             _attendanceService = attendanceService;
             _sessionId = sessionId;
 
+            // Store original start time for validation
+            _originalStartTime = session.StartTime;
+
             SaveCommand = new RelayCommand(async _ => await SaveConfigAsync());
             OpenMapCommand = new RelayCommand(_ => OpenMap());
             RefreshIpCommand = new RelayCommand(_ => RefreshIp());
@@ -127,12 +167,17 @@ namespace UCode.Desktop.ViewModels
             // Initialize from session
             SessionTitle = session.Title;
             IsActive = session.IsActive;
-            StartDate = session.StartTime.Date;
-            StartTime = new DateTime(session.StartTime.Year, session.StartTime.Month, session.StartTime.Day, 
-                                     session.StartTime.Hour, session.StartTime.Minute, 0);
-            EndDate = session.EndTime.Date;
-            EndTime = new DateTime(session.EndTime.Year, session.EndTime.Month, session.EndTime.Day, 
-                                   session.EndTime.Hour, session.EndTime.Minute, 0);
+            
+            // Convert UTC to Local time for display in DatePicker/TimePicker
+            var localStartTime = session.StartTime.ToLocalTime();
+            var localEndTime = session.EndTime.ToLocalTime();
+            
+            StartDate = localStartTime.Date;
+            StartTime = new DateTime(localStartTime.Year, localStartTime.Month, localStartTime.Day, 
+                                     localStartTime.Hour, localStartTime.Minute, 0);
+            EndDate = localEndTime.Date;
+            EndTime = new DateTime(localEndTime.Year, localEndTime.Month, localEndTime.Day, 
+                                   localEndTime.Hour, localEndTime.Minute, 0);
 
             RequireIpCheck = session.RequireIpCheck;
             AllowedIpSubnet = session.AllowedIpSubnet ?? string.Empty;
@@ -141,6 +186,8 @@ namespace UCode.Desktop.ViewModels
             AllowedLatitude = session.AllowedLatitude?.ToString() ?? string.Empty;
             AllowedLongitude = session.AllowedLongitude?.ToString() ?? string.Empty;
             AllowedRadiusMeters = session.AllowedRadiusMeters?.ToString() ?? string.Empty;
+
+            RequireFaceCheck = session.RequireFaceCheck;
 
             // Auto-fill IP and GPS defaults when enabled
             PropertyChanged += (s, e) =>
@@ -181,14 +228,26 @@ namespace UCode.Desktop.ViewModels
             var startDateTime = StartDate.Value.Date + StartTime.Value.TimeOfDay;
             var endDateTime = EndDate.Value.Date + EndTime.Value.TimeOfDay;
 
-            // Check if start time is in the past
-            if (startDateTime < DateTime.Now.AddMinutes(-5))
+            // Check if start time is before original start time (compare as UTC, allow 1 minute tolerance)
+            var startDateTimeUtc = DateTime.SpecifyKind(startDateTime, DateTimeKind.Local).ToUniversalTime();
+            var endDateTimeUtc = DateTime.SpecifyKind(endDateTime, DateTimeKind.Local).ToUniversalTime();
+            var originalStartTimeUtc = _originalStartTime.Kind == DateTimeKind.Utc ? _originalStartTime : _originalStartTime.ToUniversalTime();
+            
+            // Truncate to minute precision to avoid millisecond comparison issues
+            startDateTimeUtc = new DateTime(startDateTimeUtc.Year, startDateTimeUtc.Month, startDateTimeUtc.Day, 
+                                           startDateTimeUtc.Hour, startDateTimeUtc.Minute, 0, DateTimeKind.Utc);
+            endDateTimeUtc = new DateTime(endDateTimeUtc.Year, endDateTimeUtc.Month, endDateTimeUtc.Day,
+                                         endDateTimeUtc.Hour, endDateTimeUtc.Minute, 0, DateTimeKind.Utc);
+            var originalStartTimeUtcTruncated = new DateTime(originalStartTimeUtc.Year, originalStartTimeUtc.Month, originalStartTimeUtc.Day,
+                                                            originalStartTimeUtc.Hour, originalStartTimeUtc.Minute, 0, DateTimeKind.Utc);
+            
+            if (startDateTimeUtc < originalStartTimeUtcTruncated)
             {
-                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian bắt đầu không thể ở trong quá khứ");
+                await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian bắt đầu không được nhỏ hơn thời gian ban đầu");
                 return;
             }
 
-            if (endDateTime <= startDateTime)
+            if (endDateTimeUtc <= startDateTimeUtc)
             {
                 await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thời gian kết thúc phải sau thời gian bắt đầu");
                 return;
@@ -210,8 +269,8 @@ namespace UCode.Desktop.ViewModels
                     return;
                 }
 
-                if (!decimal.TryParse(AllowedLatitude, out _) || 
-                    !decimal.TryParse(AllowedLongitude, out _) ||
+                if (!decimal.TryParse(AllowedLatitude, NumberStyles.Any, CultureInfo.InvariantCulture, out _) || 
+                    !decimal.TryParse(AllowedLongitude, NumberStyles.Any, CultureInfo.InvariantCulture, out _) ||
                     !int.TryParse(AllowedRadiusMeters, out _))
                 {
                     await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Thông tin GPS không hợp lệ");
@@ -232,9 +291,10 @@ namespace UCode.Desktop.ViewModels
                     RequireIpCheck = RequireIpCheck,
                     AllowedIpSubnet = RequireIpCheck ? AllowedIpSubnet.Trim() : null,
                     RequireGpsCheck = RequireGpsCheck,
-                    AllowedLatitude = RequireGpsCheck ? decimal.Parse(AllowedLatitude) : null,
-                    AllowedLongitude = RequireGpsCheck ? decimal.Parse(AllowedLongitude) : null,
-                    AllowedRadiusMeters = RequireGpsCheck ? int.Parse(AllowedRadiusMeters) : null
+                    AllowedLatitude = RequireGpsCheck ? decimal.Parse(AllowedLatitude, CultureInfo.InvariantCulture) : null,
+                    AllowedLongitude = RequireGpsCheck ? decimal.Parse(AllowedLongitude, CultureInfo.InvariantCulture) : null,
+                    AllowedRadiusMeters = RequireGpsCheck ? int.Parse(AllowedRadiusMeters) : null,
+                    RequireFaceCheck = RequireFaceCheck
                 };
 
                 var response = await _attendanceService.UpdateAttendanceSessionAsync(_sessionId, request);

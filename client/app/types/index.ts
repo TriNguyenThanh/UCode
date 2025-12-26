@@ -453,6 +453,7 @@ export interface Submission {
   totalMemory: number
   submittedAt: string
   resultFileRef?: string
+  isSubmitLate?: boolean
 }
 
 export interface BestSubmission {
@@ -476,6 +477,7 @@ export interface BestSubmission {
   submittedAt: string
   resultFileRef?: string
   totalSubmission?: number
+  isSubmitLate?: boolean
 }
 
 // ============================================

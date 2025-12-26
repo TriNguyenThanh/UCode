@@ -29,6 +29,22 @@ public class AssignmentService : IAssignmentService
             assignment.AssignedAt = DateTime.UtcNow;
             assignment.TotalPoints = 0;
 
+            // Convert to UTC for PostgreSQL - handle all DateTime kinds properly
+            if (assignment.StartTime.HasValue)
+            {
+                var startTime = assignment.StartTime.Value;
+                assignment.StartTime = startTime.Kind == DateTimeKind.Utc
+                    ? startTime
+                    : DateTime.SpecifyKind(startTime, DateTimeKind.Local).ToUniversalTime();
+            }
+            if (assignment.EndTime.HasValue)
+            {
+                var endTime = assignment.EndTime.Value;
+                assignment.EndTime = endTime.Kind == DateTimeKind.Utc
+                    ? endTime
+                    : DateTime.SpecifyKind(endTime, DateTimeKind.Local).ToUniversalTime();
+            }
+
             var createdAssignment = await _assignmentRepository.AddAsync(assignment);
 
             // Compute MaxScore from AssignmentProblems
@@ -272,11 +288,11 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    public async Task<bool> DeleteAssignmentUserByUserIdAndClassIdAsync(Guid userId, Guid classId)
     {
         try
         {
-            return await _assignmentRepository.DeleteAssignmentUserByUserIdAsync(userId);
+            return await _assignmentRepository.DeleteAssignmentUserByUserIdAndClassIdAsync(userId, classId);
         }
         catch (DbException ex)
         {

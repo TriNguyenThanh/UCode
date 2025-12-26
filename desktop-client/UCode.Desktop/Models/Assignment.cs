@@ -176,6 +176,7 @@ namespace UCode.Desktop.Models
         public string ResultFileRef { get; set; } = string.Empty;
         public int TotalSubmission { get; set; }
         public string AssignmentId { get; set; } = string.Empty;
+        public bool IsSubmitLate { get; set; }
 
         // Calculated properties for display
         public string UserStudentCode => UserCode;

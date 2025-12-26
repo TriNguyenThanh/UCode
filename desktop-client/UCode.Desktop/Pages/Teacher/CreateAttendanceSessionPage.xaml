@@ -131,29 +131,14 @@
                         </CheckBox>
 
                         <StackPanel Visibility="{Binding RequireGpsCheck, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Grid Margin="0,0,0,15">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <TextBlock Text="Tọa độ GPS (Vĩ độ, Kinh độ)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding GpsCoordinates, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
+                                     mah:TextBoxHelper.Watermark="VD: 11.169625, 108.931672"
+                                     mah:ControlsHelper.CornerRadius="8"/>
+                            <TextBlock Text="Nhập tọa độ theo định dạng: vĩ_độ, kinh_độ (cách nhau bởi dấu phẩy)" 
+                                       FontSize="12" Foreground="#999" Margin="0,0,0,15"/>
 
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Vĩ độ (Latitude)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
-                                    <TextBox Text="{Binding AllowedLatitude, UpdateSourceTrigger=PropertyChanged}"
-                                             Height="45" FontSize="14" Padding="12"
-                                             mah:TextBoxHelper.Watermark="VD: 10.762622"
-                                             mah:ControlsHelper.CornerRadius="8"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Kinh độ (Longitude)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
-                                    <TextBox Text="{Binding AllowedLongitude, UpdateSourceTrigger=PropertyChanged}"
-                                             Height="45" FontSize="14" Padding="12"
-                                             mah:TextBoxHelper.Watermark="VD: 106.660172"
-                                             mah:ControlsHelper.CornerRadius="8"/>
-                                </StackPanel>
-                            </Grid>
 
                             <TextBlock Text="Bán kính cho phép (mét)" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding AllowedRadiusMeters, UpdateSourceTrigger=PropertyChanged}"
@@ -189,6 +174,27 @@
                                     <Run Text="3. Click vào tọa độ đầu tiên (dạng: 10.762622, 106.660172)"/>
                                     <LineBreak/>
                                     <Run Text="4. Tọa độ sẽ được copy, paste vào ô Vĩ độ và Kinh độ"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Separator -->
+                        <Border Height="1" Background="#E0E0E0" Margin="0,0,0,30"/>
+
+                        <!-- Face Check Section -->
+                        <TextBlock Text="XÁC THỰC KHUÔN MẶT" FontSize="18" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,20"/>
+
+                        <CheckBox IsChecked="{Binding RequireFaceCheck}" Margin="0,0,0,15">
+                            <TextBlock Text="Yêu cầu xác thực khuôn mặt" FontSize="14" FontWeight="SemiBold"/>
+                        </CheckBox>
+
+                        <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" 
+                                CornerRadius="8" Padding="15" Margin="0,0,0,30"
+                                Visibility="{Binding RequireFaceCheck, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="InformationOutline" Width="20" Height="20" Foreground="#F57C00" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <TextBlock FontSize="13" Foreground="#E65100" TextWrapping="Wrap">
+                                    Sinh viên sẽ phải xác thực khuôn mặt khi điểm danh. Đảm bảo sinh viên đã đăng ký khuôn mặt trong hệ thống.
                                 </TextBlock>
                             </StackPanel>
                         </Border>

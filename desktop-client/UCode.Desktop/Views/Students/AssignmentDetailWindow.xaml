@@ -34,6 +34,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Back Button -->
@@ -63,6 +64,21 @@
                            FontWeight="Bold"
                            Foreground="White"
                            VerticalAlignment="Center"/>
+
+                <!-- Refresh Button -->
+                <Button Grid.Column="2"
+                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Foreground="White"
+                        Command="{Binding RefreshCommand}"
+                        Cursor="Hand"
+                        ToolTip="Làm mới">
+                    <iconPacks:PackIconMaterial Kind="Refresh"
+                                                Width="24"
+                                                Height="24"
+                                                VerticalAlignment="Center"/>
+                </Button>
             </Grid>
         </Border>
 

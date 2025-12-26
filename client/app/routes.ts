@@ -20,6 +20,7 @@ export default [
   route('teacher/class/:classId/students', 'routes/teacher.class.$classId.students.tsx'),
   route('teacher/class/:classId/create-assignment', 'routes/teacher.class.$classId.create-assignment.tsx'),
   route('teacher/class/:classId/create-attendance', 'routes/teacher.class.$classId.create-attendance.tsx'),
+  route('teacher/class/:classId/attendance/:sessionId', 'routes/teacher.class.$classId.attendance.$sessionId.tsx'),
   route('teacher/class/:classId/attendance/:sessionId/edit', 'routes/teacher.class.$classId.attendance.$sessionId.edit.tsx'),
   route('teacher/assignment/:id', 'routes/teacher.assignment.$id.tsx'),
   route('teacher/assignment/:id/edit', 'routes/teacher.assignment.$id.edit.tsx'),
