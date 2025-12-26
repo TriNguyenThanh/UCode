@@ -298,6 +298,13 @@ public class AttendanceService : IAttendanceService
             updatedSession.Id = existingSession.Id; 
             updatedSession.SessionCode = existingSession.SessionCode; 
             updatedSession.ClassId = existingSession.ClassId;
+            // Convert to UTC for PostgreSQL
+            updatedSession.StartTime = attendanceSession.StartTime.Kind == DateTimeKind.Utc 
+                ? attendanceSession.StartTime 
+                : attendanceSession.StartTime.ToUniversalTime();
+            updatedSession.EndTime = attendanceSession.EndTime.Kind == DateTimeKind.Utc 
+                ? attendanceSession.EndTime 
+                : attendanceSession.EndTime.ToUniversalTime();
 
             var session = await _attendanceRepository.UpdateSessionAsync(updatedSession);
             var response = _mapper.Map<AttendanceSessionResponse>(session);

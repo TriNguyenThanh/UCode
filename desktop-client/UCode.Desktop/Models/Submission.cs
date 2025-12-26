@@ -36,6 +36,7 @@ namespace UCode.Desktop.Models
         public int TotalMemory { get; set; }
         public int TotalTestcase { get; set; }
         public int PassedTestcase { get; set; }
+        public bool IsSubmitLate { get; set; }
         public System.Collections.Generic.List<TestCaseResult> TestCaseResults { get; set; } = new();
 
         private void ParseTestCaseResults()

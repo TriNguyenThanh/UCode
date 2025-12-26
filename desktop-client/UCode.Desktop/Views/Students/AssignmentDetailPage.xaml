@@ -19,28 +19,8 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="40,30">
 
-                <!-- Back Button with Badge -->
+                <!-- Assignment Type Badge -->
                 <StackPanel Margin="0,0,0,20">
-                    <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            Foreground="#00275E"
-                            Command="{Binding NavigateBackCommand}"
-                            Cursor="Hand"
-                            HorizontalAlignment="Left"
-                            Margin="0,0,0,15">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                        Width="20"
-                                                        Height="20"
-                                                        VerticalAlignment="Center"
-                                                        Margin="0,0,8,0"/>
-                            <TextBlock Text="Quay lại"
-                                       FontSize="15"
-                                       FontFamily="Be Vietnam Pro, Segoe UI"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
                     <Border Background="#00275E"
                             CornerRadius="12"
                             Padding="10,6"
@@ -300,11 +280,42 @@
                 </Border>
 
                 <!-- Problems List -->
-                <TextBlock Text="Danh sách câu hỏi"
-                           FontSize="24"
-                           FontWeight="SemiBold"
-                           FontFamily="Be Vietnam Pro, Segoe UI"
-                           Margin="0,0,0,20"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                               Text="Danh sách câu hỏi"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               FontFamily="Be Vietnam Pro, Segoe UI"
+                               VerticalAlignment="Center"/>
+                    
+                    <!-- Refresh Button -->
+                    <Button Grid.Column="1"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource MahApps.Styles.Button.Flat}"
+                            Background="#00275E"
+                            Foreground="White"
+                            Padding="12,8"
+                            Cursor="Hand"
+                            ToolTip="Làm mới dữ liệu">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh"
+                                                        Width="18"
+                                                        Height="18"
+                                                        Foreground="White"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+                            <TextBlock Text="Làm mới"
+                                       FontSize="14"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
                 <ItemsControl ItemsSource="{Binding Problems}">
                     <ItemsControl.ItemTemplate>

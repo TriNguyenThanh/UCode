@@ -215,7 +215,21 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Thao tác" Width="100">
+                                <DataGridTemplateColumn Header="Chỉnh sửa" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                                    ToolTip="Chỉnh sửa đề bài"
+                                                    HorizontalAlignment="Left"
+                                                    Command="{Binding DataContext.EditProblemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding ProblemId}"
+                                                    Padding="8">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Xóa" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource DangerButtonStyle}"

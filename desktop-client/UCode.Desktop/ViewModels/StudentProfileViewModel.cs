@@ -156,6 +156,14 @@ namespace UCode.Desktop.ViewModels
             var currentUser = authService.CurrentUser;
             Email = currentUser?.Email ?? string.Empty;
             FullName = currentUser?.Email?.Split('@')[0] ?? "Student";
+
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
+        }
+        public ICommand RefreshCommand { get; }
+
+        private async Task RefreshAsync()
+        {
+            await LoadDataAsync();
         }
 
         public async Task LoadDataAsync()

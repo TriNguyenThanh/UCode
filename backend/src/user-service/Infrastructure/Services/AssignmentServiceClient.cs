@@ -65,24 +65,23 @@ public class AssignmentServiceClient : IAssignmentServiceClient
         }
     }
 
-    public async Task<bool> SyncDeleteUserAsync(Guid userId)
+    public async Task<bool> SyncDeleteUserFromClassAsync(Guid userId, Guid classId)
     {
         try
         {
             // Publish event to RabbitMQ instead of HTTP call
-            var @event = new UserDeletedEvent
+            var @event = new StudentRemovedFromClassEvent
             {
                 UserId = userId,
+                ClassId = classId,
                 OccurredAt = DateTime.UtcNow
             };
 
-            // hiện tại không xóa assignment_user khi xóa user khỏi class
-
-            await _rabbitMqService.PublishMessageAsync(@event, "user_service.user_deleted");
+            await _rabbitMqService.PublishMessageAsync(@event, "user_service.student_removed_from_class");
 
             _logger.LogInformation(
-                "✅ Published UserDeleted event. UserId: {UserId}",
-                userId);
+                "✅ Published StudentRemovedFromClass event. UserId: {UserId}, ClassId: {ClassId}",
+                userId, classId);
 
             return true;
         }
@@ -90,8 +89,8 @@ public class AssignmentServiceClient : IAssignmentServiceClient
         {
             _logger.LogError(
                 ex, 
-                "❌ Error publishing UserDeleted event. UserId: {UserId}", 
-                userId);
+                "❌ Error publishing StudentRemovedFromClass event. UserId: {UserId}, ClassId: {ClassId}", 
+                userId, classId);
             return false;
         }
     }

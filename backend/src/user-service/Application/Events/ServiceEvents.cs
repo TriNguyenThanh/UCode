@@ -11,10 +11,11 @@ public class StudentsAddedToClassEvent
 }
 
 /// <summary>
-/// Event được publish khi user bị xóa
+/// Event được publish khi student bị xóa khỏi class
 /// </summary>
-public class UserDeletedEvent
+public class StudentRemovedFromClassEvent
 {
     public Guid UserId { get; set; }
+    public Guid ClassId { get; set; }
     public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
 }

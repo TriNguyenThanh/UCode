@@ -382,12 +382,12 @@ public class ClassAppService : IClassService
 
         if (result)
         {
-            // Sync delete user from assignment service (fire-and-forget)
+            // Sync delete user from class to assignment service (fire-and-forget)
             _ = Task.Run(async () => 
             {
                 try 
                 {
-                    await _assignmentServiceClient.SyncDeleteUserAsync(studentGuid);
+                    await _assignmentServiceClient.SyncDeleteUserFromClassAsync(studentGuid, classGuid);
                 }
                 catch
                 {

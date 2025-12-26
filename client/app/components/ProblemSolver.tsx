@@ -26,6 +26,7 @@ import SendIcon from '@mui/icons-material/Send'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import MemoryIcon from '@mui/icons-material/Memory'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import EditIcon from '@mui/icons-material/Edit'
 import { CodeEditor } from './CodeEditor'
 import { SubmissionHistory } from './SubmissionHistory'
 import { Loading } from './Loading'
@@ -37,6 +38,7 @@ interface ProblemSolverProps {
   initialSubmissions?: Submission[]
   backUrl: string
   assignmentId?: string | null
+  showEditButton?: boolean
 }
 
 interface TabPanelProps {
@@ -150,7 +152,7 @@ function getCodeTemplate(languageCode: string, problemLanguages?: Problem['probl
   return '// Your code here'
 }
 
-export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assignmentId = null }: ProblemSolverProps) {
+export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assignmentId = null, showEditButton = false }: ProblemSolverProps) {
   const [tabValue, setTabValue] = React.useState(0)
   
   // Panel resizing
@@ -482,6 +484,24 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
             {problem.title}
           </Typography>
           <Chip label={problem.difficulty} size='small' color={getDifficultyColor(problem.difficulty) as any} />
+          {showEditButton && (
+            <Button
+              component={Link}
+              to={`/teacher/problem/${problem.problemId}/edit`}
+              variant='outlined'
+              startIcon={<EditIcon />}
+              sx={{ 
+                color: 'primary.main', 
+                borderColor: 'primary.main',
+                '&:hover': {
+                  borderColor: 'primary.dark',
+                  bgcolor: 'rgba(255, 183, 77, 0.1)'
+                }
+              }}
+            >
+              Chỉnh sửa
+            </Button>
+          )}
         </Box>
       </Paper>
 

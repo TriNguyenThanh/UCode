@@ -218,13 +218,35 @@
                             <DataGridTextColumn Header="Sinh viên" Width="*" Binding="{Binding UserFullName}"/>
                             <DataGridTextColumn Header="MSSV" Width="120" Binding="{Binding UserStudentCode}"/>
                             
-                            <DataGridTemplateColumn Header="Trạng thái" Width="150">
+                            <DataGridTemplateColumn Header="Trạng thái" Width="220">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding StatusDisplay}" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                                        </Border>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                    CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding StatusDisplay}" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                                            </Border>
+                                            <!-- Late Submission Indicator -->
+                                            <Border CornerRadius="12"
+                                                    Padding="6,3"
+                                                    Background="#FF9800"
+                                                    Margin="6,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{Binding IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                                                Width="12"
+                                                                                Height="12"
+                                                                                Foreground="White"
+                                                                                VerticalAlignment="Center"
+                                                                                Margin="0,0,4,0"/>
+                                                    <TextBlock Text="Trễ"
+                                                               FontSize="11"
+                                                               Foreground="White"
+                                                               FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

@@ -18,6 +18,7 @@ namespace UCode.Desktop.Models
         public decimal? AllowedLatitude { get; set; }
         public decimal? AllowedLongitude { get; set; }
         public int? AllowedRadiusMeters { get; set; }
+        public bool RequireFaceCheck { get; set; }
         public bool IsActive { get; set; }
         public int AttendedCount { get; set; }
         public DateTime CreatedAt { get; set; }

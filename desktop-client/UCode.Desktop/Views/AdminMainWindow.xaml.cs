@@ -70,6 +70,9 @@ namespace UCode.Desktop.Views
                 {
                     _authService.Logout();
                     
+                    // Clear navigation stack
+                    _navigationService.ClearNavigationStack();
+                    
                     // Reset shutdown mode to prevent app from closing
                     Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
                     
@@ -142,6 +145,25 @@ namespace UCode.Desktop.Views
                     _aiDetectorService?.StopAIDetector();
                 }
                 catch { /* Ignore cleanup errors */ }
+            };
+
+            // Handle Backspace key for navigation back
+            PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Back && _navigationService.CanGoBack)
+                {
+                    // Don't trigger if focus is on a TextBox or similar input control
+                    var focusedElement = Keyboard.FocusedElement;
+                    if (focusedElement is System.Windows.Controls.TextBox || 
+                        focusedElement is System.Windows.Controls.PasswordBox ||
+                        focusedElement is System.Windows.Controls.RichTextBox)
+                    {
+                        return; // Let TextBox handle the Backspace
+                    }
+
+                    _navigationService.GoBack();
+                    e.Handled = true;
+                }
             };
         }
     }

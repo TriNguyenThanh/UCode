@@ -413,6 +413,26 @@ namespace UCode.Desktop.ViewModels
             };
         }
 
+        public static int GetDaysUntilDue(DateTime? endTime)
+        {
+            if (!endTime.HasValue) return 0;
+            var now = DateTime.Now;
+            var diff = endTime.Value - now;
+            return (int)Math.Ceiling(diff.TotalDays);
+        }
+
+        public static string GetDeadlineDisplay(DateTime? endTime)
+        {
+            if (!endTime.HasValue) return string.Empty;
+            
+            var daysLeft = GetDaysUntilDue(endTime);
+            
+            if (daysLeft < 0) return "Quá hạn";
+            if (daysLeft == 0) return "Hết hạn hôm nay";
+            if (daysLeft == 1) return "Còn 1 ngày";
+            return $"Còn {daysLeft} ngày";
+        }
+
         private async Task LoadAttendanceSessionsAsync()
         {
             try

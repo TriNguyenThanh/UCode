@@ -263,6 +263,14 @@ export default function TeacherGrading() {
                             ? new Date(submission.submittedAt).toLocaleString('vi-VN')
                             : 'N/A'}
                         </Typography>
+                        {submission.isSubmitLate && (
+                          <Chip
+                            label="Nộp trễ"
+                            size="small"
+                            color="warning"
+                            sx={{ mt: 0.5 }}
+                          />
+                        )}
                       </TableCell>
                       <TableCell>
                         {submission.score !== undefined && submission.score !== null ? (

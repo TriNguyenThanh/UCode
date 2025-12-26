@@ -255,7 +255,17 @@ export function SubmissionHistory({
                 {submissions.map((sub) => (
                 <TableRow key={sub.submissionId} hover>
                   <TableCell>
-                    {new Date(sub.submittedAt).toLocaleString('vi-VN')}
+                    <Typography variant="body2">
+                      {new Date(sub.submittedAt).toLocaleString('vi-VN')}
+                    </Typography>
+                    {sub.isSubmitLate && (
+                      <Chip
+                        label="Nộp trễ"
+                        size="small"
+                        color="warning"
+                        sx={{ mt: 0.5 }}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     <Chip label={sub.languageCode} size="small" variant="outlined" />
@@ -362,6 +372,14 @@ export function SubmissionHistory({
                     </Typography>
                     <Typography variant="body2">
                       {new Date(selectedSubmission.submittedAt).toLocaleString('vi-VN')}
+                      {selectedSubmission.isSubmitLate && (
+                        <Chip
+                          label="Nộp trễ"
+                          size="small"
+                          color="warning"
+                          sx={{ ml: 1 }}
+                        />
+                      )}
                     </Typography>
                   </Box>
                   

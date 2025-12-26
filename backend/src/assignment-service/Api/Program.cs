@@ -131,7 +131,7 @@ builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBr
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentsAddedConsumer>();
-builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.UserDeletedConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentRemovedFromClassConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
