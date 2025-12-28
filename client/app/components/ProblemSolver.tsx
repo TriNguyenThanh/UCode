@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Link } from 'react-router'
+import DOMPurify from 'dompurify'
 import {
   Box,
   Typography,
@@ -56,15 +57,30 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
-// Simple markdown renderer component
+// Helper function to escape HTML entities
+function escapeHtml(text: string): string {
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }
+  return text.replace(/[&<>"']/g, (char) => htmlEntities[char])
+}
+
+// Simple markdown renderer component with XSS protection
 function MarkdownContent({ content }: { content: string }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     if (containerRef.current && content) {
-      // Simple markdown parsing
-      let html = content
-        // Headers
+      // First, escape ALL HTML to prevent XSS
+      let html = escapeHtml(content)
+
+      // Then, convert markdown syntax to safe HTML
+      html = html
+        // Headers (escaped angle brackets back to real ones for our generated tags)
         .replace(/^### (.*$)/gim, '<h3>$1</h3>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
@@ -72,14 +88,14 @@ function MarkdownContent({ content }: { content: string }) {
         .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
         // Italic
         .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-        // Code blocks
+        // Code blocks - content inside is already escaped
         .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre><code>$2</code></pre>')
         // Inline code
         .replace(/`([^`]+)`/gim, '<code>$1</code>')
-        // Links
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-        // Images
-        .replace(/!\[([^\]]*)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;" />')
+        // Links - only allow http/https protocols (escaped & already safe)
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+        // Images - only allow http/https protocols
+        .replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/gim, '<img src="$2" alt="$1" style="max-width: 100%; height: auto;" />')
         // Line breaks
         .replace(/\n\n/gim, '</p><p>')
         .replace(/\n/gim, '<br />')
@@ -87,7 +103,12 @@ function MarkdownContent({ content }: { content: string }) {
         .replace(/^\* (.*$)/gim, '<li>$1</li>')
         .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
 
-      containerRef.current.innerHTML = `<p>${html}</p>`
+      // Use DOMPurify as extra safety layer
+      const sanitizedHtml = DOMPurify.sanitize(`<p>${html}</p>`, {
+        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li', 'a', 'img', 'pre', 'code', 'blockquote', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'style'],
+      })
+      containerRef.current.innerHTML = sanitizedHtml
     }
   }, [content])
 
@@ -154,7 +175,7 @@ function getCodeTemplate(languageCode: string, problemLanguages?: Problem['probl
 
 export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assignmentId = null, showEditButton = false }: ProblemSolverProps) {
   const [tabValue, setTabValue] = React.useState(0)
-  
+
   // Panel resizing
   const [leftPanelWidth, setLeftPanelWidth] = React.useState(50)
   const [isDragging, setIsDragging] = React.useState(false)
@@ -165,7 +186,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
   const [submissionRowsPerPage, setSubmissionRowsPerPage] = React.useState(10)
 
   const availableLanguages = problem.problemLanguages || []
-  
+
   const defaultLanguage = availableLanguages.length > 0 ? availableLanguages[0] : null
   const [selectedLanguage, setSelectedLanguage] = React.useState<typeof defaultLanguage>(defaultLanguage)
   const [code, setCode] = React.useState('')
@@ -186,10 +207,10 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
   React.useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return
-      
+
       const containerRect = containerRef.current.getBoundingClientRect()
       const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
-      
+
       const clampedWidth = Math.min(Math.max(newLeftWidth, 20), 80)
       setLeftPanelWidth(clampedWidth)
     }
@@ -223,7 +244,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
       setSelectedLanguage(lang)
       setCode(getCodeTemplate(lang.languageCode, problem.problemLanguages))
       setOutput('')
-      setHasRunSuccessfully(false) 
+      setHasRunSuccessfully(false)
       setLastRunCode('')
     }
   }
@@ -233,7 +254,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
     if (selectedLanguage && selectedLanguage.languageCode) {
       setCode(getCodeTemplate(selectedLanguage.languageCode, problem.problemLanguages))
       setOutput('')
-      setHasRunSuccessfully(false) 
+      setHasRunSuccessfully(false)
       setLastRunCode('')
     }
   }
@@ -279,16 +300,16 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
   // Parse test case results
   const parseTestCaseResults = (compareResult: string): string => {
     if (!compareResult) return ''
-    
+
     let testCaseDetails = '\n\n📋 Chi tiết từng test case:\n'
     testCaseDetails += '─'.repeat(40) + '\n'
-    
+
     for (let i = 0; i < compareResult.length; i++) {
       const statusCode = compareResult[i]
       const { text, emoji } = getStatusText(statusCode)
       testCaseDetails += `Test case #${i + 1}: ${emoji} ${text}\n`
     }
-    
+
     return testCaseDetails
   }
 
@@ -296,27 +317,27 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
   const pollSubmissionResult = async (submissionId: string, sourceCode: string, isSubmit: boolean = false) => {
     const maxAttempts = 30
     let attempts = 0
-    
+
     setIsPolling(true)
-    
+
     const poll = async (): Promise<void> => {
       try {
         const submission = await getSubmission(submissionId)
-        
+
         const processingStatuses: string[] = ['Pending', 'Running']
         if (processingStatuses.includes(submission.status)) {
           attempts++
-          
+
           if (attempts >= maxAttempts) {
             setOutput(prev => prev + '\n\n⏱️ Timeout: Quá trình chấm điểm mất nhiều thời gian. Vui lòng kiểm tra lại sau.')
             return
           }
-          
+
           setOutput(prev => {
             const lines = prev.split('\n')
             return lines.slice(0, -1).join('\n') + `\nĐang xử lý... (${attempts}s)`
           })
-          
+
           setTimeout(() => poll(), 2000)
         } else {
           let resultText = isSubmit ? 'Kết quả nộp bài:\n\n' : '✅ Kết quả chạy thử:\n\n'
@@ -324,7 +345,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
           resultText += `Status: ${submission.status}\n`
           resultText += `Thời gian: ${submission.totalTime}ms\n`
           resultText += `Bộ nhớ: ${submission.totalMemory}KB\n`
-          
+
           if (submission.status === 'Passed') {
             resultText += `\n✅ ${submission.passedTestcase}/${submission.totalTestcase} test cases passed`
             if (!isSubmit) {
@@ -341,17 +362,17 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
               setLastRunCode('')
             }
           }
-          
+
           if (submission.compareResult) {
             resultText += parseTestCaseResults(submission.compareResult)
           }
-          
+
           setOutput(resultText)
-          
+
           if (isSubmit) {
             await refreshSubmissions()
           }
-          
+
           setIsPolling(false)
         }
       } catch (error: any) {
@@ -359,7 +380,7 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
         setIsPolling(false)
       }
     }
-    
+
     await poll()
   }
 
@@ -391,9 +412,9 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
       })
 
       setOutput(`✅ Đã gửi code để chạy thử!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\n\nĐang xử lý... (0s)`)
-      
+
       await pollSubmissionResult(result.submissionId, code, false)
-      
+
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể chạy code'}`)
       setHasRunSuccessfully(false)
@@ -437,9 +458,9 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
       })
 
       setOutput(`🎉 Đã nộp bài thành công!\n\nSubmission ID: ${result.submissionId}\nStatus: ${result.status}\nThời gian nộp: ${new Date(result.submittedAt).toLocaleString('vi-VN')}\n\nĐang chấm điểm... (0s)`)
-      
+
       await pollSubmissionResult(result.submissionId, code, true)
-      
+
     } catch (error: any) {
       setOutput(`❌ Lỗi: ${error.message || 'Không thể nộp bài'}`)
     } finally {
@@ -490,8 +511,8 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
               to={`/teacher/problem/${problem.problemId}/edit`}
               variant='outlined'
               startIcon={<EditIcon />}
-              sx={{ 
-                color: 'primary.main', 
+              sx={{
+                color: 'primary.main',
                 borderColor: 'primary.main',
                 '&:hover': {
                   borderColor: 'primary.dark',
@@ -506,11 +527,11 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
       </Paper>
 
       {/* Main Content */}
-      <Box 
+      <Box
         ref={containerRef}
-        sx={{ 
-          display: 'flex', 
-          flexGrow: 1, 
+        sx={{
+          display: 'flex',
+          flexGrow: 1,
           overflow: 'hidden',
           cursor: isDragging ? 'col-resize' : 'default',
           userSelect: isDragging ? 'none' : 'auto'
@@ -604,11 +625,11 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                           <TableRow key={testCase.testCaseId || index}>
                             <TableCell>#{testCase.indexNo || index + 1}</TableCell>
                             <TableCell>
-                              <Typography 
-                                variant='body2' 
-                                component='pre' 
-                                sx={{ 
-                                  fontFamily: 'monospace', 
+                              <Typography
+                                variant='body2'
+                                component='pre'
+                                sx={{
+                                  fontFamily: 'monospace',
                                   whiteSpace: 'pre-wrap',
                                   m: 0,
                                   p: 1,
@@ -620,11 +641,11 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Typography 
-                                variant='body2' 
-                                component='pre' 
-                                sx={{ 
-                                  fontFamily: 'monospace', 
+                              <Typography
+                                variant='body2'
+                                component='pre'
+                                sx={{
+                                  fontFamily: 'monospace',
                                   whiteSpace: 'pre-wrap',
                                   m: 0,
                                   p: 1,
@@ -671,13 +692,13 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
-                <SubmissionHistory 
-                  submissions={submissions}
-                  pageNumber={submissionPage + 1}
-                  pageSize={submissionRowsPerPage}
-                  onPageChange={handleSubmissionPageChange}
-                  onPageSizeChange={handleSubmissionPageSizeChange}
-                />
+              <SubmissionHistory
+                submissions={submissions}
+                pageNumber={submissionPage + 1}
+                pageSize={submissionRowsPerPage}
+                onPageChange={handleSubmissionPageChange}
+                onPageSizeChange={handleSubmissionPageSizeChange}
+              />
             </TabPanel>
           </Box>
         </Box>
@@ -713,10 +734,10 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
         </Box>
 
         {/* Right Panel - Code Editor */}
-        <Box sx={{ 
-          width: `${100 - leftPanelWidth}%`, 
-          display: 'flex', 
-          flexDirection: 'column', 
+        <Box sx={{
+          width: `${100 - leftPanelWidth}%`,
+          display: 'flex',
+          flexDirection: 'column',
           bgcolor: '#1e1e1e',
           minWidth: '300px'
         }}>
@@ -814,17 +835,17 @@ export function ProblemSolver({ problem, initialSubmissions = [], backUrl, assig
                   zIndex: 1,
                 }}
               >
-                <Loading 
+                <Loading
                   message={
-                    isRunning ? 'Đang biên dịch và chạy code...' : 
-                    isSubmitting ? 'Đang nộp bài...' : 
-                    'Đang chấm điểm...'
+                    isRunning ? 'Đang biên dịch và chạy code...' :
+                      isSubmitting ? 'Đang nộp bài...' :
+                        'Đang chấm điểm...'
                   }
                   size="medium"
                 />
               </Box>
             ) : null}
-            
+
             <Box sx={{ p: 2 }}>
               <Typography
                 variant='body2'

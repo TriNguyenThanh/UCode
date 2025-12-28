@@ -47,15 +47,17 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   try {
     const user = await auth.login(email, password)
-    
+
     // Kiểm tra returnUrl từ query params
     const url = new URL(request.url)
     const returnUrl = url.searchParams.get('returnUrl')
-    
-    if (returnUrl) {
+
+    // Validate returnUrl to prevent Open Redirect attacks
+    // Only allow relative URLs starting with /
+    if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
       throw redirect(returnUrl)
     }
-    
+
     // Redirect based on role
     if (user.role === 'admin') {
       throw redirect('/admin/home')

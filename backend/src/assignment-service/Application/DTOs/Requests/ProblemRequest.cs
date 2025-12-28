@@ -56,7 +56,7 @@ namespace AssignmentService.Application.DTOs.Requests
     /// <summary>
     /// Đường dẫn file Markdown chứa đề bài
     /// </summary>
-    [StringLength(500)]
+    [StringLength(20000)]
     public string? Statement { get; set; }
 
     /// <summary>
@@ -227,7 +227,7 @@ namespace AssignmentService.Application.DTOs.Requests
     /// Reference to problem statement markdown file
     /// </summary>
     /// <example>problems/two-sum/statement.md</example>
-    [StringLength(500)]
+    [StringLength(20000)]
     public string? Statement { get; set; }
 
     /// <summary>
