@@ -130,6 +130,7 @@ builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.CodeFormatterConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();

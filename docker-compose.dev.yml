@@ -16,7 +16,23 @@ services:
       start_period: 30s
     networks:
       - ucode_network
+  redis:
+    image: redis:7-alpine
+    container_name: ucode-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "no"]
+    restart: unless-stopped
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: ucode-redisinsight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    
   postgres:
     image: postgres:15-alpine
     container_name: ucode-postgres

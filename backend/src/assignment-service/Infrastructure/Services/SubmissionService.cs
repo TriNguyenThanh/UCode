@@ -12,12 +12,14 @@ public class SubmissionService : ISubmissionService
     private readonly IDatasetService _datasetService;
     private readonly IAssignmentService _assignmentService;
     private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IAssignmentService assignmentService, IExecuteService exec)
+    private readonly ICodeFormatterService _codeFormatterService;
+    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IAssignmentService assignmentService, IExecuteService exec, ICodeFormatterService codeFormatterService)
     {
         _repository = repository;
         _datasetService = datasetService;
         _assignmentService = assignmentService;
         _exec = exec;
+        _codeFormatterService = codeFormatterService;
     }
 
     public async Task<Submission> GetSubmission(Guid submissionId)
@@ -100,6 +102,7 @@ public class SubmissionService : ISubmissionService
             new_submission = await _repository.AddSubmission(submission);
             if (new_submission.Status == SubmissionStatus.Pending)
             {
+                await _codeFormatterService.EnqueueCodeFormattingRequest(new_submission);
                 await _exec.ExecuteCode(new_submission);
             }
             Console.WriteLine($"Waiting for Judge submission");
