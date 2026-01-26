@@ -21,6 +21,7 @@
         <mah:WindowCommands>
             <Button Command="{Binding GoBackCommand}"
                     ToolTip="Quay lại"
+                    Cursor="Hand"
                     Visibility="{Binding CanGoBack, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconMaterial Kind="ArrowLeft" 
@@ -600,8 +601,8 @@
                             HorizontalAlignment="Stretch"/>
 
                     <!-- Luyện tập -->
+                    <!--
                     <StackPanel Margin="0,0,0,40">
-                        <!-- Section Header -->
                         <StackPanel Orientation="Horizontal"
                                     Margin="0,0,0,20">
                             <iconPacks:PackIconMaterial Kind="CodeBraces"
@@ -616,7 +617,6 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Practice Categories Grid -->
                         <ItemsControl ItemsSource="{Binding PracticeCategories}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -675,6 +675,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
+                     -->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

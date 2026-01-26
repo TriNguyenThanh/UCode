@@ -21,16 +21,52 @@
 
                 <!-- Assignment Type Badge -->
                 <StackPanel Margin="0,0,0,20">
-                    <Border Background="#00275E"
-                            CornerRadius="12"
-                            Padding="10,6"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding Assignment.AssignmentType, Converter={StaticResource AssignmentTypeConverter}}"
-                                   FontSize="12"
-                                   FontWeight="Bold"
-                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                   Foreground="White"/>
-                    </Border>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border Grid.Column="0"
+                                Background="#00275E"
+                                CornerRadius="12"
+                                Padding="10,6"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding Assignment.AssignmentType, Converter={StaticResource AssignmentTypeConverter}}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       Foreground="White"/>
+                        </Border>
+                        
+                        <!-- Countdown Timer -->
+                        <Border Grid.Column="1"
+                                Background="#FF5722"
+                                CornerRadius="12"
+                                Padding="12,6"
+                                HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                            Width="16"
+                                                            Height="16"
+                                                            Foreground="White"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,8,0"/>
+                                <TextBlock Text="Thời gian còn lại: "
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TimeRemaining}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </StackPanel>
 
                 <!-- Assignment Header -->

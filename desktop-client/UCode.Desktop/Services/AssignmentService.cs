@@ -79,6 +79,16 @@ namespace UCode.Desktop.Services
             var requestBody = new { problemIds = problemIds };
             return await _apiService.PostAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/problem/list-my-best", requestBody);
         }
+
+        /// <summary>
+        /// Increment AI detection count for current student
+        /// </summary>
+        /// <param name="assignmentId">Assignment ID</param>
+        /// <param name="stats">Dictionary of AI service name and count, e.g. {"OpenAI": 5, "Claude": 3}</param>
+        public async Task<ApiResponse<object>> IncrementAIDetectionAsync(string assignmentId, Dictionary<string, int> stats)
+        {
+            return await _apiService.PostAsync<object>($"/api/v1/assignments/{assignmentId}/student/increment-ai-detection", stats);
+        }
         
 
         public async Task NotifyAssignmentPublishedAsync(string assignmentId, string teacherId)
