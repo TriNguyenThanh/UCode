@@ -16,6 +16,25 @@
                       RenderOptions.BitmapScalingMode="HighQuality"
                       Icon="pack://application:,,,/Resources/favicon.ico">
 
+    <!-- Left Window Commands - Back Button -->
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Button Command="{Binding GoBackCommand}"
+                    ToolTip="Quay lại"
+                    Cursor="Hand"
+                    Visibility="{Binding CanGoBack, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="ArrowLeft" 
+                                              Width="16" 
+                                              Height="16"
+                                              Margin="0,0,5,0"/>
+                    <TextBlock Text="Quay lại" 
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
+
     <Window.Resources>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
@@ -117,7 +136,8 @@
                             Margin="0,0,8,0"
                             Height="40"
                             Padding="16,0"
-                            Cursor="Hand">
+                            Cursor="Hand"
+                            Command="{Binding NavigateToHomeCommand}">
                         <TextBlock Text="Trang chủ"
                                    VerticalAlignment="Center"/>
                     </Button>
@@ -129,8 +149,9 @@
                             Margin="0,0,8,0"
                             Height="40"
                             Padding="16,0"
-                            Cursor="Hand">
-                        <TextBlock Text="Luyện tập"
+                            Cursor="Hand"
+                            Command="{Binding NavigateToAssignmentsCommand}">
+                        <TextBlock Text="Bài tập"
                                    VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
@@ -364,7 +385,7 @@
                                                         BorderThickness="1"
                                                         CornerRadius="8"
                                                         Width="350"
-                                                        Height="250">
+                                                        Height="200">
                                                     <Border.Effect>
                                                         <DropShadowEffect Color="Black"
                                                                           BlurRadius="10"
@@ -405,17 +426,7 @@
                                                                        Foreground="#666"
                                                                        Margin="0,0,0,12"
                                                                        HorizontalAlignment="Left"/>
-                                                            <Border Background="#E3F2FD"
-                                                                    CornerRadius="12"
-                                                                    Padding="8,4"
-                                                                    HorizontalAlignment="Left">
-                                                                <TextBlock FontSize="12"
-                                                                           Foreground="#1976D2"
-                                                                           FontWeight="SemiBold">
-                                                                    <Run Text="{Binding StudentCount}"/>
-                                                                    <Run Text=" học viên"/>
-                                                                </TextBlock>
-                                                            </Border>
+                                                            
                                                         </StackPanel>
                                                     </Grid>
                                                 </Border>
@@ -590,8 +601,8 @@
                             HorizontalAlignment="Stretch"/>
 
                     <!-- Luyện tập -->
+                    <!--
                     <StackPanel Margin="0,0,0,40">
-                        <!-- Section Header -->
                         <StackPanel Orientation="Horizontal"
                                     Margin="0,0,0,20">
                             <iconPacks:PackIconMaterial Kind="CodeBraces"
@@ -606,7 +617,6 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Practice Categories Grid -->
                         <ItemsControl ItemsSource="{Binding PracticeCategories}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -665,6 +675,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
+                     -->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

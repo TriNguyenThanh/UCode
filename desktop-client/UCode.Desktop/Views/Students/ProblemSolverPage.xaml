@@ -25,45 +25,21 @@
                 Height="64">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Back Button -->
-                <Button Grid.Column="0"
-                        Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                        Foreground="White"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Command="{Binding NavigateBackCommand}"
-                        VerticalAlignment="Center"
-                        Padding="8,6">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                    Width="20"
-                                                    Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                        <TextBlock Text="Quay lại"
-                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
                 <!-- Title -->
-                <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="0"
                            Text="{Binding Problem.Title}"
                            FontSize="18"
                            FontWeight="SemiBold"
                            FontFamily="Be Vietnam Pro, Segoe UI"
                            Foreground="White"
-                           VerticalAlignment="Center"
-                           Margin="20,0,0,0"/>
+                           VerticalAlignment="Center"/>
 
                 <!-- Difficulty Badge -->
-                <Border Grid.Column="2"
+                <Border Grid.Column="1"
                         Background="#FACB01"
                         CornerRadius="4"
                         Padding="10,6"
@@ -428,12 +404,13 @@
 
                                     <!-- Status -->
                                     <DataGridTemplateColumn Header="Status"
-                                                            Width="120">
+                                                            Width="180">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Border CornerRadius="4"
-                                                        Padding="8,4"
-                                                        HorizontalAlignment="Left">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border CornerRadius="4"
+                                                            Padding="8,4"
+                                                            HorizontalAlignment="Left">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Style.Triggers>
@@ -501,6 +478,27 @@
                                                         </TextBlock>
                                                     </StackPanel>
                                                 </Border>
+                                                <!-- Late Submission Indicator -->
+                                                <Border CornerRadius="4"
+                                                        Padding="6,3"
+                                                        Background="#FF9800"
+                                                        Margin="6,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Visibility="{Binding IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                                                    Width="12"
+                                                                                    Height="12"
+                                                                                    Foreground="White"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Margin="0,0,4,0"/>
+                                                        <TextBlock Text="Trễ"
+                                                                   FontSize="11"
+                                                                   Foreground="White"
+                                                                   FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

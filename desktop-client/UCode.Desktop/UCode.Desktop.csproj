@@ -37,4 +37,8 @@
     <Resource Include="Resources\favicon.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TitaniumProxy\TitaniumProxy.csproj" />
+  </ItemGroup>
+
 </Project>

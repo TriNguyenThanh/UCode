@@ -131,6 +131,8 @@ builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBr
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.CodeFormatterConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentsAddedConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentRemovedFromClassConsumer>();
 // ===== DEPENDENCY INJECTION =====
 // Tự động đăng ký các service và repository
 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -159,6 +161,9 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Add API Key Authentication Middleware (for internal webhooks)
+app.UseMiddleware<ApiKeyAuthMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {

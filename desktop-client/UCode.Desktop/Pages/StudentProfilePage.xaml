@@ -25,6 +25,27 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="40,30">
+            <!-- Top Bar with Refresh Button -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16">
+                <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Foreground="#3B82F6"
+                        Command="{Binding RefreshCommand}"
+                        ToolTip="Làm mới">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Refresh"
+                                                    Width="22"
+                                                    Height="22"
+                                                    VerticalAlignment="Center"/>
+                        <TextBlock Text="Làm mới"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
             <!-- Profile Header Card -->
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,0,24">
                 <Border.Background>
@@ -90,6 +111,7 @@
                                 </StackPanel>
                             </Border>
 
+                            <!--
                             <Border Background="#FF9500"
                                     CornerRadius="4"
                                     Padding="10,6"
@@ -109,6 +131,7 @@
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
+                            -->
                         </StackPanel>
 
                         <!-- Contact Info -->
@@ -136,6 +159,7 @@
                         </StackPanel>
 
                         <!-- Points -->
+                        <!--
                         <Border Background="#3B82F6"
                                 CornerRadius="8"
                                 Padding="16,10"
@@ -151,9 +175,11 @@
                                 </TextBlock>
                             </StackPanel>
                         </Border>
+                        -->
                     </StackPanel>
 
                     <!-- Edit Button -->
+                    <!--
                     <Button Grid.Column="2"
                             Content="Chỉnh sửa"
                             Click="EditButton_Click"
@@ -172,10 +198,12 @@
                             </DataTemplate>
                         </Button.ContentTemplate>
                     </Button>
+                    -->
                 </Grid>
             </Border>
 
             <!-- Student Info Card -->
+            <!--
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <TextBlock Text="Thông tin sinh viên"
@@ -191,7 +219,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Enrollment Year -->
+                     
                         <StackPanel Grid.Column="0" Margin="0,0,16,0">
                             <Border Background="#3B82F615"
                                     CornerRadius="8"
@@ -214,7 +242,6 @@
                                        Foreground="#1D1D1F"/>
                         </StackPanel>
 
-                        <!-- Major -->
                         <StackPanel Grid.Column="1" Margin="0,0,16,0">
                             <Border Background="#3B82F615"
                                     CornerRadius="8"
@@ -237,7 +264,7 @@
                                        Foreground="#1D1D1F"/>
                         </StackPanel>
 
-                        <!-- Class Year -->
+               
                         <StackPanel Grid.Column="2">
                             <Border Background="#3B82F615"
                                     CornerRadius="8"
@@ -262,7 +289,8 @@
                     </Grid>
                 </StackPanel>
             </Border>
-
+            -->
+            
             <!-- Statistics Title -->
             <TextBlock Text="Thống kê hoạt động"
                        FontSize="22"

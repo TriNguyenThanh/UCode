@@ -123,6 +123,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("RequireFaceCheck")
+                        .HasColumnType("boolean")
+                        .HasColumnName("require_face_check");
+
                     b.Property<bool>("RequireGpsCheck")
                         .HasColumnType("boolean")
                         .HasColumnName("require_gps_check");
@@ -330,6 +334,10 @@ namespace UserService.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("full_name");
+
+                    b.Property<bool>("IsFaceAuth")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_face_auth");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone")

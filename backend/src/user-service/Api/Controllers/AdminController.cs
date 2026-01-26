@@ -115,7 +115,7 @@ public class AdminController : ControllerBase
             if (!result)
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to archive class"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(null, "Class archived successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class archived successfully"));
         }
         catch (ApiException ex)
         {
@@ -144,7 +144,7 @@ public class AdminController : ControllerBase
             if (!result)
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to unarchive class"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(null, "Class unarchived successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class unarchived successfully"));
         }
         catch (ApiException ex)
         {
@@ -180,7 +180,7 @@ public class AdminController : ControllerBase
             if (!result)
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update class"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(null, "Class updated successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class updated successfully"));
         }
         catch (ApiException ex)
         {
@@ -209,7 +209,7 @@ public class AdminController : ControllerBase
             if (!result)
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete class"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(null, "Class deleted successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class deleted successfully"));
         }
         catch (ApiException ex)
         {
@@ -373,7 +373,7 @@ public class AdminController : ControllerBase
             if (!result)
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to create user"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(null, "User created successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new {}, "User created successfully"));
         }
         catch (ApiException ex)
         {

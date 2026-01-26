@@ -180,7 +180,8 @@ namespace ApiGateway.Middlewares
                 "/api/v1/auth/request-reset-password",
                 "/api/v1/auth/verify-email",
                 "/api/v1/auth/refresh-token",
-                "/api/v1/auth/verify-otp"
+                "/api/v1/auth/verify-otp",
+                "/api/v1/webhooks/face-auth-status"
             };
 
             return publicPaths.Any(publicPath => path.StartsWithSegments(publicPath, StringComparison.OrdinalIgnoreCase));

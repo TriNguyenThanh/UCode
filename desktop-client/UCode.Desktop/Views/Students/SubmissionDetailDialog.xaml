@@ -17,6 +17,7 @@
 
     <Window.Resources>
         <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -39,11 +40,34 @@
                        FontSize="20"
                        FontWeight="SemiBold"/>
 
-            <!-- Status Chip -->
-            <Border Grid.Column="1"
-                    CornerRadius="16"
-                    Padding="14,6"
-                    VerticalAlignment="Center">
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <!-- Late Submission Badge -->
+                <Border CornerRadius="16"
+                        Padding="14,6"
+                        Background="#FF9800"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                    Width="16"
+                                                    Height="16"
+                                                    Foreground="White"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,6,0"/>
+                        <TextBlock Text="Nộp trễ"
+                                   Foreground="White"
+                                   FontWeight="SemiBold"
+                                   FontSize="13"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Status Chip -->
+                <Border CornerRadius="16"
+                        Padding="14,6"
+                        VerticalAlignment="Center">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Background"
@@ -83,6 +107,7 @@
                                FontSize="13"/>
                 </StackPanel>
             </Border>
+            </StackPanel>
         </Grid>
 
         <!-- Content -->

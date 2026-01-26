@@ -51,6 +51,7 @@
                                 <Run Text="{Binding Statistics.TotalStudents, FallbackValue=0}"/>
                             </TextBlock>
                         </Border>
+                        <!--
                         <Border Background="#28a745" CornerRadius="12" Padding="10,5" Margin="0,0,10,0">
                             <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="13">
                                 <Run Text="Đã chấm: "/>
@@ -63,6 +64,7 @@
                                 <Run Text="{Binding Statistics.Submitted, FallbackValue=0}"/>
                             </TextBlock>
                         </Border>
+                        -->
                         <Border Background="#6c757d" CornerRadius="12" Padding="10,5">
                             <TextBlock Text="{Binding EndTimeDisplay, StringFormat='Hạn: {0}'}" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
                         </Border>
@@ -215,7 +217,21 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Thao tác" Width="100">
+                                <DataGridTemplateColumn Header="Chỉnh sửa" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                                    ToolTip="Chỉnh sửa đề bài"
+                                                    HorizontalAlignment="Left"
+                                                    Command="{Binding DataContext.EditProblemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding ProblemId}"
+                                                    Padding="8">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Xóa" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource DangerButtonStyle}"

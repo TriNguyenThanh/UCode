@@ -425,35 +425,6 @@ public class AssignmentController : ControllerBase
 
 
     /// <summary>
-    /// Syncs students to all active assignments of a class
-    /// Called by User Service when students are added to a class
-    /// Internal API - No user authentication required
-    /// </summary>
-    /// <param name="classId">The unique identifier of the class</param>
-    /// <param name="request">List of student IDs to sync</param>
-    /// <returns>Number of AssignmentUsers created</returns>
-    /// <response code="200">Students synced successfully</response>
-    /// <response code="400">Invalid request data</response>
-    /// <response code="500">Internal server error</response>
-    [HttpPost("classes/{classId:guid}/students/sync")]
-    [SkipValidateUserId]
-    [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-    [ProducesResponseType(typeof(ErrorResponse), 400)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<IActionResult> SyncStudentsToClassAssignments(Guid classId, [FromBody] SyncStudentsRequest request)
-    {
-        if (request.StudentIds == null || !request.StudentIds.Any())
-            return BadRequest(ApiResponse<object>.ErrorResponse("StudentIds list cannot be empty"));
-
-        var count = await _assignmentService.SyncStudentsToClassAssignmentsAsync(classId, request.StudentIds);
-        
-        return Ok(ApiResponse<object>.SuccessResponse(
-            new { AssignmentUsersCreated = count },
-            $"Synced {request.StudentIds.Count} student(s) to {count} assignment user(s)"
-        ));
-    }
-
-    /// <summary>
     /// Increments the tab switch count for a student's assignment
     /// Called when student switches tabs or loses focus during an examination
     /// </summary>
@@ -574,18 +545,9 @@ public class AssignmentController : ControllerBase
 
     #region Hook 
         
-    
-    //hook cho user service khi xoa user
-    [HttpPost("webhook/sync-delete-user")]
-    [SkipValidateUserId]
-    public async Task<IActionResult> SyncDeleteUser([FromBody] Guid userId)
-    {
-        var success = await _assignmentService.DeleteAssignmentUserByUserIdAsync(userId);
-        if (!success)
-            return NotFound(ApiResponse<object>.ErrorResponse("No assignment users found for the given user ID"));
-
-        return Ok(ApiResponse<object>.SuccessResponse(new { userId }, "Assignment users deleted for the user"));
-    }
+    // Moved to WebhookController
+    // [HttpPost("classes/{classId:guid}/students/sync")]
+    // [HttpPost("webhook/sync-delete-user")]
 
     #endregion Hook
 }

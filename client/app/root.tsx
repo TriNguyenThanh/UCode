@@ -7,6 +7,7 @@ import './app.css'
 import { auth } from '~/auth'
 import { theme } from './theme'
 import { Loading } from '~/components/Loading'
+import { FaceAuthGuard } from '~/components'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -53,7 +54,9 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {isLoading && <Loading fullScreen message="Đang tải..." />}
-      <Outlet />
+      <FaceAuthGuard>
+        <Outlet />
+      </FaceAuthGuard>
     </ThemeProvider>
   )
 }

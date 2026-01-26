@@ -13,7 +13,7 @@ import { getProblem } from '~/services/problemService'
 import { getClassById } from '~/services/classService'
 import type { Submission } from '~/types'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import {
   Box,
   Container,
@@ -215,6 +215,14 @@ export default function SubmissionGrading() {
                   <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                     {new Date(submission.submittedAt).toLocaleString('vi-VN')}
                   </Typography>
+                  {submission.isSubmitLate && (
+                    <Chip
+                      label="Nộp trễ"
+                      size="small"
+                      color="warning"
+                      sx={{ mt: 1, bgcolor: 'warning.main', color: 'white' }}
+                    />
+                  )}
                 </Box>
               </Box>
             </Paper>

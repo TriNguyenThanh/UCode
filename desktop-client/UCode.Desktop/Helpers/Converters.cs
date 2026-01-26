@@ -650,5 +650,31 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts DateTime? to deadline display string (e.g., "Còn 3 ngày", "Quá hạn")
+    /// </summary>
+    public class DeadlineDisplayConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not DateTime endTime)
+                return string.Empty;
+
+            var now = DateTime.Now;
+            var diff = endTime - now;
+            var daysLeft = (int)Math.Ceiling(diff.TotalDays);
+
+            if (daysLeft < 0) return "Quá hạn";
+            if (daysLeft == 0) return "Hết hạn hôm nay";
+            if (daysLeft == 1) return "Còn 1 ngày";
+            return $"Còn {daysLeft} ngày";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
 

@@ -136,6 +136,7 @@ namespace UCode.Desktop.ViewModels
         public ICommand RemoveProblemCommand { get; }
         public ICommand MoveProblemUpCommand { get; }
         public ICommand MoveProblemDownCommand { get; }
+        public ICommand EditProblemCommand { get; }
 
         public TeacherAssignmentEditViewModel(
             AssignmentService assignmentService,
@@ -152,6 +153,7 @@ namespace UCode.Desktop.ViewModels
             RemoveProblemCommand = new RelayCommand(param => ExecuteRemoveProblem(param as string));
             MoveProblemUpCommand = new RelayCommand(param => ExecuteMoveProblemUp(param as string));
             MoveProblemDownCommand = new RelayCommand(param => ExecuteMoveProblemDown(param as string));
+            EditProblemCommand = new RelayCommand(param => ExecuteEditProblem(param as string));
 
             // Subscribe to collection changed event to update HasSelectedProblems
             SelectedProblems.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasSelectedProblems));
@@ -263,11 +265,13 @@ namespace UCode.Desktop.ViewModels
                     Description = assignment.Description;
                     AssignmentType = assignment.AssignmentType.ToString();
                     Status = assignment.Status.ToString();
-                    StartTime = assignment.StartTime ?? DateTime.Now;
-                    EndTime = assignment.EndTime ?? DateTime.Now.AddDays(7);
+                    
+                    // Convert UTC to Local time for display
+                    StartTime = assignment.StartTime?.ToLocalTime() ?? DateTime.Now;
+                    EndTime = assignment.EndTime?.ToLocalTime() ?? DateTime.Now.AddDays(7);
                     AllowLateSubmission = assignment.AllowLateSubmission;
                     
-                    // Store original start time for validation
+                    // Store original start time for validation (keep as UTC)
                     _originalStartTime = assignment.StartTime;
 
                     // Load selected problems
@@ -329,14 +333,26 @@ namespace UCode.Desktop.ViewModels
                 return;
             }
 
-            // When editing, check if new start time is not earlier than original start time
+            // When editing, check if new start time is not earlier than original start time (compare as UTC)
             if (!_isNewAssignment && _originalStartTime.HasValue)
             {
-                if (StartTime < _originalStartTime.Value)
+                var startTimeUtc = DateTime.SpecifyKind(StartTime, DateTimeKind.Local).ToUniversalTime();
+                var originalStartTimeUtc = _originalStartTime.Value.Kind == DateTimeKind.Utc 
+                    ? _originalStartTime.Value 
+                    : _originalStartTime.Value.ToUniversalTime();
+                
+                // Truncate to minute precision
+                startTimeUtc = new DateTime(startTimeUtc.Year, startTimeUtc.Month, startTimeUtc.Day,
+                                           startTimeUtc.Hour, startTimeUtc.Minute, 0, DateTimeKind.Utc);
+                originalStartTimeUtc = new DateTime(originalStartTimeUtc.Year, originalStartTimeUtc.Month, originalStartTimeUtc.Day,
+                                                   originalStartTimeUtc.Hour, originalStartTimeUtc.Minute, 0, DateTimeKind.Utc);
+                
+                if (startTimeUtc < originalStartTimeUtc)
                 {
+                    var originalLocalTime = _originalStartTime.Value.ToLocalTime();
                     await GetMetroWindow()?.ShowMessageAsync(
                         "Thông báo", 
-                        $"Thời gian bắt đầu mới không được nhỏ hơn thời gian bắt đầu ban đầu ({_originalStartTime.Value:dd/MM/yyyy HH:mm})");
+                        $"Thời gian bắt đầu mới không được nhỏ hơn thời gian bắt đầu ban đầu ({originalLocalTime:dd/MM/yyyy HH:mm})");
                     return;
                 }
             }
@@ -557,6 +573,29 @@ namespace UCode.Desktop.ViewModels
                 SelectedProblems.Insert(index + 1, item);
 
                 // Don't update OrderIndex - keep original numbers
+            }
+        }
+
+        private void ExecuteEditProblem(string problemId)
+        {
+            if (string.IsNullOrEmpty(problemId)) return;
+
+            try
+            {
+                // Get NavigationService from DI
+                var navigationService = App.ServiceProvider.GetService(typeof(NavigationService)) as NavigationService;
+                if (navigationService == null) return;
+
+                // Create ProblemEditPage and navigate
+                var problemEditPage = App.ServiceProvider.GetService(typeof(Pages.ProblemEditPage)) as Pages.ProblemEditPage;
+                if (problemEditPage != null)
+                {
+                    navigationService.NavigateTo(problemEditPage, problemId);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error opening problem editor: {ex.Message}");
             }
         }
     }

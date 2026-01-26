@@ -25,6 +25,7 @@ public class FilesController : ControllerBase
     /// </summary>
     /// <param name="file">File to upload</param>
     /// <param name="category">File category (AssignmentDocument, CodeSubmission, Image, Avatar, TestCase, Reference, Dument)</param>
+    /// <param name="fileName">Optional custom file name (without extension). If not provided, a unique name will be generated.</param>
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(100_000_000)] // 100MB global limit
@@ -32,7 +33,8 @@ public class FilesController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
         IFormFile file, 
-        FileCategory category)
+        FileCategory category,
+        string? fileName = null)
     {
         try
         {
@@ -47,7 +49,7 @@ public class FilesController : ControllerBase
                 return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}"));
             }
 
-            var result = await _s3Service.UploadFileAsync(file, category, null);
+            var result = await _s3Service.UploadFileAsync(file, category, fileName);
             return Ok(ApiResponse<FileUploadResponse>.SuccessResponse(result, "File uploaded successfully"));
         }
         catch (ArgumentException ex)

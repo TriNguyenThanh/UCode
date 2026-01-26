@@ -38,6 +38,7 @@ namespace UCode.Desktop.ViewModels
             _output = string.Empty;
 
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
             RunCodeCommand = new RelayCommand(_ => RunCode());
             SubmitCodeCommand = new RelayCommand(_ => SubmitCode());
             ResetCodeCommand = new RelayCommand(_ => ResetCode());
@@ -225,6 +226,7 @@ namespace UCode.Desktop.ViewModels
         public ObservableCollection<Submission> Submissions { get; } = new();
 
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
         public ICommand RunCodeCommand { get; }
         public ICommand SubmitCodeCommand { get; }
         public ICommand ResetCodeCommand { get; }
@@ -359,14 +361,38 @@ namespace UCode.Desktop.ViewModels
                 };
 
                 var response = await _submissionService.RunCodeAsync(request);
-                if (response?.Success == true)
+                if (response?.Success == true && response.Data != null)
                 {
                     var submissionId = response.Data.SubmissionId;
+                    var status = response.Data.Status;
+
+                    // Check if submission failed immediately
+                    if (status == "Failed" || status == "CompilationError" || status == "Error")
+                    {
+                        var errorMsg = "❌ Lỗi khi chạy thử:\n\n";
+                        errorMsg += $"Trạng thái: {status}\n";
+                        if (!string.IsNullOrEmpty(response.Data.ErrorMessage))
+                        {
+                            errorMsg += $"\nChi tiết lỗi:\n{response.Data.ErrorMessage}";
+                        }
+                        if (!string.IsNullOrEmpty(response.Message))
+                        {
+                            errorMsg += $"\n\n{response.Message}";
+                        }
+                        Output = errorMsg;
+                        return;
+                    }
+
                     await PollSubmissionResult(submissionId, false);
                 }
                 else
                 {
-                    Output = $"Lỗi khi chạy thử: {response?.Message}";
+                    var errorMsg = $"❌ Lỗi khi chạy thử: {response?.Message ?? "Không rõ lỗi"}";
+                    if (response?.Data?.ErrorMessage != null)
+                    {
+                        errorMsg += $"\n\nChi tiết: {response.Data.ErrorMessage}";
+                    }
+                    Output = errorMsg;
                 }
             }
             catch (System.Exception ex)
@@ -403,14 +429,41 @@ namespace UCode.Desktop.ViewModels
                 };
 
                 var response = await _submissionService.SubmitCodeAsync(request);
-                if (response?.Success == true)
+                if (response?.Success == true && response.Data != null)
                 {
                     var submissionId = response.Data.SubmissionId;
+                    var status = response.Data.Status;
+
+                    // Check if submission failed immediately
+                    if (status == "Failed" || status == "CompilationError" || status == "Error")
+                    {
+                        var errorMsg = "❌ Lỗi khi nộp bài:\n\n";
+                        errorMsg += $"Trạng thái: {status}\n";
+                        if (!string.IsNullOrEmpty(response.Data.ErrorMessage))
+                        {
+                            errorMsg += $"\nChi tiết lỗi:\n{response.Data.ErrorMessage}";
+                        }
+                        if (!string.IsNullOrEmpty(response.Message))
+                        {
+                            errorMsg += $"\n\n{response.Message}";
+                        }
+                        Output = errorMsg;
+                        
+                        // Still reload submissions to show the failed submission in history
+                        await LoadSubmissionsAsync();
+                        return;
+                    }
+
                     await PollSubmissionResult(submissionId, true);
                 }
                 else
                 {
-                    Output = $"Lỗi khi nộp bài: {response?.Message}";
+                    var errorMsg = $"❌ Lỗi khi nộp bài: {response?.Message ?? "Không rõ lỗi"}";
+                    if (response?.Data?.ErrorMessage != null)
+                    {
+                        errorMsg += $"\n\nChi tiết: {response.Data.ErrorMessage}";
+                    }
+                    Output = errorMsg;
                 }
             }
             catch (System.Exception ex)
@@ -564,6 +617,21 @@ namespace UCode.Desktop.ViewModels
         private void NavigateBack()
         {
             _navigationService?.GoBack();
+        }
+
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_problemId)) return;
+            
+            IsLoading = true;
+            try
+            {
+                await LoadProblemDataAsync();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void ViewSubmissionDetail(Submission submission)

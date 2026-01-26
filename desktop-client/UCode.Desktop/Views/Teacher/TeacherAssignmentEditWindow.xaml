@@ -194,6 +194,7 @@
                                                             <ColumnDefinition Width="*"/>
                                                             <ColumnDefinition Width="Auto"/>
                                                             <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
 
                                                         <Border Grid.Column="0" Background="#191970" Width="30" Height="30" CornerRadius="15" Margin="0,0,15,0">
@@ -232,7 +233,18 @@
                                                             </Button>
                                                         </StackPanel>
 
+                                                        <!-- Edit Problem Button -->
                                                         <Button Grid.Column="3" Width="32" Height="32" 
+                                                                Command="{Binding DataContext.EditProblemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding ProblemId}"
+                                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                                Padding="0"
+                                                                Margin="0,0,8,0"
+                                                                ToolTip="Chỉnh sửa đề bài">
+                                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                                        </Button>
+
+                                                        <Button Grid.Column="4" Width="32" Height="32" 
                                                                 Command="{Binding DataContext.RemoveProblemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                 CommandParameter="{Binding ProblemId}"
                                                                 Style="{StaticResource DangerButtonStyle}"

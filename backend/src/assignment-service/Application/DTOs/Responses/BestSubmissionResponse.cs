@@ -99,4 +99,9 @@ public class BestSubmissionResponse
     /// Thời gian nộp bài
     /// </summary>
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Nộp muộn
+    /// </summary>
+    public bool IsSubmitLate { get; set; }
 }

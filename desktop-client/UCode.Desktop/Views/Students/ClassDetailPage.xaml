@@ -11,33 +11,12 @@
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:AssignmentTypeConverter x:Key="AssignmentTypeConverter"/>
         <local:AssignmentTypeToColorConverter x:Key="AssignmentTypeToColorConverter"/>
+        <local:DeadlineDisplayConverter x:Key="DeadlineDisplayConverter"/>
     </UserControl.Resources>
 
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="40,30">
-
-                <!-- Back Button -->
-                <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Foreground="#00275E"
-                        Command="{Binding NavigateBackCommand}"
-                        Cursor="Hand"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,0,20">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                    Width="20"
-                                                    Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                        <TextBlock Text="Quay lại"
-                                   FontSize="15"
-                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
 
                 <!-- Class Header -->
                 <Border Background="#00275E"
@@ -88,15 +67,7 @@
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="#FACB01"
-                                    CornerRadius="20"
-                                    Padding="12,6">
-                                <TextBlock Text="{Binding ClassData.Semester}"
-                                           Foreground="#00275E"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           FontWeight="Medium"
-                                           FontSize="14"/>
-                            </Border>
+                            
                         </StackPanel>
                         <TextBlock Text="{Binding ClassData.Description}"
                                    Foreground="#FACB01"
@@ -180,21 +151,51 @@
                 </Grid>
 
                 <!-- Assignments List -->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0,0,0,20">
-                    <iconPacks:PackIconMaterial Kind="FileDocumentMultiple"
-                                                Width="24"
-                                                Height="24"
-                                                Foreground="#FACB01"
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,10,0"/>
-                    <TextBlock Text="Danh sách bài tập"
-                               FontSize="24"
-                               FontWeight="SemiBold"
-                               FontFamily="Be Vietnam Pro, Segoe UI"
-                               Foreground="#00275E"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="FileDocumentMultiple"
+                                                    Width="24"
+                                                    Height="24"
+                                                    Foreground="#FACB01"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,10,0"/>
+                        <TextBlock Text="Danh sách bài tập"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   FontFamily="Be Vietnam Pro, Segoe UI"
+                                   Foreground="#00275E"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <!-- Refresh Button -->
+                    <Button Grid.Column="1"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource MahApps.Styles.Button.Flat}"
+                            Background="#00275E"
+                            Foreground="White"
+                            Padding="12,8"
+                            Cursor="Hand"
+                            ToolTip="Làm mới dữ liệu">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh"
+                                                        Width="18"
+                                                        Height="18"
+                                                        Foreground="White"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+                            <TextBlock Text="Làm mới"
+                                       FontSize="14"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
                 <ItemsControl ItemsSource="{Binding Assignments}">
                     <ItemsControl.ItemTemplate>
@@ -341,6 +342,41 @@
                                                     <Run Text="Bắt đầu: "/>
                                                     <Run Text="{Binding StartTime, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"/>
                                                 </TextBlock>
+                                            </StackPanel>
+
+                                            <!-- End Date -->
+                                            <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,15,0">
+                                                <iconPacks:PackIconMaterial Kind="CalendarEnd"
+                                                                            Width="16"
+                                                                            Height="16"
+                                                                            Foreground="#FF5722"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0"/>
+                                                <TextBlock FontSize="12"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                                           Foreground="#FF5722"
+                                                           VerticalAlignment="Center">
+                                                    <Run Text="Hết hạn: "/>
+                                                    <Run Text="{Binding EndTime, StringFormat='{}{0:dd/MM/yyyy HH:mm}', TargetNullValue='Không giới hạn'}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <!-- Time Remaining -->
+                                            <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,15,0">
+                                                <iconPacks:PackIconMaterial Kind="TimerSand"
+                                                                            Width="16"
+                                                                            Height="16"
+                                                                            Foreground="#2196F3"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0"/>
+                                                <TextBlock FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                                           Foreground="#2196F3"
+                                                           VerticalAlignment="Center"
+                                                           Text="{Binding EndTime, Converter={StaticResource DeadlineDisplayConverter}}"/>
                                             </StackPanel>
 
                                             <!-- Allow Late Submission -->

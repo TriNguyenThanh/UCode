@@ -132,6 +132,7 @@ namespace UCode.Desktop.ViewModels
         public ICommand ViewSubmissionsCommand { get; }
         public ICommand DeleteProblemCommand { get; }
         public ICommand ViewAIDetailsCommand { get; }
+        public ICommand EditProblemCommand { get; }
 
         public TeacherAssignmentViewModel(
             AssignmentService assignmentService,
@@ -152,6 +153,7 @@ namespace UCode.Desktop.ViewModels
             ViewSubmissionsCommand = new RelayCommand(param => ExecuteViewSubmissions(param as string ?? ""));
             DeleteProblemCommand = new RelayCommand(async param => await ExecuteDeleteProblem(param as string ?? ""));
             ViewAIDetailsCommand = new RelayCommand(param => ExecuteViewAIDetails(param as AssignmentUserItem));
+            EditProblemCommand = new RelayCommand(param => ExecuteEditProblem(param as string ?? ""));
         }
 
         public async Task InitializeAsync(string assignmentId)
@@ -527,6 +529,25 @@ namespace UCode.Desktop.ViewModels
                 "HARD" => "#dc3545",
                 _ => "#6c757d"
             };
+        }
+
+        private void ExecuteEditProblem(string problemId)
+        {
+            if (string.IsNullOrEmpty(problemId)) return;
+
+            try
+            {
+                // Create ProblemEditPage and navigate
+                var problemEditPage = App.ServiceProvider.GetService(typeof(Pages.ProblemEditPage)) as Pages.ProblemEditPage;
+                if (problemEditPage != null)
+                {
+                    _navigationService.NavigateTo(problemEditPage, problemId);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error opening problem editor: {ex.Message}");
+            }
         }
     }
 }

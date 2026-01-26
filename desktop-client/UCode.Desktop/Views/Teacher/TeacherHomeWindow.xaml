@@ -49,7 +49,7 @@
 
                 <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <Button x:Name="DashboardTab" Content="DASHBOARD" 
+                    <Button x:Name="DashboardTab" Content="TỔNG QUAN" 
                             Style="{StaticResource TabButtonActive}"
                             Click="DashboardTab_Click"/>
                     <Button x:Name="ProblemsTab" Content="NGÂN HÀNG BÀI" 

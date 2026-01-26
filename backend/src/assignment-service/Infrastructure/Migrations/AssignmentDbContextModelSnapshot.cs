@@ -164,6 +164,10 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("captured_ai_count");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
                     b.Property<int?>("MaxScore")
                         .HasColumnType("integer")
                         .HasColumnName("max_score");
@@ -197,6 +201,9 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignment_user_assignment_id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("idx_assignment_users_isactive");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_assignment_user_user_id");

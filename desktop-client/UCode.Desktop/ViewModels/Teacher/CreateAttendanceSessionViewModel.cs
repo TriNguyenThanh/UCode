@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MahApps.Metro.Controls.Dialogs;
@@ -24,6 +25,7 @@ namespace UCode.Desktop.ViewModels
         private string _allowedLatitude = string.Empty;
         private string _allowedLongitude = string.Empty;
         private string _allowedRadiusMeters = string.Empty;
+        private bool _requireFaceCheck;
 
         public bool IsLoading
         {
@@ -95,6 +97,38 @@ namespace UCode.Desktop.ViewModels
         {
             get => _allowedRadiusMeters;
             set => SetProperty(ref _allowedRadiusMeters, value);
+        }
+
+        public string GpsCoordinates
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(AllowedLatitude) || string.IsNullOrWhiteSpace(AllowedLongitude))
+                    return string.Empty;
+                return $"{AllowedLatitude}, {AllowedLongitude}";
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    AllowedLatitude = string.Empty;
+                    AllowedLongitude = string.Empty;
+                    return;
+                }
+
+                var parts = value.Split(',');
+                if (parts.Length == 2)
+                {
+                    AllowedLatitude = parts[0].Trim();
+                    AllowedLongitude = parts[1].Trim();
+                }
+            }
+        }
+
+        public bool RequireFaceCheck
+        {
+            get => _requireFaceCheck;
+            set => SetProperty(ref _requireFaceCheck, value);
         }
 
         public ICommand CreateCommand { get; }
@@ -246,8 +280,8 @@ namespace UCode.Desktop.ViewModels
                     return;
                 }
 
-                if (!decimal.TryParse(AllowedLatitude, out _) || 
-                    !decimal.TryParse(AllowedLongitude, out _))
+                if (!decimal.TryParse(AllowedLatitude, NumberStyles.Any, CultureInfo.InvariantCulture, out _) || 
+                    !decimal.TryParse(AllowedLongitude, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                 {
                     await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Tọa độ GPS không hợp lệ.");
                     return;
@@ -274,9 +308,10 @@ namespace UCode.Desktop.ViewModels
                     RequireIpCheck = RequireIpCheck,
                     AllowedIpSubnet = RequireIpCheck ? AllowedIpSubnet : null,
                     RequireGpsCheck = RequireGpsCheck,
-                    AllowedLatitude = RequireGpsCheck ? decimal.Parse(AllowedLatitude) : null,
-                    AllowedLongitude = RequireGpsCheck ? decimal.Parse(AllowedLongitude) : null,
-                    AllowedRadiusMeters = RequireGpsCheck ? int.Parse(AllowedRadiusMeters) : null
+                    AllowedLatitude = RequireGpsCheck ? decimal.Parse(AllowedLatitude, CultureInfo.InvariantCulture) : null,
+                    AllowedLongitude = RequireGpsCheck ? decimal.Parse(AllowedLongitude, CultureInfo.InvariantCulture) : null,
+                    AllowedRadiusMeters = RequireGpsCheck ? int.Parse(AllowedRadiusMeters) : null,
+                    RequireFaceCheck = RequireFaceCheck
                 };
 
                 var response = await _attendanceService.CreateAttendanceSessionAsync(request);

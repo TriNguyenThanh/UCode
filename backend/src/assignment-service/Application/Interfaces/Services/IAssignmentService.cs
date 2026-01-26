@@ -27,7 +27,7 @@ public interface IAssignmentService
     Task<List<AssignmentUser>> GetAssignmentUsersAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     Task<AssignmentUser> UpdateAssignmentUserScoreAsync(Guid assignmentId, Guid userId, int score);
-    Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId);
+    Task<bool> DeleteAssignmentUserByUserIdAndClassIdAsync(Guid userId, Guid classId);
     
     // // BestSubmission operations
     // Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);

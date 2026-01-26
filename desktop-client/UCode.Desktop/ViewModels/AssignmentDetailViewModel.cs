@@ -19,6 +19,16 @@ namespace UCode.Desktop.ViewModels
         private AssignmentUser _assignmentUser;
         private bool _isLoading;
         private string _assignmentId;
+        private System.Windows.Threading.DispatcherTimer _countdownTimer;
+        private string _timeRemaining = "Đang tải...";
+
+        public string AssignmentId => _assignmentId; // Expose for page to check
+
+        public string TimeRemaining
+        {
+            get => _timeRemaining;
+            set => SetProperty(ref _timeRemaining, value);
+        }
 
         public AssignmentDetailViewModel(AssignmentService assignmentService, AuthService authService, ProblemService problemService, SubmissionService submissionService, NavigationService navigationService)
         {
@@ -31,8 +41,14 @@ namespace UCode.Desktop.ViewModels
 
             NavigateToProblemCommand = new RelayCommand<string>(NavigateToProblem);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
             StartAssignmentCommand = new RelayCommand(_ => StartAssignment(), _ => _assignmentUser?.Status == AssignmentUserStatus.NOT_STARTED);
             ShowAIDetectionDetailsCommand = new RelayCommand(_ => ShowAIDetectionDetails());
+
+            // Initialize countdown timer
+            _countdownTimer = new System.Windows.Threading.DispatcherTimer();
+            _countdownTimer.Interval = System.TimeSpan.FromSeconds(1);
+            _countdownTimer.Tick += (s, e) => UpdateTimeRemaining();
         }
 
         public Assignment Assignment
@@ -63,6 +79,7 @@ namespace UCode.Desktop.ViewModels
 
         public ICommand NavigateToProblemCommand { get; }
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
         public ICommand StartAssignmentCommand { get; }
         public ICommand ShowAIDetectionDetailsCommand { get; }
 
@@ -74,6 +91,8 @@ namespace UCode.Desktop.ViewModels
             {
                 await LoadAssignmentDataAsync();
                 await LoadBestSubmissionsAsync();
+                UpdateTimeRemaining();
+                _countdownTimer.Start();
             }
             finally
             {
@@ -290,6 +309,65 @@ namespace UCode.Desktop.ViewModels
             _navigationService.GoBack();
         }
 
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_assignmentId)) return;
+            
+            IsLoading = true;
+            try
+            {
+                await LoadAssignmentDataAsync();
+                await LoadBestSubmissionsAsync();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        public async Task RefreshDataAsync()
+        {
+            await RefreshAsync();
+        }
+
+        private void UpdateTimeRemaining()
+        {
+            if (Assignment == null || !Assignment.EndTime.HasValue)
+            {
+                TimeRemaining = "Không giới hạn";
+                return;
+            }
+
+            var now = System.DateTime.Now;
+            var endTime = Assignment.EndTime.Value;
+            var timeLeft = endTime - now;
+
+            if (timeLeft.TotalSeconds <= 0)
+            {
+                TimeRemaining = "Đã hết hạn";
+                _countdownTimer.Stop();
+                return;
+            }
+
+            // Format: "X ngày Y giờ Z phút" or "Y giờ Z phút" or "Z phút W giây"
+            if (timeLeft.TotalDays >= 1)
+            {
+                TimeRemaining = $"{(int)timeLeft.TotalDays} ngày {timeLeft.Hours} giờ {timeLeft.Minutes} phút";
+            }
+            else if (timeLeft.TotalHours >= 1)
+            {
+                TimeRemaining = $"{timeLeft.Hours} giờ {timeLeft.Minutes} phút {timeLeft.Seconds} giây";
+            }
+            else if (timeLeft.TotalMinutes >= 1)
+            {
+                TimeRemaining = $"{timeLeft.Minutes} phút {timeLeft.Seconds} giây";
+            }
+            else
+            {
+                TimeRemaining = $"{timeLeft.Seconds} giây";
+            }
+        }
+
         private async void ShowAIDetectionDetails()
         {
             if (AssignmentUser == null || AssignmentUser.CapturedAICount == 0)
@@ -354,7 +432,7 @@ namespace UCode.Desktop.ViewModels
                 int count = 0;
                 foreach (var submission in ProblemSubmissions)
                 {
-                    if (submission.Status == "Passed")
+                    // if (submission.Status == "Passed")
                         count++;
                 }
                 return count;
