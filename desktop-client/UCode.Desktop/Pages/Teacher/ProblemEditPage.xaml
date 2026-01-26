@@ -239,7 +239,6 @@
                                               BorderBrush="#d2d2d7" BorderThickness="1"
                                               mah:ControlsHelper.CornerRadius="8">
                                         <ComboBoxItem Content="Riêng tư" Tag="PRIVATE"/>
-                                        <ComboBoxItem Content="Khóa học" Tag="COURSE"/>
                                         <ComboBoxItem Content="Công khai" Tag="PUBLIC"/>
                                     </ComboBox>
                                 </StackPanel>
@@ -307,7 +306,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Time Limit -->
-                                <StackPanel Grid.Column="0" Grid.ColumnSpan="3">
+                                <StackPanel Grid.Column="0" >
                                     <TextBlock Text="Giới hạn thời gian (ms)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
                                         <TextBox Text="{Binding TimeLimitMs, UpdateSourceTrigger=PropertyChanged}"
@@ -320,8 +319,9 @@
                                     </Grid>
                                 </StackPanel>
 
-                                <!-- Memory Limit 
-                                <StackPanel Grid.Column="2">
+
+                                    <!-- Memory Limit -->
+                                    <StackPanel Grid.Column="2">
                                     <TextBlock Text="Giới hạn bộ nhớ (KB)" FontSize="16" FontWeight="SemiBold" Foreground="#1d1d1f" Margin="0,0,0,8"/>
                                     <Grid>
                                         <TextBox Text="{Binding MemoryLimitKb, UpdateSourceTrigger=PropertyChanged}"
@@ -333,7 +333,6 @@
                                                    Margin="0,0,15,0" IsHitTestVisible="False"/>
                                     </Grid>
                                 </StackPanel>
-                                -->
                             </Grid>
 
                             <!-- I/O Mode -->
