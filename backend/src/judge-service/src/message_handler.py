@@ -1,12 +1,9 @@
-"""
-Async Message Handler Module (safe version)
-Xử lý message từ RabbitMQ và chạy sandbox qua process riêng (sync)
-"""
 import json
 import os
 import asyncio
 import subprocess
 import logging
+from box_manager import box_manager
 
 MAX_RETRY_COUNT = int(os.getenv("MAX_RETRY_COUNT", "3"))
 
@@ -38,7 +35,11 @@ STATUS_MESSAGE = {
     "InternalError": "Internal error during testcase execution",
     "WrongAnswer": "Testcase produced wrong answer",
     "CompilationError": "Code compilation error",
-    "Skipped": "Testcase was skipped"
+    "Skipped": "Testcase was skipped",
+    "MaxRetryExceeded": "Message exceeded maximum retry attempts",
+    "InvalidJSON": "Message contains invalid JSON format",
+    "MissingFields": "Message is missing required fields",
+    "NoTestcases": "No testcases provided in the submission"
 }
 
 # Thêm logging
@@ -71,7 +72,7 @@ class MessageHandler:
             result["should_ack"] = True
             result["response"] = MessageHandler._create_error_response(
                 submission_id=submission_id,
-                error_code="MAX_RETRY_EXCEEDED"
+                error_code="MaxRetryExceeded"
             )
             return result
 
@@ -83,7 +84,7 @@ class MessageHandler:
             result["should_ack"] = True
             result["response"] = MessageHandler._create_error_response(
                 submission_id="unknown",
-                error_code="INVALID_JSON"
+                error_code="InvalidJSON"
             )
             return result
 
@@ -93,9 +94,9 @@ class MessageHandler:
         # Validate
         language = data.get("Language")
         code = data.get("Code")
-        # TimeLimit: milliseconds → convert to seconds
-        # MemoryLimit: KB (giữ nguyên, không convert)
-        timelimit_ms = int(data.get("TimeLimit", 3000))  # Default 3000ms
+        # TimeLimit: milliseconds
+        # MemoryLimit: KB
+        timelimit_ms = int(data.get("TimeLimit", 2000))  # Default 2000ms
         memorylimit_kb = int(data.get("MemoryLimit", 262144))  # Default 256MB = 262144 KB
         
         # Chuyển đổi TimeLimit từ ms sang seconds
@@ -119,7 +120,7 @@ class MessageHandler:
             result["should_ack"] = True
             result["response"] = MessageHandler._create_error_response(
                 submission_id=submission_id,
-                error_code="MISSING_REQUIRED_FIELDS"
+                error_code="MissingFields"
             )
             return result
 
@@ -127,7 +128,7 @@ class MessageHandler:
             result["should_ack"] = True
             result["response"] = MessageHandler._create_error_response(
                 submission_id=submission_id,
-                error_code="NO_TESTCASES"
+                error_code="NoTestcases"
             )
             return result
 
@@ -184,11 +185,11 @@ class MessageHandler:
             "ErrorCode": error_code,
             "ErrorMessage": error_message or STATUS_MESSAGE.get(error_code, "Unknown error occurred.")
         }
-        logger.info(f"[✗] Error response for {submission_id} ({error_code})")
+        logger.info(f"[✗] Error response for {submission_id} ({error_code}: {response['ErrorMessage']})")
         return response
 
     @staticmethod
-    def _create_success_response(submission_id, results):
+    def _create_success_response(submission_id, results: list[dict]):
         compile_result = ""
         total_time = 0
         total_memory = 0
@@ -215,7 +216,7 @@ class MessageHandler:
             "ErrorCode": SubmissionStatus.PASSED if all_passed else SubmissionStatus.FAILED,
             "ErrorMessage": "" if all_passed else (first_error_message or "Some testcases failed")
         }
-        logger.info(f"[✓] Completed submission {submission_id}")
+        logger.info(f"[✓] Completed submission {submission_id} ({response['ErrorMessage']})")
         return response
 
     @staticmethod
@@ -243,80 +244,98 @@ class MessageHandler:
             "memorylimit": memorylimit
         })
         
-        proc = None
         try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            sandbox_runner_path = os.path.join(current_dir, "sandbox_runner.py")
-            
-            # Tính timeout cho subprocess
-            # Với batch execution, không phải tất cả testcases chạy tuần tự
-            max_parallel = int(os.getenv("MAX_PARALLEL_TESTCASES", "4"))
-            estimated_batches = (len(testcases) + max_parallel - 1) // max_parallel
-            # Mỗi batch timeout = (timelimit + 2s buffer) * số testcases trong batch
-            batch_timeout = (timelimit + 2) * max_parallel
-            # Tổng timeout = số batch * batch_timeout + 60s buffer
-            timeout_seconds = estimated_batches * batch_timeout + 60
-            
-            # Giới hạn timeout tối đa để tránh treo vô hạn
-            max_timeout = 300  # 5 phút
-            timeout_seconds = min(timeout_seconds, max_timeout)
-            
-            logger.info(f"Starting sandbox runner for {submission_id}, timeout={timeout_seconds:.1f}s (batches={estimated_batches}, timelimit={timelimit}s)")
-            
-            proc = await asyncio.create_subprocess_exec(
-                "python3", sandbox_runner_path, payload,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                limit=1024 * 1024 * 10  # 10MB buffer limit
-            )
-            
-            logger.info(f"Subprocess started for {submission_id}, PID={proc.pid}")
+            # ADMISSION CONTROL: Acquire slot
+            logger.info(f"Submission {submission_id}: Requesting slot...")
+            slot_id = await box_manager.acquire_slot()
             
             try:
-                out, err = await asyncio.wait_for(
-                    proc.communicate(), 
-                    timeout=timeout_seconds
-                )
-                logger.info(f"Subprocess completed for {submission_id}")
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                sandbox_runner_path = os.path.join(current_dir, "sandbox_runner.py")
                 
-                # Log stderr nếu có (debug messages)
-                if err:
-                    stderr_content = err.decode().strip()
-                    if stderr_content:
-                        logger.debug(f"Subprocess stderr for {submission_id}:\n{stderr_content}")
-                        
-            except asyncio.TimeoutError:
-                logger.error(f"Subprocess timeout for {submission_id}")
-                proc.kill()
-                await proc.wait()
-                return False, [], "TimeLimitExceeded", "Sandbox execution timeout", "1"
+                # Tính timeout cho subprocess
+                # Với batch execution, không phải tất cả testcases chạy tuần tự
+                max_parallel = int(os.getenv("MAX_PARALLEL_TESTCASES", "5"))
+                estimated_batches = (len(testcases) + max_parallel - 1) // max_parallel
+                # Mỗi batch timeout = (timelimit + 2s buffer) * số testcases trong batch
+                batch_timeout = (timelimit + 2) * max_parallel
+                # Tổng timeout = số batch * batch_timeout + 60s buffer
+                timeout_seconds = estimated_batches * batch_timeout + 60
+                
+                # Giới hạn timeout tối đa để tránh treo vô hạn
+                max_timeout = 300  # 5 phút
+                timeout_seconds = min(timeout_seconds, max_timeout)
+                
+                logger.info(f"Starting sandbox runner for {submission_id} on Slot {slot_id}, timeout={timeout_seconds:.1f}s")
+                
+                # Add SlotId to payload
+                payload_dict = {
+                    "language": language,
+                    "code": code,
+                    "testcases": testcases,
+                    "timelimit": timelimit,
+                    "memorylimit": memorylimit,
+                    "slot_id": slot_id
+                }
+                
+                proc = await asyncio.create_subprocess_exec(
+                    "python3", sandbox_runner_path, json.dumps(payload_dict),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    limit=1024 * 1024 * 10  # 10MB buffer limit
+                )
+                
+                logger.info(f"Subprocess started for {submission_id}, PID={proc.pid}")
+                
+                try:
+                    out, err = await asyncio.wait_for(
+                        proc.communicate(), 
+                        timeout=timeout_seconds
+                    )
+                    logger.info(f"Subprocess completed for {submission_id}")
+                    
+                    # Log stderr nếu có (debug messages)
+                    if err:
+                        stderr_content = err.decode().strip()
+                        if stderr_content:
+                            logger.debug(f"Subprocess stderr for {submission_id}:\n{stderr_content}")
+                            
+                except asyncio.TimeoutError:
+                    logger.error(f"Subprocess timeout for {submission_id}")
+                    proc.kill()
+                    await proc.wait()
+                    return False, [], "TimeLimitExceeded", "Sandbox execution timeout", "1"
 
-            if proc.returncode != 0:
-                error_msg = err.decode().strip()
-                logger.error(f"Sandbox runner failed for {submission_id}: {error_msg}")
-                return False, [], "InternalError", error_msg, "4"
+                if proc.returncode != 0:
+                    error_msg = err.decode().strip()
+                    logger.error(f"Sandbox runner failed for {submission_id}: {error_msg}")
+                    return False, [], "InternalError", error_msg, "4"
 
-            output = out.decode().strip()
-            logger.info(f"Subprocess output length: {len(output)} bytes")
-            
-            try:
-                isolate_results = json.loads(output)
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON from sandbox runner: {e}")
-                logger.error(f"Raw output: {output[:500]}")  # Log first 500 chars
-                return False, [], "InternalError", f"Invalid JSON output: {str(e)}", "4"
-            
-            if not isinstance(isolate_results, list) or not isolate_results:
-                logger.error(f"Invalid result format from sandbox runner")
-                return False, [], "InternalError", "Invalid result from isolate executor", "4"
+                output = out.decode().strip()
+                logger.info(f"Subprocess output for {submission_id}: {output}")  # Log first 200 chars of output
+                
+                try:
+                    isolate_results = json.loads(output)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON from sandbox runner: {e}")
+                    logger.error(f"Raw output for {submission_id}: {output[:500]}")  # Log first 500 chars
+                    return False, [], "InternalError", f"Invalid JSON output: {str(e)}", "4"
+                
+                if not isinstance(isolate_results, list) or not isolate_results:
+                    logger.error(f"Invalid result format from sandbox runner")
+                    return False, [], "InternalError", "Invalid result from isolate executor", "4"
 
-            first_status = isolate_results[0].get("status")
-            if first_status in ("CompilationError", "InternalError"):
-                compile_result = TESTCASE_STATUS_CODE.get(first_status, "4")
-                return False, isolate_results, first_status, None, compile_result
+                first_status = isolate_results[0].get("status")
+                if first_status in ("CompilationError", "InternalError"):
+                    compile_result = TESTCASE_STATUS_CODE.get(first_status, "4")
+                    return False, isolate_results, first_status,None, compile_result
 
-            logger.info(f"Successfully processed {submission_id}")
-            return True, isolate_results, None, None, ""
+                logger.info(f"Successfully processed {submission_id}")
+                return True, isolate_results, isolate_results[0].get("error", ""), None, ""
+
+            finally:
+                # RELEASE SLOT
+                box_manager.release_slot(slot_id)
 
         except Exception as e:
             logger.exception(f"Exception in sandbox runner for {submission_id}")

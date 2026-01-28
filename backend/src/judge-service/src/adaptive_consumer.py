@@ -1,12 +1,8 @@
-"""
-Async Adaptive Consumer - Xử lý nhiều messages song song
-Dùng aio-pika để kết nối RabbitMQ và gọi MessageHandler (an toàn với isolate)
-"""
 import asyncio
 import json
 import os
 import aio_pika
-from message_handler import MessageHandler  # ✅ import đúng file
+from message_handler import MessageHandler
 
 MAX_CONCURRENT_SUBMISSIONS = int(os.getenv("MAX_CONCURRENT_SUBMISSIONS", "4"))
 
@@ -17,7 +13,6 @@ class AsyncAdaptiveConsumer:
         self.should_stop = False
 
     async def start(self):
-        """Khởi động async consumer"""
         rabbit_host = os.getenv("RABBITMQ_HOST", "localhost")
         rabbit_user = os.getenv("RABBITMQ_USER", "guest")
         rabbit_pass = os.getenv("RABBITMQ_PASS", "guest")
@@ -25,7 +20,7 @@ class AsyncAdaptiveConsumer:
 
         # Retry connect
         max_retries = 30
-        retry_delay = 2
+        retry_delay = 1.5
         for attempt in range(1, max_retries + 1):
             try:
                 print(f"[*] Connecting to RabbitMQ ({attempt}/{max_retries})...")
@@ -60,7 +55,6 @@ class AsyncAdaptiveConsumer:
             await self._cleanup()
 
     async def _message_callback(self, message: aio_pika.IncomingMessage):
-        """Xử lý từng message"""
         retry_count = 0
         if message.headers:
             retry_count = message.headers.get('x-retry-count', 0)
@@ -128,14 +122,3 @@ class AsyncAdaptiveConsumer:
         if self.connection and not self.connection.is_closed:
             await self.connection.close()
         print("[✓] Consumer stopped cleanly.")
-
-
-# # ------------------------------------------
-# # MAIN ENTRY
-# # ------------------------------------------
-# if __name__ == "__main__":
-#     consumer = AsyncAdaptiveConsumer()
-#     try:
-#         asyncio.run(consumer.start())
-#     except KeyboardInterrupt:
-#         print("\n[*] Stopping consumer manually...")

@@ -130,6 +130,7 @@ builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddSingleton<AssignmentService.Application.Interfaces.MessageBrokers.IRabbitMqConnectionProvider, AssignmentService.Infrastructure.MessageBrokers.RabbitMqConnectionProvider>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.ResultConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.EmailConsumer>();
+builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.CodeFormatterConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentsAddedConsumer>();
 builder.Services.AddHostedService<AssignmentService.Infrastructure.BackgroundServices.StudentRemovedFromClassConsumer>();
 // ===== DEPENDENCY INJECTION =====

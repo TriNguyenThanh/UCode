@@ -16,7 +16,23 @@ services:
       start_period: 30s
     networks:
       - ucode_network
+  redis:
+    image: redis:7-alpine
+    container_name: ucode-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "no"]
+    restart: unless-stopped
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: ucode-redisinsight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    
   postgres:
     image: postgres:15-alpine
     container_name: ucode-postgres
@@ -124,7 +140,7 @@ services:
       - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS}
       - MAX_CONCURRENT_SUBMISSIONS=${MAX_CONCURRENT_SUBMISSIONS}
-      - MAX_WORKERS_PER_SUBMISSION=${MAX_WORKERS_PER_SUBMISSION}
+      - MAX_PARALLEL_TESTCASES=${MAX_PARALLEL_TESTCASES}
       - MEMORY_THRESHOLD=${MEMORY_THRESHOLD}
       - CPU_THRESHOLD=${CPU_THRESHOLD}
       - ISOLATE_NICE=12             # 10–19 = kém ưu tiên hơn
