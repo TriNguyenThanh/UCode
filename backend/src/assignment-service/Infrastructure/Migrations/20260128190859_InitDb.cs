@@ -119,7 +119,8 @@ namespace Infrastructure.Migrations
                     ai_detection_details = table.Column<string>(type: "TEXT", maxLength: 4000, nullable: true),
                     started_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     score = table.Column<int>(type: "integer", nullable: true),
-                    max_score = table.Column<int>(type: "integer", nullable: true)
+                    max_score = table.Column<int>(type: "integer", nullable: true),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -278,7 +279,7 @@ namespace Infrastructure.Migrations
                         column: x => x.assignment_user_id,
                         principalTable: "assignment_user",
                         principalColumn: "assignment_user_id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -396,6 +397,11 @@ namespace Infrastructure.Migrations
                 name: "ix_assignment_problem_problem_id",
                 table: "assignment_problem",
                 column: "problem_id");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_assignment_users_isactive",
+                table: "assignment_user",
+                column: "is_active");
 
             migrationBuilder.CreateIndex(
                 name: "ix_assignment_user_assignment_id",

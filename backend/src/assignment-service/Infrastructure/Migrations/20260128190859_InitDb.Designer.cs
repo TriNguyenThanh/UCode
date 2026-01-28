@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AssignmentDbContext))]
-    [Migration("20251201084720_InitDb")]
+    [Migration("20260128190859_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -167,6 +167,12 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("captured_ai_count");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
                     b.Property<int?>("MaxScore")
                         .HasColumnType("integer")
                         .HasColumnName("max_score");
@@ -200,6 +206,9 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignment_user_assignment_id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("idx_assignment_users_isactive");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_assignment_user_user_id");
@@ -1101,8 +1110,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", "AssignmentUser")
                         .WithMany()
                         .HasForeignKey("AssignmentUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_exam_activity_log_assignment_user_assignment_user_id");
 
                     b.Navigation("AssignmentUser");
