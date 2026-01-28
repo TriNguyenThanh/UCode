@@ -25,7 +25,7 @@ public class FileServiceClient : IFileServiceClient
         _configuration = configuration;
         _logger = logger;
 
-        var baseUrl = _configuration["ServiceUrls:FileService"] ?? "http://localhost:5004";
+        var baseUrl = _configuration["ServiceUrls:FileService"] ?? "http://localhost:5073";
         _httpClient.BaseAddress = new Uri(baseUrl);
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
     }
@@ -53,17 +53,17 @@ public class FileServiceClient : IFileServiceClient
             var fileContent = new ByteArrayContent(imageData);
             fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
             content.Add(fileContent, "file", $"{userId}_face.jpg");
+            
+            // Add category as form field
+            content.Add(new StringContent("Image"), "category");
+            content.Add(new StringContent(fileName), "fileName");
 
-            // Build URL with query parameters: category=3 (Avatar) and fileName
-            var url = $"/api/files/upload?category=Image&fileName={Uri.EscapeDataString(fileName)}";
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await _httpClient.PostAsync("/api/files/upload", content);
             var responseContent = await response.Content.ReadAsStringAsync();
-
-            _logger.LogDebug("File service response: {StatusCode} - {Content}", 
-                response.StatusCode, responseContent);
 
             if (!response.IsSuccessStatusCode)
             {
+                _logger.LogError("File upload failed for user {UserId}: {StatusCode}", userId, response.StatusCode);
                 return new FileUploadResult
                 {
                     Success = false,
