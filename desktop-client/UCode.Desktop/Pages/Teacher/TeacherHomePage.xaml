@@ -36,7 +36,7 @@
                     <TextBlock FontSize="32" FontWeight="Bold" Foreground="#191970" Margin="0,0,0,5">
                         <Run Text="Xin chào, "/>
                         <Run Text="{Binding TeacherName}"/>
-                        <Run Text="! 👨‍🏫"/>
+                        <Run Text="!"/>
                     </TextBlock>
                     <TextBlock Text="Quản lý lớp học, bài tập và đánh giá sinh viên" 
                                Foreground="#666" FontSize="16"/>
