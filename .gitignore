@@ -422,3 +422,5 @@ package-lock.json
 face-service/*
 face-service
 *.docx
+.devcontainer/
+Migrations/

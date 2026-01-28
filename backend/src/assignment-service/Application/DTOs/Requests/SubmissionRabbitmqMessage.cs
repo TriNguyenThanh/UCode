@@ -1,6 +1,6 @@
 using AssignmentService.Application.DTOs.Common;
 
-public class RabbitMqMessage
+public class SubmissionRabbitmqMessage
 {
     public string SubmissionId { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;

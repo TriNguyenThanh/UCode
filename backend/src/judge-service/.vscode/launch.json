@@ -2,38 +2,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
-            "type": "debugpy",
+            "name": "Debug Judge Worker",
+            "type": "coreclr",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: Main Application",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "app.main",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": "Python: Adaptive Consumer",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/app/adaptive_consumer.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: Debug with Arguments",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
+            "preLaunchTask": "build",
+            // Sửa đường dẫn tới file .dll thực tế của bạn
+            // Kiểm tra kỹ xem project dùng net7.0 hay net8.0
+            "program": "${workspaceFolder}/bin/Debug/net7.0/JudgeService.dll",
             "args": [],
-            "justMyCode": true
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            // Sử dụng terminal tích hợp để xem log (rất quan trọng với Worker)
+            "console": "integratedTerminal",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOTNET_USE_POLLING_FILE_WATCHER": "true"
+            }
+        }
+    ],
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/JudgeService.csproj", // Đảm bảo đúng tên file .csproj
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
         }
     ]
 }
