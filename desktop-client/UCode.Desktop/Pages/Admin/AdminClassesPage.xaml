@@ -206,6 +206,15 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <!--
+                                            <Button Command="{Binding DataContext.EditClassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource WarningActionButton}"
+                                                    Margin="0,0,5,0"
+                                                    ToolTip="Chỉnh sửa thông tin">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                            </Button>
+                                            -->
                                             <Button Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"
                                                     Style="{StaticResource InfoActionButton}"

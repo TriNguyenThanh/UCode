@@ -550,4 +550,30 @@ public class AssignmentController : ControllerBase
     // [HttpPost("webhook/sync-delete-user")]
 
     #endregion Hook
+
+    /// <summary>
+    /// Gets system-wide statistics for administrators
+    /// </summary>
+    /// <returns>System statistics including total assignments, problems, submissions, and users</returns>
+    /// <response code="200">Statistics retrieved successfully</response>
+    /// <response code="401">Unauthorized - Admin role required</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("statistics/system")]
+    [RequireRole("admin")]
+    [ProducesResponseType(typeof(ApiResponse<SystemStatisticsResponse>), 200)]
+    [ProducesResponseType(typeof(UnauthorizedErrorResponse), 401)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> GetSystemStatistics()
+    {
+        var statistics = await _assignmentService.GetSystemStatisticsAsync();
+        return Ok(ApiResponse<SystemStatisticsResponse>.SuccessResponse(statistics, "System statistics retrieved successfully"));
+    }
+
+    #region Hook 
+        
+    // Moved to WebhookController
+    // [HttpPost("classes/{classId:guid}/students/sync")]
+    // [HttpPost("webhook/sync-delete-user")]
+
+    #endregion Hook
 }

@@ -21,8 +21,7 @@ namespace UCode.Desktop.ViewModels.Admin
     {
         private string _fullName = string.Empty;
         private string _email = string.Empty;
-        private string _password = string.Empty;
-        private string _confirmPassword = string.Empty;
+        private string _password = "123456";
         private RoleOption? _selectedRole;
         private string _studentCode = string.Empty;
         private string _teacherCode = string.Empty;
@@ -34,7 +33,6 @@ namespace UCode.Desktop.ViewModels.Admin
         private string? _fullNameError;
         private string? _emailError;
         private string? _passwordError;
-        private string? _confirmPasswordError;
         private string? _roleError;
         private string? _studentCodeError;
         private string? _teacherCodeError;
@@ -78,19 +76,6 @@ namespace UCode.Desktop.ViewModels.Admin
                 if (SetProperty(ref _password, value))
                 {
                     ValidatePassword();
-                    ValidateConfirmPassword();
-                }
-            }
-        }
-
-        public string ConfirmPassword
-        {
-            get => _confirmPassword;
-            set
-            {
-                if (SetProperty(ref _confirmPassword, value))
-                {
-                    ValidateConfirmPassword();
                 }
             }
         }
@@ -105,7 +90,7 @@ namespace UCode.Desktop.ViewModels.Admin
                     ValidateRole();
                     OnPropertyChanged(nameof(IsStudentRole));
                     OnPropertyChanged(nameof(IsTeacherRole));
-                    
+
                     // Validate conditional fields
                     if (IsStudentRole)
                         ValidateStudentCode();
@@ -184,12 +169,6 @@ namespace UCode.Desktop.ViewModels.Admin
             set => SetProperty(ref _passwordError, value);
         }
 
-        public string? ConfirmPasswordError
-        {
-            get => _confirmPasswordError;
-            set => SetProperty(ref _confirmPasswordError, value);
-        }
-
         public string? RoleError
         {
             get => _roleError;
@@ -217,7 +196,7 @@ namespace UCode.Desktop.ViewModels.Admin
         {
             ConfirmCommand = new RelayCommand(_ => OnConfirm(), _ => CanConfirm());
             CancelCommand = new RelayCommand(_ => OnCancel());
-            
+
             // Set default role
             SelectedRole = AvailableRoles.First();
         }
@@ -266,22 +245,6 @@ namespace UCode.Desktop.ViewModels.Admin
             }
         }
 
-        private void ValidateConfirmPassword()
-        {
-            if (string.IsNullOrEmpty(ConfirmPassword))
-            {
-                ConfirmPasswordError = "Vui lòng xác nhận mật khẩu";
-            }
-            else if (Password != ConfirmPassword)
-            {
-                ConfirmPasswordError = "Mật khẩu xác nhận không khớp";
-            }
-            else
-            {
-                ConfirmPasswordError = null;
-            }
-        }
-
         private void ValidateRole()
         {
             if (SelectedRole == null)
@@ -323,19 +286,17 @@ namespace UCode.Desktop.ViewModels.Admin
             ValidateFullName();
             ValidateEmail();
             ValidatePassword();
-            ValidateConfirmPassword();
             ValidateRole();
-            
+
             if (IsStudentRole)
                 ValidateStudentCode();
-            
+
             if (IsTeacherRole)
                 ValidateTeacherCode();
 
             return string.IsNullOrEmpty(FullNameError) &&
                    string.IsNullOrEmpty(EmailError) &&
                    string.IsNullOrEmpty(PasswordError) &&
-                   string.IsNullOrEmpty(ConfirmPasswordError) &&
                    string.IsNullOrEmpty(RoleError) &&
                    string.IsNullOrEmpty(StudentCodeError) &&
                    string.IsNullOrEmpty(TeacherCodeError);
@@ -343,11 +304,10 @@ namespace UCode.Desktop.ViewModels.Admin
 
         private bool CanConfirm()
         {
-            return !IsSubmitting && 
+            return !IsSubmitting &&
                    !string.IsNullOrWhiteSpace(FullName) &&
                    !string.IsNullOrWhiteSpace(Email) &&
                    !string.IsNullOrEmpty(Password) &&
-                   !string.IsNullOrEmpty(ConfirmPassword) &&
                    SelectedRole != null;
         }
 

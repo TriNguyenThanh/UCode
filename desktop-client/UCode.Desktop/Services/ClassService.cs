@@ -42,9 +42,9 @@ namespace UCode.Desktop.Services
             return await CreateClassAsync(request);
         }
 
-        public async Task<ApiResponse<Class>> UpdateClassAsync(string classId, UpdateClassRequest request)
+        public async Task<ApiResponse<object>> UpdateClassAsync(UpdateClassRequest request)
         {
-            return await _apiService.PutAsync<Class>($"/api/v1/classes/{classId}", request);
+            return await _apiService.PutAsync<object>("/api/v1/classes/update", request);
         }
 
         public async Task<ApiResponse<bool>> DeleteClassAsync(string classId)
@@ -130,9 +130,15 @@ namespace UCode.Desktop.Services
 
     public class UpdateClassRequest
     {
-        public string ClassName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string CoverImage { get; set; } = string.Empty;
+        public string ClassId { get; set; } = string.Empty;
+        public string? Name { get; set; }
+        public string? ClassCode { get; set; }
+        public string? Description { get; set; }
+        public string? Subject { get; set; }
+        public string? Semester { get; set; }
+        public string? AcademicYear { get; set; }
+        public bool? IsActive { get; set; }
+
     }
 
     public class CreateStudentRequest

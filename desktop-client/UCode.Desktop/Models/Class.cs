@@ -7,35 +7,44 @@ namespace UCode.Desktop.Models
     {
         [JsonProperty("classId")]
         public string ClassId { get; set; } = string.Empty;
-        
+
         [JsonProperty("name")]
         public string ClassName { get => Name; set => Name = value; }
         public string Name { get; set; } = string.Empty;
-        
+
         [JsonProperty("classCode")]
         public string ClassCode { get; set; } = string.Empty;
-        
+
         [JsonProperty("teacherId")]
         public string TeacherId { get; set; } = string.Empty;
-        
+
         [JsonProperty("teacherName")]
         public string TeacherName { get; set; } = string.Empty;
-        
+
         [JsonProperty("semester")]
         public string Semester { get; set; } = string.Empty;
-        
+
         [JsonProperty("description")]
         public string Description { get; set; } = string.Empty;
-        
+
+        [JsonProperty("subject")]
+        public string? Subject { get; set; }
+
+        [JsonProperty("academicYear")]
+        public string? AcademicYear { get; set; }
+
+        [JsonProperty("isActive")]
+        public bool IsActive { get; set; } = true;
+
         [JsonProperty("coverImage")]
         public string CoverImage { get; set; } = string.Empty;
-        
+
         [JsonProperty("studentCount")]
         public int StudentCount { get; set; }
-        
+
         [JsonProperty("createdAt")]
         public DateTime CreatedAt { get; set; }
-        
+
         [JsonProperty("updatedAt")]
         public DateTime? UpdatedAt { get; set; }
     }

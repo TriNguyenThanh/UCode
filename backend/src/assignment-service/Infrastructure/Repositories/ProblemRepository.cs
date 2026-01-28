@@ -448,4 +448,9 @@ public class ProblemRepository : IProblemRepository
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<int> GetTotalProblemsCountAsync()
+    {
+        return await _context.Problems.CountAsync();
+    }
 }

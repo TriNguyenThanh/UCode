@@ -10,6 +10,8 @@ using UCode.Desktop.Helpers;
 using UCode.Desktop.Models.Admin;
 using UCode.Desktop.Services;
 using UCode.Desktop.Services.Admin;
+using UCode.Desktop.ViewModels;
+using UCode.Desktop.Views;
 
 namespace UCode.Desktop.ViewModels.Admin
 {
@@ -26,7 +28,7 @@ namespace UCode.Desktop.ViewModels.Admin
         public string TeacherName { get; set; } = string.Empty;
         public int StudentCount { get; set; }
         public int AssignmentCount { get; set; }
-        
+
         public bool IsActive
         {
             get => _isActive;
@@ -178,10 +180,10 @@ namespace UCode.Desktop.ViewModels.Admin
 
         public bool HasSelection => Classes.Any(c => c.IsSelected);
         public int SelectedCount => Classes.Count(c => c.IsSelected);
-        
+
         // Check if any selected items are active (not archived) - to show Archive button
         public bool HasActiveSelection => Classes.Any(c => c.IsSelected && !c.IsArchived);
-        
+
         // Check if any selected items are archived - to show Unarchive button
         public bool HasArchivedSelection => Classes.Any(c => c.IsSelected && c.IsArchived);
 
@@ -193,6 +195,7 @@ namespace UCode.Desktop.ViewModels.Admin
         public ICommand LoadClassesCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand ViewDetailsCommand { get; }
+        public ICommand EditClassCommand { get; }
         public ICommand ArchiveCommand { get; }
         public ICommand UnarchiveCommand { get; }
         public ICommand DeleteCommand { get; }
@@ -217,6 +220,7 @@ namespace UCode.Desktop.ViewModels.Admin
             LoadClassesCommand = new RelayCommand(async _ => await LoadClassesAsync());
             SearchCommand = new RelayCommand(async _ => await SearchClassesAsync());
             ViewDetailsCommand = new RelayCommand<ClassItem>(async cls => await ViewDetailsAsync(cls));
+            EditClassCommand = new RelayCommand<ClassItem>(async cls => await EditClassAsync(cls));
             ArchiveCommand = new RelayCommand<ClassItem>(async cls => await ArchiveClassAsync(cls));
             UnarchiveCommand = new RelayCommand<ClassItem>(async cls => await UnarchiveClassAsync(cls));
             DeleteCommand = new RelayCommand<ClassItem>(async cls => await DeleteClassAsync(cls));
@@ -289,9 +293,71 @@ namespace UCode.Desktop.ViewModels.Admin
             await LoadClassesAsync();
         }
 
+        private async Task EditClassAsync(ClassItem? classItem)
+        {
+            if (classItem == null) return;
+
+            IsLoading = true;
+            try
+            {
+                // Lấy thông tin chi tiết trước khi edit (để có đầy đủ fields)
+                var detail = await _classService.GetClassDetailAsync(classItem.ClassId);
+
+                if (detail != null)
+                {
+                    // Khởi tạo ViewModel với AdminClassService để hỗ trợ edit quyền admin
+                    AdminClassService adminClassService = _classService;
+                    var viewModel = new EditClassViewModel(adminClassService);
+                    viewModel.LoadFromClassDetail(detail);
+
+                    var dialog = new Views.EditClassDialog(viewModel)
+                    {
+                        Owner = System.Windows.Application.Current.MainWindow
+                    };
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        await _dialogCoordinator.ShowMessageAsync(
+                            this,
+                            "Thành công",
+                            "Cập nhật thông tin lớp học thành công!",
+                            MessageDialogStyle.Affirmative
+                        );
+
+                        // Reload list to update UI
+                        await LoadClassesAsync();
+                    }
+                }
+                else
+                {
+                    await _dialogCoordinator.ShowMessageAsync(
+                       this,
+                       "Lỗi",
+                       "Không thể tải thông tin chi tiết lớp học.",
+                       MessageDialogStyle.Affirmative
+                   );
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Lỗi",
+                    $"Lỗi khi mở cửa sổ chỉnh sửa: {ex.Message}",
+                    MessageDialogStyle.Affirmative
+                );
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         private async Task ViewDetailsAsync(ClassItem? classItem)
         {
             if (classItem == null) return;
+
+            // ... existing ViewDetailsAsync code ...
 
             await _dialogCoordinator.ShowMessageAsync(
                 this,
@@ -407,13 +473,13 @@ namespace UCode.Desktop.ViewModels.Admin
                         item.IsActive = false;
                         item.IsSelected = false;
                     }
-                    
+
                     // Notify changes
                     OnPropertyChanged(nameof(HasActiveSelection));
                     OnPropertyChanged(nameof(HasArchivedSelection));
                     OnPropertyChanged(nameof(HasSelection));
                     OnPropertyChanged(nameof(SelectedCount));
-                    
+
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",
@@ -449,13 +515,13 @@ namespace UCode.Desktop.ViewModels.Admin
                         item.IsActive = true;
                         item.IsSelected = false;
                     }
-                    
+
                     // Notify changes
                     OnPropertyChanged(nameof(HasActiveSelection));
                     OnPropertyChanged(nameof(HasArchivedSelection));
                     OnPropertyChanged(nameof(HasSelection));
                     OnPropertyChanged(nameof(SelectedCount));
-                    
+
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",

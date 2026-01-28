@@ -296,4 +296,8 @@ public class SubmissionRepository : ISubmissionRepository
     //     return false;
     //     public async Task<SubmissionStatsResponse> GetSubmissionStatsPerProblemIdAndAssignment(Guid assignmentId, Guid problemId)
 
+    public async Task<int> GetTotalSubmissionsCountAsync()
+    {
+        return await _context.Submissions.CountAsync();
+    }
 }

@@ -39,6 +39,17 @@ namespace UCode.Desktop.Services.Admin
         }
 
         /// <summary>
+        /// Lấy thống kê bài tập/bài toán/bài nộp từ assignment service
+        /// </summary>
+        public async Task<AssignmentSystemStatisticsResponse?> GetAssignmentSystemStatisticsAsync()
+        {
+            return await GetAsync<AssignmentSystemStatisticsResponse>(
+                "api/v1/assignments/statistics/system",
+                "tải thống kê bài tập"
+            );
+        }
+
+        /// <summary>
         /// Lấy thống kê tổng quan hệ thống
         /// Kết hợp từ nhiều API calls
         /// </summary>
