@@ -48,4 +48,8 @@ public interface IAssignmentRepository : IRepository<Assignment>
     Task<ExamActivityLog> AddExamActivityLogAsync(ExamActivityLog activity);
     Task<List<ExamActivityLog>> AddExamActivityLogsBatchAsync(List<ExamActivityLog> activities);
     Task<List<ExamActivityLog>> GetExamActivityLogsByAssignmentUserAsync(Guid assignmentUserId);
+    
+    // System statistics
+    Task<int> GetTotalAssignmentsCountAsync();
+    Task<int> GetTotalAssignmentUsersCountAsync();
 }

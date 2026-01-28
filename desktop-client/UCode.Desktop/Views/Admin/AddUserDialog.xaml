@@ -46,23 +46,13 @@
 
                 <!-- Password -->
                 <TextBlock Text="Mật khẩu *" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#333"/>
-                <PasswordBox x:Name="PasswordBox" 
-                             PasswordChanged="PasswordBox_OnPasswordChanged"
-                             FontSize="14" Padding="12,10" Margin="0,0,0,5"
-                             mah:TextBoxHelper.Watermark="Tối thiểu 6 ký tự"/>
+                <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14" Padding="12,10" Margin="0,0,0,5"
+                         mah:TextBoxHelper.Watermark="Mật khẩu mặc định"
+                         mah:TextBoxHelper.ClearTextButton="True"/>
                 <TextBlock Text="{Binding PasswordError}" 
                            Foreground="#DC143C" FontSize="11" Margin="2,0,0,15"
                            Visibility="{Binding PasswordError, Converter={StaticResource NullToVisibilityConverter}}"/>
-
-                <!-- Confirm Password -->
-                <TextBlock Text="Xác nhận mật khẩu *" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#333"/>
-                <PasswordBox x:Name="ConfirmPasswordBox" 
-                             PasswordChanged="ConfirmPasswordBox_OnPasswordChanged"
-                             FontSize="14" Padding="12,10" Margin="0,0,0,5"
-                             mah:TextBoxHelper.Watermark="Nhập lại mật khẩu"/>
-                <TextBlock Text="{Binding ConfirmPasswordError}" 
-                           Foreground="#DC143C" FontSize="11" Margin="2,0,0,15"
-                           Visibility="{Binding ConfirmPasswordError, Converter={StaticResource NullToVisibilityConverter}}"/>
 
                 <!-- Role -->
                 <TextBlock Text="Vai trò *" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#333"/>

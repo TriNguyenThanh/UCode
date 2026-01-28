@@ -485,4 +485,16 @@ public class AssignmentRepository : IAssignmentRepository
                 .SetProperty(au => au.IsActive, false)
             ) > 0;
     }
+
+    public async Task<int> GetTotalAssignmentsCountAsync()
+    {
+        return await _context.Assignments.CountAsync();
+    }
+
+    public async Task<int> GetTotalAssignmentUsersCountAsync()
+    {
+        return await _context.AssignmentUsers
+            .Where(au => au.IsActive)
+            .CountAsync();
+    }
 }

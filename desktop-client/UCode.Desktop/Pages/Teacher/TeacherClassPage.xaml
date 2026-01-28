@@ -59,14 +59,14 @@
                                 <TextBlock Text="Làm mới" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <!-- Button Style="{StaticResource YellowButtonStyle}" 
+                        <Button Style="{StaticResource YellowButtonStyle}" 
                                 Command="{Binding EditClassCommand}"
                                 Padding="12,8">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Chỉnh sửa" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Button -->
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>

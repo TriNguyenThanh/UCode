@@ -43,6 +43,7 @@ public interface IAssignmentService
     
     // Statistics
     Task<AssignmentStatistics> GetAssignmentStatisticsAsync(Guid assignmentId);
+    Task<SystemStatisticsResponse> GetSystemStatisticsAsync();
     
     // Sync students to class assignments
     Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds);

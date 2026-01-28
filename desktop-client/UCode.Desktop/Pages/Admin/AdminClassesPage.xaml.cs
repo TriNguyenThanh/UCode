@@ -1,22 +1,17 @@
 using System.Windows.Controls;
-using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.ViewModels.Admin;
 
 namespace UCode.Desktop.Pages.Admin
 {
     public partial class AdminClassesPage : UserControl
     {
-        private AdminClassesViewModel? _viewModel;
-
-        public AdminClassesPage()
+        public AdminClassesPage(AdminClassesViewModel viewModel)
         {
             InitializeComponent();
-        }
+            DataContext = viewModel;
 
-        public void SetViewModel(AdminClassesViewModel viewModel)
-        {
-            _viewModel = viewModel;
-            DataContext = _viewModel;
+            // Load data when page is loaded (non-blocking)
+            Loaded += async (s, e) => await viewModel.LoadClassesAsync();
         }
     }
 }
