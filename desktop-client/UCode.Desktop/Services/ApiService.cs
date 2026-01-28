@@ -100,18 +100,18 @@ namespace UCode.Desktop.Services
 
                 // Log error with details
                 System.Diagnostics.Debug.WriteLine($"[API POST] Request FAILED - Status: {response.StatusCode}");
-                
+
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent, JsonSettings);
-                
+
                 // Build error message
                 var errorMessage = errorResponse?.Message ?? $"Request failed with status {(int)response.StatusCode}: {response.ReasonPhrase}";
-                
+
                 // Add detailed errors if available
                 if (errorResponse?.ErrorList != null && errorResponse.ErrorList.Any())
                 {
                     errorMessage += "\n" + string.Join("\n", errorResponse.ErrorList);
                 }
-                
+
                 return new ApiResponse<T>
                 {
                     Success = false,
@@ -185,6 +185,55 @@ namespace UCode.Desktop.Services
             catch (Exception ex)
             {
                 return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+        public async Task<T> UploadFileAsync<T>(string endpoint, MultipartFormDataContent content)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync(endpoint, content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonConvert.DeserializeObject<ApiResponse<T>>(responseContent, JsonSettings).Data;
+                }
+
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseContent, JsonSettings);
+                throw new Exception(errorResponse?.Message ?? "File upload failed");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Upload failed: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<T>> DeleteAsync<T>(string endpoint)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync(endpoint);
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonConvert.DeserializeObject<ApiResponse<T>>(content, JsonSettings);
+                }
+
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(content, JsonSettings);
+                return new ApiResponse<T>
+                {
+                    Success = false,
+                    Message = errorResponse?.Message ?? "Delete failed"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<T>
                 {
                     Success = false,
                     Message = ex.Message

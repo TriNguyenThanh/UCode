@@ -8,14 +8,17 @@ namespace UCode.Desktop.Models
         private string _compareResult = string.Empty;
 
         public string SubmissionId { get; set; } = string.Empty;
+        public string AssignmentId { get; set; } = string.Empty;
         public string ProblemId { get; set; } = string.Empty;
+        public string ProblemTitle { get; set; } = string.Empty;
+        public string ProblemStatement { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string UserFullName { get; set; } = string.Empty;
         public string UserCode { get; set; } = string.Empty;
         public string LanguageCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string SourceCode { get; set; } = string.Empty;
-        
+
         public string CompareResult
         {
             get => _compareResult;
@@ -25,7 +28,7 @@ namespace UCode.Desktop.Models
                 ParseTestCaseResults();
             }
         }
-        
+
         public string ErrorCode { get; set; } = string.Empty;
         public string ErrorMessage { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;
@@ -34,6 +37,7 @@ namespace UCode.Desktop.Models
         public double Score { get; set; }
         public int TotalTime { get; set; }
         public int TotalMemory { get; set; }
+
         public int TotalTestcase { get; set; }
         public int PassedTestcase { get; set; }
         public bool IsSubmitLate { get; set; }
@@ -42,7 +46,7 @@ namespace UCode.Desktop.Models
         private void ParseTestCaseResults()
         {
             TestCaseResults.Clear();
-            
+
             if (string.IsNullOrEmpty(_compareResult))
                 return;
 
@@ -73,7 +77,7 @@ namespace UCode.Desktop.Models
                 _ => "Unknown"
             };
         }
-        
+
         // Display property
         public string StatusDisplay
         {
@@ -92,11 +96,11 @@ namespace UCode.Desktop.Models
 }
 
 
-    public class TestCaseResult
-    {
-        public int Number { get; set; }
-        public int StatusCode { get; set; }
-        public string StatusText { get; set; } = string.Empty;
-        public int ExecutionTime { get; set; }
-        public int MemoryUsed { get; set; }
-    }
+public class TestCaseResult
+{
+    public int Number { get; set; }
+    public int StatusCode { get; set; }
+    public string StatusText { get; set; } = string.Empty;
+    public int ExecutionTime { get; set; }
+    public int MemoryUsed { get; set; }
+}

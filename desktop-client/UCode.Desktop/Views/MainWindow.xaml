@@ -40,6 +40,7 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:DaysLeftToBackgroundConverter x:Key="DaysLeftToBackgroundConverter"/>
         <local:InverseCountToVisibilityConverter x:Key="InverseCountToVisibilityConverter"/>
+        <local:ClassIdToGradientConverter x:Key="ClassIdToGradientConverter"/>
 
         <!-- Custom Navigation Button Style - No gray background -->
         <Style x:Key="NavButtonStyle"
@@ -53,16 +54,16 @@
                 <Trigger Property="IsMouseOver"
                          Value="True">
                     <Setter Property="Background"
-                            Value="#1000275E"/>
+                            Value="#1AFFFFFF"/>
                     <Setter Property="Foreground"
-                            Value="#00275E"/>
+                            Value="#FACB01"/>
                 </Trigger>
                 <Trigger Property="IsPressed"
                          Value="True">
                     <Setter Property="Background"
-                            Value="#2000275E"/>
+                            Value="#33FFFFFF"/>
                     <Setter Property="Foreground"
-                            Value="#00275E"/>
+                            Value="#FACB01"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -128,8 +129,7 @@
                             HorizontalAlignment="Left"
                             Margin="60,0,0,0"
                             VerticalAlignment="Center">
-                    <Button Style="{StaticResource NavButtonStyle}"
-                            Foreground="#FACB01"
+                    <Button Foreground="#FACB01"
                             FontSize="15"
                             FontWeight="SemiBold"
                             FontFamily="Be Vietnam Pro, Segoe UI"
@@ -137,12 +137,25 @@
                             Height="40"
                             Padding="16,0"
                             Cursor="Hand"
+                            Focusable="False"
+                            ClickMode="Press"
                             Command="{Binding NavigateToHomeCommand}">
-                        <TextBlock Text="Trang chủ"
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                <Style.Triggers>
+                                    <!-- Active State for Home -->
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="Home">
+                                        <Setter Property="Background" Value="#33FFFFFF"/>
+                                        <Setter Property="BorderBrush" Value="#FACB01"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,3"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="TRANG CHỦ"
                                    VerticalAlignment="Center"/>
                     </Button>
-                    <Button Style="{StaticResource NavButtonStyle}"
-                            Foreground="#FACB01"
+                    <Button Foreground="#FACB01"
                             FontSize="15"
                             FontWeight="SemiBold"
                             FontFamily="Be Vietnam Pro, Segoe UI"
@@ -150,8 +163,48 @@
                             Height="40"
                             Padding="16,0"
                             Cursor="Hand"
+                            Focusable="False"
+                            ClickMode="Press"
                             Command="{Binding NavigateToAssignmentsCommand}">
-                        <TextBlock Text="Bài tập"
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                <Style.Triggers>
+                                    <!-- Active State for Assignments -->
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="Assignments">
+                                        <Setter Property="Background" Value="#33FFFFFF"/>
+                                        <Setter Property="BorderBrush" Value="#FACB01"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,3"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="BÀI TẬP"
+                                   VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Foreground="#FACB01"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            FontFamily="Be Vietnam Pro, Segoe UI"
+                            Margin="0,0,8,0"
+                            Height="40"
+                            Padding="16,0"
+                            Cursor="Hand"
+                            Focusable="False"
+                            ClickMode="Press"
+                            Command="{Binding NavigateToSubmissionsCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+                                <Style.Triggers>
+                                    <!-- Active State for Submissions -->
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="Submissions">
+                                        <Setter Property="Background" Value="#33FFFFFF"/>
+                                        <Setter Property="BorderBrush" Value="#FACB01"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,3"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="LỊCH SỬ NỘP BÀI"
                                    VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
@@ -400,7 +453,7 @@
 
                                                         <!-- Class Header with Gradient -->
                                                         <Border Grid.Row="0"
-                                                                Background="{StaticResource ClassCardGradientBrush}"
+                                                                Background="{Binding Id, Converter={StaticResource ClassIdToGradientConverter}}"
                                                                 CornerRadius="8,8,0,0">
                                                             <TextBlock Text="{Binding Code}"
                                                                        FontSize="22"

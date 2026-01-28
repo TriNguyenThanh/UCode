@@ -1,11 +1,7 @@
 using MahApps.Metro.Controls.Dialogs;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Timers;
-using UCode.Desktop.ViewModels;
 using TitaniumProxy;
+using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Services
 {
@@ -60,8 +56,8 @@ namespace UCode.Desktop.Services
             {
                 var result = await _viewModel.GetMetroWindow()?.ShowMessageAsync(
                             "Lưu ý quan trọng:",
-                            "   - Đây là Bài kiểm tra, trong quá trình kiểm tra sẽ bắt hết các trình sử dụng AI" +
-                            "   - Không sử dụng bạn nhé!!!!!!!!!11",
+                            "   - Đây là Bài kiểm tra, trong quá trình kiểm tra sẽ quét được hết các trình sử dụng AI\n" +
+                            "   - Không sử dụng bạn nhé!!!!!!!!!",
 
                             MessageDialogStyle.AffirmativeAndNegative
                         );

@@ -98,7 +98,7 @@
 
                             <!-- Memory Limit -->
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Memory Limit" Style="{StaticResource Label}"/>
+                                <TextBlock Text="Giới hạn bộ nhớ" Style="{StaticResource Label}"/>
                                 <Grid>
                                     <TextBox Text="{Binding MemoryKb, UpdateSourceTrigger=PropertyChanged, StringFormat=N0}" 
                                              Height="40" FontSize="14" Padding="10,0"

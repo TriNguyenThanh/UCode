@@ -69,6 +69,12 @@ namespace UCode.Desktop.Services
                 $"api/v1/submissions/assignment/{assignmentId}/problem/{problemId}/stats"
             );
         }
+        public async Task<ApiResponse<List<Submission>>> GetUserSubmissionsAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            return await _apiService.GetAsync<List<Submission>>(
+                $"api/v1/submissions/user?pageNumber={pageNumber}&pageSize={pageSize}"
+            );
+        }
     }
 }
 

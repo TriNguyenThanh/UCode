@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -13,6 +14,7 @@ namespace UCode.Desktop.ViewModels
     {
         private readonly ProblemService _problemService;
         private readonly SubmissionService _submissionService;
+        private readonly AssignmentService _assignmentService;
         private readonly AuthService _authService;
         private readonly NavigationService _navigationService;
         private Problem _problem;
@@ -26,13 +28,16 @@ namespace UCode.Desktop.ViewModels
         private bool _isSubmitting;
         private bool _hasRunSuccessfully;
         private string _lastRunCode;
+        private CodeEditorHelper _editorHelper;
+        private bool _isAssignmentClosed;
 
-        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService, NavigationService navigationService)
+        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService, NavigationService navigationService, AssignmentService assignmentService)
         {
             _problemService = problemService;
             _submissionService = submissionService;
             _authService = authService;
             _navigationService = navigationService;
+            _assignmentService = assignmentService;
             _problem = new Problem();
             _code = "// Your code here";
             _output = string.Empty;
@@ -46,6 +51,23 @@ namespace UCode.Desktop.ViewModels
             ViewTestCaseResultsCommand = new RelayCommand<Submission>(submission => ViewTestCaseResults(submission));
         }
 
+        /// <summary>
+        /// Editor helper for managing read-only regions
+        /// </summary>
+        public CodeEditorHelper EditorHelper
+        {
+            get => _editorHelper;
+            set
+            {
+                _editorHelper = value;
+                // Apply current template if language is already selected
+                if (SelectedLanguage != null)
+                {
+                    ApplyCodeTemplate();
+                }
+            }
+        }
+
         public Problem Problem
         {
             get => _problem;
@@ -57,6 +79,23 @@ namespace UCode.Desktop.ViewModels
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
+
+        public bool IsAssignmentClosed
+        {
+            get => _isAssignmentClosed;
+            set
+            {
+                if (SetProperty(ref _isAssignmentClosed, value))
+                {
+                    OnPropertyChanged(nameof(CanSubmit));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the assignment is not closed and user can submit
+        /// </summary>
+        public bool CanSubmit => !IsAssignmentClosed;
 
         public string Code
         {
@@ -102,6 +141,13 @@ namespace UCode.Desktop.ViewModels
         {
             get
             {
+                // If EditorHelper is available, get code from it (includes any user edits)
+                if (_editorHelper != null)
+                {
+                    return _editorHelper.GetFullCode();
+                }
+
+                // Fallback to manual concatenation
                 var sb = new System.Text.StringBuilder();
                 if (!string.IsNullOrEmpty(HeadCode))
                 {
@@ -119,36 +165,36 @@ namespace UCode.Desktop.ViewModels
             {
                 // Simple logic to extract body: remove Head from start and Tail from end
                 var newBody = value;
-                
+
                 if (!string.IsNullOrEmpty(HeadCode))
                 {
                     var headTrimmed = HeadCode.TrimEnd('\r', '\n');
                     if (newBody.StartsWith(headTrimmed))
                     {
-                         // Try to find where Head ends
-                         // This is tricky if user edits the boundary. 
-                         // For now, we assume user respects the boundary or we accept the mess.
-                         // Better approach: Don't rely on string matching if we want to enforce read-only.
-                         // But for "seamless copy", this is the trade-off.
+                        // Try to find where Head ends
+                        // This is tricky if user edits the boundary. 
+                        // For now, we assume user respects the boundary or we accept the mess.
+                        // Better approach: Don't rely on string matching if we want to enforce read-only.
+                        // But for "seamless copy", this is the trade-off.
                     }
                 }
-                
+
                 // Actually, for the requirement "Head and Tail are read-only", 
                 // doing this in ViewModel setter is too late and clunky.
                 // But let's at least allow binding to FullCode.
-                
+
                 // If we bind to FullCode, we need to update Code.
                 // Let's try a simpler approach: Just update Code.
                 // We will rely on the View to prevent editing Head/Tail if possible, 
                 // or just let it be and fix it on Run/Submit.
-                
+
                 // However, the user specifically asked for "Head and Tail read-only".
                 // So we will implement the restriction in the View (Code-behind).
                 // Here we just need to update Code correctly.
-                
+
                 string currentHead = HeadCode ?? string.Empty;
                 string currentTail = TailCode ?? string.Empty;
-                
+
                 // Normalize line endings for comparison could be needed, but let's try direct.
                 if (newBody.StartsWith(currentHead) && newBody.EndsWith(currentTail))
                 {
@@ -165,7 +211,7 @@ namespace UCode.Desktop.ViewModels
                     // If structure is broken, we might just treat everything as Code 
                     // or try to salvage. For now, let's just update Code with whatever is not Head/Tail
                     // This is imperfect.
-                    Code = value; 
+                    Code = value;
                 }
             }
         }
@@ -179,12 +225,15 @@ namespace UCode.Desktop.ViewModels
                 // Update code template when language changes
                 if (value != null)
                 {
-                    Code = GetCodeTemplate(value);
                     HeadCode = value.Head;
                     TailCode = value.Tail;
+                    Code = GetCodeTemplate(value);
                     Output = string.Empty;
                     HasRunSuccessfully = false;
                     LastRunCode = string.Empty;
+
+                    // Apply template to editor with read-only regions
+                    ApplyCodeTemplate();
                 }
             }
         }
@@ -238,8 +287,19 @@ namespace UCode.Desktop.ViewModels
             _assignmentId = assignmentId;
             _problemId = problemId;
             IsLoading = true;
+            IsAssignmentClosed = false; // Reset state
             try
             {
+                // Check assignment status
+                if (!string.IsNullOrEmpty(_assignmentId) && _assignmentService != null)
+                {
+                    var assignmentResponse = await _assignmentService.GetAssignmentAsync(_assignmentId);
+                    if (assignmentResponse?.Success == true && assignmentResponse.Data != null)
+                    {
+                        IsAssignmentClosed = assignmentResponse.Data.Status == AssignmentStatus.CLOSED;
+                    }
+                }
+
                 await LoadProblemDataAsync();
             }
             finally
@@ -318,7 +378,9 @@ namespace UCode.Desktop.ViewModels
                     if (response?.Success == true && response.Data != null)
                     {
                         Submissions.Clear();
-                        foreach (var submission in response.Data)
+                        // Sort by SubmittedAt descending (newest first)
+                        var sortedSubmissions = response.Data.OrderByDescending(s => s.SubmittedAt);
+                        foreach (var submission in sortedSubmissions)
                         {
                             Submissions.Add(submission);
                         }
@@ -335,6 +397,24 @@ namespace UCode.Desktop.ViewModels
         {
             if (language == null) return "// Your code here";
             return language.Body ?? "// Your code here";
+        }
+
+        /// <summary>
+        /// Applies the code template to the editor with read-only head and tail
+        /// </summary>
+        private void ApplyCodeTemplate()
+        {
+            if (_editorHelper != null && SelectedLanguage != null)
+            {
+                var head = HeadCode ?? string.Empty;
+                var body = Code ?? string.Empty;
+                var tail = TailCode ?? string.Empty;
+
+                _editorHelper.SetCodeTemplate(head, body, tail);
+
+                // Update syntax highlighting based on language
+                _editorHelper.SetSyntaxHighlighting(SelectedLanguage.LanguageCode);
+            }
         }
 
         private async void RunCode()
@@ -448,7 +528,7 @@ namespace UCode.Desktop.ViewModels
                             errorMsg += $"\n\n{response.Message}";
                         }
                         Output = errorMsg;
-                        
+
                         // Still reload submissions to show the failed submission in history
                         await LoadSubmissionsAsync();
                         return;
@@ -622,7 +702,7 @@ namespace UCode.Desktop.ViewModels
         private async Task RefreshAsync()
         {
             if (string.IsNullOrEmpty(_problemId)) return;
-            
+
             IsLoading = true;
             try
             {
@@ -639,7 +719,7 @@ namespace UCode.Desktop.ViewModels
             if (submission == null) return;
 
             var dialog = new Views.Students.SubmissionDetailDialog(submission);
-            dialog.Owner = System.Windows.Application.Current.MainWindow;
+            dialog.Owner = GetActiveWindow();
             dialog.ShowDialog();
         }
 
@@ -648,8 +728,24 @@ namespace UCode.Desktop.ViewModels
             if (submission == null) return;
 
             var dialog = new Views.Students.TestCaseResultDialog(submission);
-            dialog.Owner = System.Windows.Application.Current.MainWindow;
+            dialog.Owner = GetActiveWindow();
             dialog.ShowDialog();
+        }
+
+        /// <summary>
+        /// Gets the currently active window to use as dialog owner
+        /// </summary>
+        private System.Windows.Window GetActiveWindow()
+        {
+            // Try to find the active window from application windows
+            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window.IsActive)
+                    return window;
+            }
+
+            // Fallback to MainWindow
+            return System.Windows.Application.Current.MainWindow;
         }
     }
 }

@@ -133,6 +133,13 @@ namespace UCode.Desktop.ViewModels
         public ICommand DeleteProblemCommand { get; }
         public ICommand ViewAIDetailsCommand { get; }
         public ICommand EditProblemCommand { get; }
+        public ICommand ExportToExcelCommand { get; }
+
+        // Computed statistics from grade table data
+        public int ComputedTotalStudents => _allStudents.Count;
+        public int ComputedNotStarted => _allStudents.Count(s => s.Status == "Chưa tham gia" || s.Status == "Chưa bắt đầu");
+        public int ComputedInProgress => _allStudents.Count(s => s.Status == "Đang làm");
+        public int ComputedSubmitted => _allStudents.Count(s => s.Status == "Đã nộp" || s.Status == "Đã chấm");
 
         public TeacherAssignmentViewModel(
             AssignmentService assignmentService,
@@ -154,6 +161,7 @@ namespace UCode.Desktop.ViewModels
             DeleteProblemCommand = new RelayCommand(async param => await ExecuteDeleteProblem(param as string ?? ""));
             ViewAIDetailsCommand = new RelayCommand(param => ExecuteViewAIDetails(param as AssignmentUserItem));
             EditProblemCommand = new RelayCommand(param => ExecuteEditProblem(param as string ?? ""));
+            ExportToExcelCommand = new RelayCommand(async _ => await ExecuteExportToExcel());
         }
 
         public async Task InitializeAsync(string assignmentId)
@@ -248,7 +256,7 @@ namespace UCode.Desktop.ViewModels
                 if (Assignment == null) return;
 
                 var classStudentsResponse = await _classService.GetClassStudentsAsync(Assignment.ClassId);
-                
+
                 var assignmentStudentsResponse = await _assignmentService.GetAssignmentStudentsAsync(_assignmentId);
 
                 if (classStudentsResponse?.Success == true && classStudentsResponse.Data != null)
@@ -270,8 +278,8 @@ namespace UCode.Desktop.ViewModels
                     int cnt = 0;
                     foreach (var classStudent in sortedStudents)
                     {
-                        var assignmentStudent = assignmentStudentsDict.ContainsKey(classStudent.UserId) 
-                            ? assignmentStudentsDict[classStudent.UserId] 
+                        var assignmentStudent = assignmentStudentsDict.ContainsKey(classStudent.UserId)
+                            ? assignmentStudentsDict[classStudent.UserId]
                             : null;
 
                         _allStudents.Add(new AssignmentUserItem
@@ -300,12 +308,23 @@ namespace UCode.Desktop.ViewModels
 
                     FilterStudents();
                     StudentsCount = Students.Count;
+
+                    // Notify computed statistics
+                    NotifyComputedStatistics();
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading students: {ex.Message}");
             }
+        }
+
+        private void NotifyComputedStatistics()
+        {
+            OnPropertyChanged(nameof(ComputedTotalStudents));
+            OnPropertyChanged(nameof(ComputedNotStarted));
+            OnPropertyChanged(nameof(ComputedInProgress));
+            OnPropertyChanged(nameof(ComputedSubmitted));
         }
 
         private void FilterStudents()
@@ -344,7 +363,7 @@ namespace UCode.Desktop.ViewModels
                 editWindow.Owner = Application.Current.MainWindow;
                 editWindow.Initialize(_assignmentId);
                 editWindow.ShowDialog();
-                
+
                 // Reload data after editing
                 _ = LoadDataAsync();
             }
@@ -437,14 +456,14 @@ namespace UCode.Desktop.ViewModels
             var message = $"Thông tin AI Detection cho {student.FullName} ({student.StudentCode})\n\n";
             message += $"Số lần chuyển tab: {student.TabSwitchCount}\n";
             message += $"Số lần truy cập AI: {student.CapturedAICount}\n\n";
-            
+
             if (!string.IsNullOrEmpty(student.AiDetectionDetails))
             {
                 try
                 {
                     // Parse JSON string to dictionary
                     var aiDetails = JsonSerializer.Deserialize<Dictionary<string, int>>(student.AiDetectionDetails);
-                    
+
                     if (aiDetails != null && aiDetails.Count > 0)
                     {
                         message += "Chi tiết truy cập:\n";
@@ -547,6 +566,131 @@ namespace UCode.Desktop.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error opening problem editor: {ex.Message}");
+            }
+        }
+
+        private async Task ExecuteExportToExcel()
+        {
+            try
+            {
+                if (_allStudents.Count == 0)
+                {
+                    await GetMetroWindow()?.ShowMessageAsync("Thông báo", "Không có dữ liệu để xuất.");
+                    return;
+                }
+
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files (*.xlsx)|*.xlsx",
+                    DefaultExt = ".xlsx",
+                    FileName = $"BangDiem_{Assignment?.Title?.Replace(" ", "_") ?? "Assignment"}_{DateTime.Now:yyyyMMdd_HHmmss}"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var workbook = new ClosedXML.Excel.XLWorkbook())
+                    {
+                        var worksheet = workbook.Worksheets.Add("Bảng điểm");
+
+                        // Title row
+                        worksheet.Cell(1, 1).Value = $"BẢNG ĐIỂM - {Assignment?.Title ?? "Assignment"}";
+                        worksheet.Range(1, 1, 1, 8).Merge();
+                        worksheet.Cell(1, 1).Style.Font.Bold = true;
+                        worksheet.Cell(1, 1).Style.Font.FontSize = 16;
+                        worksheet.Cell(1, 1).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+
+                        // Info rows
+                        worksheet.Cell(2, 1).Value = $"Loại: {AssignmentTypeDisplay}";
+                        worksheet.Cell(2, 4).Value = $"Thời hạn: {EndTimeDisplay}";
+                        worksheet.Cell(3, 1).Value = $"Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                        worksheet.Cell(3, 4).Value = $"Tổng SV: {ComputedTotalStudents} | Đã nộp: {ComputedSubmitted} | Đang làm: {ComputedInProgress} | Chưa làm: {ComputedNotStarted}";
+
+                        // Header row
+                        int headerRow = 5;
+                        var headers = new[] { "STT", "MSSV", "Họ tên", "Email", "Trạng thái", "Điểm", "Truy cập AI", "Chi tiết AI" };
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            worksheet.Cell(headerRow, i + 1).Value = headers[i];
+                        }
+
+                        var headerRange = worksheet.Range(headerRow, 1, headerRow, headers.Length);
+                        headerRange.Style.Font.Bold = true;
+                        headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#191970");
+                        headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                        headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                        headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+
+                        // Data rows
+                        int dataRow = headerRow + 1;
+                        foreach (var student in _allStudents)
+                        {
+                            worksheet.Cell(dataRow, 1).Value = student.RowNumber;
+                            worksheet.Cell(dataRow, 2).Value = student.StudentCode;
+                            worksheet.Cell(dataRow, 3).Value = student.FullName;
+                            worksheet.Cell(dataRow, 4).Value = student.Email;
+                            worksheet.Cell(dataRow, 5).Value = student.Status;
+                            worksheet.Cell(dataRow, 6).Value = student.ScoreDisplay;
+                            worksheet.Cell(dataRow, 7).Value = student.CapturedAICount;
+
+                            // Parse AI details
+                            if (!string.IsNullOrEmpty(student.AiDetectionDetails))
+                            {
+                                try
+                                {
+                                    var aiDetails = JsonSerializer.Deserialize<Dictionary<string, int>>(student.AiDetectionDetails);
+                                    if (aiDetails != null && aiDetails.Count > 0)
+                                    {
+                                        var detailsText = string.Join(", ", aiDetails.Select(x => $"{x.Key}: {x.Value}"));
+                                        worksheet.Cell(dataRow, 8).Value = detailsText;
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            // Color status cell
+                            var statusCell = worksheet.Cell(dataRow, 5);
+                            statusCell.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                            switch (student.Status)
+                            {
+                                case "Đã nộp":
+                                case "Đã chấm":
+                                    statusCell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#17a2b8");
+                                    statusCell.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                                    break;
+                                case "Đang làm":
+                                    statusCell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#ffc107");
+                                    statusCell.Style.Font.FontColor = ClosedXML.Excel.XLColor.Black;
+                                    break;
+                                default:
+                                    statusCell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#6c757d");
+                                    statusCell.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                                    break;
+                            }
+
+                            dataRow++;
+                        }
+
+                        // Apply borders to data range
+                        if (_allStudents.Count > 0)
+                        {
+                            var dataRange = worksheet.Range(headerRow + 1, 1, dataRow - 1, headers.Length);
+                            dataRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                            dataRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                        }
+
+                        // Auto-fit columns
+                        worksheet.Columns().AdjustToContents();
+
+                        workbook.SaveAs(saveFileDialog.FileName);
+                    }
+
+                    await GetMetroWindow()?.ShowMessageAsync("Thành công", $"Đã xuất bảng điểm thành công!\n\nFile: {saveFileDialog.FileName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error exporting to Excel: {ex.Message}");
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", $"Không thể xuất file Excel: {ex.Message}");
             }
         }
     }

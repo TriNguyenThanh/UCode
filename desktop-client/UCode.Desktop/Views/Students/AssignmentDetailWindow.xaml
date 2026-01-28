@@ -174,9 +174,9 @@
                                 <TextBlock Grid.Column="1"
                                            FontSize="14"
                                            FontWeight="SemiBold">
-                                    <Run Text="{Binding CompletedProblemsCount}"/>
+                                    <Run Text="{Binding CompletedProblemsCount, Mode=OneWay}"/>
                                     <Run Text="/"/>
-                                    <Run Text="{Binding Problems.Count}"/>
+                                    <Run Text="{Binding Problems.Count, Mode=OneWay}"/>
                                 </TextBlock>
                             </Grid>
                             <ProgressBar Minimum="0"
