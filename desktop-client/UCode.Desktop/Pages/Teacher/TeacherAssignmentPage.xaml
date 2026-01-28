@@ -46,9 +46,9 @@
                         <Border Background="#191970" CornerRadius="12" Padding="10,5" Margin="0,0,10,0">
                             <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="13">
                                 <Run Text="✓ Đã nộp: "/>
-                                <Run Text="{Binding Statistics.Submitted, FallbackValue=0}"/>
+                                <Run Text="{Binding ComputedSubmitted, FallbackValue=0, Mode=OneWay}"/>
                                 <Run Text="/"/>
-                                <Run Text="{Binding Statistics.TotalStudents, FallbackValue=0}"/>
+                                <Run Text="{Binding ComputedTotalStudents, FallbackValue=0, Mode=OneWay}"/>
                             </TextBlock>
                         </Border>
                         <!--
@@ -74,6 +74,13 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                     <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0" Padding="12,8"
+                            Command="{Binding RefreshCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="LÀM MỚI" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0" Padding="12,8"
                             Command="{Binding EditAssignmentCommand}">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
@@ -97,28 +104,28 @@
             <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,7.5,0" >
                 <StackPanel>
                     <TextBlock Text="Tổng SV" FontSize="13" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding Statistics.TotalStudents}" FontSize="28" FontWeight="Bold" Foreground="#191970"/>
+                    <TextBlock Text="{Binding ComputedTotalStudents, Mode=OneWay}" FontSize="28" FontWeight="Bold" Foreground="#191970"/>
                 </StackPanel>
             </Border>
 
             <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="3.75,0">
                 <StackPanel>
                     <TextBlock Text="Chưa làm" FontSize="13" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding Statistics.NotStarted}" FontSize="28" FontWeight="Bold" Foreground="#6c757d"/>
+                    <TextBlock Text="{Binding ComputedNotStarted, Mode=OneWay}" FontSize="28" FontWeight="Bold" Foreground="#6c757d"/>
                 </StackPanel>
             </Border>
 
             <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="3.75,0">
                 <StackPanel>
                     <TextBlock Text="Đang làm" FontSize="13" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding Statistics.InProgress}" FontSize="28" FontWeight="Bold" Foreground="#ffc107"/>
+                    <TextBlock Text="{Binding ComputedInProgress, Mode=OneWay}" FontSize="28" FontWeight="Bold" Foreground="#ffc107"/>
                 </StackPanel>
             </Border>
 
             <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="3.75,0">
                 <StackPanel>
                     <TextBlock Text="Đã nộp" FontSize="13" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding Statistics.Submitted}" FontSize="28" FontWeight="Bold" Foreground="#17a2b8"/>
+                    <TextBlock Text="{Binding ComputedSubmitted, Mode=OneWay}" FontSize="28" FontWeight="Bold" Foreground="#17a2b8"/>
                 </StackPanel>
             </Border>
 
@@ -257,13 +264,27 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Search Box -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="45" FontSize="14" Padding="12" Margin="0,0,0,5"
+                    <!-- Search Box and Export Button -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="45" FontSize="14" Padding="12" Margin="0,0,15,0"
                                  mah:TextBoxHelper.Watermark="🔍 Nhập MSSV, họ tên hoặc email..."
                                  mah:ControlsHelper.CornerRadius="10"/>
-                    </StackPanel>
+                        
+                        <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" 
+                                Command="{Binding ExportToExcelCommand}"
+                                Padding="15,10" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="FileExcel" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="XUẤT EXCEL" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
 
                     <Border Grid.Row="1" Style="{StaticResource RoundedDataGridContainer}">
                         <DataGrid ItemsSource="{Binding Students}"

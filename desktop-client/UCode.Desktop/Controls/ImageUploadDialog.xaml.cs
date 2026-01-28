@@ -99,8 +99,9 @@ namespace UCode.Desktop.Controls
                     IsUploading = true;
                     IsUploadSuccess = false;
 
-                    var fileService = new FileUploadService();
-                    var result = await fileService.UploadFileAsync(dialog.FileName, FileType.Image);
+                    var apiService = App.ServiceProvider.GetService(typeof(ApiService)) as ApiService;
+                    var fileService = new FileUploadService(apiService);
+                    var result = await fileService.UploadFileAsync(dialog.FileName, FileCategory.Image);
 
                     ImageUrl = result.FileUrl;
                     AltText = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);

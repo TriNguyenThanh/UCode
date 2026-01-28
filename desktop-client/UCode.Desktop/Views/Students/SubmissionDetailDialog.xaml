@@ -10,8 +10,10 @@
                   Height="700"
                   Width="1280"
                   WindowStartupLocation="CenterOwner"
+                  ResizeMode="NoResize"
+                  ShowMinButton="False"
+                  ShowMaxRestoreButton="False"
                   ShowInTaskbar="True"
-                  ResizeMode="CanResize"
                   Background="#F5F5F7"
                   FontFamily="Be Vietnam Pro, Segoe UI">
 

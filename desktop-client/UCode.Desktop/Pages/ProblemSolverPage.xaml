@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             xmlns:local="clr-namespace:UCode.Desktop.Helpers">
+             xmlns:local="clr-namespace:UCode.Desktop.Helpers"
+             xmlns:controls="clr-namespace:UCode.Desktop.Controls"
+             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit">
     <UserControl.Resources>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
@@ -122,13 +124,8 @@
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                    <TextBlock Text="{Binding Problem.Statement}"
-                                           FontSize="14"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           TextWrapping="Wrap"
-                                           LineHeight="22"
-                                           Foreground="#333"
-                                           Margin="0,0,0,24"/>
+                                    <controls:MarkdownViewer Markdown="{Binding Problem.Statement}"
+                                                             Margin="0,0,0,24"/>
 
                                     <!-- Constraints -->
                                     <TextBlock Text="Ràng buộc"
@@ -154,7 +151,7 @@
                                                 <TextBlock FontFamily="Be Vietnam Pro, Segoe UI"
                                                        FontSize="12"
                                                        Foreground="#00275E">
-                                        <Run Text="Time: "/>
+                                        <Run Text="Thời gian: "/>
                                         <Run Text="{Binding Problem.TimeLimitMs, Mode=OneWay}"/>
                                         <Run Text="ms"/>
                                                 </TextBlock>
@@ -175,19 +172,15 @@
                                                 <TextBlock FontFamily="Be Vietnam Pro, Segoe UI"
                                                        FontSize="12"
                                                        Foreground="#00275E">
-                                        <Run Text="Memory: "/>
+                                        <Run Text="Bộ nhớ: "/>
                                         <Run Text="{Binding Problem.MemoryLimitKb, Mode=OneWay}"/>
                                         <Run Text="KB"/>
                                                 </TextBlock>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Problem.Constraints}"
-                                           FontSize="14"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           TextWrapping="Wrap"
-                                           Foreground="#333"
-                                           Margin="0,0,0,24"/>
+                                    <controls:MarkdownViewer Markdown="{Binding Problem.Constraints}"
+                                                             Margin="0,0,0,24"/>
 
                                     <!-- Input Format -->
                                     <TextBlock Text="Định dạng Input"
@@ -195,12 +188,8 @@
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                    <TextBlock Text="{Binding Problem.InputFormat, FallbackValue='Chưa có thông tin'}"
-                                           FontSize="14"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           TextWrapping="Wrap"
-                                           Foreground="#333"
-                                           Margin="0,0,0,24"/>
+                                    <controls:MarkdownViewer Markdown="{Binding Problem.InputFormat, FallbackValue='Chưa có thông tin'}"
+                                                             Margin="0,0,0,24"/>
 
                                     <!-- Output Format -->
                                     <TextBlock Text="Định dạng Output"
@@ -208,12 +197,8 @@
                                            FontWeight="SemiBold"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
                                            Margin="0,0,0,12"/>
-                                    <TextBlock Text="{Binding Problem.OutputFormat, FallbackValue='Chưa có thông tin'}"
-                                           FontSize="14"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           TextWrapping="Wrap"
-                                           Foreground="#333"
-                                           Margin="0,0,0,24"/>
+                                    <controls:MarkdownViewer Markdown="{Binding Problem.OutputFormat, FallbackValue='Chưa có thông tin'}"
+                                                             Margin="0,0,0,24"/>
 
                                     <!-- Tags -->
                                     <TextBlock Text="Tags"
@@ -344,9 +329,9 @@
                                                                        VerticalAlignment="Center"/>
                                                             <Button Grid.Column="1"
                                                                     Style="{StaticResource MahApps.Styles.Button.Flat}"
-                                                                    Width="28"
+                                                                    Width="50"
                                                                     Height="28"
-                                                                    Margin="4,0,0,0"
+                                                                    Margin="0,0,0,0"
                                                                     Background="Transparent"
                                                                     ToolTip="Copy Input"
                                                                     Cursor="Hand"
@@ -355,7 +340,8 @@
                                                                 <iconPacks:PackIconMaterial Kind="ContentCopy"
                                                                                             Width="14"
                                                                                             Height="14"
-                                                                                            Foreground="#666"/>
+                                                                                            Foreground="#666"
+                                                                                            VerticalAlignment="Center"/>
                                                             </Button>
                                                         </Grid>
                                                     </DataTemplate>
@@ -382,7 +368,7 @@
                                                                        VerticalAlignment="Center"/>
                                                             <Button Grid.Column="1"
                                                                     Style="{StaticResource MahApps.Styles.Button.Flat}"
-                                                                    Width="28"
+                                                                    Width="50"
                                                                     Height="28"
                                                                     Margin="4,0,0,0"
                                                                     Background="Transparent"
@@ -642,7 +628,7 @@
                                                     </DataGridTemplateColumn>
 
                                                     <!-- Time -->
-                                                    <DataGridTemplateColumn Header="Time (ms)"
+                                                    <DataGridTemplateColumn Header="Thời gian (ms)"
                                                             Width="90">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
@@ -654,7 +640,7 @@
                                                     </DataGridTemplateColumn>
 
                                                     <!-- Memory -->
-                                                    <DataGridTemplateColumn Header="Memory (KB)"
+                                                    <DataGridTemplateColumn Header="Bộ nhớ (KB)"
                                                             Width="100">
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate>
@@ -753,7 +739,8 @@
                             </Button>
                             
                             <!-- Action Buttons -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                        Visibility="{Binding CanSubmit, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Button Command="{Binding RunCodeCommand}"
                                         Style="{DynamicResource MahApps.Styles.Button.Flat}"
                                         Background="Transparent"
@@ -784,21 +771,29 @@
                     </Border>
 
                     <!-- Code Editor -->
-                    <TextBox Grid.Row="1"
-                             x:Name="CodeEditor"
-                             Text="{Binding FullCode, UpdateSourceTrigger=PropertyChanged}"
-                             AcceptsReturn="True"
-                             AcceptsTab="True"
-                             FontFamily="Consolas"
-                             FontSize="14"
-                             Padding="16"
-                             TextWrapping="NoWrap"
-                             BorderThickness="0"
-                             Background="#1E1E1E"
-                             Foreground="#D4D4D4"
-                             CaretBrush="#FACB01"
-                             VerticalScrollBarVisibility="Auto"
-                             HorizontalScrollBarVisibility="Auto"/>
+                    <avalonedit:TextEditor x:Name="CodeEditor"
+                                           Grid.Row="1"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Background="#1E1E1E"
+                                           Foreground="#D4D4D4"
+                                           LineNumbersForeground="#858585"
+                                           ShowLineNumbers="True"
+                                           VerticalScrollBarVisibility="Auto"
+                                           HorizontalScrollBarVisibility="Auto"
+                                           Focusable="True"
+                                           IsTabStop="True"
+                                           Padding="0">
+                        <avalonedit:TextEditor.Options>
+                            <avalonedit:TextEditorOptions ShowSpaces="False"
+                                                          ShowTabs="False"
+                                                          ShowEndOfLine="False"
+                                                          ConvertTabsToSpaces="True"
+                                                          IndentationSize="4"
+                                                          EnableHyperlinks="False"
+                                                          EnableEmailHyperlinks="False"/>
+                        </avalonedit:TextEditor.Options>
+                    </avalonedit:TextEditor>
 
                     <!-- Output Splitter -->
                     <GridSplitter Grid.Row="2"

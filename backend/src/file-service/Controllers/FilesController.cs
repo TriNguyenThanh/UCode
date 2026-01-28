@@ -32,9 +32,9 @@ public class FilesController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<FileUploadResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
-        IFormFile file, 
-        FileCategory category,
-        string? fileName = null)
+        [FromForm] IFormFile file, 
+        [FromForm] string category,
+        [FromForm]string? fileName = null)
     {
         try
         {
@@ -43,13 +43,19 @@ public class FilesController : ControllerBase
                 return BadRequest(ApiResponse<object>.ErrorResponse("No file provided"));
             }
 
-            // Validate category
-            if (!FileCategoryConfiguration.IsValidCategory(category))
+            // Parse category string to enum (case-insensitive)
+            if (!Enum.TryParse<FileCategory>(category, ignoreCase: true, out var fileCategoryEnum))
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}"));
+                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}. Valid categories: {string.Join(", ", Enum.GetNames<FileCategory>())}"));
             }
 
-            var result = await _s3Service.UploadFileAsync(file, category, fileName);
+            // Validate category
+            if (!FileCategoryConfiguration.IsValidCategory(fileCategoryEnum))
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {fileCategoryEnum}"));
+            }
+
+            var result = await _s3Service.UploadFileAsync(file, fileCategoryEnum, fileName);
             return Ok(ApiResponse<FileUploadResponse>.SuccessResponse(result, "File uploaded successfully"));
         }
         catch (ArgumentException ex)

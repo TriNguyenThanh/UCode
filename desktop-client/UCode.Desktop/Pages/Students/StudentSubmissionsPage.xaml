@@ -1,0 +1,351 @@
+<UserControl x:Class="UCode.Desktop.Pages.Students.StudentSubmissionsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:vm="clr-namespace:UCode.Desktop.ViewModels.Students"
+             xmlns:local="clr-namespace:UCode.Desktop.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/DataGridStyles.xaml"/>
+                <ResourceDictionary Source="/Styles/ButtonStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:InverseCountToVisibilityConverter x:Key="InverseCountToVisibilityConverter"/>
+            <local:StatusToColorConverter x:Key="StatusToColorConverter"/>
+            <local:TruncateTextConverter x:Key="TruncateTextConverter"/>
+            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Branding Colors -->
+         <Border Grid.Row="0" Background="White" Padding="32,24" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <iconPacks:PackIconMaterial Kind="History" Width="28" Height="28" Foreground="#00275E" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <TextBlock Text="Lịch sử nộp bài" 
+                                   FontSize="24" 
+                                   FontWeight="Bold"
+                                   FontFamily="Be Vietnam Pro, Segoe UI"
+                                   Foreground="#00275E"/>
+                    </StackPanel>
+                    <TextBlock Text="Xem lại các lần nộp bài và kết quả chi tiết" 
+                               FontSize="14" 
+                               Foreground="#666666"
+                               FontFamily="Be Vietnam Pro, Segoe UI"
+                               Margin="40,0,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" 
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource YellowButton}"
+                        ToolTip="Làm mới dữ liệu">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Làm mới" FontFamily="Be Vietnam Pro, Segoe UI"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="32">
+            <!-- Loading State -->
+            <Grid Panel.ZIndex="10" 
+                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                  Background="#80F5F5F5">
+                <mah:ProgressRing IsActive="True" Width="48" Height="48" Foreground="#00275E"/>
+            </Grid>
+            
+            <!-- DataGrid Container -->
+            <Border Style="{StaticResource RoundedDataGridContainer}">
+                <DataGrid ItemsSource="{Binding Submissions}"
+                          Style="{StaticResource ModernDataGrid}"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}"
+                          RowStyle="{StaticResource ModernDataGridRow}"
+                          CellStyle="{StaticResource ModernDataGridCell}"
+                          LoadingRow="DataGrid_LoadingRow">
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTemplateColumn Header="STT" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" 
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"
+                                               Foreground="#666"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Problem Info (Full Width) - Clickable -->
+                        <DataGridTemplateColumn Header="Bài toán" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent" Cursor="Hand" Margin="5,4">
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" 
+                                                          Command="{Binding DataContext.NavigateToProblemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                          CommandParameter="{Binding}"/>
+                                        </Border.InputBindings>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ProblemTitle}" 
+                                                       FontWeight="Bold" 
+                                                       FontSize="14" 
+                                                       Foreground="#00275E"
+                                                       TextDecorations="Underline"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding ProblemTitle}"/>
+                                            <TextBlock Text="{Binding ProblemStatement, Converter={StaticResource TruncateTextConverter}, ConverterParameter=100}" 
+                                                       FontSize="11" 
+                                                       Foreground="#757575"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="400"
+                                                       Margin="0,2,0,0"
+                                                       ToolTip="{Binding ProblemStatement}"
+                                                       Visibility="{Binding ProblemStatement, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Thời gian -->
+                        <DataGridTextColumn Header="Thời gian"
+                                            Binding="{Binding SubmittedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}"
+                                            Width="160"/>
+
+                        <!-- Ngôn ngữ -->
+                        <DataGridTemplateColumn Header="Ngôn ngữ" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent"
+                                            BorderBrush="#00275E"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,3"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding LanguageCode}"
+                                                   FontSize="11"
+                                                   Foreground="#00275E"
+                                                   FontWeight="SemiBold"
+                                                   FontFamily="Consolas, Courier New"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Status -->
+                        <DataGridTemplateColumn Header="Trạng thái" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#F5F5F5"/> <!-- Default -->
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Passed">
+                                                        <Setter Property="Background" Value="#E8F5E9"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                        <Setter Property="Background" Value="#FFEBEE"/>
+                                                    </DataTrigger>
+                                                    <!-- Add more statuses if needed, e.g. Compilation Error -->
+                                                    <DataTrigger Binding="{Binding Status}" Value="CompilationError">
+                                                        <Setter Property="Background" Value="#FFF3E0"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,4,0">
+                                                <iconPacks:PackIconMaterial.Style>
+                                                    <Style TargetType="iconPacks:PackIconMaterial">
+                                                        <Setter Property="Kind" Value="HelpCircleOutline"/>
+                                                        <Setter Property="Foreground" Value="#666"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Passed">
+                                                                <Setter Property="Kind" Value="CheckCircle"/>
+                                                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                <Setter Property="Kind" Value="CloseCircle"/>
+                                                                <Setter Property="Foreground" Value="#C62828"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="CompilationError">
+                                                                <Setter Property="Kind" Value="AlertCircle"/>
+                                                                <Setter Property="Foreground" Value="#EF6C00"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </iconPacks:PackIconMaterial.Style>
+                                            </iconPacks:PackIconMaterial>
+                                            <TextBlock FontSize="12" FontWeight="SemiBold" FontFamily="Be Vietnam Pro, Segoe UI">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{Binding StatusDisplay}"/>
+                                                        <Setter Property="Foreground" Value="#666"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Passed">
+                                                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                <Setter Property="Foreground" Value="#C62828"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="CompilationError">
+                                                                <Setter Property="Foreground" Value="#EF6C00"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Điểm -->
+                        <DataGridTemplateColumn Header="Điểm" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontWeight="SemiBold" HorizontalAlignment="Center" TextDecorations="Underline" Cursor="Hand" FontFamily="Be Vietnam Pro, Segoe UI">
+                                        <TextBlock.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.ViewTestCaseResultsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                        </TextBlock.InputBindings>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding Score}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Passed">
+                                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                        <Setter Property="Foreground" Value="#C62828"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                         
+                        <!-- Test Cases (Keep this from original as it's useful info not in ProblemSolverPage basic view but good here) -->
+                        <DataGridTemplateColumn Header="Test Cases" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding PassedTestcase}" FontWeight="Bold" Foreground="#4CAF50"/>
+                                        <TextBlock Text="/" Foreground="#999" Margin="4,0"/>
+                                        <TextBlock Text="{Binding TotalTestcase}" Foreground="#666"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Time -->
+                        <DataGridTemplateColumn Header="Thời gian (ms)" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding TotalTime}" HorizontalAlignment="Right" Foreground="#666" FontFamily="Be Vietnam Pro, Segoe UI"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Memory -->
+                        <DataGridTemplateColumn Header="Bộ nhớ (KB)" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding TotalMemory}" HorizontalAlignment="Right" Foreground="#666" FontFamily="Be Vietnam Pro, Segoe UI"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- Chi tiết -->
+                        <DataGridTemplateColumn Header="Chi tiết" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                            Width="32" Height="32"
+                                            Background="Transparent"
+                                            BorderBrush="#00275E"
+                                            ToolTip="Xem chi tiết"
+                                            Cursor="Hand"
+                                            Command="{Binding DataContext.ViewSubmissionDetailCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}">
+                                        <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16" Foreground="#00275E"/>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Empty state -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Visibility="{Binding Submissions.Count, Converter={StaticResource InverseCountToVisibilityConverter}}">
+                <Border Background="White" CornerRadius="100" Width="120" Height="120" Margin="0,0,0,24">
+                     <Border.Effect>
+                        <DropShadowEffect Color="#E0E0E0" BlurRadius="20" ShadowDepth="5" Opacity="0.5"/>
+                    </Border.Effect>
+                     <iconPacks:PackIconMaterial Kind="History" Width="64" Height="64" Foreground="#B0BEC5" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Chưa có lịch sử nộp bài" 
+                           FontSize="20" FontWeight="Bold" Foreground="#37474F" 
+                           FontFamily="Be Vietnam Pro, Segoe UI"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Bạn chưa thực hiện bài nộp nào." 
+                           FontSize="15" Foreground="#78909C" 
+                           FontFamily="Be Vietnam Pro, Segoe UI"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Pagination -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" Margin="32,0,32,32" CornerRadius="0,0,16,16" Padding="16,12">
+             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Command="{Binding PreviousPageCommand}" 
+                        Style="{StaticResource PaginationButton}"
+                        ToolTip="Trang trước"
+                        Margin="0,0,8,0">
+                     <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16"/>
+                </Button>
+                
+                <Border Background="#F5F5F5" CornerRadius="4" Padding="12,6" Margin="0,0,8,0">
+                    <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#555" FontFamily="Be Vietnam Pro, Segoe UI">
+                        <Run Text="Trang "/>
+                        <Run Text="{Binding PageNumber}"/>
+                    </TextBlock>
+                </Border>
+                
+                <Button Command="{Binding NextPageCommand}" 
+                        Style="{StaticResource PaginationButton}"
+                        ToolTip="Trang sau">
+                     <iconPacks:PackIconMaterial Kind="ChevronRight" Width="16" Height="16"/>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

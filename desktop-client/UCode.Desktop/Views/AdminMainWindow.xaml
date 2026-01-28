@@ -18,6 +18,7 @@
                  TextOptions.TextRenderingMode="Auto"
                 RenderOptions.BitmapScalingMode="HighQuality"
                 WindowState="Maximized"
+                Icon="pack://application:,,,/Resources/favicon.ico"
                  >
 
     <mah:MetroWindow.LeftWindowCommands>

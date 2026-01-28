@@ -1,8 +1,6 @@
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using MahApps.Metro.Controls.Dialogs;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -156,6 +154,12 @@ namespace UCode.Desktop.ViewModels
                 {
                     var assignment = response.Data;
 
+                    if (assignment.Status == AssignmentStatus.CLOSED)
+                    {
+                        await ShowMessageAsync("Thông báo", "Bài tập này đã đóng, bạn không thể truy cập.");
+                        return;
+                    }
+
                     if (assignment.AssignmentType == AssignmentType.EXAMINATION)
                     {
                         if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
@@ -164,7 +168,7 @@ namespace UCode.Desktop.ViewModels
                         }
                         _aiDetectorService.StartAutoMonitor();
                     }
-                   
+
                 }
 
                 var assignmentDetailPage = new Views.Students.AssignmentDetailPage();
@@ -184,7 +188,7 @@ namespace UCode.Desktop.ViewModels
         private async Task RefreshAsync()
         {
             if (string.IsNullOrEmpty(_classId)) return;
-            
+
             IsLoading = true;
             try
             {
