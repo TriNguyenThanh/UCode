@@ -82,59 +82,59 @@ namespace UCode.Desktop.Views
                 }
             });
 
-            NavigateToHomeCommand = new RelayCommand(async _ =>
+            NavigateToHomeCommand = new RelayCommand(_ =>
             {
-                var adminHomePage = App.ServiceProvider.GetRequiredService<AdminHomePage>();
-                var adminHomeViewModel = App.ServiceProvider.GetRequiredService<AdminHomeViewModel>();
-                adminHomePage.SetViewModel(adminHomeViewModel);
-                _navigationService.NavigateTo(adminHomePage, null, false); // Don't add to stack for main tab
-                await adminHomeViewModel.LoadStatisticsAsync();
+                var adminHomePage = App.ServiceProvider?.GetService(typeof(AdminHomePage)) as AdminHomePage;
+                if (adminHomePage != null)
+                {
+                    _navigationService.NavigateTo(adminHomePage, null, false);
+                }
             });
 
-            NavigateToUsersCommand = new RelayCommand(async _ =>
+            NavigateToUsersCommand = new RelayCommand(_ =>
             {
-                var adminUsersPage = App.ServiceProvider.GetRequiredService<AdminUsersPage>();
-                var adminUsersViewModel = App.ServiceProvider.GetRequiredService<AdminUsersViewModel>();
-                adminUsersPage.SetViewModel(adminUsersViewModel);
-                _navigationService.NavigateTo(adminUsersPage, null, false); // Don't add to stack for main tab
-                await adminUsersViewModel.LoadUsersAsync();
+                var adminUsersPage = App.ServiceProvider?.GetService(typeof(AdminUsersPage)) as AdminUsersPage;
+                if (adminUsersPage != null)
+                {
+                    _navigationService.NavigateTo(adminUsersPage, null, false);
+                }
             });
 
-            NavigateToClassesCommand = new RelayCommand(async _ =>
+            NavigateToClassesCommand = new RelayCommand(_ =>
             {
-                var adminClassesPage = App.ServiceProvider.GetRequiredService<Pages.Admin.AdminClassesPage>();
-                var adminClassesViewModel = App.ServiceProvider.GetRequiredService<AdminClassesViewModel>();
-                adminClassesPage.SetViewModel(adminClassesViewModel);
-                _navigationService.NavigateTo(adminClassesPage, null, false); // Don't add to stack for main tab
-                await adminClassesViewModel.LoadClassesAsync();
+                var adminClassesPage = App.ServiceProvider?.GetService(typeof(AdminClassesPage)) as AdminClassesPage;
+                if (adminClassesPage != null)
+                {
+                    _navigationService.NavigateTo(adminClassesPage, null, false);
+                }
             });
 
-            NavigateToLogsCommand = new RelayCommand(async _ =>
+            NavigateToLogsCommand = new RelayCommand(_ =>
             {
-                var adminLogsPage = App.ServiceProvider.GetRequiredService<AdminLogsPage>();
-                var adminLogsViewModel = App.ServiceProvider.GetRequiredService<AdminLogsViewModel>();
-                adminLogsPage.SetViewModel(adminLogsViewModel);
-                _navigationService.NavigateTo(adminLogsPage, null, false); // Don't add to stack for main tab
-                await adminLogsViewModel.InitializeAsync();
+                var adminLogsPage = App.ServiceProvider?.GetService(typeof(AdminLogsPage)) as AdminLogsPage;
+                if (adminLogsPage != null)
+                {
+                    _navigationService.NavigateTo(adminLogsPage, null, false);
+                }
             });
 
-            NavigateToSettingsCommand = new RelayCommand(async _ =>
+            NavigateToSettingsCommand = new RelayCommand(_ =>
             {
-                var adminSettingsPage = App.ServiceProvider.GetRequiredService<AdminSettingsPage>();
-                var adminSettingsViewModel = App.ServiceProvider.GetRequiredService<AdminSettingsViewModel>();
-                adminSettingsPage.SetViewModel(adminSettingsViewModel);
-                _navigationService.NavigateTo(adminSettingsPage, null, false); // Don't add to stack for main tab
-                await adminSettingsViewModel.InitializeAsync();
+                var adminSettingsPage = App.ServiceProvider?.GetService(typeof(AdminSettingsPage)) as AdminSettingsPage;
+                if (adminSettingsPage != null)
+                {
+                    _navigationService.NavigateTo(adminSettingsPage, null, false);
+                }
             });
 
             // Navigate to home page by default
-            Loaded += async (s, e) =>
+            Loaded += (s, e) =>
             {
-                var adminHomePage = App.ServiceProvider.GetRequiredService<AdminHomePage>();
-                var adminHomeViewModel = App.ServiceProvider.GetRequiredService<AdminHomeViewModel>();
-                adminHomePage.SetViewModel(adminHomeViewModel);
-                _navigationService.NavigateTo(adminHomePage, null, false); // Don't add to stack for initial page
-                await adminHomeViewModel.LoadStatisticsAsync();
+                var adminHomePage = App.ServiceProvider?.GetService(typeof(AdminHomePage)) as AdminHomePage;
+                if (adminHomePage != null)
+                {
+                    _navigationService.NavigateTo(adminHomePage, null, false);
+                }
             };
 
             // Cleanup when window closes

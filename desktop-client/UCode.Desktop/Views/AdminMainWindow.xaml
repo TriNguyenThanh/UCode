@@ -25,14 +25,18 @@
         <mah:WindowCommands>
             <Button Command="{Binding GoBackCommand}"
                     ToolTip="Go Back">
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="ArrowLeft" 
-                                              Width="16" 
-                                              Height="16"
-                                              Margin="0,0,5,0"/>
-                    <TextBlock Text="Back" 
-                              VerticalAlignment="Center"/>
-                </StackPanel>
+                 <!--
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ArrowLeft" 
+                                                  Width="16" 
+                                                  Height="16"
+                                                  Margin="0,0,5,0"/>
+                   
+                        <TextBlock Text="Back" 
+                                  VerticalAlignment="Center"/>
+                   
+                    </StackPanel> 
+                -->
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
@@ -150,6 +154,7 @@
                     </Button>
 
                     <!-- System Logs -->
+                    <!--
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToLogsCommand}"
                             Padding="20,15"
@@ -167,8 +172,10 @@
                                       Margin="15,0,0,0"/>
                         </StackPanel>
                     </Button>
-
+                    -->
+                    
                     <!-- Settings -->
+                    <!--
                     <Button Style="{StaticResource MahApps.Styles.Button.Flat}"
                             Command="{Binding NavigateToSettingsCommand}"
                             Padding="20,15"
@@ -186,6 +193,7 @@
                                       Margin="15,0,0,0"/>
                         </StackPanel>
                     </Button>
+                    -->
                 </StackPanel>
 
                 <!-- Footer Section -->

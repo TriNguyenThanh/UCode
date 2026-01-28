@@ -5,15 +5,13 @@ namespace UCode.Desktop.Pages.Admin
 {
     public partial class AdminLogsPage : UserControl
     {
-        public AdminLogsPage()
+        public AdminLogsPage(AdminLogsViewModel viewModel)
         {
             InitializeComponent();
-        }
-
-        public void SetViewModel(AdminLogsViewModel viewModel)
-        {
             DataContext = viewModel;
-            _ = viewModel.InitializeAsync();
+
+            // Load data when page is loaded (non-blocking)
+            Loaded += async (s, e) => await viewModel.InitializeAsync();
         }
     }
 }

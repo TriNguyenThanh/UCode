@@ -10,6 +10,7 @@ using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
+using UCode.Desktop.Views;
 
 namespace UCode.Desktop.ViewModels
 {
@@ -185,7 +186,7 @@ namespace UCode.Desktop.ViewModels
                 if (response?.Success == true && response.Data != null)
                 {
                     var sortedStudents = response.Data.OrderBy(s => s.StudentCode).ToList();
-                    
+
                     foreach (var student in sortedStudents)
                     {
                         var item = new ClassStudentItem
@@ -266,7 +267,7 @@ namespace UCode.Desktop.ViewModels
                 {
                     Owner = Application.Current.MainWindow
                 };
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     _ = LoadStudentsAsync();
@@ -374,9 +375,33 @@ namespace UCode.Desktop.ViewModels
 
         private async void ExecuteEditClass()
         {
-            await GetMetroWindow()?.ShowMessageAsync(
-                "Thông báo",
-                "Chức năng chỉnh sửa lớp học đang được phát triển.\n\nSử dụng trang web để chỉnh sửa thông tin lớp.");
+            if (CurrentClass == null) return;
+
+            try
+            {
+                var viewModel = new EditClassViewModel(_classService);
+                viewModel.LoadFromClass(CurrentClass);
+
+                var dialog = new Views.EditClassDialog(viewModel)
+                {
+                    Owner = Application.Current.MainWindow
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Reload class info after successful edit
+                    await LoadClassInfoAsync();
+                    await GetMetroWindow()?.ShowMessageAsync(
+                        "Thành công",
+                        "Cập nhật thông tin lớp học thành công!");
+                }
+            }
+            catch (Exception ex)
+            {
+                await GetMetroWindow()?.ShowMessageAsync(
+                    "Lỗi",
+                    $"Không thể mở cửa sổ chỉnh sửa: {ex.Message}");
+            }
         }
 
         // Helper methods for display
@@ -424,9 +449,9 @@ namespace UCode.Desktop.ViewModels
         public static string GetDeadlineDisplay(DateTime? endTime)
         {
             if (!endTime.HasValue) return string.Empty;
-            
+
             var daysLeft = GetDaysUntilDue(endTime);
-            
+
             if (daysLeft < 0) return "Quá hạn";
             if (daysLeft == 0) return "Hết hạn hôm nay";
             if (daysLeft == 1) return "Còn 1 ngày";
@@ -437,7 +462,7 @@ namespace UCode.Desktop.ViewModels
         {
             try
             {
-                
+
                 var response = await _attendanceService.GetAttendanceSessionsAsync(_classId);
                 AttendanceSessions.Clear();
 

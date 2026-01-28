@@ -15,11 +15,24 @@ namespace UCode.Desktop.Models.Admin
         public int TotalClasses { get; set; }
         public int TotalActiveClasses { get; set; }
         public int TotalArchivedClasses { get; set; }
+        public int TotalAssignments { get; set; }
         public int TotalProblems { get; set; }
         public int TotalSubmissions { get; set; }
         public int TodayActiveUsers { get; set; }
         public int WeekActiveUsers { get; set; }
         public int MonthActiveUsers { get; set; }
+    }
+
+    /// <summary>
+    /// Assignment system statistics response from /api/v1/assignments/statistics/system
+    /// </summary>
+    public class AssignmentSystemStatisticsResponse
+    {
+        public int TotalAssignments { get; set; }
+        public int TotalProblems { get; set; }
+        public int TotalSubmissions { get; set; }
+        public int TotalUsers { get; set; } // Tổng số sinh viên được giao bài (AssignmentUsers)
+        public DateTime GeneratedAt { get; set; }
     }
 
     /// <summary>
@@ -37,7 +50,7 @@ namespace UCode.Desktop.Models.Admin
         public int NewUsersToday { get; set; }
         public int NewUsersThisWeek { get; set; }
         public int NewUsersThisMonth { get; set; }
-        
+
         // Backward compatibility properties
         public int StudentCount => Students;
         public int TeacherCount => Teachers;
@@ -120,7 +133,7 @@ namespace UCode.Desktop.Models.Admin
         public int? ClassYear { get; set; }
         public string? PhoneNumber { get; set; }
         public string? AvatarUrl { get; set; }
-        
+
         // Statistics
         public int ClassesEnrolled { get; set; }
         public int ClassesTeaching { get; set; }
@@ -225,10 +238,13 @@ namespace UCode.Desktop.Models.Admin
     public class UpdateClassByAdminRequest
     {
         public Guid ClassId { get; set; }
-        public string? ClassName { get; set; }
+        public string? Name { get; set; }
+        public string? ClassCode { get; set; }
         public string? Description { get; set; }
         public string? CoverImage { get; set; }
+        public string? Subject { get; set; }
         public string? Semester { get; set; }
+        public string? AcademicYear { get; set; }
         public string? TeacherId { get; set; }
         public bool? IsActive { get; set; }
     }

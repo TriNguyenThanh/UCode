@@ -45,4 +45,7 @@ public interface IProblemRepository : IRepository<Problem>
     Task<bool> DeleteProblemLanguageAsync(Guid problemId, Guid languageId);
 
     Task SaveChangesAsync();
+    
+    // System statistics
+    Task<int> GetTotalProblemsCountAsync();
 }

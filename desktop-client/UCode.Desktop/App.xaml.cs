@@ -256,11 +256,11 @@ public partial class App : Application
 
         // Views - Admin
         services.AddTransient<Views.AdminMainWindow>();
-        services.AddTransient<Pages.Admin.AdminHomePage>();
-        services.AddTransient<Pages.Admin.AdminUsersPage>();
-        services.AddTransient<Pages.Admin.AdminClassesPage>();
-        services.AddTransient<Pages.Admin.AdminLogsPage>();
-        services.AddTransient<Pages.Admin.AdminSettingsPage>();
+        services.AddSingleton<Pages.Admin.AdminHomePage>();
+        services.AddSingleton<Pages.Admin.AdminUsersPage>();
+        services.AddSingleton<Pages.Admin.AdminClassesPage>();
+        services.AddSingleton<Pages.Admin.AdminLogsPage>();
+        services.AddSingleton<Pages.Admin.AdminSettingsPage>();
 
         // Views - Teacher
         services.AddTransient<TeacherHomeWindow>();
@@ -298,9 +298,6 @@ public partial class App : Application
         services.AddTransient<Views.Students.ClassDetailPage>();
         services.AddTransient<Views.Students.AssignmentDetailPage>();
         services.AddTransient<Pages.ProblemSolverPage>();
-        // Pages - Admin (for navigation)
-        services.AddTransient<Pages.Admin.AdminHomePage>();
-        services.AddTransient<Pages.Admin.AdminUsersPage>();
 
         // Pages - Common
         services.AddTransient<Pages.SettingsPage>();

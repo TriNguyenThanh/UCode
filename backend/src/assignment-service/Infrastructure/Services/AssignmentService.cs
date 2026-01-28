@@ -14,11 +14,21 @@ public class AssignmentService : IAssignmentService
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly IUserServiceClient _userServiceClient;
     private readonly IEmailService _emailService;
-    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient, IEmailService emailService)
+    private readonly IProblemRepository _problemRepository;
+    private readonly ISubmissionRepository _submissionRepository;
+    
+    public AssignmentService(
+        IAssignmentRepository assignmentRepository, 
+        IUserServiceClient userServiceClient, 
+        IEmailService emailService,
+        IProblemRepository problemRepository,
+        ISubmissionRepository submissionRepository)
     {
         _assignmentRepository = assignmentRepository;
         _userServiceClient = userServiceClient;
         _emailService = emailService;
+        _problemRepository = problemRepository;
+        _submissionRepository = submissionRepository;
     }
 
     public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
@@ -709,6 +719,30 @@ public class AssignmentService : IAssignmentService
         catch (Exception ex)
         {
             throw new ApiException($"Error logging exam activities batch: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<SystemStatisticsResponse> GetSystemStatisticsAsync()
+    {
+        try
+        {
+            var totalAssignments = await _assignmentRepository.GetTotalAssignmentsCountAsync();
+            var totalProblems = await _problemRepository.GetTotalProblemsCountAsync();
+            var totalSubmissions = await _submissionRepository.GetTotalSubmissionsCountAsync();
+            var totalUsers = await _assignmentRepository.GetTotalAssignmentUsersCountAsync();
+
+            return new SystemStatisticsResponse
+            {
+                TotalAssignments = totalAssignments,
+                TotalProblems = totalProblems,
+                TotalSubmissions = totalSubmissions,
+                TotalUsers = totalUsers,
+                GeneratedAt = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error getting system statistics: {ex.Message}", 500);
         }
     }
 }
