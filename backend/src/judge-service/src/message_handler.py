@@ -312,13 +312,13 @@ class MessageHandler:
                     return False, [], "InternalError", error_msg, "4"
 
                 output = out.decode().strip()
-                logger.info(f"Subprocess output length: {len(output)} bytes")
+                logger.info(f"Subprocess output for {submission_id}: {output}")  # Log first 200 chars of output
                 
                 try:
                     isolate_results = json.loads(output)
                 except json.JSONDecodeError as e:
                     logger.error(f"Invalid JSON from sandbox runner: {e}")
-                    logger.error(f"Raw output: {output[:500]}")  # Log first 500 chars
+                    logger.error(f"Raw output for {submission_id}: {output[:500]}")  # Log first 500 chars
                     return False, [], "InternalError", f"Invalid JSON output: {str(e)}", "4"
                 
                 if not isinstance(isolate_results, list) or not isolate_results:
@@ -328,10 +328,10 @@ class MessageHandler:
                 first_status = isolate_results[0].get("status")
                 if first_status in ("CompilationError", "InternalError"):
                     compile_result = TESTCASE_STATUS_CODE.get(first_status, "4")
-                    return False, isolate_results, first_status, None, compile_result
+                    return False, isolate_results, first_status,None, compile_result
 
                 logger.info(f"Successfully processed {submission_id}")
-                return True, isolate_results, None, None, ""
+                return True, isolate_results, isolate_results[0].get("error", ""), None, ""
 
             finally:
                 # RELEASE SLOT

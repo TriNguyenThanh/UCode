@@ -17,6 +17,8 @@ from concurrent.futures import ThreadPoolExecutor
 DEFAULT_MEMORY_LIMIT = int(os.getenv("DEFAULT_MEMORY_LIMIT", "262144"))
 DEFAULT_TIME_LIMIT = int(os.getenv("DEFAULT_TIME_LIMIT", "2"))
 MAX_PARALLEL_TESTCASES = int(os.getenv("MAX_PARALLEL_TESTCASES", "5"))
+MAX_CONCURRENT_SUBMISSIONS = int(os.getenv("MAX_CONCURRENT_SUBMISSIONS", "4"))
+MAX_BOXES = MAX_PARALLEL_TESTCASES * MAX_CONCURRENT_SUBMISSIONS
 
 class TESTCASE_STATUS:
     Pending = "Pending"
@@ -30,7 +32,7 @@ class TESTCASE_STATUS:
     Skipped = "Skipped"
 
 # Thread pool with shutdown handling (CRITICAL #2)
-executor = ThreadPoolExecutor(max_workers=MAX_PARALLEL_TESTCASES * 2)
+executor = ThreadPoolExecutor(max_workers=MAX_PARALLEL_TESTCASES * MAX_CONCURRENT_SUBMISSIONS * 2)
 
 def _shutdown_executor():
     try:
@@ -51,14 +53,10 @@ def debug_log(msg):
         pass
 
 def _sanitize_error(msg):
-    """Remove internal paths from error messages"""
     if not msg: return ""
     return str(msg).replace(ISOLATE_ROOT, "[SANDBOX]")
 
 async def execute_in_sandbox(language, code, testcases, timelimit=None, memorylimit=None, mem_keys=None, slot_id=0):
-    """
-    Execute code using Optimized Write-Over-Run Strategy.
-    """
     # 1. Validation
     if not code:
         return _error_result(testcases, TESTCASE_STATUS.InternalError, "No code provided")
@@ -76,11 +74,10 @@ async def execute_in_sandbox(language, code, testcases, timelimit=None, memoryli
     # Calculate Box Range
     start_box = slot_id * MAX_PARALLEL_TESTCASES
     end_box = start_box + MAX_PARALLEL_TESTCASES - 1
-    
-    # LOW #23: Validate Box ID Range
-    # Assuming max boxes 20 (0-19)
-    if not (0 <= start_box < 20) or not (0 <= end_box < 20):
-        debug_log(f"[ERROR] Invalid box range {start_box}-{end_box} for slot {slot_id}")
+
+    # Validate Box ID Range (dùng biến cấu hình MAX_BOXES)
+    if not (0 <= start_box < MAX_BOXES) or not (0 <= end_box < MAX_BOXES):
+        debug_log(f"[ERROR] Invalid box range {start_box}-{end_box} for slot {slot_id} (MAX_BOXES={MAX_BOXES})")
         return _error_result(testcases, TESTCASE_STATUS.InternalError, "System Configuration Error: Box ID out of range")
 
     debug_log(f"[SLOT {slot_id}] Starting execution (Boxes {start_box}-{end_box})")
@@ -178,21 +175,23 @@ async def _init_slot_boxes(slot_id):
     """Run isolate --init for all boxes in slot"""
     tasks = []
     start_box = slot_id * MAX_PARALLEL_TESTCASES
+    debug_log(f"[SLOT {slot_id}] Preparing to init boxes for testcases: box_id {start_box} to {start_box+MAX_PARALLEL_TESTCASES-1}")
     for i in range(MAX_PARALLEL_TESTCASES):
         box_id = start_box + i
+        debug_log(f"[SLOT {slot_id}] Will init box_id={box_id} for testcase index {i} (box_id={box_id})")
         tasks.append(_run_command(["isolate", "--box-id", str(box_id), "--init"], timeout=10))
-    
+
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     failures = []
     for i, res in enumerate(results):
         if isinstance(res, Exception) or (hasattr(res, 'returncode') and res.returncode != 0):
              failures.append(f"Box {start_box+i}")
-    
+
     if failures:
         raise RuntimeError(f"Init failed for: {', '.join(failures)}")
 
-    debug_log(f"[SLOT {slot_id}] Initialized boxes {start_box}-{start_box+MAX_PARALLEL_TESTCASES-1}")
+    debug_log(f"[SLOT {slot_id}] Initialized boxes {start_box}-{start_box+MAX_PARALLEL_TESTCASES-1} for testcases index {0}-{MAX_PARALLEL_TESTCASES-1}")
 
 async def _cleanup_slot_boxes(slot_id):
     """Run isolate --cleanup for all boxes"""

@@ -30,6 +30,7 @@ class BoxManager:
             logger.error(f"Attempted to release invalid slot {slot_id}. Ignored.")
 
 # Create global instance
-# MAX_CONCURRENT_SUBMISSIONS = int(os.getenv("MAX_CONCURRENT_SUBMISSIONS", "4"))
+# Đồng bộ số slot với MAX_CONCURRENT_SUBMISSIONS
+MAX_CONCURRENT_SUBMISSIONS = int(os.getenv("MAX_CONCURRENT_SUBMISSIONS", "4"))
 MAX_PARALLEL_TESTCASES = int(os.getenv("MAX_PARALLEL_TESTCASES", "5"))
-box_manager = BoxManager(int(100/MAX_PARALLEL_TESTCASES))
+box_manager = BoxManager(MAX_CONCURRENT_SUBMISSIONS)
