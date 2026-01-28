@@ -165,7 +165,9 @@ namespace Infrastructure.Migrations
                         .HasColumnName("captured_ai_count");
 
                     b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
                     b.Property<int?>("MaxScore")
@@ -1105,8 +1107,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("AssignmentService.Domain.Entities.AssignmentUser", "AssignmentUser")
                         .WithMany()
                         .HasForeignKey("AssignmentUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_exam_activity_log_assignment_user_assignment_user_id");
 
                     b.Navigation("AssignmentUser");

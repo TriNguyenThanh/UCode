@@ -185,7 +185,7 @@ class MessageHandler:
             "ErrorCode": error_code,
             "ErrorMessage": error_message or STATUS_MESSAGE.get(error_code, "Unknown error occurred.")
         }
-        logger.info(f"[✗] Error response for {submission_id} ({error_code})")
+        logger.info(f"[✗] Error response for {submission_id} ({error_code}: {response['ErrorMessage']})")
         return response
 
     @staticmethod
@@ -216,7 +216,7 @@ class MessageHandler:
             "ErrorCode": SubmissionStatus.PASSED if all_passed else SubmissionStatus.FAILED,
             "ErrorMessage": "" if all_passed else (first_error_message or "Some testcases failed")
         }
-        logger.info(f"[✓] Completed submission {submission_id}")
+        logger.info(f"[✓] Completed submission {submission_id} ({response['ErrorMessage']})")
         return response
 
     @staticmethod
