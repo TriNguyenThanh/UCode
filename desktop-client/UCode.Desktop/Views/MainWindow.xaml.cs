@@ -38,13 +38,21 @@ namespace UCode.Desktop.Views
                         _navigationService.SetFrame(NavigationFrame);
 
                         // Hide HomeScrollViewer when navigating, show it when going back to home
-                        _navigationService.CanGoBackChanged += (sender, canGoBack) =>
+                        // Use Navigated event to toggle visibility between Home and Frame
+                        _navigationService.Navigated += (sender, page) =>
                         {
-                            HomeScrollViewer.Visibility = canGoBack ? Visibility.Collapsed : Visibility.Visible;
-                            // Clear NavigationFrame content when going back to home
-                            if (!canGoBack)
+                            if (page != null)
                             {
+                                HomeScrollViewer.Visibility = Visibility.Collapsed;
+                                NavigationFrame.Visibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                HomeScrollViewer.Visibility = Visibility.Visible;
+                                NavigationFrame.Visibility = Visibility.Collapsed;
                                 NavigationFrame.Content = null;
+                                // Reset ActiveTab to Home when going back to home
+                                viewModel.ActiveTab = "Home";
                             }
                         };
 
@@ -91,11 +99,22 @@ namespace UCode.Desktop.Views
                 {
                     // Don't trigger if focus is on a TextBox or similar input control
                     var focusedElement = Keyboard.FocusedElement;
-                    if (focusedElement is System.Windows.Controls.TextBox || 
+                    if (focusedElement is System.Windows.Controls.TextBox ||
                         focusedElement is System.Windows.Controls.PasswordBox ||
-                        focusedElement is System.Windows.Controls.RichTextBox)
+                        focusedElement is System.Windows.Controls.RichTextBox ||
+                        focusedElement is ICSharpCode.AvalonEdit.Editing.TextArea ||
+                        focusedElement is ICSharpCode.AvalonEdit.TextEditor)
                     {
-                        return; // Let TextBox handle the Backspace
+                        return; // Let input control handle the Backspace
+                    }
+
+                    // Don't navigate back if on main tab pages
+                    bool isMainTab = NavigationFrame.Content is Pages.Students.StudentAssignmentsPage ||
+                                     NavigationFrame.Content is Pages.Students.StudentSubmissionsPage;
+                    if (isMainTab)
+                    {
+                        e.Handled = true;
+                        return;
                     }
 
                     _navigationService.GoBack();
@@ -134,7 +153,7 @@ namespace UCode.Desktop.Views
             {
                 var authService = App.ServiceProvider.GetService(typeof(AuthService)) as AuthService;
                 var currentUser = authService?.CurrentUser;
-                
+
                 // Check user role - Teachers use TeacherProfilePage, Students use StudentProfilePage
                 if (currentUser?.Role == Models.UserRole.Teacher)
                 {

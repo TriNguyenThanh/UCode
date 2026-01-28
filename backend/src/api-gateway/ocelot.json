@@ -352,8 +352,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "assignment-service",
-          "Port": 5002
+          "Host": "file-service",
+          "Port": 5073
         }
       ],
       "UpstreamPathTemplate": "/api/files/{everything}",
@@ -363,6 +363,13 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
     },
     {

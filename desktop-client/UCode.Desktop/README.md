@@ -88,6 +88,16 @@ http://localhost:5000
 
 ## 🎨 UI/UX
 
+ Đối với WPF:
+ 
+dùng Thêm các thuộc tính rendering:
+UseLayoutRounding="True"
+SnapsToDevicePixels="True"
+TextOptions.TextFormattingMode="Display"
+TextOptions.TextRenderingMode="ClearType"
+
+để chữ và giao diện không bị mờ như winxp
+
 ### Login Window
 
 - Material Design themed
@@ -142,3 +152,5 @@ Backend API (ASP.NET Core)
 ## 📄 License
 
 Part of UCode Online Judge Platform
+
+

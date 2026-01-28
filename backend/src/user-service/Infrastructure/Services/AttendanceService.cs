@@ -34,6 +34,17 @@ public class AttendanceService : IAttendanceService
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
+    private async Task<AttendanceSession> AutoCloseExpiredSessionAsync(AttendanceSession session)
+    {
+        // Auto-close session if it has expired and is still active
+        if (session.IsActive && session.EndTime < DateTime.UtcNow)
+        {
+            session.IsActive = false;
+            await _attendanceRepository.UpdateSessionAsync(session);
+        }
+        return session;
+    }
+
     public async Task<ApiResponse<AttendanceRecordResponse>> CheckInAsync(AttendanceRecordRequest request)
     {
         try
@@ -223,6 +234,9 @@ public class AttendanceService : IAttendanceService
             if (session == null)
                 return ApiResponse<AttendanceSessionResponse?>.ErrorResponse("Session not found");
 
+            // Auto-close if expired
+            session = await AutoCloseExpiredSessionAsync(session);
+
             var response = _mapper.Map<AttendanceSessionResponse?>(session);
             return ApiResponse<AttendanceSessionResponse?>.SuccessResponse(response, "Session retrieved successfully");
         }
@@ -237,6 +251,13 @@ public class AttendanceService : IAttendanceService
         try
         {
             var sessions = await _attendanceRepository.GetSessionsAsync(classId, pageNumber, pageSize);
+            
+            // Auto-close expired sessions
+            foreach (var session in sessions)
+            {
+                await AutoCloseExpiredSessionAsync(session);
+            }
+            
             var response = _mapper.Map<List<AttendanceSessionResponse>>(sessions);
             return ApiResponse<List<AttendanceSessionResponse>>.SuccessResponse(response, "Sessions retrieved successfully");
         }
@@ -365,6 +386,9 @@ public class AttendanceService : IAttendanceService
             var session = await _attendanceRepository.GetSessionByCodeAsync(code);
             if (session == null)
                 return ApiResponse<AttendanceSessionResponse?>.ErrorResponse("Session not found");
+
+            // Auto-close if expired
+            session = await AutoCloseExpiredSessionAsync(session);
 
             var response = _mapper.Map<AttendanceSessionResponse?>(session);
             return ApiResponse<AttendanceSessionResponse?>.SuccessResponse(response, "Session retrieved successfully");

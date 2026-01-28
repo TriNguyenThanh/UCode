@@ -69,13 +69,13 @@ namespace UCode.Desktop.Views
                 if (result == MessageDialogResult.Affirmative)
                 {
                     _authService.Logout();
-                    
+
                     // Clear navigation stack
                     _navigationService.ClearNavigationStack();
-                    
+
                     // Reset shutdown mode to prevent app from closing
                     Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                    
+
                     var loginWindow = App.ServiceProvider.GetRequiredService<LoginWindow>();
                     loginWindow.Show();
                     Close();
@@ -87,7 +87,7 @@ namespace UCode.Desktop.Views
                 var adminHomePage = App.ServiceProvider.GetRequiredService<AdminHomePage>();
                 var adminHomeViewModel = App.ServiceProvider.GetRequiredService<AdminHomeViewModel>();
                 adminHomePage.SetViewModel(adminHomeViewModel);
-                _navigationService.NavigateTo(adminHomePage);
+                _navigationService.NavigateTo(adminHomePage, null, false); // Don't add to stack for main tab
                 await adminHomeViewModel.LoadStatisticsAsync();
             });
 
@@ -96,7 +96,7 @@ namespace UCode.Desktop.Views
                 var adminUsersPage = App.ServiceProvider.GetRequiredService<AdminUsersPage>();
                 var adminUsersViewModel = App.ServiceProvider.GetRequiredService<AdminUsersViewModel>();
                 adminUsersPage.SetViewModel(adminUsersViewModel);
-                _navigationService.NavigateTo(adminUsersPage);
+                _navigationService.NavigateTo(adminUsersPage, null, false); // Don't add to stack for main tab
                 await adminUsersViewModel.LoadUsersAsync();
             });
 
@@ -105,7 +105,7 @@ namespace UCode.Desktop.Views
                 var adminClassesPage = App.ServiceProvider.GetRequiredService<Pages.Admin.AdminClassesPage>();
                 var adminClassesViewModel = App.ServiceProvider.GetRequiredService<AdminClassesViewModel>();
                 adminClassesPage.SetViewModel(adminClassesViewModel);
-                _navigationService.NavigateTo(adminClassesPage);
+                _navigationService.NavigateTo(adminClassesPage, null, false); // Don't add to stack for main tab
                 await adminClassesViewModel.LoadClassesAsync();
             });
 
@@ -114,7 +114,7 @@ namespace UCode.Desktop.Views
                 var adminLogsPage = App.ServiceProvider.GetRequiredService<AdminLogsPage>();
                 var adminLogsViewModel = App.ServiceProvider.GetRequiredService<AdminLogsViewModel>();
                 adminLogsPage.SetViewModel(adminLogsViewModel);
-                _navigationService.NavigateTo(adminLogsPage);
+                _navigationService.NavigateTo(adminLogsPage, null, false); // Don't add to stack for main tab
                 await adminLogsViewModel.InitializeAsync();
             });
 
@@ -123,7 +123,7 @@ namespace UCode.Desktop.Views
                 var adminSettingsPage = App.ServiceProvider.GetRequiredService<AdminSettingsPage>();
                 var adminSettingsViewModel = App.ServiceProvider.GetRequiredService<AdminSettingsViewModel>();
                 adminSettingsPage.SetViewModel(adminSettingsViewModel);
-                _navigationService.NavigateTo(adminSettingsPage);
+                _navigationService.NavigateTo(adminSettingsPage, null, false); // Don't add to stack for main tab
                 await adminSettingsViewModel.InitializeAsync();
             });
 
@@ -133,7 +133,7 @@ namespace UCode.Desktop.Views
                 var adminHomePage = App.ServiceProvider.GetRequiredService<AdminHomePage>();
                 var adminHomeViewModel = App.ServiceProvider.GetRequiredService<AdminHomeViewModel>();
                 adminHomePage.SetViewModel(adminHomeViewModel);
-                _navigationService.NavigateTo(adminHomePage);
+                _navigationService.NavigateTo(adminHomePage, null, false); // Don't add to stack for initial page
                 await adminHomeViewModel.LoadStatisticsAsync();
             };
 
@@ -154,11 +154,25 @@ namespace UCode.Desktop.Views
                 {
                     // Don't trigger if focus is on a TextBox or similar input control
                     var focusedElement = Keyboard.FocusedElement;
-                    if (focusedElement is System.Windows.Controls.TextBox || 
+                    if (focusedElement is System.Windows.Controls.TextBox ||
                         focusedElement is System.Windows.Controls.PasswordBox ||
-                        focusedElement is System.Windows.Controls.RichTextBox)
+                        focusedElement is System.Windows.Controls.RichTextBox ||
+                        focusedElement is ICSharpCode.AvalonEdit.Editing.TextArea ||
+                        focusedElement is ICSharpCode.AvalonEdit.TextEditor)
                     {
-                        return; // Let TextBox handle the Backspace
+                        return; // Let input control handle the Backspace
+                    }
+
+                    // Don't navigate back if on main tab pages
+                    bool isMainTab = MainContentFrame.Content is AdminHomePage ||
+                                     MainContentFrame.Content is AdminUsersPage ||
+                                     MainContentFrame.Content is Pages.Admin.AdminClassesPage ||
+                                     MainContentFrame.Content is AdminLogsPage ||
+                                     MainContentFrame.Content is AdminSettingsPage;
+                    if (isMainTab)
+                    {
+                        e.Handled = true;
+                        return;
                     }
 
                     _navigationService.GoBack();

@@ -1,15 +1,49 @@
 using System.Windows;
 using System.Windows.Controls;
+using ICSharpCode.AvalonEdit;
+using UCode.Desktop.Helpers;
 using UCode.Desktop.ViewModels;
 
 namespace UCode.Desktop.Pages
 {
     public partial class ProblemSolverPage : UserControl
     {
+        private CodeEditorHelper _editorHelper;
+
         public ProblemSolverPage(ProblemSolverViewModel viewModel)
         {
             InitializeComponent();
             DataContext = viewModel;
+            
+            // Initialize editor helper after the control is loaded
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // Get the TextEditor control from XAML
+            if (FindName("CodeEditor") is TextEditor editor && _editorHelper == null)
+            {
+                _editorHelper = new CodeEditorHelper(editor);
+                
+                // Hook up to ViewModel if available
+                if (DataContext is ProblemSolverViewModel viewModel)
+                {
+                    viewModel.EditorHelper = _editorHelper;
+                }
+                
+                // Ensure editor gets focus to handle keyboard events properly
+                editor.Focus();
+                
+                // Handle mouse click to ensure focus
+                editor.PreviewMouseDown += (s, args) =>
+                {
+                    if (!editor.IsFocused)
+                    {
+                        editor.Focus();
+                    }
+                };
+            }
         }
 
         private void CopyInputButton_Click(object sender, RoutedEventArgs e)

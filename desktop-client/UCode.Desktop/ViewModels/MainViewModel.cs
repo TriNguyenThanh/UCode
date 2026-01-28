@@ -55,6 +55,7 @@ namespace UCode.Desktop.ViewModels
         private bool _isLoading;
         private bool _isNavigationBarVisible = true;
         private bool _canGoBack;
+        private string _activeTab = "Home"; // Default to Home
 
         public bool IsLoading
         {
@@ -86,6 +87,12 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _userName, value);
         }
 
+        public string ActiveTab
+        {
+            get => _activeTab;
+            set => SetProperty(ref _activeTab, value);
+        }
+
         public ObservableCollection<ClassItem> Classes { get; } = new();
         public ObservableCollection<AssignmentItem> UpcomingAssignments { get; } = new();
         public ObservableCollection<PracticeCategoryItem> PracticeCategories { get; } = new();
@@ -98,6 +105,7 @@ namespace UCode.Desktop.ViewModels
         public ICommand GoBackCommand { get; }
         public ICommand NavigateToHomeCommand { get; }
         public ICommand NavigateToAssignmentsCommand { get; }
+        public ICommand NavigateToSubmissionsCommand { get; }
 
         public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
@@ -111,6 +119,7 @@ namespace UCode.Desktop.ViewModels
             GoBackCommand = new RelayCommand(_ => ExecuteGoBack(), _ => CanGoBack);
             NavigateToHomeCommand = new RelayCommand(_ => ExecuteNavigateToHome());
             NavigateToAssignmentsCommand = new RelayCommand(_ => ExecuteNavigateToAssignments());
+            NavigateToSubmissionsCommand = new RelayCommand(_ => ExecuteNavigateToSubmissions());
 
             // Subscribe to navigation events
             _navigationService.Navigated += OnNavigated;
@@ -121,12 +130,46 @@ namespace UCode.Desktop.ViewModels
             UserEmail = currentUser?.Email ?? "user@example.com";
             UserName = currentUser?.Username ?? "User";
             _aiDetectorService = aiDetectorService;
+
+            ActiveTab = "Home";
+        }
+
+        // ...
+
+        private void ExecuteNavigateToAssignments()
+        {
+            ActiveTab = "Assignments";
+            var page = new Pages.Students.StudentAssignmentsPage();
+            _navigationService.NavigateTo(page, null, false); // Don't add to stack
+        }
+
+        private void ExecuteNavigateToSubmissions()
+        {
+            ActiveTab = "Submissions";
+            var page = new Pages.Students.StudentSubmissionsPage();
+            _navigationService.NavigateTo(page, null, false); // Don't add to stack
+        }
+
+        public async Task LoadDataAsync()
+        {
+            IsLoading = true;
+            try
+            {
+                await LoadUserProfileAsync();
+                await LoadClassesAsync();
+                await LoadUpcomingAssignmentsAsync();
+                LoadPracticeCategories();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void OnNavigated(object? sender, System.Windows.Controls.UserControl page)
         {
             // Hide navigation bar for ProblemSolverPage
-            if (page is Views.Students.ProblemSolverPage)
+            if (page is Pages.ProblemSolverPage)
             {
                 IsNavigationBarVisible = false;
             }
@@ -148,31 +191,9 @@ namespace UCode.Desktop.ViewModels
 
         private void ExecuteNavigateToHome()
         {
+            ActiveTab = "Home";
             // Clear navigation stack and go back to home
             _navigationService.ClearNavigationStack();
-        }
-
-        private async void ExecuteNavigateToAssignments()
-        {
-            // For now, reload assignments and stay on home page
-            // A dedicated assignments page can be added in the future
-            await LoadUpcomingAssignmentsAsync();
-        }
-
-        public async Task LoadDataAsync()
-        {
-            IsLoading = true;
-            try
-            {
-                await LoadUserProfileAsync();
-                await LoadClassesAsync();
-                await LoadUpcomingAssignmentsAsync();
-                LoadPracticeCategories();
-            }
-            finally
-            {
-                IsLoading = false;
-            }
         }
 
         private async Task LoadUserProfileAsync()
@@ -387,16 +408,16 @@ namespace UCode.Desktop.ViewModels
 
             //if (response.Success && response.Data != null)
             //{
-                //var assignment = response.Data;
+            //var assignment = response.Data;
 
-                if (assignment.AssignmentType == AssignmentType.EXAMINATION.ToString())
+            if (assignment.AssignmentType == AssignmentType.EXAMINATION.ToString())
+            {
+                if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
                 {
-                    if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
-                    {
-                        return;
-                    }
-                    _aiDetectorService.StartAutoMonitor();
+                    return;
                 }
+                _aiDetectorService.StartAutoMonitor();
+            }
 
             //}
 
@@ -441,7 +462,7 @@ namespace UCode.Desktop.ViewModels
             if (result == MessageDialogResult.Affirmative)
             {
                 _authService.Logout();
-                
+
                 // Clear navigation stack
                 _navigationService.ClearNavigationStack();
 

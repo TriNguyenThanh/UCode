@@ -214,9 +214,9 @@ namespace UCode.Desktop.ViewModels
                     }
 
                     // Calculate stats
-                    ActiveAssignments = response.Data.Count(a => 
+                    ActiveAssignments = response.Data.Count(a =>
                         a.Status == Models.AssignmentStatus.PUBLISHED);
-                    PendingGrading = response.Data.Sum(a => 
+                    PendingGrading = response.Data.Sum(a =>
                         (a.Statistics?.Submitted ?? 0) - (a.Statistics?.Graded ?? 0));
                 }
 
@@ -271,13 +271,13 @@ namespace UCode.Desktop.ViewModels
                 {
                     dialog.Owner = mainWindow;
                 }
-                
+
                 var result = dialog.ShowDialog();
                 if (result == true && !string.IsNullOrEmpty(dialog.CreatedClassId))
                 {
                     // Navigate to the newly created class
                     ExecuteViewClass(dialog.CreatedClassId);
-                    
+
                     // Refresh data
                     _ = LoadDataAsync();
                 }
@@ -301,8 +301,8 @@ namespace UCode.Desktop.ViewModels
         private async Task ExecuteViewAssignment(string assignmentId)
         {
             if (!string.IsNullOrEmpty(assignmentId) && _navigationService != null)
-            {   
-                
+            {
+
 
                 var assignmentPage = App.ServiceProvider.GetService(typeof(Pages.TeacherAssignmentPage)) as Pages.TeacherAssignmentPage;
                 if (assignmentPage != null)
