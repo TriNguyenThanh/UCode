@@ -56,10 +56,10 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         /* ===== Properties từ ProblemVersion ===== */
         
         builder.Property(p => p.Statement)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
 
         builder.Property(p => p.Solution)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
 
         builder.Property(p => p.IoMode)
             .IsRequired()
@@ -108,27 +108,27 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         /* ===== Additional Fields for Desktop App ===== */
         
         builder.Property(p => p.Description)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(p => p.SampleInput)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
         
         builder.Property(p => p.SampleOutput)
-            .HasColumnType("NVARCHAR(MAX)");
+            .HasColumnType("TEXT");
 
         /* ===== Timestamp Properties =====
          * HasDefaultValueSql() set default value trong database
          */
         builder.Property(p => p.CreatedAt)
             .IsRequired()
-            .HasDefaultValueSql("GETUTCDATE()")
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')")
             .ValueGeneratedOnAdd() // Chỉ tạo giá trị khi thêm mới
             .ValueGeneratedOnAddOrUpdate();
 
 
         builder.Property(p => p.UpdatedAt)
             .IsRequired()
-            .HasDefaultValueSql("GETUTCDATE()");
+            .HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
         
         /* ===== Indexes =====
          * Tạo indexes cho performance

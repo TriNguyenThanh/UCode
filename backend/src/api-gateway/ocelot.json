@@ -30,6 +30,8 @@
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "Key": "attendance",
       "SwaggerKey": "user-service",
+      "RouteIsCaseSensitive": false,
+      "Priority": 1,
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -157,6 +159,31 @@
       "UpstreamPathTemplate": "/api/v1/admin/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
       "Key": "admin",
+      "SwaggerKey": "user-service",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/face-auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/face-auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
+      "Key": "face-auth",
       "SwaggerKey": "user-service",
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -325,8 +352,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "assignment-service",
-          "Port": 5002
+          "Host": "file-service",
+          "Port": 5073
         }
       ],
       "UpstreamPathTemplate": "/api/files/{everything}",
@@ -336,7 +363,28 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
+      },
+      "AddClaimsToRequest": {
+        "X-User-Id": "sub",
+        "X-Role": "role",
+        "X-User-Name": "name",
+        "X-User-FullName": "fullName",
+        "X-User-Code": "userCode"
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/webhooks/face-auth-status",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "user-service",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/webhooks/face-auth-status",
+      "UpstreamHttpMethod": [ "POST" ],
+      "Key": "face-auth-webhook",
+      "SwaggerKey": "user-service"
     }
   ],
   "GlobalConfiguration": {

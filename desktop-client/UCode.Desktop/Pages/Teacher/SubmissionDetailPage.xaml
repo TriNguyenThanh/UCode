@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Background="#F5F5F5"
         d:DesignHeight="900" d:DesignWidth="1600">
@@ -118,10 +119,32 @@
                     <StackPanel Grid.Column="0" Margin="0,0,50,0">
                         <TextBlock Text="{Binding StudentName, Mode=OneWay}" FontSize="20" FontWeight="Bold" Foreground="#191970"/>
                         <TextBlock Text="{Binding Submission.UserCode}" FontSize="17" Foreground="#191970" Margin="0,5,0,0"/>
-                        <TextBlock FontSize="17" Foreground="#191970" Margin="0,5,0,0">
-                            <Run Text="Nộp lúc: "/>
-                            <Run Text="{Binding Submission.SubmittedAt, StringFormat='HH:mm dd/MM/yyyy'}" FontWeight="SemiBold"/>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock FontSize="17" Foreground="#191970">
+                                <Run Text="Nộp lúc: "/>
+                                <Run Text="{Binding Submission.SubmittedAt, StringFormat='HH:mm dd/MM/yyyy'}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                            <!-- Late Submission Indicator -->
+                            <Border CornerRadius="12"
+                                    Padding="10,4"
+                                    Background="#FF9800"
+                                    Margin="15,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding Submission.IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                                Width="14"
+                                                                Height="14"
+                                                                Foreground="White"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,6,0"/>
+                                    <TextBlock Text="Nộp trễ"
+                                               FontSize="13"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">

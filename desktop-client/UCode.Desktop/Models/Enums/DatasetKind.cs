@@ -10,7 +10,7 @@ namespace UCode.Desktop.Models.Enums
     public enum DatasetKind
     {
         SAMPLE,
-        PUBLIC,
+        //PUBLIC,
         PRIVATE,
         OFFICIAL
     }

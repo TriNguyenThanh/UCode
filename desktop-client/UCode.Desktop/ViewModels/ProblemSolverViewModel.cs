@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using MahApps.Metro.Controls.Dialogs;
 using UCode.Desktop.Helpers;
@@ -12,7 +14,9 @@ namespace UCode.Desktop.ViewModels
     {
         private readonly ProblemService _problemService;
         private readonly SubmissionService _submissionService;
+        private readonly AssignmentService _assignmentService;
         private readonly AuthService _authService;
+        private readonly NavigationService _navigationService;
         private Problem _problem;
         private bool _isLoading;
         private string _assignmentId;
@@ -24,21 +28,44 @@ namespace UCode.Desktop.ViewModels
         private bool _isSubmitting;
         private bool _hasRunSuccessfully;
         private string _lastRunCode;
+        private CodeEditorHelper _editorHelper;
+        private bool _isAssignmentClosed;
 
-        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService)
+        public ProblemSolverViewModel(ProblemService problemService, SubmissionService submissionService, AuthService authService, NavigationService navigationService, AssignmentService assignmentService)
         {
             _problemService = problemService;
             _submissionService = submissionService;
             _authService = authService;
+            _navigationService = navigationService;
+            _assignmentService = assignmentService;
             _problem = new Problem();
             _code = "// Your code here";
             _output = string.Empty;
 
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
             RunCodeCommand = new RelayCommand(_ => RunCode());
             SubmitCodeCommand = new RelayCommand(_ => SubmitCode());
             ResetCodeCommand = new RelayCommand(_ => ResetCode());
             ViewSubmissionDetailCommand = new RelayCommand<Submission>(submission => ViewSubmissionDetail(submission));
+            ViewTestCaseResultsCommand = new RelayCommand<Submission>(submission => ViewTestCaseResults(submission));
+        }
+
+        /// <summary>
+        /// Editor helper for managing read-only regions
+        /// </summary>
+        public CodeEditorHelper EditorHelper
+        {
+            get => _editorHelper;
+            set
+            {
+                _editorHelper = value;
+                // Apply current template if language is already selected
+                if (SelectedLanguage != null)
+                {
+                    ApplyCodeTemplate();
+                }
+            }
         }
 
         public Problem Problem
@@ -53,14 +80,139 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        public bool IsAssignmentClosed
+        {
+            get => _isAssignmentClosed;
+            set
+            {
+                if (SetProperty(ref _isAssignmentClosed, value))
+                {
+                    OnPropertyChanged(nameof(CanSubmit));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the assignment is not closed and user can submit
+        /// </summary>
+        public bool CanSubmit => !IsAssignmentClosed;
+
         public string Code
         {
             get => _code;
             set
             {
-                SetProperty(ref _code, value);
-                ((RelayCommand)RunCodeCommand).RaiseCanExecuteChanged();
-                ((RelayCommand)SubmitCodeCommand).RaiseCanExecuteChanged();
+                if (SetProperty(ref _code, value))
+                {
+                    OnPropertyChanged(nameof(FullCode));
+                    ((RelayCommand)RunCodeCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)SubmitCodeCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        private string _headCode;
+        public string HeadCode
+        {
+            get => _headCode;
+            set
+            {
+                if (SetProperty(ref _headCode, value))
+                {
+                    OnPropertyChanged(nameof(FullCode));
+                }
+            }
+        }
+
+        private string _tailCode;
+        public string TailCode
+        {
+            get => _tailCode;
+            set
+            {
+                if (SetProperty(ref _tailCode, value))
+                {
+                    OnPropertyChanged(nameof(FullCode));
+                }
+            }
+        }
+
+        public string FullCode
+        {
+            get
+            {
+                // If EditorHelper is available, get code from it (includes any user edits)
+                if (_editorHelper != null)
+                {
+                    return _editorHelper.GetFullCode();
+                }
+
+                // Fallback to manual concatenation
+                var sb = new System.Text.StringBuilder();
+                if (!string.IsNullOrEmpty(HeadCode))
+                {
+                    sb.AppendLine(HeadCode);
+                }
+                sb.Append(Code);
+                if (!string.IsNullOrEmpty(TailCode))
+                {
+                    sb.AppendLine();
+                    sb.Append(TailCode);
+                }
+                return sb.ToString();
+            }
+            set
+            {
+                // Simple logic to extract body: remove Head from start and Tail from end
+                var newBody = value;
+
+                if (!string.IsNullOrEmpty(HeadCode))
+                {
+                    var headTrimmed = HeadCode.TrimEnd('\r', '\n');
+                    if (newBody.StartsWith(headTrimmed))
+                    {
+                        // Try to find where Head ends
+                        // This is tricky if user edits the boundary. 
+                        // For now, we assume user respects the boundary or we accept the mess.
+                        // Better approach: Don't rely on string matching if we want to enforce read-only.
+                        // But for "seamless copy", this is the trade-off.
+                    }
+                }
+
+                // Actually, for the requirement "Head and Tail are read-only", 
+                // doing this in ViewModel setter is too late and clunky.
+                // But let's at least allow binding to FullCode.
+
+                // If we bind to FullCode, we need to update Code.
+                // Let's try a simpler approach: Just update Code.
+                // We will rely on the View to prevent editing Head/Tail if possible, 
+                // or just let it be and fix it on Run/Submit.
+
+                // However, the user specifically asked for "Head and Tail read-only".
+                // So we will implement the restriction in the View (Code-behind).
+                // Here we just need to update Code correctly.
+
+                string currentHead = HeadCode ?? string.Empty;
+                string currentTail = TailCode ?? string.Empty;
+
+                // Normalize line endings for comparison could be needed, but let's try direct.
+                if (newBody.StartsWith(currentHead) && newBody.EndsWith(currentTail))
+                {
+                    var bodyLength = newBody.Length - currentHead.Length - currentTail.Length;
+                    if (bodyLength >= 0)
+                    {
+                        var extractedBody = newBody.Substring(currentHead.Length, bodyLength);
+                        // Trim leading/trailing newlines that might have been added by the join
+                        Code = extractedBody.Trim('\r', '\n');
+                    }
+                }
+                else
+                {
+                    // If structure is broken, we might just treat everything as Code 
+                    // or try to salvage. For now, let's just update Code with whatever is not Head/Tail
+                    // This is imperfect.
+                    Code = value;
+                }
             }
         }
 
@@ -73,10 +225,15 @@ namespace UCode.Desktop.ViewModels
                 // Update code template when language changes
                 if (value != null)
                 {
+                    HeadCode = value.Head;
+                    TailCode = value.Tail;
                     Code = GetCodeTemplate(value);
                     Output = string.Empty;
                     HasRunSuccessfully = false;
                     LastRunCode = string.Empty;
+
+                    // Apply template to editor with read-only regions
+                    ApplyCodeTemplate();
                 }
             }
         }
@@ -118,18 +275,31 @@ namespace UCode.Desktop.ViewModels
         public ObservableCollection<Submission> Submissions { get; } = new();
 
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
         public ICommand RunCodeCommand { get; }
         public ICommand SubmitCodeCommand { get; }
         public ICommand ResetCodeCommand { get; }
         public ICommand ViewSubmissionDetailCommand { get; }
+        public ICommand ViewTestCaseResultsCommand { get; }
 
         public async Task InitializeAsync(string assignmentId, string problemId)
         {
             _assignmentId = assignmentId;
             _problemId = problemId;
             IsLoading = true;
+            IsAssignmentClosed = false; // Reset state
             try
             {
+                // Check assignment status
+                if (!string.IsNullOrEmpty(_assignmentId) && _assignmentService != null)
+                {
+                    var assignmentResponse = await _assignmentService.GetAssignmentAsync(_assignmentId);
+                    if (assignmentResponse?.Success == true && assignmentResponse.Data != null)
+                    {
+                        IsAssignmentClosed = assignmentResponse.Data.Status == AssignmentStatus.CLOSED;
+                    }
+                }
+
                 await LoadProblemDataAsync();
             }
             finally
@@ -177,18 +347,10 @@ namespace UCode.Desktop.ViewModels
                     SampleTestCases.Clear();
                     if (Problem.DatasetSample?.TestCases != null)
                     {
-                        Console.WriteLine($"[ProblemSolver] Found {Problem.DatasetSample.TestCases.Count} sample test cases.");
                         foreach (var testCase in Problem.DatasetSample.TestCases)
                         {
-                            Console.WriteLine($"[ProblemSolver] TestCase: InputRef={testCase.InputRef}, OutputRef={testCase.OutputRef}");
                             SampleTestCases.Add(testCase);
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("[ProblemSolver] No sample test cases found (DatasetSample or TestCases is null).");
-                        if (Problem.DatasetSample == null) Console.WriteLine("[ProblemSolver] DatasetSample is NULL");
-                        else if (Problem.DatasetSample.TestCases == null) Console.WriteLine("[ProblemSolver] DatasetSample.TestCases is NULL");
                     }
 
                     // Load submissions
@@ -209,13 +371,19 @@ namespace UCode.Desktop.ViewModels
         {
             try
             {
-                var response = await _submissionService.GetSubmissionsByProblemAsync(_problemId, 1, 10);
-                if (response?.Success == true && response.Data != null)
+                var currentUser = _authService.CurrentUser;
+                if (currentUser?.Role.ToString().ToLower() == "student")
                 {
-                    Submissions.Clear();
-                    foreach (var submission in response.Data)
+                    var response = await _submissionService.GetSubmissionsByProblemAsync(_problemId);
+                    if (response?.Success == true && response.Data != null)
                     {
-                        Submissions.Add(submission);
+                        Submissions.Clear();
+                        // Sort by SubmittedAt descending (newest first)
+                        var sortedSubmissions = response.Data.OrderByDescending(s => s.SubmittedAt);
+                        foreach (var submission in sortedSubmissions)
+                        {
+                            Submissions.Add(submission);
+                        }
                     }
                 }
             }
@@ -228,85 +396,88 @@ namespace UCode.Desktop.ViewModels
         private string GetCodeTemplate(ProblemLanguage language)
         {
             if (language == null) return "// Your code here";
-
-            var parts = new System.Collections.Generic.List<string>();
-            if (!string.IsNullOrEmpty(language.Head)) parts.Add(language.Head);
-            if (!string.IsNullOrEmpty(language.Body)) parts.Add(language.Body);
-            if (!string.IsNullOrEmpty(language.Tail)) parts.Add(language.Tail);
-
-            return parts.Count > 0 ? string.Join("\n\n", parts) : "// Your code here";
+            return language.Body ?? "// Your code here";
         }
 
-        private void ResetCode()
+        /// <summary>
+        /// Applies the code template to the editor with read-only head and tail
+        /// </summary>
+        private void ApplyCodeTemplate()
         {
-            if (SelectedLanguage != null)
+            if (_editorHelper != null && SelectedLanguage != null)
             {
-                Code = GetCodeTemplate(SelectedLanguage);
-                Output = string.Empty;
-                HasRunSuccessfully = false;
-                LastRunCode = string.Empty;
+                var head = HeadCode ?? string.Empty;
+                var body = Code ?? string.Empty;
+                var tail = TailCode ?? string.Empty;
+
+                _editorHelper.SetCodeTemplate(head, body, tail);
+
+                // Update syntax highlighting based on language
+                _editorHelper.SetSyntaxHighlighting(SelectedLanguage.LanguageCode);
             }
         }
 
         private async void RunCode()
         {
-            if (SelectedLanguage == null)
-            {
-                Output = "❌ Vui lòng chọn ngôn ngữ lập trình";
-                return;
-            }
+            if (IsRunning || IsSubmitting) return;
 
-            if (string.IsNullOrWhiteSpace(Code))
+            if (string.IsNullOrEmpty(Code))
             {
-                Output = "❌ Vui lòng nhập code";
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Vui lòng nhập code");
                 return;
-            }
-
-            // Reset validation if code changed
-            if (Code != LastRunCode)
-            {
-                HasRunSuccessfully = false;
             }
 
             IsRunning = true;
-            Output = "⏳ Đang biên dịch và chạy code...\n";
+            Output = "Đang chạy thử...";
 
             try
             {
-                var response = await _submissionService.RunCodeAsync(new RunCodeRequest
+                var request = new RunCodeRequest
                 {
                     ProblemId = _problemId,
                     LanguageId = SelectedLanguage.LanguageId,
-                    SourceCode = Code,
+                    SourceCode = FullCode,
                     AssignmentId = _assignmentId
-                });
+                };
 
+                var response = await _submissionService.RunCodeAsync(request);
                 if (response?.Success == true && response.Data != null)
                 {
-                    Output = $"✅ Đã gửi code để chạy thử!\n\nSubmission ID: {response.Data.SubmissionId}\nStatus: {response.Data.Status}\n\nĐang xử lý... (0s)";
-                    await PollSubmissionResult(response.Data.SubmissionId, Code, false);
+                    var submissionId = response.Data.SubmissionId;
+                    var status = response.Data.Status;
+
+                    // Check if submission failed immediately
+                    if (status == "Failed" || status == "CompilationError" || status == "Error")
+                    {
+                        var errorMsg = "❌ Lỗi khi chạy thử:\n\n";
+                        errorMsg += $"Trạng thái: {status}\n";
+                        if (!string.IsNullOrEmpty(response.Data.ErrorMessage))
+                        {
+                            errorMsg += $"\nChi tiết lỗi:\n{response.Data.ErrorMessage}";
+                        }
+                        if (!string.IsNullOrEmpty(response.Message))
+                        {
+                            errorMsg += $"\n\n{response.Message}";
+                        }
+                        Output = errorMsg;
+                        return;
+                    }
+
+                    await PollSubmissionResult(submissionId, false);
                 }
                 else
                 {
-                    var errorMsg = response?.Message ?? "Không thể chạy code";
-                    var errorDetails = response != null ? $"\n\nChi tiết:\nSuccess: {response.Success}\nMessage: {response.Message}" : "";
-                    Output = $"❌ Lỗi khi chạy code:\n{errorMsg}{errorDetails}";
-                    HasRunSuccessfully = false;
-                    LastRunCode = string.Empty;
-                    System.Diagnostics.Debug.WriteLine($"RunCode failed: {errorMsg}");
+                    var errorMsg = $"❌ Lỗi khi chạy thử: {response?.Message ?? "Không rõ lỗi"}";
+                    if (response?.Data?.ErrorMessage != null)
+                    {
+                        errorMsg += $"\n\nChi tiết: {response.Data.ErrorMessage}";
+                    }
+                    Output = errorMsg;
                 }
             }
             catch (System.Exception ex)
             {
-                var detailedError = $"❌ Lỗi Exception:\n{ex.Message}\n\nType: {ex.GetType().Name}";
-                if (ex.InnerException != null)
-                {
-                    detailedError += $"\n\nInner Exception:\n{ex.InnerException.Message}";
-                }
-                Output = detailedError;
-                HasRunSuccessfully = false;
-                LastRunCode = string.Empty;
-                System.Diagnostics.Debug.WriteLine($"RunCode exception: {ex}");
+                Output = $"Lỗi khi chạy thử: {ex.Message}";
             }
             finally
             {
@@ -316,56 +487,68 @@ namespace UCode.Desktop.ViewModels
 
         private async void SubmitCode()
         {
-            if (SelectedLanguage == null)
-            {
-                Output = "❌ Vui lòng chọn ngôn ngữ lập trình";
-                return;
-            }
+            if (IsRunning || IsSubmitting) return;
 
-            if (string.IsNullOrWhiteSpace(Code))
+            if (string.IsNullOrEmpty(Code))
             {
-                Output = "❌ Vui lòng nhập code";
-                return;
-            }
-
-            if (!HasRunSuccessfully)
-            {
-                Output = "❌ Vui lòng chạy thử code thành công trước khi nộp bài!";
-                return;
-            }
-
-            if (Code != LastRunCode)
-            {
-                Output = "⚠️ Code đã thay đổi sau lần chạy thử cuối!\n\nVui lòng chạy thử lại trước khi nộp bài.";
+                await GetMetroWindow()?.ShowMessageAsync("Lỗi", "Vui lòng nhập code");
                 return;
             }
 
             IsSubmitting = true;
-            Output = "📤 Đang nộp bài...\n";
+            Output = "Đang nộp bài...";
 
             try
             {
-                var response = await _submissionService.SubmitCodeAsync(new SubmitCodeRequest
+                var request = new SubmitCodeRequest
                 {
                     ProblemId = _problemId,
                     LanguageId = SelectedLanguage.LanguageId,
-                    SourceCode = Code,
+                    SourceCode = FullCode,
                     AssignmentId = _assignmentId
-                });
+                };
 
+                var response = await _submissionService.SubmitCodeAsync(request);
                 if (response?.Success == true && response.Data != null)
                 {
-                    Output = $"🎉 Đã nộp bài thành công!\n\nSubmission ID: {response.Data.SubmissionId}\nStatus: {response.Data.Status}\nThời gian nộp: {response.Data.SubmittedAt:dd/MM/yyyy HH:mm:ss}\n\nĐang chấm điểm... (0s)";
-                    await PollSubmissionResult(response.Data.SubmissionId, Code, true);
+                    var submissionId = response.Data.SubmissionId;
+                    var status = response.Data.Status;
+
+                    // Check if submission failed immediately
+                    if (status == "Failed" || status == "CompilationError" || status == "Error")
+                    {
+                        var errorMsg = "❌ Lỗi khi nộp bài:\n\n";
+                        errorMsg += $"Trạng thái: {status}\n";
+                        if (!string.IsNullOrEmpty(response.Data.ErrorMessage))
+                        {
+                            errorMsg += $"\nChi tiết lỗi:\n{response.Data.ErrorMessage}";
+                        }
+                        if (!string.IsNullOrEmpty(response.Message))
+                        {
+                            errorMsg += $"\n\n{response.Message}";
+                        }
+                        Output = errorMsg;
+
+                        // Still reload submissions to show the failed submission in history
+                        await LoadSubmissionsAsync();
+                        return;
+                    }
+
+                    await PollSubmissionResult(submissionId, true);
                 }
                 else
                 {
-                    Output = $"❌ Lỗi: {response?.Message ?? "Không thể nộp bài"}";
+                    var errorMsg = $"❌ Lỗi khi nộp bài: {response?.Message ?? "Không rõ lỗi"}";
+                    if (response?.Data?.ErrorMessage != null)
+                    {
+                        errorMsg += $"\n\nChi tiết: {response.Data.ErrorMessage}";
+                    }
+                    Output = errorMsg;
                 }
             }
             catch (System.Exception ex)
             {
-                Output = $"❌ Lỗi: {ex.Message}";
+                Output = $"Lỗi khi nộp bài: {ex.Message}";
             }
             finally
             {
@@ -373,14 +556,28 @@ namespace UCode.Desktop.ViewModels
             }
         }
 
-        private async Task PollSubmissionResult(string submissionId, string sourceCode, bool isSubmit)
+        private async void ResetCode()
         {
-            int maxAttempts = 30;
+            var result = await GetMetroWindow()?.ShowMessageAsync("Xác nhận", "Bạn có chắc chắn muốn reset code về trạng thái ban đầu?", MessageDialogStyle.AffirmativeAndNegative);
+            if (result == MessageDialogResult.Affirmative)
+            {
+                Code = GetCodeTemplate(SelectedLanguage);
+                Output = string.Empty;
+                HasRunSuccessfully = false;
+                LastRunCode = string.Empty;
+            }
+        }
+
+        private async Task PollSubmissionResult(string submissionId, bool isSubmit)
+        {
+            int maxAttempts = 20;
             int attempts = 0;
+            int delay = 1000;
 
             while (attempts < maxAttempts)
             {
-                await Task.Delay(2000);
+                await Task.Delay(delay);
+                attempts++;
 
                 try
                 {
@@ -388,15 +585,29 @@ namespace UCode.Desktop.ViewModels
                     if (response?.Success == true && response.Data != null)
                     {
                         var submission = response.Data;
-
-                        if (submission.Status == "Pending" || submission.Status == "Running")
+                        if (submission.Status == "Pending" || submission.Status == "Running" || submission.Status == "InQueue")
                         {
-                            attempts++;
-                            var lines = Output.Split('\n');
-                            if (lines.Length > 0)
+                            if (!isSubmit)
                             {
-                                lines[lines.Length - 1] = $"Đang xử lý... ({attempts}s)";
-                                Output = string.Join("\n", lines);
+                                var lines = Output.Split('\n');
+                                if (lines.Length > 0 && lines[lines.Length - 1].StartsWith("Đang xử lý"))
+                                {
+                                    lines[lines.Length - 1] = $"Đang xử lý... ({attempts}s)";
+                                    Output = string.Join("\n", lines);
+                                }
+                                else
+                                {
+                                    Output += $"\nĐang xử lý... ({attempts}s)";
+                                }
+                            }
+                            else
+                            {
+                                var lines = Output.Split('\n');
+                                if (lines.Length > 0 && lines[lines.Length - 1].StartsWith("Đang xử lý"))
+                                {
+                                    lines[lines.Length - 1] = $"Đang xử lý... ({attempts}s)";
+                                    Output = string.Join("\n", lines);
+                                }
                             }
                             continue;
                         }
@@ -413,7 +624,7 @@ namespace UCode.Desktop.ViewModels
                             if (!isSubmit)
                             {
                                 HasRunSuccessfully = true;
-                                LastRunCode = sourceCode;
+                                LastRunCode = Code;
                             }
                         }
                         else
@@ -485,13 +696,21 @@ namespace UCode.Desktop.ViewModels
 
         private void NavigateBack()
         {
-            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+            _navigationService?.GoBack();
+        }
+
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_problemId)) return;
+
+            IsLoading = true;
+            try
             {
-                if (window is Views.Students.ProblemSolverWindow)
-                {
-                    window.Close();
-                    break;
-                }
+                await LoadProblemDataAsync();
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -500,8 +719,33 @@ namespace UCode.Desktop.ViewModels
             if (submission == null) return;
 
             var dialog = new Views.Students.SubmissionDetailDialog(submission);
+            dialog.Owner = GetActiveWindow();
             dialog.ShowDialog();
+        }
+
+        private void ViewTestCaseResults(Submission submission)
+        {
+            if (submission == null) return;
+
+            var dialog = new Views.Students.TestCaseResultDialog(submission);
+            dialog.Owner = GetActiveWindow();
+            dialog.ShowDialog();
+        }
+
+        /// <summary>
+        /// Gets the currently active window to use as dialog owner
+        /// </summary>
+        private System.Windows.Window GetActiveWindow()
+        {
+            // Try to find the active window from application windows
+            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window.IsActive)
+                    return window;
+            }
+
+            // Fallback to MainWindow
+            return System.Windows.Application.Current.MainWindow;
         }
     }
 }
-

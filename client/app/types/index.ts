@@ -453,6 +453,7 @@ export interface Submission {
   totalMemory: number
   submittedAt: string
   resultFileRef?: string
+  isSubmitLate?: boolean
 }
 
 export interface BestSubmission {
@@ -476,6 +477,7 @@ export interface BestSubmission {
   submittedAt: string
   resultFileRef?: string
   totalSubmission?: number
+  isSubmitLate?: boolean
 }
 
 // ============================================
@@ -563,6 +565,7 @@ export interface AttendanceSession {
   allowedLatitude?: number
   allowedLongitude?: number
   allowedRadiusMeters?: number
+  requireFaceCheck: boolean
   isActive: boolean
   createdAt: string
 }
@@ -586,6 +589,7 @@ export interface AttendanceCheckInRequest {
   latitude?: number
   longitude?: number
   ipAddress?: string // For testing purposes when not deployed on VPS
+  faceImage?: string // Base64 encoded face image for verification
 }
 
 export interface GeolocationPosition {

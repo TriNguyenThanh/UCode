@@ -12,12 +12,14 @@ public class SubmissionService : ISubmissionService
     private readonly IDatasetService _datasetService;
     private readonly IAssignmentService _assignmentService;
     private readonly IExecuteService _exec;
-    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IAssignmentService assignmentService, IExecuteService exec)
+    private readonly ICodeFormatterService _codeFormatterService;
+    public SubmissionService(ISubmissionRepository repository, IDatasetService datasetService, IAssignmentService assignmentService, IExecuteService exec, ICodeFormatterService codeFormatterService)
     {
         _repository = repository;
         _datasetService = datasetService;
         _assignmentService = assignmentService;
         _exec = exec;
+        _codeFormatterService = codeFormatterService;
     }
 
     public async Task<Submission> GetSubmission(Guid submissionId)
@@ -66,19 +68,30 @@ public class SubmissionService : ISubmissionService
             var assignment = await _assignmentService.GetAssignmentByIdAsync(submission.AssignmentId ?? Guid.Empty);
             if (assignment != null)
             {
-                if (submission.SubmittedAt > assignment.EndTime)
+                // Kiểm tra nộp muộn chỉ khi có deadline
+                if (assignment.EndTime.HasValue)
                 {
-                    submission.isSubmitLate = true;
+                    if (submission.SubmittedAt > assignment.EndTime.Value)
+                    {
+                        submission.isSubmitLate = true;
+                        
+                        // Nếu không cho phép nộp muộn thì reject
+                        if (!assignment.AllowLateSubmission)
+                        {
+                            submission.Status = SubmissionStatus.Failed;
+                            submission.ErrorMessage = "Late submissions are not allowed for this assignment.";
+                            return submission;
+                        }
+                    }
+                    else
+                    {
+                        submission.isSubmitLate = false;
+                    }
                 }
                 else
                 {
+                    // Không có deadline => không bao giờ muộn
                     submission.isSubmitLate = false;
-                }
-
-                if (!assignment.AllowLateSubmission && submission.isSubmitLate)
-                {
-                    submission.Status = SubmissionStatus.Failed;
-                    submission.ErrorMessage = "Late submissions are not allowed for this assignment.";
                 }
             }
 
@@ -86,7 +99,9 @@ public class SubmissionService : ISubmissionService
             if (datasets == null || datasets.Count == 0)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
-                return new Submission();
+                submission.Status = SubmissionStatus.Failed;
+                submission.ErrorMessage = "No datasets available for this problem.";
+                return submission;
             }
 
             submission.DatasetId = datasets.FirstOrDefault()?.DatasetId ?? Guid.Empty;
@@ -94,12 +109,15 @@ public class SubmissionService : ISubmissionService
             if (submission.DatasetId == Guid.Empty)
             {
                 Console.WriteLine($"[x] No dataset found for problem {submission.ProblemId}");
-                return new Submission();
+                submission.Status = SubmissionStatus.Failed;
+                submission.ErrorMessage = "No datasets available for this problem.";
+                return submission;
             }
 
             new_submission = await _repository.AddSubmission(submission);
             if (new_submission.Status == SubmissionStatus.Pending)
             {
+                await _codeFormatterService.EnqueueCodeFormattingRequest(new_submission);
                 await _exec.ExecuteCode(new_submission);
             }
             Console.WriteLine($"Waiting for Judge submission");
@@ -124,7 +142,7 @@ public class SubmissionService : ISubmissionService
             }
 
             submission.SubmissionId = Guid.NewGuid();
-            submission.SubmittedAt = DateTime.Now;
+            submission.SubmittedAt = DateTime.UtcNow;
             var datasets = await _datasetService.GetDatasetsByProblemIdAsync(submission.ProblemId, DatasetKind.SAMPLE);
             if (datasets == null || datasets.Count == 0)
             {

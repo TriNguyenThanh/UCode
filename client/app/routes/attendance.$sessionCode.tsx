@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { getAttendanceSessionByCode, checkInAttendance, checkAttendanceStatus } from '~/services/attendanceService'
 import type { AttendanceSession, AttendanceRecord, GeolocationPosition } from '~/types'
 import { auth } from '~/auth'
 import { formatDateTime } from '~/utils/dateUtils'
+
+// Lazy load FaceVerification to avoid SSR issues with @vladmandic/human
+const FaceVerification = lazy(() => import('~/components/FaceVerification'));
 
 export default function AttendanceCheckIn() {
   const { sessionCode } = useParams()
@@ -16,6 +19,11 @@ export default function AttendanceCheckIn() {
   const [ipAddress, setIpAddress] = useState<string>('Đang tải...')
   const [location, setLocation] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [showFaceVerification, setShowFaceVerification] = useState(false)
+  const [faceImage, setFaceImage] = useState<string | null>(null)
+
+  const user = auth.getUser()
+  const isStudent = user?.role === 'student'
 
   useEffect(() => {
     // Kiểm tra đăng nhập
@@ -159,6 +167,12 @@ export default function AttendanceCheckIn() {
       return
     }
 
+    // Nếu yêu cầu xác thực khuôn mặt và chưa có ảnh
+    if (session.requireFaceCheck && !faceImage) {
+      setShowFaceVerification(true)
+      return
+    }
+
     try {
       setChecking(true)
       setError(null)
@@ -169,6 +183,36 @@ export default function AttendanceCheckIn() {
         latitude: location?.latitude,
         longitude: location?.longitude,
         ipAddress: ipAddress !== 'Đang tải...' && ipAddress !== 'Không xác định' ? ipAddress : undefined,
+        faceImage: faceImage || undefined,
+      })
+      setAttendanceRecord(record)
+      setShowFaceVerification(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Điểm danh thất bại')
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  // Xử lý khi xác thực khuôn mặt thành công
+  const handleFaceVerified = async (image: string) => {
+    setFaceImage(image)
+    setShowFaceVerification(false)
+    
+    // Tự động gửi API điểm danh sau khi xác thực khuôn mặt
+    if (!sessionCode || !session) return
+
+    try {
+      setChecking(true)
+      setError(null)
+
+      const record = await checkInAttendance({
+        sessionCode,
+        sessionId: session.id,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        ipAddress: ipAddress !== 'Đang tải...' && ipAddress !== 'Không xác định' ? ipAddress : undefined,
+        faceImage: image,
       })
       setAttendanceRecord(record)
     } catch (err) {
@@ -176,6 +220,10 @@ export default function AttendanceCheckIn() {
     } finally {
       setChecking(false)
     }
+  }
+
+  const handleCancelFaceVerification = () => {
+    setShowFaceVerification(false)
   }
 
   if (loading) {
@@ -309,6 +357,25 @@ export default function AttendanceCheckIn() {
             </div>
           )}
 
+          {/* Face Verification Modal */}
+          {showFaceVerification && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
+                <Suspense fallback={
+                  <div className="p-8 text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Đang tải hệ thống xác thực khuôn mặt...</p>
+                  </div>
+                }>
+                  <FaceVerification 
+                    onVerified={handleFaceVerified}
+                    onCancel={handleCancelFaceVerification}
+                  />
+                </Suspense>
+              </div>
+            </div>
+          )}
+
           {hasCheckedIn ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
               <div className="text-green-600 text-4xl mb-2">✓</div>
@@ -334,14 +401,32 @@ export default function AttendanceCheckIn() {
                 Bạn không thể điểm danh cho phiên này nữa
               </p>
             </div>
+          ) : !isStudent ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              
+              <h2 className="text-xl font-semibold text-blue-900 mb-2">
+                Thông tin phiên điểm danh
+              </h2>
+              
+            </div>
           ) : (
-            <button
-              onClick={handleCheckIn}
-              disabled={checking}
-              className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              {checking ? 'Đang điểm danh...' : 'Điểm danh ngay'}
-            </button>
+            <div>
+              {session.requireFaceCheck && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-blue-700 text-sm flex items-center">
+                    <span className="mr-2">📸</span>
+                    Phiên này yêu cầu xác thực khuôn mặt khi điểm danh
+                  </p>
+                </div>
+              )}
+              <button
+                onClick={handleCheckIn}
+                disabled={checking}
+                className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                {checking ? 'Đang điểm danh...' : session.requireFaceCheck ? 'Điểm danh (Xác thực khuôn mặt)' : 'Điểm danh ngay'}
+              </button>
+            </div>
           )}
 
           <button

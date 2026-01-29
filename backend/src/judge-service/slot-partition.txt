@@ -1,0 +1,45 @@
+TÀI LIỆU KIẾN TRÚC HỆ THỐNG: UCODE JUDGE WORKER (OPTIMIZED)1. Tổng Quan (Overview)Hệ thống chấm điểm phân tán chạy trên nền tảng Docker, sử dụng mô hình Phân vùng Tài nguyên theo Slot.Để đạt hiệu năng xử lý hàng nghìn testcase mỗi phút mà không làm nghẽn cổ chai I/O (I/O Bottleneck), hệ thống áp dụng chiến lược "Write-Over-Run" (Ghi đè thay vì tạo mới) và lưu trữ toàn bộ môi trường Sandbox trên RAM (tmpfs) thay vì ổ cứng vật lý.2. Các Tham Số Cấu Hình (System Constants)MAX_CONCURRENT_SUBMISSIONS = 4: (Global Limit) Tối đa 4 bài nộp được xử lý song song.MAX_PARALLEL_TESTCASES = 5: (Local Limit) Tối đa 5 testcase chạy song song cho mỗi bài nộp.TOTAL_ACTIVE_BOXES = 20: Hệ thống duy trì đúng 20 thư mục sandbox (ID 0-19) trên RAM.3. Cơ Chế Định Tuyến Box-ID (Addressing Logic)Mỗi testcase được gán vào một Box cụ thể theo công thức ánh xạ tĩnh:$$\text{Real Box ID} = (\text{Slot ID} \times 5) + \text{Local Thread ID}$$Slot ID $\in [0, 3]$: Quyền sở hữu của Submission.Local Thread ID $\in [0, 4]$: Luồng xử lý nội bộ.4. Vòng Đời Xử Lý Tối Ưu (Optimized Execution Lifecycle)Quy trình xử lý một Submission tuân thủ nghiêm ngặt nguyên tắc "Khởi tạo 1 lần - Chạy N lần" để loại bỏ overhead.Giai đoạn 1: Slot Acquisition & Cold Start (Khởi tạo)Khi Worker nhận được Slot ID (ví dụ Slot 0) cho một Submission mới:Batch Init: Chạy lệnh isolate --init cho toàn bộ dải box thuộc Slot này (Box 0, 1, 2, 3, 4).Compile & Cache: Biên dịch mã nguồn người dùng (nếu cần).Deploy Executable: Copy file thực thi (.exe/.out) vào cả 5 box này một lần duy nhất.Lý do: File thực thi không đổi giữa các testcase, việc copy lại 150 lần là lãng phí I/O.Giai đoạn 2: The Loop - Write-Over Strategy (Vòng lặp chấm)Vòng lặp chạy 150 testcase sử dụng cơ chế ghi đè:Acquire Local Thread: Lấy thread ID rảnh (ví dụ ID 0 -> Box 0).Fast Write: Copy file input của testcase hiện tại vào Box 0, ghi đè (overwrite) lên file input cũ (nếu có).Execute: Gọi lệnh isolate --run. Isolate tự động ghi đè file output.Read & Evaluate: Đọc file output từ RAM để chấm điểm.Release Thread: Trả thread ID 0 về pool. Tuyệt đối KHÔNG chạy --cleanup ở bước này. Box 0 được giữ nguyên trạng thái để phục vụ testcase tiếp theo ngay lập tức.Giai đoạn 3: Global Teardown (Dọn dẹp)Chỉ khi toàn bộ 150 testcase đã hoàn tất:Batch Cleanup: Chạy lệnh isolate --cleanup cho dải Box 0-4.Release Slot: Trả Slot 0 về cho BoxManager.5. Hạ Tầng Docker & Lưu Trữ (Infrastructure & Storage)Đây là phần quan trọng nhất để hệ thống hoạt động mượt mà trong Container.5.1. RAM Disk (tmpfs) ConfigurationThay vì ghi dữ liệu ra Layer của Docker (vốn chậm và làm phình log), toàn bộ thư mục chứa box được mount trực tiếp lên RAM.Trong docker-compose.yml:YAMLservices:
+  judge-worker:
+    image: ucode-worker:latest
+    privileged: true  # Bắt buộc cho Namespace
+    tmpfs:
+      # Mount thư mục isolate vào RAM.
+      # Mode 1777: Đảm bảo mọi user (UID 60000+) đều ghi được.
+      - /var/local/lib/isolate:size=4G,mode=1777
+Lợi ích:Tốc độ: Tốc độ I/O tăng gấp 50-100 lần so với SSD.Độ bền: Không gây hại (wear out) cho ổ cứng server dù ghi xóa hàng triệu file nhỏ.Tự hủy: Khi restart container, rác trong RAM tự biến mất, không cần cronjob dọn dẹp.5.2. User & PermissionsNumeric UIDs: Docker container sử dụng các UID số (60000 - 60019) tương ứng với 20 box.Config Sync: Đảm bảo file cấu hình Isolate (isolate.cf) bên trong Docker trỏ đúng vào đường dẫn RAM:Ini, TOMLbox_root = /var/local/lib/isolate
+6. Sơ Đồ Luồng Dữ Liệu (Data Flow Diagram)Đoạn mãgraph TD
+    subgraph "Docker Host RAM (tmpfs)"
+        B0[Box 0]
+        B1[Box 1]
+        B2[Box 2]
+        B3[Box 3]
+        B4[Box 4]
+    end
+
+    subgraph "Submission Process (Slot 0)"
+        EXE[Binary File .exe]
+        
+        step1[Step 1: Init & Copy Exe] --> B0 & B1 & B2 & B3 & B4
+        
+        step2[Step 2: Loop 150 Testcases]
+        step2 -->|Overwrite Input| B0
+        step2 -->|Overwrite Input| B1
+        step2 -->|Overwrite Input| ...
+        
+        B0 -->|Read Output| JUDGE[Judge Logic]
+        B1 -->|Read Output| JUDGE
+    end
+
+    subgraph "Cleanup Phase"
+        FINISH[All Tests Done?] -->|Yes| CLEAN[Run --cleanup]
+        CLEAN --> B0 & B1 & B2 & B3 & B4
+    end
+
+    EXE -.->|Stored Once in RAM| B0
+    style B0 fill:#bfb,stroke:#333
+    style B1 fill:#bfb,stroke:#333
+    style B2 fill:#bfb,stroke:#333
+    style B3 fill:#bfb,stroke:#333
+    style B4 fill:#bfb,stroke:#333
+    style step1 fill:#f9f,stroke:#333
+7. Tổng Kết Các Thay Đổi Chiến LượcTính NăngCách Cũ (Standard)Cách Mới (Optimized for Docker)Vòng đời BoxInit/Cleanup sau mỗi testcasePersistent (Bền vững) trong suốt 1 SubmissionXử lý FileCopy file exe liên tục (150 lần)Copy 1 lần, chỉ ghi đè Input/OutputLưu trữỔ cứng (Container Layer/Volume)RAM Disk (tmpfs) hoàn toànHiệu năng I/OThấp (nghẽn cổ chai ổ cứng)Cực cao (tốc độ bộ nhớ)

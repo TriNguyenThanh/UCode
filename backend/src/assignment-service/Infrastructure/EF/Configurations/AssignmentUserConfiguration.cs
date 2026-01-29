@@ -32,7 +32,10 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         builder.Property(au => au.CapturedAICount)
             .HasDefaultValue(0);
         builder.Property(au => au.AIDetectionDetails)
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("TEXT");
+        
+        builder.Property(au => au.IsActive)
+            .HasDefaultValue(true);
 
         // Relationships
         builder.HasOne(au => au.Assignment)
@@ -45,5 +48,12 @@ public class AssignmentUserConfiguration : IEntityTypeConfiguration<AssignmentUs
         builder.HasIndex(au => au.UserId);
         builder.HasIndex(au => new { au.AssignmentId, au.UserId })
             .IsUnique();
+        
+        // Index for soft delete queries (IsActive column)
+        builder.HasIndex(au => au.IsActive)
+            .HasDatabaseName("idx_assignment_users_isactive");
+
+        // Global Query Filter for soft delete
+        builder.HasQueryFilter(au => au.IsActive == true);
     }
 }

@@ -54,9 +54,14 @@ public class S3Service : IS3Service
             var fileExtension = Path.GetExtension(originalFileName);
             
             var fileName = !string.IsNullOrEmpty(customFileName)
-                ? Validators.FileValidator.SanitizeFileName(customFileName) + fileExtension
-                : $"{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}_{Guid.NewGuid().ToString("N").Substring(0, 8)}{fileExtension}";
+                ? Validators.FileValidator.SanitizeFileName(customFileName)
+                : $"{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
             
+            if (!fileName.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                fileName += fileExtension;
+            }
+
             var key = $"{folderPath}/{fileName}";
 
             using var stream = file.OpenReadStream();

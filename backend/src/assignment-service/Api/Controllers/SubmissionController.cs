@@ -7,6 +7,7 @@ using AssignmentService.Application.DTOs.Responses;
 using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using AssignmentService.Domain.Enums;
 
 namespace AssignmentService.Api.Controllers;
 
@@ -116,8 +117,12 @@ public class SubmissionController : ControllerBase
 
         var created = await _submissionService.SubmitCode(submission);
         var response = _mapper.Map<CreateSubmissionResponse>(created);
-
-        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, "Judging in progress"));
+        string msg = "Judging in progress";
+        if (created.Status == SubmissionStatus.Failed)
+        {
+            msg = "Submission failed: " + created.ErrorMessage;
+        }
+        return Ok(ApiResponse<CreateSubmissionResponse>.SuccessResponse(response, msg));
     }
 
     /// <summary>

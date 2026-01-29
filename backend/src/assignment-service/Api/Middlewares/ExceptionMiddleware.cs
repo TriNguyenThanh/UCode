@@ -1,8 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using AssignmentService.Application.DTOs.Common;
 
 namespace AssignmentService.Api.Middlewares;
@@ -39,7 +39,7 @@ public class ExceptionMiddleware
             ArgumentException => (StatusCodes.Status400BadRequest, exception.Message),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
-            DbUpdateException dbEx when dbEx.InnerException is SqlException sqlEx && sqlEx.Number == 2601
+            DbUpdateException dbEx when dbEx.InnerException is PostgresException pgEx && pgEx.SqlState == "23505"
                 => (StatusCodes.Status409Conflict, "Duplicate entry - resource already exists"),
             DbUpdateException => (StatusCodes.Status500InternalServerError, "Database error occurred"),
             _ => (StatusCodes.Status500InternalServerError, "An internal error occurred")

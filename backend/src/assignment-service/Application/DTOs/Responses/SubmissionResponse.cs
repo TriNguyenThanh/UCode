@@ -5,6 +5,14 @@ namespace AssignmentService.Application.DTOs.Responses;
 public class SubmissionResponse
 {
     public Guid SubmissionId { get; set; }
+
+    public Guid AssignmentId { get; set; }
+
+    public Guid ProblemId { get; set; }
+
+    public Guid UserId { get; set; }
+
+    
     /// <summary>
     /// User name của người nộp bài
     /// </summary>
@@ -82,6 +90,11 @@ public class SubmissionResponse
     /// Thời gian nộp bài
     /// </summary>
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Nộp muộn
+    /// </summary>
+    public bool IsSubmitLate { get; set; }
 }
 
 public class StatsPerProblemResponse

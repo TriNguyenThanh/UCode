@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to logout"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Logout successful"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Logout successful"));
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class AuthController : ControllerBase
         if (!isValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "OTP verified successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "OTP verified successfully"));
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public class AuthController : ControllerBase
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to reset password"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Password reset successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Password reset successfully"));
     }
 }
 

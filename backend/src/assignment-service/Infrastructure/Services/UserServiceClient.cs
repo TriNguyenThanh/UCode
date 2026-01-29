@@ -4,6 +4,8 @@ using System.Text.Json;
 using AssignmentService.Application.Interfaces.Services;
 using AssignmentService.Infrastructure.EF;
 using AssignmentService.Application.DTOs.Common;
+using AssignmentService.Application.DTOs.Requests;
+using AssignmentService.Application.DTOs.Responses;
 
 namespace AssignmentService.Infrastructure.Services;
 
@@ -37,7 +39,12 @@ public class UserServiceClient : IUserServiceClient
                 throw new ApiException("UserService BaseAddress is not configured. Please check UserService:BaseUrl in appsettings.json");
             }
 
-            var url = $"/api/v1/classes/{classId}/user-ids";
+            var url = $"/api/v1/webhooks/class/{classId}/students";
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
+            
+            // Add internal API key header
+            _httpClient.DefaultRequestHeaders.Remove("X-Internal-Api-Key");
+            _httpClient.DefaultRequestHeaders.Add("X-Internal-Api-Key", apiKey);
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -85,23 +92,74 @@ public class UserServiceClient : IUserServiceClient
             throw new ApiException($"Error getting students by class id: {ex.Message}");
         }
     }
-
     public async Task<List<string>> GetUserEmailByIdAsync(List<Guid> userIds)
     {
         try
         {
-            var url = $"/api/v1/users/emails";
-            var requestBody = new {
+            var url = $"/api/v1/webhooks/get-emails";
+            var apiKey = Environment.GetEnvironmentVariable("INTERNAL_API_KEY") ?? "ucode-internal-service-key-2024";
+            
+            var requestBody = new UserIdRequest
+            {
                 Ids = userIds
             };
-
+            
             var json = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
+            Console.WriteLine($"[→] Request to {_httpClient.BaseAddress}{url}");
+            Console.WriteLine($"[→] Request JSON: {json}");
+            
+            // Add internal API key header
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("X-Internal-Api-Key", apiKey);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.SendAsync(request);
+            
             var responseContent = await response.Content.ReadAsStringAsync();
-            var responseData = JsonSerializer.Deserialize<List<string>>(responseContent);
-            return responseData ?? new List<string>();
+            Console.WriteLine($"[←] Response status: {response.StatusCode}");
+            Console.WriteLine($"[←] Response JSON: {responseContent}");
+            
+            // ✅ Check HTTP status first
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApiException($"User service returned {response.StatusCode}: {responseContent}");
+            }
+            
+            // ✅ Deserialize with options (case-insensitive)
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            
+            var responseData = JsonSerializer.Deserialize<ApiResponse<UserEmailResponse>>(
+                responseContent, 
+                options);
+            
+            // ✅ NULL checks
+            if (responseData == null)
+            {
+                throw new ApiException("Failed to deserialize response from user service (responseData is null)");
+            }
+            
+            if (!responseData.Success)
+            {
+                throw new ApiException($"User service returned error: {responseData.Message}");
+            }
+            
+            if (responseData.Data == null)
+            {
+                Console.WriteLine("⚠️ User service returned success but Data is null");
+                return new List<string>();
+            }
+            
+            if (responseData.Data.Emails == null)
+            {
+                Console.WriteLine("⚠️ User service returned success but Emails array is null");
+                return new List<string>();
+            }
+            
+            Console.WriteLine($"[✅] Retrieved {responseData.Data.Emails.Count} emails");
+            return responseData.Data.Emails;
         }
         catch (HttpRequestException ex)
         {
@@ -110,6 +168,14 @@ public class UserServiceClient : IUserServiceClient
         catch (TaskCanceledException ex)
         {
             throw new ApiException($"Timeout getting user email by id: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            throw new ApiException($"JSON error getting user email by id: {ex.Message}");
+        }
+        catch (ApiException)
+        {
+            throw; // Re-throw ApiException as-is
         }
         catch (Exception ex)
         {

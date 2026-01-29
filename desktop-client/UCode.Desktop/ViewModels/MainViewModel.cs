@@ -49,14 +49,30 @@ namespace UCode.Desktop.ViewModels
         private readonly AuthService _authService;
         private readonly ApiService _apiService;
         private readonly NavigationService _navigationService;
+        private readonly AIDetectorService _aiDetectorService;
         private string _userEmail = string.Empty;
         private string _userName = string.Empty;
         private bool _isLoading;
+        private bool _isNavigationBarVisible = true;
+        private bool _canGoBack;
+        private string _activeTab = "Home"; // Default to Home
 
         public bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
+        }
+
+        public bool IsNavigationBarVisible
+        {
+            get => _isNavigationBarVisible;
+            set => SetProperty(ref _isNavigationBarVisible, value);
+        }
+
+        public bool CanGoBack
+        {
+            get => _canGoBack;
+            set => SetProperty(ref _canGoBack, value);
         }
 
         public string UserEmail
@@ -71,6 +87,12 @@ namespace UCode.Desktop.ViewModels
             set => SetProperty(ref _userName, value);
         }
 
+        public string ActiveTab
+        {
+            get => _activeTab;
+            set => SetProperty(ref _activeTab, value);
+        }
+
         public ObservableCollection<ClassItem> Classes { get; } = new();
         public ObservableCollection<AssignmentItem> UpcomingAssignments { get; } = new();
         public ObservableCollection<PracticeCategoryItem> PracticeCategories { get; } = new();
@@ -80,21 +102,52 @@ namespace UCode.Desktop.ViewModels
         public ICommand LogoutCommand { get; }
         public ICommand NavigateToClassCommand { get; }
         public ICommand NavigateToAssignmentCommand { get; }
+        public ICommand GoBackCommand { get; }
+        public ICommand NavigateToHomeCommand { get; }
+        public ICommand NavigateToAssignmentsCommand { get; }
+        public ICommand NavigateToSubmissionsCommand { get; }
 
-        public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService)
+        public MainViewModel(AuthService authService, ApiService apiService, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
             _authService = authService;
             _apiService = apiService;
             _navigationService = navigationService;
-
+            _aiDetectorService = aiDetectorService;
             LogoutCommand = new RelayCommand(_ => ExecuteLogout());
             NavigateToClassCommand = new RelayCommand<string>(NavigateToClass);
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
+            GoBackCommand = new RelayCommand(_ => ExecuteGoBack(), _ => CanGoBack);
+            NavigateToHomeCommand = new RelayCommand(_ => ExecuteNavigateToHome());
+            NavigateToAssignmentsCommand = new RelayCommand(_ => ExecuteNavigateToAssignments());
+            NavigateToSubmissionsCommand = new RelayCommand(_ => ExecuteNavigateToSubmissions());
+
+            // Subscribe to navigation events
+            _navigationService.Navigated += OnNavigated;
+            _navigationService.CanGoBackChanged += OnCanGoBackChanged;
 
             // Set user info
             var currentUser = authService.CurrentUser;
             UserEmail = currentUser?.Email ?? "user@example.com";
-            UserName = currentUser?.Email?.Split('@')[0] ?? "User";
+            UserName = currentUser?.Username ?? "User";
+            _aiDetectorService = aiDetectorService;
+
+            ActiveTab = "Home";
+        }
+
+        // ...
+
+        private void ExecuteNavigateToAssignments()
+        {
+            ActiveTab = "Assignments";
+            var page = new Pages.Students.StudentAssignmentsPage();
+            _navigationService.NavigateTo(page, null, false); // Don't add to stack
+        }
+
+        private void ExecuteNavigateToSubmissions()
+        {
+            ActiveTab = "Submissions";
+            var page = new Pages.Students.StudentSubmissionsPage();
+            _navigationService.NavigateTo(page, null, false); // Don't add to stack
         }
 
         public async Task LoadDataAsync()
@@ -111,6 +164,36 @@ namespace UCode.Desktop.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        private void OnNavigated(object? sender, System.Windows.Controls.UserControl page)
+        {
+            // Hide navigation bar for ProblemSolverPage
+            if (page is Pages.ProblemSolverPage)
+            {
+                IsNavigationBarVisible = false;
+            }
+            else
+            {
+                IsNavigationBarVisible = true;
+            }
+        }
+
+        private void OnCanGoBackChanged(object? sender, bool canGoBack)
+        {
+            CanGoBack = canGoBack;
+        }
+
+        private void ExecuteGoBack()
+        {
+            _navigationService.GoBack();
+        }
+
+        private void ExecuteNavigateToHome()
+        {
+            ActiveTab = "Home";
+            // Clear navigation stack and go back to home
+            _navigationService.ClearNavigationStack();
         }
 
         private async Task LoadUserProfileAsync()
@@ -321,28 +404,22 @@ namespace UCode.Desktop.ViewModels
             if (string.IsNullOrEmpty(assignmentId)) return;
 
             var assignment = UpcomingAssignments.FirstOrDefault(a => a.Id == assignmentId);
-            if (assignment != null && assignment.RawAssignmentType == AssignmentType.EXAMINATION)
-            {
-                var result = await GetMetroWindow()?.ShowMessageAsync(
-                   "Bài kiểm tra - Lưu ý quan trọng",
-                   "Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:\n" +
-                   "- Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài\n" +
-                   "- Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên\n" +
-                   "- Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn\n\n" +
-                   "Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?",
-                   MessageDialogStyle.AffirmativeAndNegative,
-                   new MetroDialogSettings
-                   {
-                       AffirmativeButtonText = "Xác nhận và bắt đầu",
-                       NegativeButtonText = "Hủy",
-                       DefaultButtonFocus = MessageDialogResult.Affirmative
-                   });
+            //var response = await _assignmentService.GetAssignmentAsync(assignmentId);
 
-                if (result != MessageDialogResult.Affirmative)
+            //if (response.Success && response.Data != null)
+            //{
+            //var assignment = response.Data;
+
+            if (assignment.AssignmentType == AssignmentType.EXAMINATION.ToString())
+            {
+                if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
                 {
                     return;
                 }
+                _aiDetectorService.StartAutoMonitor();
             }
+
+            //}
 
             try
             {
@@ -357,15 +434,37 @@ namespace UCode.Desktop.ViewModels
 
         private async void ExecuteLogout()
         {
-            var result = await GetMetroWindow()?.ShowMessageAsync(
-                "Đăng xuất",
-                "Bạn có chắc muốn đăng xuất?",
-                MessageDialogStyle.AffirmativeAndNegative
-            );
+            var metroWindow = GetMetroWindow();
+            MessageDialogResult result;
+
+            if (metroWindow != null)
+            {
+                result = await metroWindow.ShowMessageAsync(
+                    "Đăng xuất",
+                    "Bạn có chắc muốn đăng xuất?",
+                    MessageDialogStyle.AffirmativeAndNegative
+                );
+            }
+            else
+            {
+                // Fallback to MessageBox for UCodeWindow
+                var messageResult = MessageBox.Show(
+                    "Bạn có chắc muốn đăng xuất?",
+                    "Đăng xuất",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+                result = messageResult == MessageBoxResult.Yes
+                    ? MessageDialogResult.Affirmative
+                    : MessageDialogResult.Negative;
+            }
 
             if (result == MessageDialogResult.Affirmative)
             {
                 _authService.Logout();
+
+                // Clear navigation stack
+                _navigationService.ClearNavigationStack();
 
                 // Change shutdown mode back to explicit before closing main window
                 Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;

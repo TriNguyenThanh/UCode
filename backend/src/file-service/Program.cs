@@ -4,17 +4,28 @@ using file_service.Services;
 using file_service.Middlewares;
 using file_service.HealthChecks;
 using file_service.Api.Middlewares;
+using DotNetEnv;
+
+// Load .env file
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add AWS S3 Service with explicit credentials
-var awsAccessKey = builder.Configuration["AWS:AccessKey"];
-var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-var awsRegion = builder.Configuration["AWS:Region"];
+// Add AWS S3 Service with explicit credentials from environment variables
+var awsAccessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
+var awsSecretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
+var awsRegion = Environment.GetEnvironmentVariable("AWS_REGION") ?? "ap-southeast-1";
+var awsBucketName = Environment.GetEnvironmentVariable("AWS_BUCKET_NAME") ?? "ucode-files";
+
+// Override Configuration with environment variables
+builder.Configuration["AWS:AccessKey"] = awsAccessKey;
+builder.Configuration["AWS:SecretKey"] = awsSecretKey;
+builder.Configuration["AWS:Region"] = awsRegion;
+builder.Configuration["AWS:BucketName"] = awsBucketName;
 
 if (!string.IsNullOrEmpty(awsAccessKey) && !string.IsNullOrEmpty(awsSecretKey))
 {
-    // Use explicit credentials
+    // Use explicit credentials from .env
     var credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
     var config = new Amazon.S3.AmazonS3Config
     {

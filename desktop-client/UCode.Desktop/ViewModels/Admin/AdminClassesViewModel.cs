@@ -10,12 +10,16 @@ using UCode.Desktop.Helpers;
 using UCode.Desktop.Models.Admin;
 using UCode.Desktop.Services;
 using UCode.Desktop.Services.Admin;
+using UCode.Desktop.ViewModels;
+using UCode.Desktop.Views;
 
 namespace UCode.Desktop.ViewModels.Admin
 {
     public class ClassItem : INotifyPropertyChanged
     {
         private bool _isSelected = false;
+        private bool _isActive;
+        private bool _isArchived;
 
         public string ClassId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
@@ -24,8 +28,35 @@ namespace UCode.Desktop.ViewModels.Admin
         public string TeacherName { get; set; } = string.Empty;
         public int StudentCount { get; set; }
         public int AssignmentCount { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsArchived { get; set; }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StatusDisplay));
+                }
+            }
+        }
+
+        public bool IsArchived
+        {
+            get => _isArchived;
+            set
+            {
+                if (_isArchived != value)
+                {
+                    _isArchived = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(StatusDisplay));
+                }
+            }
+        }
+
         public DateTime CreatedAt { get; set; }
 
         public bool IsSelected
@@ -146,8 +177,16 @@ namespace UCode.Desktop.ViewModels.Admin
             set => SetProperty(ref _totalClasses, value);
         }
 
+
         public bool HasSelection => Classes.Any(c => c.IsSelected);
         public int SelectedCount => Classes.Count(c => c.IsSelected);
+
+        // Check if any selected items are active (not archived) - to show Archive button
+        public bool HasActiveSelection => Classes.Any(c => c.IsSelected && !c.IsArchived);
+
+        // Check if any selected items are archived - to show Unarchive button
+        public bool HasArchivedSelection => Classes.Any(c => c.IsSelected && c.IsArchived);
+
 
         #endregion
 
@@ -156,6 +195,7 @@ namespace UCode.Desktop.ViewModels.Admin
         public ICommand LoadClassesCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand ViewDetailsCommand { get; }
+        public ICommand EditClassCommand { get; }
         public ICommand ArchiveCommand { get; }
         public ICommand UnarchiveCommand { get; }
         public ICommand DeleteCommand { get; }
@@ -180,6 +220,7 @@ namespace UCode.Desktop.ViewModels.Admin
             LoadClassesCommand = new RelayCommand(async _ => await LoadClassesAsync());
             SearchCommand = new RelayCommand(async _ => await SearchClassesAsync());
             ViewDetailsCommand = new RelayCommand<ClassItem>(async cls => await ViewDetailsAsync(cls));
+            EditClassCommand = new RelayCommand<ClassItem>(async cls => await EditClassAsync(cls));
             ArchiveCommand = new RelayCommand<ClassItem>(async cls => await ArchiveClassAsync(cls));
             UnarchiveCommand = new RelayCommand<ClassItem>(async cls => await UnarchiveClassAsync(cls));
             DeleteCommand = new RelayCommand<ClassItem>(async cls => await DeleteClassAsync(cls));
@@ -252,9 +293,71 @@ namespace UCode.Desktop.ViewModels.Admin
             await LoadClassesAsync();
         }
 
+        private async Task EditClassAsync(ClassItem? classItem)
+        {
+            if (classItem == null) return;
+
+            IsLoading = true;
+            try
+            {
+                // Lấy thông tin chi tiết trước khi edit (để có đầy đủ fields)
+                var detail = await _classService.GetClassDetailAsync(classItem.ClassId);
+
+                if (detail != null)
+                {
+                    // Khởi tạo ViewModel với AdminClassService để hỗ trợ edit quyền admin
+                    AdminClassService adminClassService = _classService;
+                    var viewModel = new EditClassViewModel(adminClassService);
+                    viewModel.LoadFromClassDetail(detail);
+
+                    var dialog = new Views.EditClassDialog(viewModel)
+                    {
+                        Owner = System.Windows.Application.Current.MainWindow
+                    };
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        await _dialogCoordinator.ShowMessageAsync(
+                            this,
+                            "Thành công",
+                            "Cập nhật thông tin lớp học thành công!",
+                            MessageDialogStyle.Affirmative
+                        );
+
+                        // Reload list to update UI
+                        await LoadClassesAsync();
+                    }
+                }
+                else
+                {
+                    await _dialogCoordinator.ShowMessageAsync(
+                       this,
+                       "Lỗi",
+                       "Không thể tải thông tin chi tiết lớp học.",
+                       MessageDialogStyle.Affirmative
+                   );
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Lỗi",
+                    $"Lỗi khi mở cửa sổ chỉnh sửa: {ex.Message}",
+                    MessageDialogStyle.Affirmative
+                );
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         private async Task ViewDetailsAsync(ClassItem? classItem)
         {
             if (classItem == null) return;
+
+            // ... existing ViewDetailsAsync code ...
 
             await _dialogCoordinator.ShowMessageAsync(
                 this,
@@ -363,13 +466,26 @@ namespace UCode.Desktop.ViewModels.Admin
                 var bulkResult = await _classService.BulkActionAsync("archive", classIds);
                 if (bulkResult != null)
                 {
+                    // Update items directly
+                    foreach (var item in selected)
+                    {
+                        item.IsArchived = true;
+                        item.IsActive = false;
+                        item.IsSelected = false;
+                    }
+
+                    // Notify changes
+                    OnPropertyChanged(nameof(HasActiveSelection));
+                    OnPropertyChanged(nameof(HasArchivedSelection));
+                    OnPropertyChanged(nameof(HasSelection));
+                    OnPropertyChanged(nameof(SelectedCount));
+
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",
                         $"Đã lưu trữ {selected.Count} lớp học",
                         MessageDialogStyle.Affirmative
                     );
-                    await LoadClassesAsync();
                 }
             }
         }
@@ -392,13 +508,26 @@ namespace UCode.Desktop.ViewModels.Admin
                 var bulkResult = await _classService.BulkActionAsync("unarchive", classIds);
                 if (bulkResult != null)
                 {
+                    // Update items directly
+                    foreach (var item in selected)
+                    {
+                        item.IsArchived = false;
+                        item.IsActive = true;
+                        item.IsSelected = false;
+                    }
+
+                    // Notify changes
+                    OnPropertyChanged(nameof(HasActiveSelection));
+                    OnPropertyChanged(nameof(HasArchivedSelection));
+                    OnPropertyChanged(nameof(HasSelection));
+                    OnPropertyChanged(nameof(SelectedCount));
+
                     await _dialogCoordinator.ShowMessageAsync(
                         this,
                         "Thành công",
                         $"Đã khôi phục {selected.Count} lớp học",
                         MessageDialogStyle.Affirmative
                     );
-                    await LoadClassesAsync();
                 }
             }
         }
@@ -456,6 +585,8 @@ namespace UCode.Desktop.ViewModels.Admin
             {
                 OnPropertyChanged(nameof(HasSelection));
                 OnPropertyChanged(nameof(SelectedCount));
+                OnPropertyChanged(nameof(HasActiveSelection));
+                OnPropertyChanged(nameof(HasArchivedSelection));
 
                 (BulkArchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (BulkUnarchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();

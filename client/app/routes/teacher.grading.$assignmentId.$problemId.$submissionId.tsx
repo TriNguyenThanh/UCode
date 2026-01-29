@@ -13,7 +13,7 @@ import { getProblem } from '~/services/problemService'
 import { getClassById } from '~/services/classService'
 import type { Submission } from '~/types'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import {
   Box,
   Container,
@@ -79,8 +79,6 @@ export default function SubmissionGrading() {
   const [error, setError] = useState<string | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const isLoading = navigation.state === 'loading'
-
   // Detect when submissionId changes to show loading
   useEffect(() => {
     setIsTransitioning(false)
@@ -133,12 +131,12 @@ export default function SubmissionGrading() {
 
   const isPassed = submission.passedTestcase === submission.totalTestcase
 
-  // Show loading screen while navigation is in progress
-  if (isLoading || isTransitioning) {
+  // Show loading screen while transitioning between submissions
+  if (isTransitioning) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
         <Navigation />
-        <Loading fullScreen message="Đang tải dữ liệu..." />
+        <Loading fullScreen message="Đang tải..." />
       </Box>
     )
   }
@@ -217,6 +215,14 @@ export default function SubmissionGrading() {
                   <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                     {new Date(submission.submittedAt).toLocaleString('vi-VN')}
                   </Typography>
+                  {submission.isSubmitLate && (
+                    <Chip
+                      label="Nộp trễ"
+                      size="small"
+                      color="warning"
+                      sx={{ mt: 1, bgcolor: 'warning.main', color: 'white' }}
+                    />
+                  )}
                 </Box>
               </Box>
             </Paper>

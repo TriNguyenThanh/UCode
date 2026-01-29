@@ -405,7 +405,7 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
-    
+
     public class CountToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -466,7 +466,7 @@ namespace UCode.Desktop.Helpers
             throw new NotImplementedException();
         }
     }
-    
+
     /// <summary>
     /// Converts active status to brush color for display
     /// Active -> Green, Inactive -> Red
@@ -643,6 +643,93 @@ namespace UCode.Desktop.Helpers
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value != null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts DateTime? to deadline display string (e.g., "Còn 3 ngày", "Quá hạn")
+    /// </summary>
+    public class DeadlineDisplayConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not DateTime endTime)
+                return string.Empty;
+
+            var now = DateTime.Now;
+            var diff = endTime - now;
+            var daysLeft = (int)Math.Ceiling(diff.TotalDays);
+
+            if (daysLeft < 0) return "Quá hạn";
+            if (daysLeft == 0) return "Hết hạn hôm nay";
+            if (daysLeft == 1) return "Còn 1 ngày";
+            return $"Còn {daysLeft} ngày";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter to display DateTime? with "Không giới hạn" for null values
+    /// </summary>
+    public class NullableDateTimeDisplayConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null || value == DependencyProperty.UnsetValue)
+            {
+                return "Không giới hạn";
+            }
+
+            if (value is DateTime dateTime)
+            {
+                string format = parameter as string ?? "dd/MM/yyyy HH:mm";
+                return dateTime.ToString(format);
+            }
+
+            return "Không giới hạn";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter to truncate text to a specified length with ellipsis
+    /// </summary>
+    public class TruncateTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null || value == DependencyProperty.UnsetValue)
+                return string.Empty;
+
+            string text = value.ToString() ?? string.Empty;
+
+            // Remove HTML tags and extra whitespace
+            text = System.Text.RegularExpressions.Regex.Replace(text, "<.*?>", " ");
+            text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+
+            int maxLength = 80; // Default max length
+            if (parameter != null && int.TryParse(parameter.ToString(), out int customLength))
+            {
+                maxLength = customLength;
+            }
+
+            if (text.Length <= maxLength)
+                return text;
+
+            return text.Substring(0, maxLength).TrimEnd() + "...";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

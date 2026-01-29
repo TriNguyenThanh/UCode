@@ -60,6 +60,11 @@ public class AttendanceSessionRequest
     public int? AllowedRadiusMeters { get; set; }
 
     /// <summary>
+    /// Cấu hình: Bắt buộc xác thực khuôn mặt hay không
+    /// </summary>
+    public bool RequireFaceCheck { get; set; }
+
+    /// <summary>
     /// Trạng thái kích hoạt
     /// </summary>
     public bool IsActive { get; set; }

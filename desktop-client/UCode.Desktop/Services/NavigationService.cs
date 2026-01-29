@@ -10,18 +10,49 @@ namespace UCode.Desktop.Services
         private ContentControl? _frame;
 
         public event EventHandler<bool>? CanGoBackChanged;
+        public event EventHandler<UserControl>? Navigated;
 
-        public bool CanGoBack => _navigationStack.Count > 1;
+        public bool CanGoBack => _navigationStack.Count >= 1;
 
         public void SetFrame(ContentControl frame)
         {
             _frame = frame;
         }
 
-        public void NavigateTo(UserControl page, object? parameter = null)
+        public void NavigateTo(UserControl page, object? parameter = null, bool addToStack = true)
         {
             if (_frame == null)
                 throw new InvalidOperationException("Frame not set. Call SetFrame first.");
+
+            if (page == null) return;
+
+            if (!addToStack)
+            {
+                // Main tab navigation - Clear stack and add this page as the base
+                _navigationStack.Clear();
+                _navigationStack.Push((page, parameter)); // Push main tab page so GoBack can return to it
+                _frame.Content = page;
+
+                // Initialize the page logic
+                InitializePage(page, parameter);
+
+                // CanGoBack is false because this is the first page in the stack (base tab)
+                CanGoBackChanged?.Invoke(this, false);
+                Navigated?.Invoke(this, page);
+            }
+            else
+            {
+                // Drill-down navigation
+                NavigateToInternal(page, parameter);
+            }
+        }
+
+        public void NavigateToInternal(UserControl page, object? parameter = null)
+        {
+            if (_frame == null)
+                throw new InvalidOperationException("Frame not set. Call SetFrame first.");
+
+            if (page == null) return;
 
             _navigationStack.Push((page, parameter));
             _frame.Content = page;
@@ -30,15 +61,28 @@ namespace UCode.Desktop.Services
             InitializePage(page, parameter);
 
             CanGoBackChanged?.Invoke(this, CanGoBack);
+            Navigated?.Invoke(this, page);
         }
 
         public void GoBack()
         {
-            if (_navigationStack.Count <= 1)
+            if (_navigationStack.Count == 0)
                 return;
 
             // Remove current page
             _navigationStack.Pop();
+
+            if (_navigationStack.Count == 0)
+            {
+                // We've gone back to Home (Empty Stack - no more pages)
+                if (_frame != null)
+                {
+                    _frame.Content = null;
+                }
+                CanGoBackChanged?.Invoke(this, false); // CanGoBack is now false
+                Navigated?.Invoke(this, null!); // Navigated to "home" (null page)
+                return;
+            }
 
             // Get previous page
             var (previousPage, previousParameter) = _navigationStack.Peek();
@@ -70,12 +114,17 @@ namespace UCode.Desktop.Services
             }
 
             CanGoBackChanged?.Invoke(this, CanGoBack);
+            if (previousPage != null)
+            {
+                Navigated?.Invoke(this, previousPage);
+            }
         }
 
         public void ClearNavigationStack()
         {
             _navigationStack.Clear();
             CanGoBackChanged?.Invoke(this, CanGoBack);
+            Navigated?.Invoke(this, null!);
         }
 
         private void InitializePage(UserControl page, object? parameter)

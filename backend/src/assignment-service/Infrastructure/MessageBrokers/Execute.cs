@@ -39,10 +39,10 @@ public class ExecuteService : IExecuteService
 
         submission.LanguageCode = problemLanguageDto.LanguageCode ?? "unknown";
 
-        RabbitMqMessage message = null!;
+        SubmissionRabbitmqMessage message = null!;
         try
         {
-            message = new RabbitMqMessage
+            message = new SubmissionRabbitmqMessage
             {
                 SubmissionId = submission.SubmissionId.ToString(),
                 Code = submission.SourceCode,

@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useNavigation } from 'react-router'
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
@@ -6,6 +6,8 @@ import type { Route } from './+types/root'
 import './app.css'
 import { auth } from '~/auth'
 import { theme } from './theme'
+import { Loading } from '~/components/Loading'
+import { FaceAuthGuard } from '~/components'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -45,10 +47,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const navigation = useNavigation()
+  const isLoading = navigation.state === 'loading'
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Outlet />
+      {isLoading && <Loading fullScreen message="Đang tải..." />}
+      <FaceAuthGuard>
+        <Outlet />
+      </FaceAuthGuard>
     </ThemeProvider>
   )
 }

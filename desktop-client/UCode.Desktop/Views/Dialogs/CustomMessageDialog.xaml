@@ -1,0 +1,198 @@
+<mah:BaseMetroDialog x:Class="UCode.Desktop.Views.Dialogs.CustomMessageDialog"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                    Title="{Binding Title}"
+                    Background="Transparent"
+                    UseLayoutRounding="True"
+                    SnapsToDevicePixels="True"
+                    TextOptions.TextFormattingMode="Display"
+                    TextOptions.TextRenderingMode="ClearType"
+                    RenderOptions.ClearTypeHint="Enabled">
+
+    <mah:BaseMetroDialog.Resources>
+        <!-- BooleanToVisibilityConverter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        
+        <!-- Affirmative Button Style -->
+        <Style x:Key="AffirmativeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FACB01"/>
+            <Setter Property="Foreground" Value="#00275E"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Margin" Value="6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E6B800"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#D4A800"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Negative Button Style -->
+        <Style x:Key="NegativeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Margin" Value="6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F5F5F5"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CCCCCC"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#EEEEEE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </mah:BaseMetroDialog.Resources>
+
+    <!-- Wrapper for shadow (separate from content to avoid blur) -->
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <!-- Shadow Layer -->
+        <Border Background="#20000000" 
+                CornerRadius="16" 
+                MinWidth="380"
+                MaxWidth="500"
+                Margin="15">
+            <Border.Effect>
+                <BlurEffect Radius="15"/>
+            </Border.Effect>
+        </Border>
+        
+        <!-- Main Content (no effect = sharp text) -->
+        <Border Background="White" 
+                CornerRadius="16" 
+                MinWidth="380"
+                MaxWidth="500"
+                Margin="20"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                SnapsToDevicePixels="True"
+                UseLayoutRounding="True">
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title Bar -->
+                <Border Grid.Row="0" 
+                        Background="#00275E" 
+                        CornerRadius="16,16,0,0"
+                        Padding="24,16"
+                        SnapsToDevicePixels="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Icon -->
+                        <Border x:Name="IconBorder" 
+                                Grid.Column="0"
+                                Width="32" Height="32"
+                                CornerRadius="16"
+                                Background="#FACB01"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding ShowIcon, Converter={StaticResource BoolToVisConverter}}">
+                            <iconPacks:PackIconMaterial x:Name="DialogIcon"
+                                                        Kind="Information"
+                                                        Width="18" Height="18"
+                                                        Foreground="#00275E"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                        </Border>
+                        
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Title}" 
+                                   FontSize="18" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="White"
+                                   FontFamily="Segoe UI"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Message Content -->
+                <Border Grid.Row="1" Padding="24,20">
+                    <TextBlock Text="{Binding Message}"
+                               FontSize="14"
+                               FontFamily="Segoe UI"
+                               Foreground="#333333"
+                               TextWrapping="Wrap"
+                               LineHeight="22"/>
+                </Border>
+
+                <!-- Buttons -->
+                <Border Grid.Row="2" 
+                        Background="#F8F9FA"
+                        CornerRadius="0,0,16,16"
+                        Padding="24,16"
+                        SnapsToDevicePixels="True">
+                    <StackPanel Orientation="Horizontal" 
+                                HorizontalAlignment="Right">
+                        
+                        <!-- Negative Button (Cancel) -->
+                        <Button x:Name="NegativeButton"
+                                Content="{Binding NegativeButtonText}"
+                                Style="{StaticResource NegativeButtonStyle}"
+                                Visibility="{Binding ShowNegativeButton, Converter={StaticResource BoolToVisConverter}}"
+                                Click="NegativeButton_Click"/>
+                        
+                        <!-- Affirmative Button (OK) -->
+                        <Button x:Name="AffirmativeButton"
+                                Content="{Binding AffirmativeButtonText}"
+                                Style="{StaticResource AffirmativeButtonStyle}"
+                                Click="AffirmativeButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</mah:BaseMetroDialog>

@@ -1,8 +1,6 @@
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using MahApps.Metro.Controls.Dialogs;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 using UCode.Desktop.Helpers;
 using UCode.Desktop.Models;
 using UCode.Desktop.Services;
@@ -15,20 +13,24 @@ namespace UCode.Desktop.ViewModels
         private readonly AssignmentService _assignmentService;
         private readonly AuthService _authService;
         private readonly NavigationService _navigationService;
+        private readonly AIDetectorService _aiDetectorService;
         private Class _classData;
         private bool _isLoading;
         private string _classId;
 
-        public ClassDetailViewModel(ClassService classService, AssignmentService assignmentService, AuthService authService, NavigationService navigationService)
+        public ClassDetailViewModel(ClassService classService, AssignmentService assignmentService, AuthService authService, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
             _classService = classService;
             _assignmentService = assignmentService;
             _authService = authService;
             _navigationService = navigationService;
+            _aiDetectorService = aiDetectorService;
             _classData = new Class();
 
             NavigateToAssignmentCommand = new RelayCommand<string>(NavigateToAssignment);
             NavigateBackCommand = new RelayCommand(_ => NavigateBack());
+            RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
+            _aiDetectorService = aiDetectorService;
         }
 
         public Class ClassData
@@ -57,6 +59,7 @@ namespace UCode.Desktop.ViewModels
 
         public ICommand NavigateToAssignmentCommand { get; }
         public ICommand NavigateBackCommand { get; }
+        public ICommand RefreshCommand { get; }
 
         public async Task InitializeAsync(string classId)
         {
@@ -145,31 +148,29 @@ namespace UCode.Desktop.ViewModels
             {
                 if (string.IsNullOrEmpty(assignmentId)) return;
 
-                var assignment = Assignments.FirstOrDefault(a => a.AssignmentId == assignmentId);
-                if (assignment != null && assignment.AssignmentType == AssignmentType.EXAMINATION)
-                {
-                    var result = await GetMetroWindow()?.ShowMessageAsync(
-                       "Bài kiểm tra - Lưu ý quan trọng",
-                       "Bài kiểm tra sẽ kiểm soát hành vi của bạn trong quá trình làm bài:\n" +
-                       "- Hệ thống sẽ ghi lại số lần bạn chuyển tab hoặc rời khỏi màn hình làm bài\n" +
-                       "- Mọi hoạt động bất thường sẽ được báo cáo cho giáo viên\n" +
-                       "- Việc chuyển tab nhiều lần có thể ảnh hưởng đến kết quả của bạn\n\n" +
-                       "Bạn có chắc chắn muốn bắt đầu làm bài kiểm tra này không?",
-                       MessageDialogStyle.AffirmativeAndNegative,
-                       new MetroDialogSettings
-                       {
-                           AffirmativeButtonText = "Xác nhận và bắt đầu",
-                           NegativeButtonText = "Hủy",
-                           DefaultButtonFocus = MessageDialogResult.Affirmative
-                       });
+                var response = await _assignmentService.GetAssignmentAsync(assignmentId);
 
-                    if (result != MessageDialogResult.Affirmative)
+                if (response.Success && response.Data != null)
+                {
+                    var assignment = response.Data;
+
+                    if (assignment.Status == AssignmentStatus.CLOSED)
                     {
+                        await ShowMessageAsync("Thông báo", "Bài tập này đã đóng, bạn không thể truy cập.");
                         return;
                     }
+
+                    if (assignment.AssignmentType == AssignmentType.EXAMINATION)
+                    {
+                        if (await _aiDetectorService.ConfirmMessageAIDetector(assignmentId) == false)
+                        {
+                            return;
+                        }
+                        _aiDetectorService.StartAutoMonitor();
+                    }
+
                 }
 
-                // Sử dụng Navigation thay vì mở window mới
                 var assignmentDetailPage = new Views.Students.AssignmentDetailPage();
                 _navigationService.NavigateTo(assignmentDetailPage, assignmentId);
             }
@@ -182,6 +183,22 @@ namespace UCode.Desktop.ViewModels
         private void NavigateBack()
         {
             _navigationService.GoBack();
+        }
+
+        private async Task RefreshAsync()
+        {
+            if (string.IsNullOrEmpty(_classId)) return;
+
+            IsLoading = true;
+            try
+            {
+                await LoadClassDataAsync();
+                await LoadAssignmentsAsync();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         public int GetDaysUntilDue(DateTime? endTime)

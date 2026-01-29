@@ -47,23 +47,29 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   try {
     const user = await auth.login(email, password)
-    
+
     // Kiểm tra returnUrl từ query params
     const url = new URL(request.url)
     const returnUrl = url.searchParams.get('returnUrl')
-    
-    if (returnUrl) {
-      return redirect(returnUrl)
+
+    // Validate returnUrl to prevent Open Redirect attacks
+    // Only allow relative URLs starting with /
+    if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+      throw redirect(returnUrl)
     }
-    
+
     // Redirect based on role
     if (user.role === 'admin') {
-      return redirect('/admin/home')
+      throw redirect('/admin/home')
     } else if (user.role === 'teacher') {
-      return redirect('/teacher/home')
+      throw redirect('/teacher/home')
     }
-    return redirect('/home')
+    throw redirect('/home')
   } catch (e) {
+    // Nếu là redirect response thì throw lại
+    if (e instanceof Response) {
+      throw e
+    }
     const message = e instanceof Error ? e.message : 'Login failed'
     return { error: message } as const
   }
@@ -207,7 +213,7 @@ export default function Login() {
             {isSubmitting ? <CircularProgress size={24} color='inherit' /> : 'ĐĂNG NHẬP'}
           </Button>
 
-          <Typography variant='body2' sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
+          {/* <Typography variant='body2' sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
             <strong>Tài khoản demo:</strong>
             <br />
             Admin: <code>admin</code> / <code>123</code>
@@ -215,7 +221,7 @@ export default function Login() {
             Teacher: <code>teacher01</code> / <code>123</code>
             <br />
             Student: <code>student01</code> / <code>123</code>
-          </Typography>
+          </Typography> */}
         </Box>
       </Paper>
     </Box>

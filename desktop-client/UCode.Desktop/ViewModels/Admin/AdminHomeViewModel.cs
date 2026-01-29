@@ -19,7 +19,7 @@ namespace UCode.Desktop.ViewModels.Admin
         private readonly AdminStatisticsService _statisticsService;
         private readonly NavigationService _navigationService;
         private readonly IDialogCoordinator _dialogCoordinator;
-        
+
         private bool _isLoading;
         private SystemStatistics? _systemStats;
         private UserStatistics? _userStats;
@@ -41,6 +41,7 @@ namespace UCode.Desktop.ViewModels.Admin
         public int TotalClasses => _systemStats?.TotalClasses ?? 0;
         public int TotalActiveClasses => _systemStats?.TotalActiveClasses ?? 0;
         public int TotalArchivedClasses => _systemStats?.TotalArchivedClasses ?? 0;
+        public int TotalAssignments => _systemStats?.TotalAssignments ?? 0;
         public int TotalProblems => _systemStats?.TotalProblems ?? 0;
         public int TotalSubmissions => _systemStats?.TotalSubmissions ?? 0;
 
@@ -101,19 +102,22 @@ namespace UCode.Desktop.ViewModels.Admin
             try
             {
                 System.Diagnostics.Debug.WriteLine("=== Starting LoadStatisticsAsync ===");
-                
+
                 // Load statistics in parallel for faster loading
                 System.Diagnostics.Debug.WriteLine("Fetching statistics from API...");
                 var userStatsTask = _statisticsService.GetUserStatisticsAsync();
                 var classStatsTask = _statisticsService.GetClassStatisticsAsync();
-                
-                await Task.WhenAll(userStatsTask, classStatsTask);
-                
+                var assignmentStatsTask = _statisticsService.GetAssignmentSystemStatisticsAsync();
+
+                await Task.WhenAll(userStatsTask, classStatsTask, assignmentStatsTask);
+
                 _userStats = await userStatsTask;
                 _classStats = await classStatsTask;
-                
+                var assignmentStats = await assignmentStatsTask;
+
                 System.Diagnostics.Debug.WriteLine($"User stats: {_userStats?.TotalUsers ?? 0} users");
                 System.Diagnostics.Debug.WriteLine($"Class stats: {_classStats?.TotalClasses ?? 0} classes");
+                System.Diagnostics.Debug.WriteLine($"Assignment stats: {assignmentStats?.TotalAssignments ?? 0} assignments, {assignmentStats?.TotalProblems ?? 0} problems, {assignmentStats?.TotalSubmissions ?? 0} submissions");
 
                 // Build system statistics from combined data
                 if (_userStats != null && _classStats != null)
@@ -127,8 +131,9 @@ namespace UCode.Desktop.ViewModels.Admin
                         TotalClasses = _classStats.TotalClasses,
                         TotalActiveClasses = _classStats.ActiveClasses,
                         TotalArchivedClasses = _classStats.ArchivedClasses,
-                        TotalProblems = 0,
-                        TotalSubmissions = 0,
+                        TotalAssignments = assignmentStats?.TotalAssignments ?? 0,
+                        TotalProblems = assignmentStats?.TotalProblems ?? 0,
+                        TotalSubmissions = assignmentStats?.TotalSubmissions ?? 0,
                         TodayActiveUsers = 0,
                         WeekActiveUsers = 0,
                         MonthActiveUsers = 0
@@ -143,7 +148,7 @@ namespace UCode.Desktop.ViewModels.Admin
             {
                 System.Diagnostics.Debug.WriteLine($"ERROR in LoadStatisticsAsync: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                
+
                 await _dialogCoordinator.ShowMessageAsync(
                     this,
                     "Lỗi",

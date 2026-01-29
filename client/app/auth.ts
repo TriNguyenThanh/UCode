@@ -6,6 +6,7 @@ export type User = {
   role: 'student' | 'teacher' | 'admin'
   name?: string
   userId?: string
+  isFaceAuth?: boolean
 } | null
 
 interface ApiResponse<T> {
@@ -29,6 +30,7 @@ interface LoginData {
     createdAt: string
     updatedAt: string | null
     lastLoginAt: string | null
+    isFaceAuth?: boolean
   }
 }
 
@@ -67,13 +69,15 @@ export const auth = {
       localStorage.setItem('userId', user.userId)
       localStorage.setItem('userName', user.fullName)
       localStorage.setItem('username', user.username)
+      localStorage.setItem('isFaceAuth', String(user.isFaceAuth || false))
       
       return { 
         token: accessToken, 
         email: user.email, 
         role,
         name: user.fullName,
-        userId: user.userId
+        userId: user.userId,
+        isFaceAuth: user.isFaceAuth || false
       }
     } catch (error: any) {
       // Xử lý lỗi từ API
@@ -140,6 +144,7 @@ export const auth = {
       localStorage.removeItem('userId')
       localStorage.removeItem('userName')
       localStorage.removeItem('username')
+      localStorage.removeItem('isFaceAuth')
     }
   },
 
@@ -216,6 +221,7 @@ export const auth = {
     const role = localStorage.getItem('role') as 'student' | 'teacher' | 'admin' | null
     const name = localStorage.getItem('userName')
     const userId = localStorage.getItem('userId')
+    const isFaceAuth = localStorage.getItem('isFaceAuth') === 'true'
     
     if (!token) return null
     
@@ -224,7 +230,8 @@ export const auth = {
       token, 
       role: role ?? 'student',
       name: name ?? undefined,
-      userId: userId ?? undefined
+      userId: userId ?? undefined,
+      isFaceAuth
     }
   },
 
@@ -247,5 +254,50 @@ export const auth = {
    */
   getRefreshToken(): string | null {
     return localStorage.getItem('refreshToken')
+  },
+
+  /**
+   * Fetch current user profile from API
+   */
+  async getUserProfile(): Promise<User> {
+    try {
+      const currentUser = this.getUser()
+      if (!currentUser || !currentUser.userId) {
+        return null
+      }
+
+      const response = await API.get<ApiResponse<any>>(`api/v1/users/${currentUser.userId}`)
+      
+      if (!response.data.success || !response.data.data) {
+        return currentUser
+      }
+
+      const userData = response.data.data
+      
+      // Update localStorage with fresh data
+      if (userData.isFaceAuth !== undefined) {
+        localStorage.setItem('isFaceAuth', String(userData.isFaceAuth))
+      }
+      if (userData.fullName) {
+        localStorage.setItem('userName', userData.fullName)
+      }
+
+      return {
+        ...currentUser,
+        isFaceAuth: userData.isFaceAuth || false,
+        name: userData.fullName || currentUser.name
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error)
+      return this.getUser()
+    }
+  },
+
+  /**
+   * Check if user requires face authentication
+   */
+  requiresFaceAuth(): boolean {
+    const isFaceAuth = localStorage.getItem('isFaceAuth')
+    return isFaceAuth === 'true'
   }
 }

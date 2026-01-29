@@ -14,6 +14,11 @@ public class AssignmentUserDto
     [Required]
     public Guid UserId { get; set; }
     
+    /// <summary>
+    /// ID của lớp học mà bài tập được giao (nullable vì có thể giao trực tiếp cho user)
+    /// </summary>
+    public Guid? ClassId { get; set; }
+    
     public AssignmentUserStatus Status { get; set; }
     
     public DateTime AssignedAt { get; set; }

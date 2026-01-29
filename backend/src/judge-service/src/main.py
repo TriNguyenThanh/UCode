@@ -1,12 +1,7 @@
-"""
-Main entry point của hệ thống
-Khởi chạy AsyncAdaptiveConsumer để xử lý submissions từ RabbitMQ
-"""
 import asyncio
 from adaptive_consumer import AsyncAdaptiveConsumer
 
 async def main():
-    """Hàm main async"""
     consumer = AsyncAdaptiveConsumer()
     await consumer.start()
 

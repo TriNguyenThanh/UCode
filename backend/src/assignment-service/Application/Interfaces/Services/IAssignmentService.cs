@@ -15,6 +15,7 @@ public interface IAssignmentService
     Task<List<Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId);
     Task<List<Assignment>> GetAssignmentsByStudentAsync(Guid studentId);
     Task<List<Assignment>> GetAssignmentsByClassIdAsync(Guid classId);
+    Task<List<Assignment>> GetAssignmentsByStudentInClassAsync(Guid studentId, Guid classId);
     
     // Lightweight queries for ownership verification
     Task<Guid?> GetAssignmentOwnerIdAsync(Guid assignmentId);
@@ -26,7 +27,7 @@ public interface IAssignmentService
     Task<List<AssignmentUser>> GetAssignmentUsersAsync(Guid assignmentId);
     Task<AssignmentUser> UpdateAssignmentUserAsync(AssignmentUser detail);
     Task<AssignmentUser> UpdateAssignmentUserScoreAsync(Guid assignmentId, Guid userId, int score);
-    Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId);
+    Task<bool> DeleteAssignmentUserByUserIdAndClassIdAsync(Guid userId, Guid classId);
     
     // // BestSubmission operations
     // Task<BestSubmission> SaveSubmissionAsync(BestSubmission submission);
@@ -42,6 +43,7 @@ public interface IAssignmentService
     
     // Statistics
     Task<AssignmentStatistics> GetAssignmentStatisticsAsync(Guid assignmentId);
+    Task<SystemStatisticsResponse> GetSystemStatisticsAsync();
     
     // Sync students to class assignments
     Task<int> SyncStudentsToClassAssignmentsAsync(Guid classId, List<Guid> studentIds);

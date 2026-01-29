@@ -1,41 +1,128 @@
-<Window x:Class="UCode.Desktop.Views.Students.SubmissionDetailDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-        Title="Chi tiet bai nop"
-        Height="700"
-        Width="900"
-        WindowStartupLocation="CenterOwner"
-        Background="#F5F5F7"
-        FontFamily="Be Vietnam Pro, Segoe UI">
-    
+<mah:MetroWindow x:Class="UCode.Desktop.Views.Students.SubmissionDetailDialog"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                  xmlns:local="clr-namespace:UCode.Desktop.Helpers"
+                  xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+                  Dialog:DialogParticipation.Register="{Binding}"
+                  Title="Chi tiết bài nộp"
+                  Height="700"
+                  Width="1280"
+                  WindowStartupLocation="CenterOwner"
+                  ResizeMode="NoResize"
+                  ShowMinButton="False"
+                  ShowMaxRestoreButton="False"
+                  ShowInTaskbar="True"
+                  Background="#F5F5F7"
+                  FontFamily="Be Vietnam Pro, Segoe UI">
+
+    <Window.Resources>
+        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
-            <TextBlock Grid.Column="0" Text="Chi tiet bai nop" FontSize="20" FontWeight="SemiBold"/>
-            
-            <!-- Status Chip -->
-            <Border Grid.Column="1" Background="#4CAF50" CornerRadius="12" Padding="10,6" VerticalAlignment="Center">
-                <TextBlock Text="{Binding StatusDisplay}" Foreground="White" FontWeight="SemiBold"/>
+
+            <TextBlock Grid.Column="0"
+                       Text="Chi tiết bài nộp"
+                       FontSize="20"
+                       FontWeight="SemiBold"/>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <!-- Late Submission Badge -->
+                <Border CornerRadius="16"
+                        Padding="14,6"
+                        Background="#FF9800"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsSubmitLate, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ClockAlert"
+                                                    Width="16"
+                                                    Height="16"
+                                                    Foreground="White"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,6,0"/>
+                        <TextBlock Text="Nộp trễ"
+                                   Foreground="White"
+                                   FontWeight="SemiBold"
+                                   FontSize="13"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Status Chip -->
+                <Border CornerRadius="16"
+                        Padding="14,6"
+                        VerticalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background"
+                                Value="#4CAF50"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}"
+                                    Value="Failed">
+                                <Setter Property="Background"
+                                        Value="#F44336"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Width="16"
+                                                Height="16"
+                                                Foreground="White"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,6,0">
+                        <iconPacks:PackIconMaterial.Style>
+                            <Style TargetType="iconPacks:PackIconMaterial">
+                                <Setter Property="Kind"
+                                        Value="CheckCircle"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}"
+                                            Value="Failed">
+                                        <Setter Property="Kind"
+                                                Value="CloseCircle"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </iconPacks:PackIconMaterial.Style>
+                    </iconPacks:PackIconMaterial>
+                    <TextBlock Text="{Binding Status}"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               FontSize="13"/>
+                </StackPanel>
             </Border>
+            </StackPanel>
         </Grid>
-        
+
         <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!-- Submission Info Panel -->
-                <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                <Border Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -46,79 +133,194 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <!-- Row 1 -->
-                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
-                            <TextBlock Text="Submission ID" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding SubmissionId}" FontSize="13" FontFamily="Consolas"/>
+                        <StackPanel Grid.Row="0"
+                                    Grid.Column="0"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="Submission ID"
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding SubmissionId}"
+                                       FontSize="13"
+                                       FontFamily="Consolas"
+                                       Foreground="#333"/>
                         </StackPanel>
-                        
-                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
-                            <TextBlock Text="Thoi gian nop" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding SubmittedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" FontSize="13"/>
+
+                        <StackPanel Grid.Row="0"
+                                    Grid.Column="1"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="Thời gian nộp"
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding SubmittedAt, StringFormat='{}{0:HH:mm:ss dd/MM/yyyy}'}"
+                                       FontSize="13"
+                                       Foreground="#333"/>
                         </StackPanel>
-                        
+
                         <!-- Row 2 -->
-                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
-                            <TextBlock Text="Ngon ngu" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <Border Background="Transparent" BorderBrush="#2196F3" BorderThickness="1" CornerRadius="12" Padding="8,4" HorizontalAlignment="Left">
-                                <TextBlock Text="{Binding LanguageCode}" FontSize="11" Foreground="#2196F3" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="1"
+                                    Grid.Column="0"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="Ngôn ngữ"
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       Margin="0,0,0,4"/>
+                            <Border Background="#E3F2FD"
+                                    BorderBrush="#00275E"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="10,4"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding LanguageCode}"
+                                           FontSize="11"
+                                           Foreground="#00275E"
+                                           FontWeight="SemiBold"/>
                             </Border>
                         </StackPanel>
-                        
-                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,12">
-                            <TextBlock Text="Diem" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding Score}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50"/>
+
+                        <StackPanel Grid.Row="1"
+                                    Grid.Column="1"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="Điểm"
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding Score}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#333"/>
                         </StackPanel>
-                        
+
                         <!-- Row 3 -->
-                        <StackPanel Grid.Row="2" Grid.Column="0">
-                            <TextBlock Text="Thoi gian" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <TextBlock FontSize="13">
+                        <StackPanel Grid.Row="2"
+                                    Grid.Column="0">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                            Width="14"
+                                                            Height="14"
+                                                            Foreground="#666"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,6,0"/>
+                                <TextBlock Text="Thời gian"
+                                           FontSize="11"
+                                           Foreground="#666"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock FontSize="13"
+                                       Foreground="#333"
+                                       Margin="0,4,0,0">
                                 <Run Text="{Binding TotalTime, Mode=OneWay}"/>
                                 <Run Text=" ms"/>
                             </TextBlock>
                         </StackPanel>
-                        
-                        <StackPanel Grid.Row="2" Grid.Column="1">
-                            <TextBlock Text="Bo nho" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
-                            <TextBlock FontSize="13">
+
+                        <StackPanel Grid.Row="2"
+                                    Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Memory"
+                                                            Width="14"
+                                                            Height="14"
+                                                            Foreground="#666"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,6,0"/>
+                                <TextBlock Text="Bộ nhớ"
+                                           FontSize="11"
+                                           Foreground="#666"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock FontSize="13"
+                                       Foreground="#333"
+                                       Margin="0,4,0,0">
                                 <Run Text="{Binding TotalMemory, Mode=OneWay}"/>
                                 <Run Text=" KB"/>
                             </TextBlock>
                         </StackPanel>
                     </Grid>
                 </Border>
-                
-                <!-- Source Code -->
-                <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="20">
+
+                <!-- Source Code Section - Moved before Test Cases -->
+                <Border Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Source Code" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
-                        
-                        <Border Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="16">
-                            <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
-                                <TextBlock Text="{Binding SourceCode}" 
-                                           FontFamily="Consolas" 
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,12">
+                            <iconPacks:PackIconMaterial Kind="CodeBraces"
+                                                        Width="18"
+                                                        Height="18"
+                                                        Foreground="#00275E"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+                            <TextBlock Text="Source Code"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Border Background="#1E1E1E"
+                                BorderBrush="#3C3C3C"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                >
+                            <ScrollViewer MaxHeight="400"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Auto">
+                                <TextBox Text="{Binding SourceCode}"
+                                           FontFamily="Consolas"
                                            FontSize="12"
-                                           TextWrapping="Wrap"/>
+                                           Foreground="Black"
+                                           TextWrapping="NoWrap"
+                                            />
                             </ScrollViewer>
                         </Border>
                     </StackPanel>
                 </Border>
             </StackPanel>
         </ScrollViewer>
-        
+
         <!-- Footer -->
-        <Button Grid.Row="2" 
-                Content="Dong" 
-                Width="100"
-                Height="36"
+        <Button Grid.Row="2"
+                Content="ĐÓNG"
+                Width="120"
+                Height="40"
                 HorizontalAlignment="Right"
                 Margin="0,20,0,0"
-                Background="#2196F3"
-                Foreground="White"
+                Background="#FACB01"
+                Foreground="#00275E"
                 BorderThickness="0"
+                FontWeight="SemiBold"
+                FontSize="14"
                 Click="CloseButton_Click"
-                Cursor="Hand"/>
+                Cursor="Hand">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}"
+                                        CornerRadius="6"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter Property="Opacity"
+                                    Value="0.9"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
-</Window>
+</mah:MetroWindow>

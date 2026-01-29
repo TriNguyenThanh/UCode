@@ -35,6 +35,7 @@
             <helpers:ValidStatusConverter x:Key="ValidStatusConverter"/>
             <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <helpers:NullToBooleanConverter x:Key="NullToBooleanConverter"/>
+            <helpers:DeadlineDisplayConverter x:Key="DeadlineDisplayConverter"/>
             <helpers:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
             <helpers:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
             <helpers:SystemLogVisibilityConverter x:Key="SystemLogVisibilityConverter"/>
@@ -42,7 +43,7 @@
             <helpers:LogTypeToVisibilityConverter x:Key="LogTypeToVisibilityConverter"/>
             <helpers:SectionVisibilityConverter x:Key="SectionVisibilityConverter"/>
             <helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <helpers:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Colors -->
             <Color x:Key="PrimaryColor">#191970</Color>

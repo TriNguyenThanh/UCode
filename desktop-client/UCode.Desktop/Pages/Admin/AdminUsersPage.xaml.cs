@@ -5,15 +5,13 @@ namespace UCode.Desktop.Pages.Admin
 {
     public partial class AdminUsersPage : UserControl
     {
-        public AdminUsersPage()
+        public AdminUsersPage(AdminUsersViewModel viewModel)
         {
             InitializeComponent();
-        }
-
-        public void SetViewModel(AdminUsersViewModel viewModel)
-        {
             DataContext = viewModel;
-            _ = viewModel.InitializeAsync();
+
+            // Load data when page is loaded (non-blocking)
+            Loaded += async (s, e) => await viewModel.LoadUsersAsync();
         }
     }
 }

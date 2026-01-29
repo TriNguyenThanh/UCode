@@ -14,7 +14,8 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        RenderOptions.BitmapScalingMode="HighQuality">
+        RenderOptions.BitmapScalingMode="HighQuality"
+        Icon="pack://application:,,,/Resources/favicon.ico">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -43,13 +44,13 @@
                             <TextBlock Text="QUAY LẠI" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                    <TextBlock Text="📚" FontSize="24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <Image Source="pack://application:,,,/Resources/logo.png" Width="28" Height="28" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Text="UCode" FontSize="24" FontWeight="Bold" Foreground="#FACB01" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <Button x:Name="DashboardTab" Content="DASHBOARD" 
+                    <Button x:Name="DashboardTab" Content="TỔNG QUAN" 
                             Style="{StaticResource TabButtonActive}"
                             Click="DashboardTab_Click"/>
                     <Button x:Name="ProblemsTab" Content="NGÂN HÀNG BÀI" 

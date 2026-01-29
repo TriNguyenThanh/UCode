@@ -79,6 +79,55 @@ namespace UCode.Desktop.Services
             var requestBody = new { problemIds = problemIds };
             return await _apiService.PostAsync<List<BestSubmission>>($"/api/v1/submissions/assignment/{assignmentId}/problem/list-my-best", requestBody);
         }
+
+        /// <summary>
+        /// Increment AI detection count for current student
+        /// </summary>
+        /// <param name="assignmentId">Assignment ID</param>
+        /// <param name="stats">Dictionary of AI service name and count, e.g. {"OpenAI": 5, "Claude": 3}</param>
+        public async Task<ApiResponse<object>> IncrementAIDetectionAsync(string assignmentId, Dictionary<string, int> stats)
+        {
+            return await _apiService.PostAsync<object>($"/api/v1/assignments/{assignmentId}/student/increment-ai-detection", stats);
+        }
+        
+
+        public async Task NotifyAssignmentPublishedAsync(string assignmentId, string teacherId)
+        {
+            try
+            {
+                // Webhook URL of the Zalo Bot Service
+                var webhookUrl = "http://localhost:3000/api/webhook/assignment-published";
+                
+                var payload = new
+                {
+                    assignmentId = assignmentId,
+                    teacherId = teacherId
+                };
+
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(payload);
+                    var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                    
+                    // Fire and forget - don't wait for response to block UI
+                    // But here we await to ensure it's sent, but catch exceptions
+                    var response = await client.PostAsync(webhookUrl, content);
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Webhook] Sent notification for assignment {assignmentId}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Webhook] Failed to send notification. Status: {response.StatusCode}");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Webhook] Exception sending notification: {ex.Message}");
+            }
+        }
     }
 
     // public class CreateAssignmentRequest

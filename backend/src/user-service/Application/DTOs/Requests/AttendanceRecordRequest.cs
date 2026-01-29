@@ -42,4 +42,9 @@ public class AttendanceRecordRequest
     /// Định danh thiết bị
     /// </summary>
     public string? DeviceId { get; set; }
+
+    /// <summary>
+    /// Ảnh khuôn mặt dạng base64 (dùng cho xác thực khuôn mặt)
+    /// </summary>
+    public string? FaceImage { get; set; }
 }

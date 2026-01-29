@@ -25,14 +25,16 @@ public class FilesController : ControllerBase
     /// </summary>
     /// <param name="file">File to upload</param>
     /// <param name="category">File category (AssignmentDocument, CodeSubmission, Image, Avatar, TestCase, Reference, Dument)</param>
+    /// <param name="fileName">Optional custom file name (without extension). If not provided, a unique name will be generated.</param>
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(100_000_000)] // 100MB global limit
     [ProducesResponseType(typeof(ApiResponse<FileUploadResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
-        IFormFile file, 
-        FileCategory category)
+        [FromForm] IFormFile file, 
+        [FromForm] string category,
+        [FromForm]string? fileName = null)
     {
         try
         {
@@ -41,13 +43,19 @@ public class FilesController : ControllerBase
                 return BadRequest(ApiResponse<object>.ErrorResponse("No file provided"));
             }
 
-            // Validate category
-            if (!FileCategoryConfiguration.IsValidCategory(category))
+            // Parse category string to enum (case-insensitive)
+            if (!Enum.TryParse<FileCategory>(category, ignoreCase: true, out var fileCategoryEnum))
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}"));
+                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {category}. Valid categories: {string.Join(", ", Enum.GetNames<FileCategory>())}"));
             }
 
-            var result = await _s3Service.UploadFileAsync(file, category, null);
+            // Validate category
+            if (!FileCategoryConfiguration.IsValidCategory(fileCategoryEnum))
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse($"Invalid file category: {fileCategoryEnum}"));
+            }
+
+            var result = await _s3Service.UploadFileAsync(file, fileCategoryEnum, fileName);
             return Ok(ApiResponse<FileUploadResponse>.SuccessResponse(result, "File uploaded successfully"));
         }
         catch (ArgumentException ex)

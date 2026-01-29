@@ -12,11 +12,19 @@ public class AttendanceService : IAttendanceService
 {
     private readonly IAttendanceRepository _attendanceRepository;
     private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
+    private readonly IFaceServiceClient _faceServiceClient;
 
-    public AttendanceService(IAttendanceRepository attendanceRepository, IMapper mapper)
+    public AttendanceService(
+        IAttendanceRepository attendanceRepository, 
+        IMapper mapper,
+        IUserRepository userRepository,
+        IFaceServiceClient faceServiceClient)
     {
         _attendanceRepository = attendanceRepository;
         _mapper = mapper;
+        _userRepository = userRepository;
+        _faceServiceClient = faceServiceClient;
     }
 
     private string GenerateRandomCode(int length = 6)
@@ -24,6 +32,17 @@ public class AttendanceService : IAttendanceService
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         var random = new Random();
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    private async Task<AttendanceSession> AutoCloseExpiredSessionAsync(AttendanceSession session)
+    {
+        // Auto-close session if it has expired and is still active
+        if (session.IsActive && session.EndTime < DateTime.UtcNow)
+        {
+            session.IsActive = false;
+            await _attendanceRepository.UpdateSessionAsync(session);
+        }
+        return session;
     }
 
     public async Task<ApiResponse<AttendanceRecordResponse>> CheckInAsync(AttendanceRecordRequest request)
@@ -67,6 +86,41 @@ public class AttendanceService : IAttendanceService
                 {
                     attendanceRecord.IsValid = false;
                     attendanceRecord.InvalidReason += " Vị trí không khớp ";
+                }
+            }
+
+            // Validate face verification if required
+            if (session.RequireFaceCheck)
+            {
+                // Check if user has face authentication enabled
+                var user = await _userRepository.GetByIdAsync(request.UserId);
+                if (user == null)
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("User not found");
+                }
+
+                if (!user.IsFaceAuth)
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("Face authentication is required but not set up. Please register your face first.");
+                }
+
+                // Verify face if image is provided
+                if (!string.IsNullOrEmpty(request.FaceImage))
+                {
+                    var verifyResult = await _faceServiceClient.VerifyFaceAsync(
+                        request.UserId.ToString(), 
+                        request.FaceImage, 
+                        threshold: 0.6f);
+
+                    if (!verifyResult.Success || !verifyResult.IsMatch)
+                    {
+                        attendanceRecord.IsValid = false;
+                        attendanceRecord.InvalidReason += " Khuôn mặt không khớp ";
+                    }
+                }
+                else
+                {
+                    return ApiResponse<AttendanceRecordResponse>.ErrorResponse("Face image is required for this session");
                 }
             }
 
@@ -114,6 +168,8 @@ public class AttendanceService : IAttendanceService
             var attendanceSession = _mapper.Map<AttendanceSession>(request);
             attendanceSession.Id = Guid.NewGuid();
             attendanceSession.CreatedAt = DateTime.UtcNow;
+            attendanceSession.StartTime = request.StartTime.Kind == DateTimeKind.Utc ? request.StartTime : request.StartTime.ToUniversalTime();
+            attendanceSession.EndTime = request.EndTime.Kind == DateTimeKind.Utc ? request.EndTime : request.EndTime.ToUniversalTime();
             attendanceSession.SessionCode = this.GenerateRandomCode();
             var session = await _attendanceRepository.CreateSessionAsync(attendanceSession);
             var response = _mapper.Map<AttendanceSessionResponse>(session);
@@ -178,6 +234,9 @@ public class AttendanceService : IAttendanceService
             if (session == null)
                 return ApiResponse<AttendanceSessionResponse?>.ErrorResponse("Session not found");
 
+            // Auto-close if expired
+            session = await AutoCloseExpiredSessionAsync(session);
+
             var response = _mapper.Map<AttendanceSessionResponse?>(session);
             return ApiResponse<AttendanceSessionResponse?>.SuccessResponse(response, "Session retrieved successfully");
         }
@@ -192,6 +251,13 @@ public class AttendanceService : IAttendanceService
         try
         {
             var sessions = await _attendanceRepository.GetSessionsAsync(classId, pageNumber, pageSize);
+            
+            // Auto-close expired sessions
+            foreach (var session in sessions)
+            {
+                await AutoCloseExpiredSessionAsync(session);
+            }
+            
             var response = _mapper.Map<List<AttendanceSessionResponse>>(sessions);
             return ApiResponse<List<AttendanceSessionResponse>>.SuccessResponse(response, "Sessions retrieved successfully");
         }
@@ -253,6 +319,13 @@ public class AttendanceService : IAttendanceService
             updatedSession.Id = existingSession.Id; 
             updatedSession.SessionCode = existingSession.SessionCode; 
             updatedSession.ClassId = existingSession.ClassId;
+            // Convert to UTC for PostgreSQL
+            updatedSession.StartTime = attendanceSession.StartTime.Kind == DateTimeKind.Utc 
+                ? attendanceSession.StartTime 
+                : attendanceSession.StartTime.ToUniversalTime();
+            updatedSession.EndTime = attendanceSession.EndTime.Kind == DateTimeKind.Utc 
+                ? attendanceSession.EndTime 
+                : attendanceSession.EndTime.ToUniversalTime();
 
             var session = await _attendanceRepository.UpdateSessionAsync(updatedSession);
             var response = _mapper.Map<AttendanceSessionResponse>(session);
@@ -313,6 +386,9 @@ public class AttendanceService : IAttendanceService
             var session = await _attendanceRepository.GetSessionByCodeAsync(code);
             if (session == null)
                 return ApiResponse<AttendanceSessionResponse?>.ErrorResponse("Session not found");
+
+            // Auto-close if expired
+            session = await AutoCloseExpiredSessionAsync(session);
 
             var response = _mapper.Map<AttendanceSessionResponse?>(session);
             return ApiResponse<AttendanceSessionResponse?>.SuccessResponse(response, "Session retrieved successfully");

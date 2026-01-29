@@ -26,4 +26,7 @@ public interface ISubmissionRepository
     public Task<AssignmentService.Application.DTOs.Responses.StatsPerProblemResponse> GetStatsPerProblem(Guid assignmentId, Guid problemId);
     // public Task Detach(Submission submission);
     
+    // System statistics
+    Task<int> GetTotalSubmissionsCountAsync();
+    
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UCode.Desktop", "UCode.Desktop\UCode.Desktop.csproj", "{4AD1BE3B-EA8B-494D-9D02-512C835A3F99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TitaniumProxy", "TitaniumProxy\TitaniumProxy.csproj", "{40D3C862-5A07-5632-3474-7564B8FA34DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +29,23 @@ Global
 		{4AD1BE3B-EA8B-494D-9D02-512C835A3F99}.Release|x64.Build.0 = Release|Any CPU
 		{4AD1BE3B-EA8B-494D-9D02-512C835A3F99}.Release|x86.ActiveCfg = Release|Any CPU
 		{4AD1BE3B-EA8B-494D-9D02-512C835A3F99}.Release|x86.Build.0 = Release|Any CPU
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|Any CPU.Build.0 = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|x64.ActiveCfg = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|x64.Build.0 = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|x86.ActiveCfg = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Debug|x86.Build.0 = Debug|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|Any CPU.ActiveCfg = Release|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|Any CPU.Build.0 = Release|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|x64.ActiveCfg = Release|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|x64.Build.0 = Release|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|x86.ActiveCfg = Release|x64
+		{40D3C862-5A07-5632-3474-7564B8FA34DE}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0A3B08D4-20B8-47AF-BEAB-D1F4DEA2D7F6}
 	EndGlobalSection
 EndGlobal

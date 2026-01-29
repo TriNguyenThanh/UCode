@@ -1,3 +1,14 @@
-random session code (done)
-
-*Nhớ*: Rà soát lại bảo mật của tất cả API của user-service  (Trí đừng xóa cái này nhé)
+1. Edit code: viết code chỉ viết body, phần header và footer lấy trong db
+2. Bài tập: Code phần bài tập
+3. Tạo problem: chỉnh logic tự tạo dataeset
+4. Ẩn properties khóa học
+5. Xem file PDF
+6. Chỉnh view Admin
+7. Validate số lượng test case trước khi public problem
+8. Hiện thị tất cả problem cho dùng private hay draf (role teacher)
+9. Tự động public problem đó
+10. Xuất excel file bảng điểm
+11. tự động đóng điểm danh khi hết giờ
+12. Ẩn status đã chấm, chưa chấm
+13. Status đã làm, đang làm trong view assigment
+14. Xóa sinh viên thì chưa xóa bản ghi tương ứng trong AssignmentUser

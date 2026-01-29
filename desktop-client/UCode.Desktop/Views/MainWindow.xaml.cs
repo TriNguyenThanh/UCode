@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using MahApps.Metro.Controls;
 using UCode.Desktop.Services;
 using UCode.Desktop.ViewModels;
@@ -9,9 +10,11 @@ namespace UCode.Desktop.Views
     public partial class MainWindow : MetroWindow
     {
         private readonly NavigationService _navigationService;
+        private readonly AIDetectorService _aiDetectorService;
 
-        public MainWindow(MainViewModel viewModel, NavigationService navigationService)
+        public MainWindow(MainViewModel viewModel, NavigationService navigationService, AIDetectorService aiDetectorService)
         {
+            _aiDetectorService = aiDetectorService;
             try
             {
                 var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mainwindow.log");
@@ -34,11 +37,25 @@ namespace UCode.Desktop.Views
                         // Setup NavigationFrame
                         _navigationService.SetFrame(NavigationFrame);
 
-                        // Hide HomeScrollViewer when navigating
-                        _navigationService.CanGoBackChanged += (sender, canGoBack) =>
+                        // Hide HomeScrollViewer when navigating, show it when going back to home
+                        // Use Navigated event to toggle visibility between Home and Frame
+                        _navigationService.Navigated += (sender, page) =>
                         {
-                            HomeScrollViewer.Visibility = canGoBack ? Visibility.Collapsed : Visibility.Visible;
+                            if (page != null)
+                            {
+                                HomeScrollViewer.Visibility = Visibility.Collapsed;
+                                NavigationFrame.Visibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                HomeScrollViewer.Visibility = Visibility.Visible;
+                                NavigationFrame.Visibility = Visibility.Collapsed;
+                                NavigationFrame.Content = null;
+                                // Reset ActiveTab to Home when going back to home
+                                viewModel.ActiveTab = "Home";
+                            }
                         };
+
 
                         System.IO.File.AppendAllText(logPath, "NavigationService initialized. Loading data...\n");
                         await viewModel.LoadDataAsync();
@@ -60,24 +77,69 @@ namespace UCode.Desktop.Views
                 MessageBox.Show($"Fatal error creating main window: {ex.Message}", "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
+
+            // Cleanup when window closes
+            Closing += (s, e) =>
+            {
+                try
+                {
+                    _aiDetectorService?.StopAIDetector();
+                }
+                catch (Exception ex)
+                {
+                    var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "window_cleanup_error.log");
+                    System.IO.File.WriteAllText(logPath, $"Error during window cleanup: {ex.Message}\n{ex.StackTrace}");
+                }
+            };
+
+            // Handle Backspace key for navigation back
+            PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Back && _navigationService.CanGoBack)
+                {
+                    // Don't trigger if focus is on a TextBox or similar input control
+                    var focusedElement = Keyboard.FocusedElement;
+                    if (focusedElement is System.Windows.Controls.TextBox ||
+                        focusedElement is System.Windows.Controls.PasswordBox ||
+                        focusedElement is System.Windows.Controls.RichTextBox ||
+                        focusedElement is ICSharpCode.AvalonEdit.Editing.TextArea ||
+                        focusedElement is ICSharpCode.AvalonEdit.TextEditor)
+                    {
+                        return; // Let input control handle the Backspace
+                    }
+
+                    // Don't navigate back if on main tab pages
+                    bool isMainTab = NavigationFrame.Content is Pages.Students.StudentAssignmentsPage ||
+                                     NavigationFrame.Content is Pages.Students.StudentSubmissionsPage;
+                    if (isMainTab)
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+
+                    _navigationService.GoBack();
+                    e.Handled = true;
+                }
+            };
         }
 
         private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // For MainWindow (student), we don't have NavigationService
-                // So we need to show it in a dialog or separate window
-                // Let's create a simple navigation window
-                var settingsWindow = new Window
+                var settingsPage = App.ServiceProvider.GetService(typeof(Pages.SettingsPage)) as Pages.SettingsPage;
+                if (settingsPage != null)
                 {
-                    Title = "Cài đặt",
-                    Width = 900,
-                    Height = 700,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
-                };
-                settingsWindow.ShowDialog();
+                    var settingsWindow = new MetroWindow
+                    {
+                        Title = "Cài đặt",
+                        Width = 900,
+                        Height = 700,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        Content = settingsPage
+                    };
+                    settingsWindow.ShowDialog();
+                }
             }
             catch (Exception ex)
             {
@@ -89,20 +151,73 @@ namespace UCode.Desktop.Views
         {
             try
             {
-                // For students, show settings page in a window
-                var settingsWindow = new Window
+                var authService = App.ServiceProvider.GetService(typeof(AuthService)) as AuthService;
+                var currentUser = authService?.CurrentUser;
+
+                // Check user role - Teachers use TeacherProfilePage, Students use StudentProfilePage
+                if (currentUser?.Role == Models.UserRole.Teacher)
                 {
-                    Title = "Hồ sơ",
-                    Width = 900,
-                    Height = 700,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = App.ServiceProvider.GetService(typeof(Pages.SettingsPage))
-                };
-                settingsWindow.ShowDialog();
+                    var profilePage = App.ServiceProvider.GetService(typeof(Pages.TeacherProfilePage)) as Pages.TeacherProfilePage;
+                    if (profilePage != null)
+                    {
+                        var profileWindow = new MetroWindow
+                        {
+                            Title = "Hồ sơ",
+                            Width = 900,
+                            Height = 700,
+                            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                            Content = profilePage
+                        };
+                        profileWindow.ShowDialog();
+                    }
+                }
+                else
+                {
+                    // Students use StudentProfilePage
+                    var profilePage = App.ServiceProvider.GetService(typeof(Pages.StudentProfilePage)) as Pages.StudentProfilePage;
+                    if (profilePage != null)
+                    {
+                        var profileWindow = new MetroWindow
+                        {
+                            Title = "Hồ sơ",
+                            Width = 1000,
+                            Height = 750,
+                            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                            Content = profilePage
+                        };
+                        profileWindow.ShowDialog();
+                    }
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LogoutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var viewModel = DataContext as MainViewModel;
+                if (viewModel?.LogoutCommand?.CanExecute(null) == true)
+                {
+                    viewModel.LogoutCommand.Execute(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during logout: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UserMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            if (button?.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
             }
         }
     }

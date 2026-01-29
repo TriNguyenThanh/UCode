@@ -12,31 +12,62 @@
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:AssignmentTypeConverter x:Key="AssignmentTypeConverter"/>
         <local:AssignmentTypeToColorConverter x:Key="AssignmentTypeToColorConverter"/>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
     </UserControl.Resources>
 
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="40,30">
 
-                <!-- Back Button -->
-                <Button Style="{DynamicResource MahApps.Styles.Button.Flat}"
-                        Foreground="#00275E"
-                        Command="{Binding NavigateBackCommand}"
-                        Cursor="Hand"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,0,20">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                    Width="20"
-                                                    Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                        <TextBlock Text="Quay lại"
-                                   FontSize="15"
-                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                <!-- Assignment Type Badge -->
+                <StackPanel Margin="0,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border Grid.Column="0"
+                                Background="#00275E"
+                                CornerRadius="12"
+                                Padding="10,6"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding Assignment.AssignmentType, Converter={StaticResource AssignmentTypeConverter}}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       Foreground="White"/>
+                        </Border>
+                        
+                        <!-- Countdown Timer -->
+                        <Border Grid.Column="1"
+                                Background="#FF5722"
+                                CornerRadius="12"
+                                Padding="12,6"
+                                HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ClockOutline"
+                                                            Width="16"
+                                                            Height="16"
+                                                            Foreground="White"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,8,0"/>
+                                <TextBlock Text="Thời gian còn lại: "
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TimeRemaining}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
 
                 <!-- Assignment Header -->
                 <Border Background="White"
@@ -56,6 +87,7 @@
                                    FontSize="32"
                                    FontWeight="Bold"
                                    FontFamily="Be Vietnam Pro, Segoe UI"
+                                   Foreground="#000"
                                    Margin="0,0,0,15"/>
                         <TextBlock Text="{Binding Assignment.Description}"
                                    FontSize="14"
@@ -65,66 +97,100 @@
                                    Margin="0,0,0,15"/>
 
                         <StackPanel Orientation="Horizontal"
-                                    Margin="0,0,0,15">
-                            <Border CornerRadius="12"
-                                    Padding="8,4"
+                                    Margin="0,0,0,20">
+                            <Border BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="10,6"
                                     Margin="0,0,10,0">
-                                <Border.Background>
-                                    <Binding Path="Assignment.AssignmentType">
-                                        <Binding.Converter>
-                                            <local:AssignmentTypeToColorConverter/>
-                                        </Binding.Converter>
-                                    </Binding>
-                                </Border.Background>
                                 <TextBlock FontSize="12"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
-                                           Foreground="White">
-                                    <TextBlock.Text>
-                                        <Binding Path="Assignment.AssignmentType">
-                                            <Binding.Converter>
-                                                <local:AssignmentTypeConverter/>
-                                            </Binding.Converter>
-                                        </Binding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </Border>
-                            <Border CornerRadius="12"
-                                    Padding="8,4"
-                                    Margin="0,0,10,0">
-                                <Border.Background>
-                                    <Binding Path="Assignment.Status">
-                                        <Binding.Converter>
-                                            <local:AssignmentStatusToColorConverter/>
-                                        </Binding.Converter>
-                                    </Binding>
-                                </Border.Background>
-                                <TextBlock FontSize="12"
-                                           FontFamily="Be Vietnam Pro, Segoe UI"
-                                           Foreground="White">
-                                    <TextBlock.Text>
-                                        <Binding Path="Assignment.Status">
-                                            <Binding.Converter>
-                                                <local:AssignmentStatusConverter/>
-                                            </Binding.Converter>
-                                        </Binding>
-                                    </TextBlock.Text>
+                                           FontWeight="SemiBold"
+                                           Foreground="#666">
+                                    <Run Text="{Binding Problems.Count, FallbackValue=2, Mode=OneWay}"/>
+                                    <Run Text=" câu hỏi"/>
                                 </TextBlock>
                             </Border>
                             <Border BorderBrush="#E0E0E0"
                                     BorderThickness="1"
                                     CornerRadius="12"
-                                    Padding="8,4">
+                                    Padding="10,6"
+                                    Margin="0,0,10,0">
                                 <TextBlock FontSize="12"
                                            FontFamily="Be Vietnam Pro, Segoe UI"
+                                           FontWeight="SemiBold"
                                            Foreground="#666">
-                                    <Run Text="{Binding Assignment.TotalPoints}"/>
-                                    <Run Text="điểm"/>
+                                    <Run Text="{Binding Assignment.TotalPoints, Mode=OneWay}"/>
+                                    <Run Text=" điểm"/>
                                 </TextBlock>
+                            </Border>
+                            <Border Background="#4CAF50"
+                                    CornerRadius="12"
+                                    Padding="10,6"
+                                    Margin="0,0,10,0">
+                                <TextBlock FontSize="12"
+                                           FontFamily="Be Vietnam Pro, Segoe UI"
+                                           FontWeight="SemiBold"
+                                           Foreground="White">
+                                    <Run Text="Điểm của bạn: "/>
+                                    <Run Text="{Binding UserScore, FallbackValue=0, Mode=OneWay}"/>
+                                    <Run Text="/"/>
+                                    <Run Text="{Binding Assignment.TotalPoints, Mode=OneWay}"/>
+                                </TextBlock>
+                            </Border>
+                            
+                            <!-- AI Detection Count Chip -->
+                            <Border Background="#FF9800"
+                                    CornerRadius="12"
+                                    Padding="10,6"
+                                    Margin="0,0,10,0"
+                                    Visibility="{Binding AssignmentUser.CapturedAICount, Converter={StaticResource CountToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Robot"
+                                                                Width="14"
+                                                                Height="14"
+                                                                Foreground="White"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,6,0"/>
+                                    <TextBlock FontSize="12"
+                                               FontFamily="Be Vietnam Pro, Segoe UI"
+                                               FontWeight="SemiBold"
+                                               Foreground="White">
+                                        <Run Text="Truy cập AI: "/>
+                                        <Run Text="{Binding AssignmentUser.CapturedAICount, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- AI Detection Details Button -->
+                            <Border Background="Transparent"
+                                    BorderBrush="#FF9800"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="10,6"
+                                    Cursor="Hand"
+                                    Visibility="{Binding AssignmentUser.CapturedAICount, Converter={StaticResource CountToVisibilityConverter}}">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding ShowAIDetectionDetailsCommand}"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="InformationOutline"
+                                                                Width="14"
+                                                                Height="14"
+                                                                Foreground="#FF9800"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,6,0"/>
+                                    <TextBlock Text="Chi tiết truy cập"
+                                               FontSize="12"
+                                               FontFamily="Be Vietnam Pro, Segoe UI"
+                                               FontWeight="SemiBold"
+                                               Foreground="#FF9800"/>
+                                </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Statistics Cards -->
-                        <Grid Margin="0,20,0,0">
+                        <Grid Margin="0,0,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -134,19 +200,17 @@
                             <!-- Problem Count -->
                             <Border Grid.Column="0"
                                     Background="#F5F5F5"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="20"
-                                    Margin="0,0,15,0">
+                                    Margin="0,0,10,0">
                                 <StackPanel>
                                     <TextBlock Text="Số câu hỏi"
-                                               FontSize="14"
+                                               FontSize="13"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                Foreground="#666"
                                                Margin="0,0,0,8"/>
-                                    <TextBlock Text="{Binding Problems.Count}"
-                                               FontSize="28"
+                                    <TextBlock Text="{Binding Problems.Count, FallbackValue=2}"
+                                               FontSize="32"
                                                FontWeight="Bold"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                Foreground="#00275E"/>
@@ -156,54 +220,49 @@
                             <!-- Total Points -->
                             <Border Grid.Column="1"
                                     Background="#F5F5F5"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="20"
-                                    Margin="0,0,15,0">
+                                    Margin="0,0,10,0">
                                 <StackPanel>
                                     <TextBlock Text="Tổng điểm"
-                                               FontSize="14"
+                                               FontSize="13"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                Foreground="#666"
                                                Margin="0,0,0,8"/>
-                                    <TextBlock FontSize="28"
+                                    <TextBlock Text="{Binding Assignment.TotalPoints}"
+                                               FontSize="32"
                                                FontWeight="Bold"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
-                                               Foreground="#4CAF50">
-                                        <Run Text="{Binding Assignment.TotalPoints}"/>
-                                    </TextBlock>
+                                               Foreground="#4CAF50"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- User Score -->
                             <Border Grid.Column="2"
                                     Background="#F5F5F5"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="20">
                                 <StackPanel>
                                     <TextBlock Text="Điểm của bạn"
-                                               FontSize="14"
+                                               FontSize="13"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                Foreground="#666"
                                                Margin="0,0,0,8"/>
                                     <StackPanel Orientation="Horizontal"
                                                 VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding UserScore, FallbackValue=0}"
-                                                   FontSize="28"
+                                        <TextBlock Text="{Binding UserScore, FallbackValue=150, Mode=OneWay}"
+                                                   FontSize="32"
                                                    FontWeight="Bold"
                                                    FontFamily="Be Vietnam Pro, Segoe UI"
-                                                   Foreground="#2196F3"/>
+                                                   Foreground="#00275E"/>
                                         <TextBlock Text="/"
-                                                   FontSize="28"
+                                                   FontSize="32"
                                                    FontWeight="Bold"
                                                    FontFamily="Be Vietnam Pro, Segoe UI"
                                                    Foreground="#666"
                                                    Margin="4,0"/>
                                         <TextBlock Text="{Binding Assignment.TotalPoints}"
-                                                   FontSize="28"
+                                                   FontSize="32"
                                                    FontWeight="Bold"
                                                    FontFamily="Be Vietnam Pro, Segoe UI"
                                                    Foreground="#666"/>
@@ -214,7 +273,7 @@
 
                         <!-- Progress Bar -->
                         <StackPanel Margin="0,20,0,0">
-                            <Grid Margin="0,0,0,8">
+                            <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -229,9 +288,9 @@
                                     <TextBlock FontSize="14"
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                FontWeight="SemiBold">
-                                        <Run Text="{Binding CompletedProblemsCount, Mode=OneWay}"/>
+                                        <Run Text="{Binding CompletedProblemsCount, FallbackValue=1, Mode=OneWay}"/>
                                         <Run Text="/"/>
-                                        <Run Text="{Binding Problems.Count, Mode=OneWay}"/>
+                                        <Run Text="{Binding Problems.Count, FallbackValue=2, Mode=OneWay}"/>
                                     </TextBlock>
                                     <TextBlock Text=" - "
                                                FontSize="14"
@@ -241,57 +300,108 @@
                                                FontFamily="Be Vietnam Pro, Segoe UI"
                                                FontWeight="SemiBold"
                                                Foreground="#4CAF50">
-                                        <Run Text="{Binding ProgressPercentage, Mode=OneWay, StringFormat='{}{0:F0}'}"/>
+                                        <Run Text="{Binding ProgressPercentage, FallbackValue=50, Mode=OneWay, StringFormat='{}{0:F0}'}"/>
                                         <Run Text="%"/>
                                     </TextBlock>
                                 </StackPanel>
                             </Grid>
                             <ProgressBar Minimum="0"
                                          Maximum="100"
-                                         Value="{Binding ProgressPercentage, Mode=OneWay}"
-                                         Height="10"
-                                         Foreground="#4CAF50"
+                                         Value="{Binding ProgressPercentage, FallbackValue=50, Mode=OneWay}"
+                                         Height="8"
+                                         Foreground="#00275E"
                                          Background="#E0E0E0"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Problems List -->
-                <TextBlock Text="Danh sách câu hỏi"
-                           FontSize="24"
-                           FontWeight="SemiBold"
-                           FontFamily="Be Vietnam Pro, Segoe UI"
-                           Margin="0,0,0,20"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                               Text="Danh sách câu hỏi"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               FontFamily="Be Vietnam Pro, Segoe UI"
+                               VerticalAlignment="Center"/>
+                    
+                    <!-- Refresh Button -->
+                    <Button Grid.Column="1"
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource MahApps.Styles.Button.Flat}"
+                            Background="#00275E"
+                            Foreground="White"
+                            Padding="12,8"
+                            Cursor="Hand"
+                            ToolTip="Làm mới dữ liệu">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh"
+                                                        Width="18"
+                                                        Height="18"
+                                                        Foreground="White"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"/>
+                            <TextBlock Text="Làm mới"
+                                       FontSize="14"
+                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
                 <ItemsControl ItemsSource="{Binding Problems}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Background="White"
                                     BorderBrush="#E0E0E0"
-                                    BorderThickness="1"
+                                    BorderThickness="2"
                                     CornerRadius="8"
                                     Margin="0,0,0,15"
-                                    Padding="20"
+                                    Padding="25"
                                     Cursor="Hand">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#E0E0E0"
-                                                      BlurRadius="10"
-                                                      ShadowDepth="2"
-                                                      Opacity="0.5"/>
-                                </Border.Effect>
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush"
+                                                Value="#E0E0E0"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver"
+                                                     Value="True">
+                                                <Setter Property="BorderBrush"
+                                                        Value="#00275E"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Problem Number -->
                                     <Border Grid.Column="0"
-                                            Background="#00275E"
                                             Width="50"
                                             Height="50"
                                             CornerRadius="25"
                                             Margin="0,0,20,0">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background"
+                                                        Value="#4CAF50"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding OrderIndex}"
+                                                                 Value="2">
+                                                        <Setter Property="Background"
+                                                                Value="#00275E"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <TextBlock Text="{Binding OrderIndex}"
                                                    FontSize="20"
                                                    FontWeight="Bold"
@@ -301,26 +411,135 @@
                                     </Border>
 
                                     <!-- Problem Info -->
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="18"
-                                                   FontWeight="SemiBold"
-                                                   FontFamily="Be Vietnam Pro, Segoe UI"
-                                                   Margin="0,0,0,10"/>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Margin="0,0,0,10">
+                                            <TextBlock Text="{Binding ProblemCode}"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                                       Margin="0,0,8,0"/>
+                                            <TextBlock Text="-"
+                                                       FontSize="18"
+                                                       FontFamily="Be Vietnam Pro, Segoe UI"
+                                                       Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       FontFamily="Be Vietnam Pro, Segoe UI"/>
+                                        </StackPanel>
                                         <StackPanel Orientation="Horizontal">
+                                            <!-- Difficulty Badge -->
+                                            <Border CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Margin="0,0,10,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background"
+                                                                Value="#FF9800"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Difficulty}"
+                                                                         Value="EASY">
+                                                                <Setter Property="Background"
+                                                                        Value="#4CAF50"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Difficulty, FallbackValue=MEDIUM}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI"/>
+                                            </Border>
+
+                                            <!-- Points Badge -->
                                             <Border Background="#FACB01"
                                                     CornerRadius="12"
-                                                    Padding="8,4"
+                                                    Padding="10,5"
                                                     Margin="0,0,10,0">
-                                                <TextBlock FontSize="12"
-                                                           Foreground="#00275E"
+                                                <TextBlock FontSize="11"
+                                                           Foreground="#000"
+                                                           FontWeight="SemiBold"
                                                            FontFamily="Be Vietnam Pro, Segoe UI">
-                                                    <Run Text="{Binding Points}"/>
-                                                    <Run Text="điểm"/>
+                                                    <Run Text="{Binding Points, FallbackValue=150}"/>
+                                                    <Run Text=" điểm"/>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Status Badge (only for completed) -->
+                                            <Border Background="#4CAF50"
+                                                    CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Margin="0,0,10,0"
+                                                    Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="Đã hoàn thành"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI"/>
+                                            </Border>
+
+                                            <!-- Testcases Badge (only for completed) -->
+                                            <Border Background="#4CAF50"
+                                                    CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Margin="0,0,10,0"
+                                                    Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI">
+                                                    <Run Text="{Binding PassedTestcases, FallbackValue=4}"/>
+                                                    <Run Text="/"/>
+                                                    <Run Text="{Binding TotalTestcases, FallbackValue=4}"/>
+                                                    <Run Text=" testcases"/>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Score Detail Badge (only for completed) -->
+                                            <Border Background="#4CAF50"
+                                                    CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Margin="0,0,10,0"
+                                                    Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI">
+                                                    <Run Text="Điểm: "/>
+                                                    <Run Text="{Binding EarnedPoints, FallbackValue=150}"/>
+                                                    <Run Text="/"/>
+                                                    <Run Text="{Binding Points, FallbackValue=150}"/>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Submissions Count (only for completed) -->
+                                            <Border BorderBrush="#E0E0E0"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="10,5"
+                                                    Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#666"
+                                                           FontFamily="Be Vietnam Pro, Segoe UI">
+                                                    <Run Text="{Binding SubmissionCount, FallbackValue=2}"/>
+                                                    <Run Text=" lần nộp"/>
                                                 </TextBlock>
                                             </Border>
                                         </StackPanel>
                                     </StackPanel>
+
+                                    <!-- Check Icon (only for completed) -->
+                                    <iconPacks:PackIconMaterial Grid.Column="2"
+                                                                Kind="CheckCircle"
+                                                                Width="24"
+                                                                Height="24"
+                                                                Foreground="#4CAF50"
+                                                                VerticalAlignment="Center"
+                                                                Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 </Grid>
                                 <Border.InputBindings>
                                     <MouseBinding Gesture="LeftClick"

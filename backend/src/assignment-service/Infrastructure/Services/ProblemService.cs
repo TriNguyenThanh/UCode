@@ -12,13 +12,15 @@ public class ProblemService : IProblemService
 {
     private readonly IProblemRepository _problemRepository;
     private readonly ILanguageService _languageService;
+    private readonly IDatasetService _datasetService;
     private readonly IMapper _mapper;
     private const int MaxGenerateRetries = 5;
 
-    public ProblemService(IProblemRepository problemRepository, ILanguageService languageService, IMapper mapper)
+    public ProblemService(IProblemRepository problemRepository, ILanguageService languageService, IDatasetService datasetService, IMapper mapper)
     {
         _problemRepository = problemRepository;
         _languageService = languageService;
+        _datasetService = datasetService;
         _mapper = mapper;
     }
     private string FormatCode(string seq) => $"P{seq:000}";
@@ -44,10 +46,43 @@ public class ProblemService : IProblemService
                 OwnerId = ownerId,
                 Slug = GenerateSlug(title),
                 Visibility = visibility,
-                Status = ProblemStatus.DRAFT
+                Status = ProblemStatus.PUBLISHED
             };
 
-            return await _problemRepository.AddAsync(problem);
+           
+            var addedProblem = await _problemRepository.AddAsync(problem);
+
+            var languageDtos = await _languageService.GetAllLanguagesAsync(includeDisabled: false);
+
+            await this.AddOrUpdateProblemLanguagesAsync(addedProblem.ProblemId,
+                languageDtos.Select(lang => new ProblemLanguageDto
+                {
+                    LanguageId = lang.LanguageId,
+                    IsAllowed = true
+                }).ToList());
+
+            // Automatically create SAMPLE and OFFICIAL datasets
+            var sampleDataset = new Dataset
+            {
+                DatasetId = Guid.NewGuid(),
+                Name = "Bộ testcase cho sinh viên test",
+                ProblemId = addedProblem.ProblemId,
+                Kind = DatasetKind.SAMPLE,
+            };
+
+            var officialDataset = new Dataset
+            {
+                DatasetId = Guid.NewGuid(),
+                Name = "Bộ testcase chấm điểm",
+                ProblemId = addedProblem.ProblemId,
+                Kind = DatasetKind.OFFICIAL,
+            };
+
+            await _datasetService.CreateDatasetAsync(sampleDataset);
+            await _datasetService.CreateDatasetAsync(officialDataset);
+                
+            return addedProblem;
+
         }
         catch (DbException ex)
         {
@@ -157,6 +192,39 @@ public class ProblemService : IProblemService
         {
             problem.Slug = GenerateSlug(problem.Title);
             problem.UpdatedAt = DateTime.UtcNow;
+
+            // If visibility is PUBLIC, validate datasets have at least 1 test case each
+            if (problem.Visibility == Visibility.PUBLIC)
+            {
+                var datasets = await _datasetService.GetDatasetsByProblemIdAsync(problem.ProblemId, null);
+                
+                var sampleDataset = datasets.FirstOrDefault(d => d.Kind == DatasetKind.SAMPLE);
+                var officialDataset = datasets.FirstOrDefault(d => d.Kind == DatasetKind.OFFICIAL);
+
+                if (sampleDataset == null)
+                {
+                    throw new ApiException("Cannot set problem to PUBLIC: SAMPLE dataset not found", 400);
+                }
+
+                if (officialDataset == null)
+                {
+                    throw new ApiException("Cannot set problem to PUBLIC: OFFICIAL dataset not found", 400);
+                }
+
+                // Get datasets with details to check test cases
+                var sampleWithDetails = await _datasetService.GetDatasetByIdWithDetailsAsync(sampleDataset.DatasetId);
+                var officialWithDetails = await _datasetService.GetDatasetByIdWithDetailsAsync(officialDataset.DatasetId);
+
+                if (sampleWithDetails?.TestCases == null || !sampleWithDetails.TestCases.Any())
+                {
+                    throw new ApiException("Cannot set problem to PUBLIC: SAMPLE dataset must have at least 1 test case", 400);
+                }
+
+                if (officialWithDetails?.TestCases == null || !officialWithDetails.TestCases.Any())
+                {
+                    throw new ApiException("Cannot set problem to PUBLIC: OFFICIAL dataset must have at least 1 test case", 400);
+                }
+            }
 
             // If ProblemAssets are provided, handle them
             if (problem.ProblemAssets != null && problem.ProblemAssets.Any())

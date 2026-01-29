@@ -23,6 +23,12 @@ public class ClassController : ControllerBase
         _classService = classService;
     }
 
+    private string? GetCurrentUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value;
+    }
+
     /// <summary>
     /// [TEACHER] Tạo lớp học mới
     /// </summary>
@@ -58,9 +64,28 @@ public class ClassController : ControllerBase
     [SwaggerResponse(404, "Không tìm thấy lớp học", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetClass(string id)
     {
+        var currentUserId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentUserId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
         var classEntity = await _classService.GetClassByIdAsync(id);
         if (classEntity == null)
             return NotFound(ApiResponse<object>.ErrorResponse("Class not found"));
+
+        // Verify access: Teacher must be owner, Student must be enrolled
+        var isTeacher = User.IsInRole("Teacher");
+        if (isTeacher)
+        {
+            var isOwner = await _classService.IsClassOwnerAsync(id, currentUserId);
+            if (!isOwner)
+                return StatusCode(403, ApiResponse<object>.ErrorResponse("You do not have permission to access this class"));
+        }
+        else // Student
+        {
+            var isEnrolled = await _classService.IsStudentEnrolledAsync(id, currentUserId);
+            if (!isEnrolled)
+                return StatusCode(403, ApiResponse<object>.ErrorResponse("You are not enrolled in this class"));
+        }
 
         return Ok(ApiResponse<object>.SuccessResponse(classEntity, "Class retrieved successfully"));
     }
@@ -79,6 +104,15 @@ public class ClassController : ControllerBase
     [SwaggerResponse(404, "Không tìm thấy lớp học", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetClassDetail(string id)
     {
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        // Verify ownership
+        var isOwner = await _classService.IsClassOwnerAsync(id, currentTeacherId);
+        if (!isOwner)
+            return StatusCode(403, ApiResponse<object>.ErrorResponse("You do not have permission to access this class"));
+
         var classDetail = await _classService.GetClassDetailAsync(id);
         if (classDetail == null)
             return NotFound(ApiResponse<object>.ErrorResponse("Class not found"));
@@ -152,11 +186,15 @@ public class ClassController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
 
-        var result = await _classService.UpdateClassAsync(request.ClassId.ToString(), request);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var result = await _classService.UpdateClassAsync(request.ClassId.ToString(), request, currentTeacherId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Class updated successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class updated successfully"));
     }
 
     /// <summary>
@@ -173,11 +211,15 @@ public class ClassController : ControllerBase
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> DeleteClass([FromQuery] string id)
     {
-        var result = await _classService.DeleteClassAsync(id);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var result = await _classService.DeleteClassAsync(id, currentTeacherId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Class deleted successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Class deleted successfully"));
     }
 
     /// <summary>
@@ -216,11 +258,15 @@ public class ClassController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
 
-        var result = await _classService.AddStudentToClassAsync(request.ClassId, request.StudentId);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var result = await _classService.AddStudentToClassAsync(request.ClassId, request.StudentId, currentTeacherId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to add student to class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student added to class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student added to class successfully"));
     }
 
     /// <summary>
@@ -240,11 +286,15 @@ public class ClassController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data"));
 
-        var result = await _classService.AddStudentsToClassAsync(request);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var result = await _classService.AddStudentsToClassAsync(request, currentTeacherId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to add students to class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Students added to class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Students added to class successfully"));
     }
 
     /// <summary>
@@ -262,11 +312,15 @@ public class ClassController : ControllerBase
     [SwaggerResponse(400, "Xóa thất bại", typeof(ApiResponse<object>))]
     public async Task<IActionResult> RemoveStudentFromClass([FromQuery] string classId, [FromQuery] string studentId)
     {
-        var result = await _classService.RemoveStudentFromClassAsync(classId, studentId);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var result = await _classService.RemoveStudentFromClassAsync(classId, studentId, currentTeacherId);
         if (!result)
             return BadRequest(ApiResponse<object>.ErrorResponse("Failed to remove student from class"));
 
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Student removed from class successfully"));
+        return Ok(ApiResponse<object>.SuccessResponse(new {}, "Student removed from class successfully"));
     }
 
     /// <summary>
@@ -281,7 +335,11 @@ public class ClassController : ControllerBase
     [SwaggerResponse(200, "Danh sách sinh viên", typeof(ApiResponse<object>))]
     public async Task<IActionResult> GetStudentListByClass(string classId)
     {
-        var students = await _classService.GetStudentListByClassAsync(classId);
+        var currentTeacherId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentTeacherId))
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+        var students = await _classService.GetStudentListByClassAsync(classId, currentTeacherId);
         return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
     }
 
@@ -300,7 +358,11 @@ public class ClassController : ControllerBase
     {
         try
         {
-            var duplicates = await _classService.CheckDuplicatesAsync(classId, request.Identifiers);
+            var currentTeacherId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(currentTeacherId))
+                return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+            var duplicates = await _classService.CheckDuplicatesAsync(classId, request.Identifiers, currentTeacherId);
             
             return Ok(ApiResponse<object>.SuccessResponse(
                 new {
@@ -333,7 +395,11 @@ public class ClassController : ControllerBase
     {
         try
         {
-            var result = await _classService.BulkEnrollStudentsAsync(classId, request.StudentIds);
+            var currentTeacherId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(currentTeacherId))
+                return Unauthorized(ApiResponse<object>.ErrorResponse("User ID not found in token"));
+
+            var result = await _classService.BulkEnrollStudentsAsync(classId, request.StudentIds, currentTeacherId);
             
             return Ok(ApiResponse<BulkEnrollResult>.SuccessResponse(
                 result,
@@ -346,29 +412,6 @@ public class ClassController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// [INTERNAL] Lấy danh sách User IDs của lớp học
-    /// Internal API - không yêu cầu authentication, dùng cho service-to-service call
-    /// </summary>
-    /// <param name="classId">ID lớp học</param>
-    /// <returns>Danh sách User IDs</returns>
-    /// <response code="200">Trả về danh sách User IDs</response>
-    [HttpGet("{classId}/user-ids")]
-    [AllowAnonymous] // Internal service call - no auth required
-    [SwaggerOperation(Summary = "[INTERNAL] Lấy User IDs của lớp", Description = "Internal API để Assignment Service lấy danh sách sinh viên")]
-    [SwaggerResponse(200, "Danh sách User IDs", typeof(ApiResponse<List<Guid>>))]
-    public async Task<IActionResult> GetUserIdsByClassId(string classId)
-    {
-        try
-        {
-            var students = await _classService.GetStudentListByClassAsync(classId);
-            return Ok(ApiResponse<object>.SuccessResponse(students, "Student list retrieved successfully"));
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse($"Failed to get user IDs: {ex.Message}"));
-        }
-    }
 }
 
 // Helper DTOs

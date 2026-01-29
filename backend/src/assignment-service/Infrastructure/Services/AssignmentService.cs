@@ -14,11 +14,21 @@ public class AssignmentService : IAssignmentService
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly IUserServiceClient _userServiceClient;
     private readonly IEmailService _emailService;
-    public AssignmentService(IAssignmentRepository assignmentRepository, IUserServiceClient userServiceClient, IEmailService emailService)
+    private readonly IProblemRepository _problemRepository;
+    private readonly ISubmissionRepository _submissionRepository;
+    
+    public AssignmentService(
+        IAssignmentRepository assignmentRepository, 
+        IUserServiceClient userServiceClient, 
+        IEmailService emailService,
+        IProblemRepository problemRepository,
+        ISubmissionRepository submissionRepository)
     {
         _assignmentRepository = assignmentRepository;
         _userServiceClient = userServiceClient;
         _emailService = emailService;
+        _problemRepository = problemRepository;
+        _submissionRepository = submissionRepository;
     }
 
     public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
@@ -28,6 +38,22 @@ public class AssignmentService : IAssignmentService
             assignment.AssignmentId = Guid.NewGuid();
             assignment.AssignedAt = DateTime.UtcNow;
             assignment.TotalPoints = 0;
+
+            // Convert to UTC for PostgreSQL - handle all DateTime kinds properly
+            if (assignment.StartTime.HasValue)
+            {
+                var startTime = assignment.StartTime.Value;
+                assignment.StartTime = startTime.Kind == DateTimeKind.Utc
+                    ? startTime
+                    : DateTime.SpecifyKind(startTime, DateTimeKind.Local).ToUniversalTime();
+            }
+            if (assignment.EndTime.HasValue)
+            {
+                var endTime = assignment.EndTime.Value;
+                assignment.EndTime = endTime.Kind == DateTimeKind.Utc
+                    ? endTime
+                    : DateTime.SpecifyKind(endTime, DateTimeKind.Local).ToUniversalTime();
+            }
 
             var createdAssignment = await _assignmentRepository.AddAsync(assignment);
 
@@ -49,19 +75,30 @@ public class AssignmentService : IAssignmentService
                 }).ToList();
 
                 await _assignmentRepository.AddAssignmentUsersAsync(details);
+                
                 var endDate = createdAssignment.EndTime?.ToString("dd/MM/yyyy HH:mm") ?? "Không có thời hạn";
                 var userEmails = await _userServiceClient.GetUserEmailByIdAsync(userIds);
-                _ = Task.Run(async ()
-                => await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                Console.WriteLine($"[✅] Retrieved {userEmails.Count} user emails for assignment notification.");
+                // ✅ ĐÚNG: Enqueue ngay, không cần Task.Run
+                try
                 {
-                    To = userEmails.First(),
-                    Bcc = userEmails.Skip(1).ToList(),
-                    Subject = "Bài tập mới đã được tạo và giao cho bạn",
-                    HtmlContent = EmailTemplates.NewAssignment(
-                        createdAssignment.Title,
-                        endDate,
-                        createdAssignment.Description ?? string.Empty)
-                }));
+                    await _emailService.EnqueueEmailAsync(new EmailQueueMessage()
+                    {
+                        To = userEmails.First(),
+                        Bcc = userEmails.Skip(1).ToList(),
+                        Subject = "Bài tập mới đã được tạo và giao cho bạn",
+                        HtmlContent = EmailTemplates.NewAssignment(
+                            createdAssignment.Title,
+                            endDate,
+                            createdAssignment.Description ?? string.Empty)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // ✅ Log error nhưng không fail request
+                    Console.WriteLine($"⚠️ Failed to enqueue email: {ex.Message}");
+                    // Optional: Log to monitoring system
+                }
             }
 
             return createdAssignment;
@@ -224,6 +261,31 @@ public class AssignmentService : IAssignmentService
         }
     }
 
+    public async Task<List<Assignment>> GetAssignmentsByStudentInClassAsync(Guid studentId, Guid classId)
+    {
+        try
+        {
+            var assignments = await _assignmentRepository.GetByClassIdAsync(classId);
+            
+            var studentAssignments = new List<Assignment>();
+
+            foreach (var assignment in assignments)
+            {
+                var assignmentUser = await _assignmentRepository.GetAssignmentUserAsync(assignment.AssignmentId, studentId);
+                if (assignmentUser != null)
+                {
+                    studentAssignments.Add(assignment);
+                }
+            }
+
+            return studentAssignments.Where(a => a.Status != AssignmentStatus.DRAFT).ToList();
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error retrieving assignments for student in class: {ex.Message}", 500);
+        }
+    }
+
     public async Task<AssignmentUser?> GetAssignmentUserAsync(Guid assignmentId, Guid userId)
     {
         try
@@ -236,11 +298,11 @@ public class AssignmentService : IAssignmentService
         }
     }
 
-    public async Task<bool> DeleteAssignmentUserByUserIdAsync(Guid userId)
+    public async Task<bool> DeleteAssignmentUserByUserIdAndClassIdAsync(Guid userId, Guid classId)
     {
         try
         {
-            return await _assignmentRepository.DeleteAssignmentUserByUserIdAsync(userId);
+            return await _assignmentRepository.DeleteAssignmentUserByUserIdAndClassIdAsync(userId, classId);
         }
         catch (DbException ex)
         {
@@ -483,13 +545,34 @@ public class AssignmentService : IAssignmentService
 
             foreach (var assignment in activeAssignments)
             {
-                // Lấy danh sách studentId đã có AssignmentUser
-                var existingAssignmentUsers = await _assignmentRepository.GetAssignmentUsersByAssignmentAsync(assignment.AssignmentId);
-                var existingStudentIds = existingAssignmentUsers.Select(au => au.UserId).ToHashSet();
+                // Lấy TẤT CẢ AssignmentUser (bao gồm cả IsActive=false)
+                var allAssignmentUsers = await _assignmentRepository.GetAssignmentUsersByAssignmentIncludeInactiveAsync(assignment.AssignmentId);
+                
+                // Chia thành 2 nhóm: active và inactive
+                var activeUserIds = allAssignmentUsers
+                    .Where(au => au.IsActive)
+                    .Select(au => au.UserId)
+                    .ToHashSet();
+                    
+                var inactiveUsers = allAssignmentUsers
+                    .Where(au => !au.IsActive && studentIds.Contains(au.UserId))
+                    .ToList();
 
-                // Chỉ thêm những student chưa có AssignmentUser
-                var newStudentIds = studentIds.Where(sid => !existingStudentIds.Contains(sid)).ToList();
+                // Reactive những user đã bị soft delete
+                foreach (var inactiveUser in inactiveUsers)
+                {
+                    inactiveUser.IsActive = true;
+                    await _assignmentRepository.UpdateAssignmentUserAsync(inactiveUser);
+                    totalCreated++;
+                }
 
+                // Tìm những student hoàn toàn mới (chưa có record)
+                var allExistingUserIds = allAssignmentUsers.Select(au => au.UserId).ToHashSet();
+                var newStudentIds = studentIds
+                    .Where(sid => !allExistingUserIds.Contains(sid))
+                    .ToList();
+
+                // Tạo mới cho những student chưa có record
                 if (newStudentIds.Any())
                 {
                     var maxScore = await _assignmentRepository.GetAssignmentMaxScoreAsync(assignment.AssignmentId);
@@ -501,7 +584,8 @@ public class AssignmentService : IAssignmentService
                         UserId = studentId,
                         Status = AssignmentUserStatus.NOT_STARTED,
                         AssignedAt = DateTime.UtcNow,
-                        MaxScore = maxScore
+                        MaxScore = maxScore,
+                        IsActive = true
                     }).ToList();
 
                     await _assignmentRepository.AddAssignmentUsersAsync(newAssignmentUsers);
@@ -635,6 +719,30 @@ public class AssignmentService : IAssignmentService
         catch (Exception ex)
         {
             throw new ApiException($"Error logging exam activities batch: {ex.Message}", 500);
+        }
+    }
+
+    public async Task<SystemStatisticsResponse> GetSystemStatisticsAsync()
+    {
+        try
+        {
+            var totalAssignments = await _assignmentRepository.GetTotalAssignmentsCountAsync();
+            var totalProblems = await _problemRepository.GetTotalProblemsCountAsync();
+            var totalSubmissions = await _submissionRepository.GetTotalSubmissionsCountAsync();
+            var totalUsers = await _assignmentRepository.GetTotalAssignmentUsersCountAsync();
+
+            return new SystemStatisticsResponse
+            {
+                TotalAssignments = totalAssignments,
+                TotalProblems = totalProblems,
+                TotalSubmissions = totalSubmissions,
+                TotalUsers = totalUsers,
+                GeneratedAt = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new ApiException($"Error getting system statistics: {ex.Message}", 500);
         }
     }
 }

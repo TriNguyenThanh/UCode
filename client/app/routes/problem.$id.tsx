@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useLoaderData, redirect, Link } from 'react-router'
 import type { Route } from './+types/problem.$id'
 import { auth } from '~/auth'
+import { Navigation } from '~/components/Navigation'
 import {
   Box,
   Typography,
@@ -83,7 +84,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function ProblemDetail() {
   const { problem } = useLoaderData<typeof clientLoader>()
 
-  return <ProblemSolver problem={problem} backUrl="/teacher/home" />
+  return <ProblemSolver problem={problem} backUrl="/teacher/home" showEditButton={true} />
 }
 //   const [leftPanelWidth, setLeftPanelWidth] = React.useState(50) // Percentage
 //   const [isDragging, setIsDragging] = React.useState(false)

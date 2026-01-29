@@ -1,0 +1,7 @@
+google.com
+generativelanguage.googleapis.com
+*.generativelanguage.googleapis.com
+gstatic.com
+googleapis.com
+ucode.io.vn
+zalo.me
