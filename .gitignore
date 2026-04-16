@@ -419,8 +419,7 @@ FodyWeavers.xsd
 *.msp
 package-lock.json
 .agent/*
-face-service/*
-face-service
 *.docx
 .devcontainer/
 Migrations/
+.env
