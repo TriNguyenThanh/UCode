@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniFace API Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .api-url-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .api-url-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-top: 15px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #3182ce;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-content pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #48bb78;
+        }
+
+        .status-error {
+            background: #f56565;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .match-indicator {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .match-yes {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .match-no {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 UniFace API Test Interface</h1>
+            <p>Giao diện test API xác thực khuôn mặt</p>
+        </div>
+
+        <!-- API URL Configuration -->
+        <div class="api-url-section">
+            <label style="font-weight: 600; margin-bottom: 10px; display: block;">🌐 API Base URL:</label>
+            <input type="text" id="apiUrl" placeholder="https://your-ngrok-url.ngrok-free.app" value="">
+        </div>
+
+        <div class="main-content">
+            <!-- Left Column -->
+            <div>
+                <!-- Health Check Card -->
+                <div class="card">
+                    <h2>🏥 Health Check</h2>
+                    <button class="btn btn-info" onclick="checkHealth()">Kiểm tra trạng thái</button>
+                    <div id="healthResult" class="result-section" style="display: none;">
+                        <h3>Kết quả:</h3>
+                        <div class="result-content" id="healthContent"></div>
+                    </div>
+                </div>
+
+                <!-- Detect Faces Card -->
+                <div class="card" style="margin-top: 20px;">
+                    <h2>🔍 Detect Faces</h2>
+                    <div class="form-group">
+                        <label>Chọn ảnh:</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="detectImage" accept="image/*" onchange="previewImage('detectImage', 'detectPreview', 'detectFileName')">
+                            <label for="detectImage" class="file-input-label">📁 Chọn ảnh</label>
+                        </div>
+                        <div class="file-name" id="detectFileName">Chưa chọn file</div>
+                        <img id="detectPreview" class="preview-image" style="display: none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="detectFaces()">Phát hiện khuôn mặt</button>
+                    <div id="detectResult" class="result-section" style="display: none;">
+                        <h3>Kết quả:</h3>
+                        <div class="result-content" id="detectContent"></div>
+                    </div>
+                </div>
+
+                <!-- List Users Card -->
+                <div class="card" style="margin-top: 20px;">
+                    <h2>📋 List Users</h2>
+                    <button class="btn btn-info" onclick="listUsers()">Xem danh sách</button>
+                    <div id="listResult" class="result-section" style="display: none;">
+                        <h3>Kết quả:</h3>
+                        <div class="result-content" id="listContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Register/Verify/Identify Card -->
+                <div class="card">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('register')">Đăng ký</button>
+                        <button class="tab-btn" onclick="switchTab('verify')">Xác thực</button>
+                        <button class="tab-btn" onclick="switchTab('identify')">Nhận diện</button>
+                    </div>
+
+                    <!-- Register Tab -->
+                    <div id="registerTab" class="tab-content active">
+                        <h2>✍️ Register Face</h2>
+                        <div class="form-group">
+                            <label>User ID:</label>
+                            <input type="text" id="registerUserId" placeholder="vd: alice_nguyen">
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn ảnh:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="registerImage" accept="image/*" onchange="previewImage('registerImage', 'registerPreview', 'registerFileName')">
+                                <label for="registerImage" class="file-input-label">📁 Chọn ảnh</label>
+                            </div>
+                            <div class="file-name" id="registerFileName">Chưa chọn file</div>
+                            <img id="registerPreview" class="preview-image" style="display: none;">
+                        </div>
+                        <button class="btn btn-success" onclick="registerFace()">Đăng ký khuôn mặt</button>
+                        <div id="registerResult" class="result-section" style="display: none;">
+                            <h3>Kết quả:</h3>
+                            <div class="result-content" id="registerContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Verify Tab -->
+                    <div id="verifyTab" class="tab-content">
+                        <h2>✅ Verify Face</h2>
+                        <div class="form-group">
+                            <label>User ID:</label>
+                            <input type="text" id="verifyUserId" placeholder="vd: alice_nguyen">
+                        </div>
+                        <div class="form-group">
+                            <label>Threshold (0.3 - 0.6):</label>
+                            <input type="number" id="verifyThreshold" value="0.4" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn ảnh:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="verifyImage" accept="image/*" onchange="previewImage('verifyImage', 'verifyPreview', 'verifyFileName')">
+                                <label for="verifyImage" class="file-input-label">📁 Chọn ảnh</label>
+                            </div>
+                            <div class="file-name" id="verifyFileName">Chưa chọn file</div>
+                            <img id="verifyPreview" class="preview-image" style="display: none;">
+                        </div>
+                        <button class="btn btn-primary" onclick="verifyFace()">Xác thực khuôn mặt</button>
+                        <div id="verifyResult" class="result-section" style="display: none;">
+                            <h3>Kết quả:</h3>
+                            <div class="result-content" id="verifyContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Identify Tab -->
+                    <div id="identifyTab" class="tab-content">
+                        <h2>🔎 Identify Face</h2>
+                        <div class="form-group">
+                            <label>Threshold (0.3 - 0.6):</label>
+                            <input type="number" id="identifyThreshold" value="0.4" min="0" max="1" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Top K:</label>
+                            <input type="number" id="identifyTopK" value="5" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label>Chọn ảnh:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="identifyImage" accept="image/*" onchange="previewImage('identifyImage', 'identifyPreview', 'identifyFileName')">
+                                <label for="identifyImage" class="file-input-label">📁 Chọn ảnh</label>
+                            </div>
+                            <div class="file-name" id="identifyFileName">Chưa chọn file</div>
+                            <img id="identifyPreview" class="preview-image" style="display: none;">
+                        </div>
+                        <button class="btn btn-primary" onclick="identifyFace()">Nhận diện khuôn mặt</button>
+                        <div id="identifyResult" class="result-section" style="display: none;">
+                            <h3>Kết quả:</h3>
+                            <div class="result-content" id="identifyContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete User Card -->
+                <div class="card" style="margin-top: 20px;">
+                    <h2>🗑️ Delete User</h2>
+                    <div class="form-group">
+                        <label>User ID:</label>
+                        <input type="text" id="deleteUserId" placeholder="vd: alice_nguyen">
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteUser()">Xóa User</button>
+                    <div id="deleteResult" class="result-section" style="display: none;">
+                        <h3>Kết quả:</h3>
+                        <div class="result-content" id="deleteContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getApiUrl() {
+            const url = document.getElementById('apiUrl').value.trim();
+            if (!url) {
+                alert('Vui lòng nhập API URL!');
+                return null;
+            }
+            return url;
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function previewImage(inputId, previewId, fileNameId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const fileName = document.getElementById(fileNameId);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+                fileName.textContent = input.files[0].name;
+            }
+        }
+
+        function getImageBase64(inputId) {
+            return new Promise((resolve, reject) => {
+                const input = document.getElementById(inputId);
+                if (!input.files || !input.files[0]) {
+                    reject('Chưa chọn ảnh');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(input.files[0]);
+            });
+        }
+
+        function displayResult(resultId, contentId, data, isSuccess = true) {
+            const resultDiv = document.getElementById(resultId);
+            const contentDiv = document.getElementById(contentId);
+            
+            resultDiv.style.display = 'block';
+            contentDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            
+            if (isSuccess) {
+                resultDiv.style.borderLeftColor = '#48bb78';
+            } else {
+                resultDiv.style.borderLeftColor = '#f56565';
+            }
+        }
+
+        async function checkHealth() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/health`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    }
+                });
+                const data = await response.json();
+                displayResult('healthResult', 'healthContent', data);
+            } catch (error) {
+                displayResult('healthResult', 'healthContent', { error: error.message }, false);
+            }
+        }
+
+        async function detectFaces() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            try {
+                const imageBase64 = await getImageBase64('detectImage');
+                
+                const response = await fetch(`${apiUrl}/detect`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    },
+                    body: JSON.stringify({ image: imageBase64 })
+                });
+                
+                const data = await response.json();
+                displayResult('detectResult', 'detectContent', data, response.ok);
+            } catch (error) {
+                displayResult('detectResult', 'detectContent', { error: error.message }, false);
+            }
+        }
+
+        async function registerFace() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            const userId = document.getElementById('registerUserId').value.trim();
+            if (!userId) {
+                alert('Vui lòng nhập User ID!');
+                return;
+            }
+
+            try {
+                const imageBase64 = await getImageBase64('registerImage');
+                
+                const response = await fetch(`${apiUrl}/register`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        image: imageBase64
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('registerResult', 'registerContent', data, response.ok);
+                
+                if (response.ok) {
+                    alert('✅ Đăng ký thành công!');
+                }
+            } catch (error) {
+                displayResult('registerResult', 'registerContent', { error: error.message }, false);
+            }
+        }
+
+        async function verifyFace() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            const userId = document.getElementById('verifyUserId').value.trim();
+            const threshold = parseFloat(document.getElementById('verifyThreshold').value);
+            
+            if (!userId) {
+                alert('Vui lòng nhập User ID!');
+                return;
+            }
+
+            try {
+                const imageBase64 = await getImageBase64('verifyImage');
+                
+                const response = await fetch(`${apiUrl}/verify`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        image: imageBase64,
+                        threshold: threshold
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('verifyResult', 'verifyContent', data, response.ok);
+                
+                // Add match indicator
+                if (response.ok && data.is_match !== undefined) {
+                    const contentDiv = document.getElementById('verifyContent');
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = data.is_match ? 'match-indicator match-yes' : 'match-indicator match-no';
+                    matchDiv.textContent = data.is_match ? 
+                        `✅ KHỚP! Similarity: ${data.similarity.toFixed(4)}` : 
+                        `❌ KHÔNG KHỚP. Similarity: ${data.similarity.toFixed(4)}`;
+                    contentDiv.insertBefore(matchDiv, contentDiv.firstChild);
+                }
+            } catch (error) {
+                displayResult('verifyResult', 'verifyContent', { error: error.message }, false);
+            }
+        }
+
+        async function identifyFace() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            const threshold = parseFloat(document.getElementById('identifyThreshold').value);
+            const topK = parseInt(document.getElementById('identifyTopK').value);
+
+            try {
+                const imageBase64 = await getImageBase64('identifyImage');
+                
+                const response = await fetch(`${apiUrl}/identify`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    },
+                    body: JSON.stringify({
+                        image: imageBase64,
+                        threshold: threshold,
+                        top_k: topK
+                    })
+                });
+                
+                const data = await response.json();
+                displayResult('identifyResult', 'identifyContent', data, response.ok);
+            } catch (error) {
+                displayResult('identifyResult', 'identifyContent', { error: error.message }, false);
+            }
+        }
+
+        async function listUsers() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            try {
+                const response = await fetch(`${apiUrl}/list`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    }
+                });
+                const data = await response.json();
+                displayResult('listResult', 'listContent', data, response.ok);
+            } catch (error) {
+                displayResult('listResult', 'listContent', { error: error.message }, false);
+            }
+        }
+
+        async function deleteUser() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            const userId = document.getElementById('deleteUserId').value.trim();
+            if (!userId) {
+                alert('Vui lòng nhập User ID!');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn xóa user "${userId}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/delete`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyMTRiNDY2My05N2I5LTQyZWYtODY3MS05MGU1MDA4MTZlODgiLCJ1bmlxdWVfbmFtZSI6InN0dWRlbnQwMiIsInJvbGUiOiJTdHVkZW50IiwiZnVsbE5hbWUiOiJVR2podXFGdElGUm80YnVMSUVMRHJHNW8iLCJqdGkiOiJjNmU5NGNiZS02NjkxLTQzYjEtOTJlYy1jYjdiZjYyODBiZmMiLCJpYXQiOjE3NjY2NjIyMTAsInVzZXJDb2RlIjoiU1YwMDIiLCJzdHVkZW50Q29kZSI6IlNWMDAyIiwibmJmIjoxNzY2NjYyMjEwLCJleHAiOjE3NjcyNjcwMTAsImlzcyI6IlVzZXJTZXJ2aWNlIiwiYXVkIjoiVXNlclNlcnZpY2VDbGllbnQifQ.azggSY_60_qblm6HebJg1ncHC6JuH0-MG-44jZEE0zE'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                
+                const data = await response.json();
+                displayResult('deleteResult', 'deleteContent', data, response.ok);
+                
+                if (response.ok) {
+                    alert('✅ Xóa thành công!');
+                    document.getElementById('deleteUserId').value = '';
+                }
+            } catch (error) {
+                displayResult('deleteResult', 'deleteContent', { error: error.message }, false);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -677,7 +677,7 @@
                                             </DataGrid>
 
                                             <!-- Empty State -->
-                                            <TextBlock Text="Chưa có lần nộp bài nào"
+                                            <TextBlock Text=""
                                        FontFamily="Be Vietnam Pro, Segoe UI"
                                        FontSize="14"
                                        Foreground="#999"
